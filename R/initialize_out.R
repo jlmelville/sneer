@@ -1,7 +1,50 @@
-# output initialization
+# Functions for initializing the output embedding.
+
+#' Create an output initialization callback function.
+#'
+#' Factory function that creates a callback that used by the embedding routine.
+#' When invoked, it will initialize the output data.
+#'
+#' The return value of the callback is the initialized output data, a list
+#' containing:
+#'
+#' \itemize{
+#'  \item \code{ym} A matrix containing the initialized output coordinates. The
+#'  name of the matrix can be changed by setting the \code{mat_name} parameter.
+#' }
+#'
+#' Depending on the type of embedding carried out, the \code{out} list will
+#' accumulate other auxiliary data associated with the embedded coordinates,
+#' e.g. distances, probabilities, divergences or other data required for
+#' stiffness calculations.
+#'
+#' @param k Number of output dimensions. For 2D visualization this is always 2.
+#' @param initial_config Input data to initialize the coordinates from. Must
+#' be a matrix with the same dimensions as the desired output coordinates.
+#' @param stdev The standard deviation of the gaussian used to generate the
+#' output coordinates. Used only if \code{from_PCA} is \code{FALSE},
+#' \code{initial_config} is \code{NULL} and \code{from_input_name} is
+#' \code{NULL}.
+#' @param from_PCA If \code{TRUE}, then the first \code{k} scores of the PCA
+#' of the input coordinates are used to initialize the embedded coordinates.
+#' Input coordinates are centered but not scaled before the PCA is carried out.
+#' @param from_input_name Name of a matrix in the input data list \code{inp}
+#' which contains suitable initialization data. Must be a matrix with the same
+#' dimensions as the desired output coordinates.
+#' @param mat_name Name of the matrix on the output list to contain the
+#' initialized coordinates. Ensure that if you change this from the default that
+#' other callbacks that need this information (e.g. optimization routines,
+#' plotting function in epoch callbacks) are also passed the same value.
+#' @param verbose If \code{TRUE} information about the initialization will be
+#' logged to screen.
+#' @return a callback function to be used by the embedding routine to initialize
+#' the output data. Has the signature \code{init_out(inp)} where \code{inp}
+#' is the initialized input data list. The callback returns \code{out}, the
+#' initialized output list with initial embedded coordinates in the matrix with
+#' name \code{mat_name}.
 make_init_out <- function(k = 2, initial_config = NULL, stdev = 1e-04,
                           from_PCA = FALSE, from_input_name = NULL,
-                          verbose = TRUE, mat_name = "ym") {
+                          mat_name = "ym", verbose = TRUE) {
   init_out <- list()
 
   if (!is.null(initial_config) && is.matrix(initial_config)) {
@@ -61,6 +104,8 @@ make_init_out <- function(k = 2, initial_config = NULL, stdev = 1e-04,
 #' scores <- scores_matrix(xm)
 scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
                           verbose = TRUE) {
+
+  xm <- scale(xm, center = TRUE, scale = FALSE)
   # do SVD on xm directly rather than forming covariance matrix
   ncomp <- ncol
   sm <- svd(xm, nu = ncomp, nv = 0)
@@ -80,7 +125,7 @@ scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
 #' @param nrow The number of rows of the matrix.
 #' @param ncol The number of columns of the matrix.
 #' @param sd The standard deviation of the distribution.
-#' @return A random matrix with \code{nrow} rows and \code{ncol} columns.
+#' @return Random matrix with \code{nrow} rows and \code{ncol} columns.
 #'
 #' @examples
 #' # matrix with 5 rows, 3 columns and standard deviation of 0.1

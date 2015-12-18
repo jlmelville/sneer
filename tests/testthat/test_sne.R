@@ -63,7 +63,7 @@ tsne_iris_jacobs <- embed_sim(iris[, 1:4],
 jacobs_costs <- tsne_iris_jacobs$epoch_result$costs[,"cost"]
 expect_equal(formatC(jacobs_costs[1]),  "1.598")
 expect_equal(formatC(jacobs_costs[2]),  "1.594")
-expect_equal(formatC(jacobs_costs[3]),  "1.59")
+expect_equal(formatC(jacobs_costs[3]),  "1.589")
 expect_equal(formatC(jacobs_costs[4]),  "1.584")
 expect_equal(formatC(jacobs_costs[5]),  "1.577")
 expect_equal(formatC(jacobs_costs[6]),  "1.57")
