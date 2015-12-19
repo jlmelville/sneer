@@ -1,5 +1,5 @@
 # tricks.R
-make_tricks <- function(early_exaggeration = FALSE, P_exaggeration = 4,
+make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
                         exaggeration_off_iter = 50, verbose = TRUE) {
   tricks <- list()
   if (early_exaggeration) {

@@ -342,6 +342,9 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
   )
 }
 
+tsne_jacobs <- jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
+                      min_step_size = 0.1)
+
 #' Calculate a new step size matrix based on the sign of the gradient versus
 #' that of the previous step.
 #'
