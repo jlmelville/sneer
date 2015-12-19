@@ -2,7 +2,7 @@ library(sneer)
 context("SNE")
 
 tsne_iris <- embed_sim(iris[, 1:4],
-                       method = tsne_stiffness(),
+                       method = tsne(),
                        init_inp = make_init_inp(perplexity = 50,
                                                 input_weight_fn =
                                                   sqrt_exp_weight,
@@ -16,7 +16,7 @@ tsne_iris <- embed_sim(iris[, 1:4],
 expect_equal(formatC(tsne_iris$epoch_result$stress), "0.0578")
 
 ssne_iris <- embed_sim(iris[, 1:4],
-                       method = ssne_stiffness(),
+                       method = ssne(),
                        init_inp = make_init_inp(perplexity = 50,
                                                 input_weight_fn =
                                                   sqrt_exp_weight,
@@ -30,7 +30,7 @@ ssne_iris <- embed_sim(iris[, 1:4],
 expect_equal(formatC(ssne_iris$epoch_result$stress), "0.07265")
 
 asne_iris <- embed_sim(iris[, 1:4],
-                       method = asne_stiffness(),
+                       method = asne(),
                        init_inp = make_init_inp(perplexity = 50,
                                                 input_weight_fn =
                                                   sqrt_exp_weight,
@@ -44,7 +44,7 @@ asne_iris <- embed_sim(iris[, 1:4],
 expect_equal(formatC(asne_iris$epoch_result$stress), "0.08479")
 
 pca_iris <- embed_sim(iris[, 1:4],
-                      method = tsne_stiffness(),
+                      method = tsne(),
                       init_inp = make_init_inp(perplexity = 25,
                                                input_weight_fn =
                                                  sqrt_exp_weight,
@@ -58,7 +58,7 @@ expect_equal(formatC(pca_iris$epoch_result$cost), "1.598")
 
 context("jacobs")
 tsne_iris_jacobs <- embed_sim(iris[, 1:4],
-                              method = tsne_stiffness(),
+                              method = tsne(),
                               init_inp = make_init_inp(perplexity = 25,
                                                        input_weight_fn =
                                                          sqrt_exp_weight,

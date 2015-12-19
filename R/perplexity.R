@@ -1,16 +1,18 @@
-# perplexity.R
-# Perplexity Calculations
+# Perplexity Calculations. Used in creating the input probabilities in
+# similarity-based embedding.
 
-#' Log summary info on the distribution of the beta parameter used to
+#' Logs parameter search information.
+#'
+#' Provides summary of the distribution of the beta parameter used to
 #' generate input probabilities in SNE.
 #'
 #' Mainly useful for debugging. Also expresses beta as sigma, i.e. the
-#' Gaussian bandwidth 1/sqrt(2*beta).
+#' Gaussian bandwidth \eqn{\frac{1}{\sqrt(2\beta)}}.
 #'
 #' @param betas Vector of parameters
 summarize_betas <- function(betas) {
-  summarise(1 / sqrt(2 * betas), "sigma")
-  summarise(betas, "beta")
+  summarize(1 / sqrt(2 * betas), "sigma")
+  summarize(betas, "beta")
 }
 
 #' Convert distance matrix to row probability matrix.
@@ -18,17 +20,20 @@ summarize_betas <- function(betas) {
 #' For each row, finds the value of beta which generates the probability
 #' with the desired perplexity.
 #'
-#' @param D Distance matrix.
+#' @param dm Distance matrix.
 #' @param perplexity Target perplexity value.
 #' @param weight_fn Function which maps squared distances to weights. Should
-#' have the following signature: \code{function(D2i, beta)}
+#' have the following signature: \code{function(d2m, beta)}
 #' @param tol Convergence tolerance for perplexity.
 #' @param max_iters Maximum number of iterations to carry out the search.
 #' @param verbose If TRUE, logs information about the beta values.
-#' @return List with the following members: \code{pm} a row probability matrix
-#' where each row is a probability distribution with a perplexity within
-#' \code{tol} of \code{perplexity}, \code{beta} the beta parameter used with
-#' \code{weight_fn} that generated \code{pm}.
+#' @return List with the following members:
+#' \itemize{
+#'  \item \code{pm} Row probability matrix. Each row is a probability
+#'  distribution with a perplexity within \code{tol} of \code{perplexity}.
+#'  \item \code{beta} Matrix of beta parameters used with \code{weight_fn} that
+#'  generated \code{pm}.
+#' }
 d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
                                max_iters = 50, verbose = TRUE) {
   d2m <- dm ^ 2
@@ -60,11 +65,15 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
 #' have the following signature: \code{function(D2i, beta)}
 #' @param tol Convergence tolerance for perplexity.
 #' @param max_iters Maximum number of iterations to carry out the search.
-#' @return List with the following members: \code{pm} a 1-row matrix containing
-#' a probability distribution with a perplexity within \code{tol} of
-#' \code{perplexity}, \code{beta} the beta parameter used with \code{weight_fn}
-#' that generated \code{pm}, \code{perp} the final perplexity of the probability,
-#' differing from \code{perplexity} only if \code{max_iters} was exceeded.
+#' @return List with the following members:
+#' \itemize{
+#'  \item \code{pm} Matrix with one row containing a probability distribution
+#'  with a perplexity within \code{tol} of \code{perplexity}.
+#'  \item \code{beta} Beta parameter used with \code{weight_fn} that generated
+#'  \code{pm}.
+#'  \item \code{perp} Final perplexity of the probability, differing from
+#'  \code{perplexity} only if \code{max_iters} was exceeded.
+#' }
 find_beta <- function(d2mi, i, perplexity, beta_init = 1,
                       weight_fn, tol = 1e-05, max_iters = 50) {
 
@@ -79,7 +88,9 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
        beta = result$x)
 }
 
-#' Bisection method to find root of f(x) = 0 given two values which bracket
+#' Find root of function by bisection.
+#'
+#  Bisection method to find root of f(x) = 0 given two values which bracket
 #' the root.
 #'
 #' @param fn Function to optimize. Should take one scalar numeric value and
@@ -91,10 +102,14 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 #' @param max_iters Maximum number of iterations to search for.
 #' @param lower Lower bracket of x.
 #' @param upper Upper bracket of x.
-#' @return a list containing: \code{x} optimized value of x, \code{y} value of y
-#' at convergence or \code{max_iters}, \code{iter} number of iterations at which
-#' convergence was reached, \code{best} list containing all values returned by
-#' calling \code{fn} with \code{x}.
+#' @return a list containing:
+#' \itemize{
+#'  \item \code{x} Optimized value of x.
+#'  \item \code{y} Value of y at convergence or \code{max_iters}
+#'  \item \code{iter} Number of iterations at which convergence was reached.
+#'  \item \code{best} Return value of calling \code{fn} with the optimized
+#'  value of \code{x}.
+#'}
 root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_pos,
                         x_neg, x_init = (x_pos + x_neg) / 2) {
   result <- fn(x_init)
@@ -111,14 +126,13 @@ root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_pos,
   list(x = bounds$mid, y = value, best = result, iter = iter)
 }
 
-#' update_methods the bisection bracket for the parameter based on the discrepancy
-#' between the output and target value.
+#' Narrows bisection bracket range.
 #'
 #' @param bracket List representing the bounds of the parameter search.
-#' Contains three elements: \code{lower}: lower value, \code{upper}: upper value,
-#' \code{mid}: the midpoint.
+#' Contains three elements: \code{lower}: lower value, \code{upper}: upper
+#' value, \code{mid}: the midpoint.
 #' @param sgn Sign of the value of the function evaluted at \code{bracket$mid}.
-#' @return the updated \code{bracket} list.
+#' @return Updated \code{bracket} list.
 improve_guess <- function(bracket, sgn) {
   mid <- bracket$mid
   if (sgn > 0) {
@@ -140,8 +154,18 @@ improve_guess <- function(bracket, sgn) {
   bracket
 }
 
-#' Create a one-parameter function that can be used as an objective function
-#' for creating a probability distribution with a target perplexity.
+#' Create callback that can be used as an objective function for perplexity
+#' parameter search.
+#'
+#' The callback has the signature \code{fn(beta)} where \code{beta} is the
+#' parameter being optimized, and returns a list
+#' containing: \itemize{
+#'  \item \code{value} the difference between the Shannon Entropy for the value
+#'   of beta passed as an argument and the target Shannon Entropy
+#'  \item \code{h} Shannon Entropy for the value of beta passed as an
+#' argument.
+#'  \item \code{pm} the probabilities generated by the weighting function.
+#' }
 #'
 #' @param d2r Row of a squared distance matrix.
 #' @param i Index of the row in the matrix.
@@ -151,11 +175,7 @@ improve_guess <- function(bracket, sgn) {
 #' weight function should produce.
 #' @param h_base the base of the logarithm to use for Shannon Entropy
 #' calculations.
-#' @return a one-parameter function with the signature \code{function(beta)}.
-#' It returns a list containing: \code{value} the difference between the Shannon
-#' Entropy for the value of beta passed as an argument and the target Shannon
-#' Entropy, \code{h} the Shannon Entropy for the value of beta passed as an
-#' argument, \code{pm} the probabilities generated by the weighting function.
+#' @return Callback function for use in parameter search routine.
 make_objective_fn <- function(d2r, i, weight_fn, perplexity, h_base = exp(1)) {
   h_target <- log(perplexity, h_base)
 
@@ -176,10 +196,9 @@ make_objective_fn <- function(d2r, i, weight_fn, perplexity, h_base = exp(1)) {
 #'
 #' Each row of the matrix should consist of probabilities summing to 1.
 #'
-#' @param pm the matrix of probabilities.
-#' @param base the base of the logarithm to use in the entropy calculation.
-#' @return a vector of Shannon entropies, one per row of the matrix.
-#'
+#' @param pm Matrix of probabilities.
+#' @param base Base of the logarithm to use in the entropy calculation.
+#' @return Vector of Shannon entropies, one per row of the matrix.
 shannon_entropy_row <- function(pm, base = 2) {
   -apply(pm * log(pm, base), 1, sum)
 }

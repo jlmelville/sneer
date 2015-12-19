@@ -1,110 +1,13 @@
-#' Scales numeric matrix, so that elements are within
-#' (\code{rmin}, \code{rmax}).
-#'
-#' @param xm The data to range scale.
-#' @param rmin The minimum value in the scaled matrix.
-#' @param rmax The maximum value in the scaled matrix.
-#' @return The range scaled data.
-range_scale_matrix <- function(xm, rmin = 0, rmax = 1) {
-  xmin <- min(xm)
-  xmax <- max(xm)
-  xrange <- xmax - xmin
-  rrange <- rmax - rmin
+# Preprocessing functions for the input data.
 
-  ((xm - xmin) * (rrange / xrange)) + rmin
-}
-
-#' Scales numeric matrix, so that values in each column are within
-#' (\code{min}, \code{max}).
+#' Create a preprocessing function.
 #'
-#' @param xm The matrix to range scale.
-#' @param rmin The minimum value per column in the scaled matrix.
-#' @param rmax The maximum value per column in the scaled matrix.
-#' @return The range scaled matrix.
-range_scale <- function(xm, rmin = 0, rmax = 1) {
-  xmin <- apply(xm, 2, min)
-
-  xmax <- apply(xm, 2, max)
-  xrange <- xmax - xmin
-  rrange <- rmax - rmin
-
-  xm <- sweep(xm, 2, xmin)
-  xm <- sweep(xm, 2, rrange / xrange, "*")
-  sweep(xm, 2, rmin, "+")
-}
-
-#' Whitens the data so that the covariance matrix is the identity matrix
-#' (variances of the data are all one and the covariances are zero).
-#'
-#' @details
-#' Whitening consists of performing PCA on the centered (and optionally
-#' scaled to unit standard deviation column) input data, optionally removing
-#' eigenvectors corresponding to the smallest eigenvectors, and then rotating
-#' the data to decorrelate it. Each component is additionally scaled by the
-#' square root of the corresponding eigenvalue so that the variances of the
-#' rotated solution are all equal to one.
-#'
-#' Because whitening transformations are not unique, a further transformation
-#' may be carried out on the PCA whitened solution to produce the Zero-Phase
-#' Component Analysis (ZCA) whitening, which uses the rotation that best
-#' reproduces the input data in a least-squares sense, while maintaining the
-#' whitened properties. This may be useful for some image datasets where a
-#' whitening which preserves the original data structure as much as possible
-#' may be desirable.
-#'
-#' If ZCA is used as the whitening transform then the returned whitened data
-#' will have the same dimensionality as the input data xm, even if a value for
-#' \code{ncomp} was also provided. This is simply due to the form of the
-#' matrix multiplication that produces the ZCA transform. Additionally, ZCA
-#' is most often applied to images where the whitened data is intended to be
-#' visualized in the same way as the input data and so the dimensionality would
-#' need to be identical anyway. Nonetheless, the dimensionality reduction has
-#' still occurred, with the ZCA simply reconstructing the truncated data back
-#' into the original (albeit whitened) space.
-#'
-#' @param xm The data to whiten.
-#' @param scale If \code{TRUE}, then the centered columns of xm are divided by
-#' their standard deviations.
-#' @param zca If \code{TRUE}, then apply the Zero-Phase Component Analysis
-#' (ZCA) whitening. If ZCA is used then the returned whitened data will have
-#' as many columns as was in the input data, even if a value of \code{ncomp}
-#' was specified.
-#' @param ncomp The number of components to keep in a reduced dimension
-#' representation of the data.
-#' @param epsilon Regularization parameter to apply to eigenvalues, to avoid
-#' numerical instabilities with eigenvalues close to zero. Values of 1.e-5 to
-#' 0.1 seem common.
-#' @param verbose If \code{TRUE}, then debug messages will be logged.
-#' @return The whitened data.
-whiten <- function(xm, scale = FALSE, zca = FALSE, ncomp = min(dim(xm)),
-                   epsilon = 1.e-5, verbose = TRUE) {
-  xm <- scale(xm, scale = scale)
-  n <- nrow(xm)
-  # This implementation does SVD directly on xm
-  # Uses La.svd so that the loadings V are already transposed and we
-  # only need to untranspose if ZCA is asked for.
-  svdx <- La.svd(xm, nu = 0, nv = ncomp)
-  dm <- diag(sqrt(n - 1) / (svdx$d[1:ncomp] + epsilon), nrow = ncomp)
-  vm <- svdx$vt[1:ncomp, , drop = FALSE]
-  wm <- dm %*% vm
-  if (zca) {
-    wm <- t(vm) %*% wm
-  }
-  xm %*% t(wm)
-}
-
-#' Removes columns from the data with variance lower than a threshold.
-#'
-#' @param xm The data to filter.
-#' @param minvar The minimum variance allowed for a column.
-#' @return The data with all columns with a variance lower than \code{minvar}
-#' removed.
-varfilter <- function(xm, minvar = 0.0) {
-  vars <- apply(xm, 2, var)
-  xm[, vars > minvar, drop = FALSE]
-}
-
-#' Create a preprocessing function for input data coordinates.
+#' Creates a callback for use in the embedding routine. Preprocessing will be
+#' applied to the input data before embedding-specific input initialization
+#' occurs (e.g. calculation of distances and probabilities). A variety of common
+#' preprocessing options are available. The range scaling and auto scaling
+#' options are mutually exclusive, but can be combined with whitening if
+#' required.
 #'
 #' @param range_scale_matrix If \code{TRUE}, input coordinates will be scaled
 #' so that elements are between (\code{rmin}, \code{rmax}).
@@ -205,3 +108,119 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
     }
   }
 }
+
+
+#' Range scales numeric matrix.
+#'
+#' Elements are scaled so that they are within (\code{rmin}, \code{rmax}).
+#'
+#' @param xm Matrix to range scale.
+#' @param rmin Minimum value in the scaled matrix.
+#' @param rmax Maximum value in the scaled matrix.
+#' @return Range scaled data.
+range_scale_matrix <- function(xm, rmin = 0, rmax = 1) {
+  xmin <- min(xm)
+  xmax <- max(xm)
+  xrange <- xmax - xmin
+  rrange <- rmax - rmin
+
+  ((xm - xmin) * (rrange / xrange)) + rmin
+}
+
+#' Range scales columns of numeric matrix.
+#'
+#' Values are scaled so that for each column, values are within
+#' (\code{min}, \code{max}).
+#'
+#' @param xm Matrix to range scale.
+#' @param rmin Minimum value per column in the scaled matrix.
+#' @param rmax Maximum value per column in the scaled matrix.
+#' @return Range scaled matrix.
+range_scale <- function(xm, rmin = 0, rmax = 1) {
+  xmin <- apply(xm, 2, min)
+
+  xmax <- apply(xm, 2, max)
+  xrange <- xmax - xmin
+  rrange <- rmax - rmin
+
+  xm <- sweep(xm, 2, xmin)
+  xm <- sweep(xm, 2, rrange / xrange, "*")
+  sweep(xm, 2, rmin, "+")
+}
+
+#' Data whitening.
+
+#' Whitens the data so that the covariance matrix is the identity matrix
+#' (variances of the data are all one and the covariances are zero).
+#'
+#' Whitening consists of performing PCA on the centered (and optionally
+#' scaled to unit standard deviation column) input data, optionally removing
+#' eigenvectors corresponding to the smallest eigenvectors, and then rotating
+#' the data to decorrelate it. Each component is additionally scaled by the
+#' square root of the corresponding eigenvalue so that the variances of the
+#' rotated solution are all equal to one.
+#'
+#' Because whitening transformations are not unique, a further transformation
+#' may be carried out on the PCA whitened solution to produce the Zero-Phase
+#' Component Analysis (ZCA) whitening, which uses the rotation that best
+#' reproduces the input data in a least-squares sense, while maintaining the
+#' whitened properties. This may be useful for some image datasets where a
+#' whitening which preserves the original data structure as much as possible
+#' may be desirable.
+#'
+#' If ZCA is used as the whitening transform then the returned whitened data
+#' will have the same dimensionality as the input data xm, even if a value for
+#' \code{ncomp} was also provided. This is simply due to the form of the
+#' matrix multiplication that produces the ZCA transform. Additionally, ZCA
+#' is most often applied to images where the whitened data is intended to be
+#' visualized in the same way as the input data and so the dimensionality would
+#' need to be identical anyway. Nonetheless, the dimensionality reduction has
+#' still occurred, with the ZCA simply reconstructing the truncated data back
+#' into the original (albeit whitened) space.
+#'
+#' @param xm Matrix to whiten.
+#' @param scale If \code{TRUE}, then the centered columns of xm are divided by
+#' their standard deviations.
+#' @param zca If \code{TRUE}, then apply the Zero-Phase Component Analysis
+#' (ZCA) whitening. If ZCA is used then the returned whitened data will have
+#' as many columns as was in the input data, even if a value of \code{ncomp}
+#' was specified.
+#' @param ncomp Number of components to keep in a reduced dimension
+#' representation of the data.
+#' @param epsilon Regularization parameter to apply to eigenvalues, to avoid
+#' numerical instabilities with eigenvalues close to zero. Values of 1.e-5 to
+#' 0.1 seem common.
+#' @param verbose If \code{TRUE}, then debug messages will be logged.
+#' @return Whitened matrix.
+whiten <- function(xm, scale = FALSE, zca = FALSE, ncomp = min(dim(xm)),
+                   epsilon = 1.e-5, verbose = TRUE) {
+  xm <- scale(xm, scale = scale)
+  n <- nrow(xm)
+  # This implementation does SVD directly on xm
+  # Uses La.svd so that the loadings V are already transposed and we
+  # only need to untranspose if ZCA is asked for.
+  svdx <- La.svd(xm, nu = 0, nv = ncomp)
+  dm <- diag(sqrt(n - 1) / (svdx$d[1:ncomp] + epsilon), nrow = ncomp)
+  vm <- svdx$vt[1:ncomp, , drop = FALSE]
+  wm <- dm %*% vm
+  if (zca) {
+    wm <- t(vm) %*% wm
+  }
+  xm %*% t(wm)
+}
+
+#' Filter low variance columns.
+#'
+#' Removes columns from the data with variance lower than a threshold. Some
+#' techniques can't handle zero variance columns.
+#'
+#' @param xm Matrix to filter.
+#' @param minvar Minimum variance allowed for a column.
+#' @return Data with all columns with a variance lower than \code{minvar}
+#' removed.
+varfilter <- function(xm, minvar = 0.0) {
+  vars <- apply(xm, 2, var)
+  xm[, vars > minvar, drop = FALSE]
+}
+
+

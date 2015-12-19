@@ -1,3 +1,6 @@
+# Functions to help with visualizing embedding during the optimization
+# procedure.
+
 #' Create a label function for 2D embedding plot.
 #'
 #' Even quite short labels can create a crowded looking embedding plot.
@@ -11,8 +14,10 @@ make_label_fn <- function(num_label_chars = 1) {
   partial(substr, start = 0, stop = num_label_chars)
 }
 
-#' Create a plotting function which can be used by the epoch function of an
-#' embedding to plot the current (two-dimensional embedding).
+#' Create a plotting function.
+#'
+#' Factory function for a plotting callback which can be used by the epoch
+#' function of an embedding to plot the current (two-dimensional embedding).
 #'
 #' @param x Data frame containing label information for the embedded data.
 #' @param attr_name Name of the label column in \code{x}.

@@ -10,19 +10,6 @@ partial <- function(f, ...) {
   }
 }
 
-#' Combine two functions into one with the effect of applying one after the
-#' other.
-#'
-#' @param f Function. Should have a return type compatible with the parameters
-#' to \code{g}.
-#' @param g Function. Should have parameters compatible with the return type of
-#' \code{f}.
-#' @return Composed function with output equivalent to calling \code{f(g(...))}.
-compose <- function(f, g) {
-  function(...) f(g(...))
-}
-
-
 embed_sim <- function(xm,
                       mat_name = "ym",
                       init_inp = make_init_inp(perplexity = 30,
@@ -31,7 +18,7 @@ embed_sim <- function(xm,
                       init_out = make_init_out(from_PCA = TRUE,
                                                mat_name = mat_name,
                                                verbose = verbose),
-                      method = tsne_stiffness(),
+                      method = tsne(),
                       opt = make_opt(),
                       max_iter = 1000,
                       tricks = NULL,

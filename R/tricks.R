@@ -1,4 +1,32 @@
-# tricks.R
+# Miscellaneous data manipulations that may help optimize the embedding.
+# If you are fancy, you could call them "heuristics", but the t-SNE paper calls
+# their approach "tricks" and that's less characters to type.
+
+#' Create tricks callback.
+#'
+#' Creates a callback which the embedding routine will call before each
+#' optimization step. The callback has the signature
+#' \code{inp, out, stiffness, opt, iter} where:
+#' \itemize{
+#'  \item \code{inp} Input data.
+#'  \item \code{out} Output data.
+#'  \item \code{stiffness} Stiffness data.
+#'  \item \code{opt} Optimizer.
+#'  \item \code{iter} Iteration number.
+#' }
+#' and returns a list containing:
+#' \itemize{
+#'  \item \code{inp} Updated input data.
+#'  \item \code{out} Updated output data.
+#'  \item \code{stiffness} Updated stiffness data.
+#'  \item \code{opt} Updated Optimizer.
+#' }
+#'
+#' @param early_exaggeration If \code{TRUE}, then apply early exaggeration.
+#' @param P_exaggeration The size of the exaggeration.
+#' @param exaggeration_off_iter Iteration step to turn exaggeration off.
+#' @param verbose If \code{TRUE} log messages about trick application.
+#' @return Tricks callback.
 make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
                         exaggeration_off_iter = 50, verbose = TRUE) {
   tricks <- list()
