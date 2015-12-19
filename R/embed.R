@@ -29,13 +29,11 @@ embed_sim <- function(xm,
                       verbose = TRUE) {
   opt$mat_name <- mat_name
 
-  opt$update_method$max_iter <- max_iter
-
   embed(xm, init_inp, init_out, method, opt, max_iter, tricks,
         epoch, preprocess, export, after_embed)
 }
 
-embed <- function(xm, init_inp, init_out, stiffness, opt, max_iter = 1000,
+embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
                   tricks = NULL, epoch = NULL, preprocess = NULL, export = NULL,
                   after_embed = NULL) {
   if (!is.null(preprocess)) {
@@ -46,13 +44,13 @@ embed <- function(xm, init_inp, init_out, stiffness, opt, max_iter = 1000,
 
   # do late initialization that relies on input or output initialization
   # being completed
-  after_init_result <- after_init(inp, out, stiffness)
+  after_init_result <- after_init(inp, out, method)
   inp <- after_init_result$inp
   out <- after_init_result$out
-  stiffness <- after_init_result$stiffness
+  method <- after_init_result$method
 
   # initialize matrices needed for gradient calculation
-  out <- update_out(inp, out, stiffness, opt$mat_name)
+  out <- update_out(inp, out, method, opt$mat_name)
 
   # epoch result may contain info from previous epoch that controls
   # whether to stop early (e.g. relative convergence tolerance)
@@ -61,21 +59,21 @@ embed <- function(xm, init_inp, init_out, stiffness, opt, max_iter = 1000,
   iter <- 0
   while (iter <= max_iter) {
     if (!is.null(tricks)) {
-      tricks_result <- tricks(inp, out, stiffness, opt, iter)
+      tricks_result <- tricks(inp, out, method, opt, iter)
       inp <- tricks_result$inp
       out <- tricks_result$out
-      stiffness <- tricks_result$stiffness
+      method <- tricks_result$method
       opt <- tricks_result$opt
     }
 
     if (!is.null(epoch)) {
-      epoch_result <- epoch(iter, inp, out, stiffness, epoch_result)
+      epoch_result <- epoch(iter, inp, out, method, epoch_result)
       if (epoch_result$stop_early) {
         break
       }
     }
 
-    opt_result <- optimize_step(opt, stiffness, inp, out, iter)
+    opt_result <- optimize_step(opt, method, inp, out, iter)
     out <- opt_result$out
     opt <- opt_result$opt
 
@@ -100,33 +98,38 @@ embed <- function(xm, init_inp, init_out, stiffness, opt, max_iter = 1000,
 #'
 #' @param inp Input data.
 #' @param out Output data.
-#' @param stiffness Stiffness configuration.
-#' @return updated stiffness configuration.
-after_init <- function(inp, out, stiffness) {
-  if (!is.null(stiffness$after_init_fn)) {
-    result <- stiffness$after_init_fn(inp, out, stiffness)
+#' @param method Embedding method.
+#' @return List consisting of:
+#' \itemize{
+#'  \item \code{inp} Updated input data.
+#'  \item \code{out} Updated output data.
+#'  \item \code{method} Updated embedding method.
+#' }
+after_init <- function(inp, out, method) {
+  if (!is.null(method$after_init_fn)) {
+    result <- method$after_init_fn(inp, out, method)
     if (!is.null(result$inp)) {
       inp <- result$inp
     }
     if (!is.null(result$out)) {
       out <- result$out
     }
-    if (!is.null(result$stiffness)) {
-      stiffness <- result$stiffness
+    if (!is.null(result$method)) {
+      method <- result$method
     }
   }
-  list(inp = inp, out = out, stiffness = stiffness)
+  list(inp = inp, out = out, method = method)
 }
 
 #' Calculate the gradient of the cost function for the current configuration.
 #'
 #' @param inp Input data.
 #' @param out Output data.
-#' @param stiffness Stiffness configuration.
-#' @return a list with two items: \code{km} stiffness matrix,
+#' @param method Embedding method.
+#' @return List with two items: \code{km} stiffness matrix,
 #' \code{gm}, the gradient matrix.
-gradient <- function(inp, out, stiffness, mat_name = "ym") {
-  km <- stiffness$stiffness_fn(stiffness, inp, out)
+gradient <- function(inp, out, method, mat_name = "ym") {
+  km <- method$stiffness_fn(method, inp, out)
   gm <- stiff_to_grads(out[[mat_name]], km)
   list(km = km, gm = gm)
 }

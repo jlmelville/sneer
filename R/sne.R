@@ -28,15 +28,15 @@ tsne <- function() {
   list(
     cost_fn = kl_cost,
     weight_fn = tdist_weight,
-    stiffness_fn = function(stiffness, inp, out) {
+    stiffness_fn = function(method, inp, out) {
       f(inp$pm, out$qm, out$wm)
     },
     prob_out_fn = weights_to_pcond,
-    update_out_fn = function(inp, out, stiffness, wm) {
+    update_out_fn = function(inp, out, method, wm) {
       out$wm <- wm
       out
     },
-    after_init_fn = function(inp, out, stiffness) {
+    after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       list(inp = inp)
     }
@@ -70,12 +70,12 @@ ssne <- function() {
   list(
     cost_fn = kl_cost,
     weight_fn = exp_weight,
-    stiffness_fn = function(stiffness, inp, out) {
+    stiffness_fn = function(method, inp, out) {
       f(inp$pm, out$qm)
     },
     prob_out_fn = weights_to_pcond,
     update_out_fn = NULL,
-    after_init_fn = function(inp, out, stiffness) {
+    after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       list(inp = inp)
     }
@@ -108,12 +108,12 @@ asne <- function() {
   list(
     cost_fn = kl_cost,
     weight_fn = exp_weight,
-    stiffness_fn = function(stiffness, inp, out) {
+    stiffness_fn = function(method, inp, out) {
       f(inp$pm, out$qm)
     },
     prob_out_fn = weights_to_prow,
     update_out_fn = NULL,
-    after_init_fn = function(inp, out, stiffness) {
+    after_init_fn = function(inp, out, method) {
       inp$pm <- clamp(inp$pm)
       list(inp = inp)
     }
@@ -149,15 +149,15 @@ tasne <- function() {
   list(
     cost_fn = kl_cost,
     weight_fn = tdist_weight,
-    stiffness_fn = function(stiffness, inp, out) {
+    stiffness_fn = function(method, inp, out) {
       f(inp$pm, out$qm, out$wm)
     },
     prob_out_fn = weights_to_prow,
-    update_out_fn = function(inp, out, stiffness, wm) {
+    update_out_fn = function(inp, out, method, wm) {
       out$wm <- wm
       out
     },
-    after_init_fn = function(inp, out, stiffness) {
+    after_init_fn = function(inp, out, method) {
       inp$pm <- clamp(inp$pm)
       list(inp = inp)
     }

@@ -25,18 +25,18 @@ dist2_to_weights <- function(d2m, weight_fn) {
 #'
 #' @param inp Input data.
 #' @param out Output data.
-#' @param stiffness Stiffness configuration.
+#' @param method Embedding method.
 #' @param mat_name Name of the matrix in \code{out} which contains the
 #' coordinates.
 #' @return Updated version of \code{out}.
-update_out <- function(inp, out, stiffness, mat_name = "ym") {
+update_out <- function(inp, out, method, mat_name = "ym") {
   d2m <- coords_to_dist2(out[[mat_name]])
 
-  wm <- dist2_to_weights(d2m, stiffness$weight_fn)
-  out$qm <- stiffness$prob_out_fn(wm)
+  wm <- dist2_to_weights(d2m, method$weight_fn)
+  out$qm <- method$prob_out_fn(wm)
 
-  if (!is.null(stiffness$update_out_fn)) {
-    out <- stiffness$update_out_fn(inp, out, stiffness, wm)
+  if (!is.null(method$update_out_fn)) {
+    out <- method$update_out_fn(inp, out, method, wm)
   }
 
   out

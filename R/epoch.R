@@ -6,9 +6,18 @@
 #' Factory function which returns a function which will be invoked by the
 #' embedding algorithm at regular intervals during the optimization.
 #'
-#' The result of invoking the callback that this function creates is a list
-#' with the following items:
+#' The result of this function is a callback with the signature
+#' \code{epoch_callback(iter, inp, out, method, result)} where:
+#' \itemize{
+#'  \item \code{iter} Iteration number.
+#'  \item \code{inp} Input data.
+#'  \item \code{method} Embedding method.
+#'  \item \code{result} Epoch result list.
+#' }
 #'
+#' The return value of the callback is an updated
+#' version of the \code{result} passed as a parameter to the callback. It has
+#' the following elements:
 #' \itemize{
 #'  \item \code{stop_early} If \code{TRUE} then optimization stopped before
 #'  the maximum number of iterations specified by the embedding algorithm.
@@ -21,6 +30,11 @@
 #'  the epoch callback and the value of \code{iter} the epochs were invoked at.
 #'  Only present if \code{save_costs} was \code{TRUE}.
 #' }
+#'
+#' The result list is reused on each invocation of the callback so that the cost
+#' from the previous epoch can be compared with that of the current epoch,
+#' allowing for relative convergence early stopping, and appending of costs
+#' if \code{save_costs} is \code{TRUE}.
 #'
 #' @param epoch_every Number of steps between callback invocations.
 #' @param min_cost If the cost function used by the embedding falls below this
@@ -39,29 +53,21 @@
 #' @param verbose If \code{TRUE}, epoch callback results such as cost values
 #' will be logged to screen. If set to false, you will have to export the
 #' epoch result from the embedding routine to access any of the information.
-#' @return an epoch callback used by the embedding routine. It has the signature
-#' \code{epoch_callback(iter, inp, out, stiffness, result)} where \code{iter} is
-#' the iteration number, \code{inp} is the input data list, \code{out} is the
-#' output data list, \code{stiffness} is stiffness data list and \code{result}
-#' is the epoch result list. The return value of the callback is an updated
-#' version of the \code{result}. The result list is reused on each invocation
-#' of the callback so that the cost from the previous epoch can be compared
-#' with that of the current epoch, allowing for relative convergence early
-#' stopping, and appending of costs if \code{save_costs} is \code{TRUE}.
+#' @return Epoch callback used by the embedding routine.
 make_epoch <- function(epoch_every = 100, min_cost = 0,
                        reltol = sqrt(.Machine$double.eps), plot_func = NULL,
                        calc_stress = TRUE, save_costs = FALSE,
                        verbose = TRUE) {
   epoch <- list()
 
-  epoch$cost_log <- function(iter, inp, out, stiffness, result) {
-    cost <- stiffness$cost_fn(inp, out)
+  epoch$cost_log <- function(iter, inp, out, method, result) {
+    cost <- method$cost_fn(inp, out)
     if (is.null(result$cost)) {
       result$cost <- .Machine$double.xmax
     }
 
     if (calc_stress) {
-      stress_fn <- make_stress_fn(stiffness$cost_fn)
+      stress_fn <- make_stress_fn(method$cost_fn)
       stress <- stress_fn(inp, out)
     }
 
@@ -103,17 +109,17 @@ make_epoch <- function(epoch_every = 100, min_cost = 0,
   }
 
   if (!is.null(plot_func)) {
-    epoch$plot_embedding <- function(iter, inp, out, stiffness, result) {
+    epoch$plot_embedding <- function(iter, inp, out, method, result) {
       plot_func(out)
       result
     }
   }
 
-  function(iter, inp, out, stiffness, result) {
+  function(iter, inp, out, method, result) {
     result$stop_early <- FALSE
     if (iter %% epoch_every == 0) {
       for (name in names(epoch)) {
-        result <- epoch[[name]](iter, inp, out, stiffness, result)
+        result <- epoch[[name]](iter, inp, out, method, result)
       }
       result$iter <- iter
     }

@@ -6,11 +6,11 @@
 #'
 #' Creates a callback which the embedding routine will call before each
 #' optimization step. The callback has the signature
-#' \code{inp, out, stiffness, opt, iter} where:
+#' \code{inp, out, method, opt, iter} where:
 #' \itemize{
 #'  \item \code{inp} Input data.
 #'  \item \code{out} Output data.
-#'  \item \code{stiffness} Stiffness data.
+#'  \item \code{method} Embedding method.
 #'  \item \code{opt} Optimizer.
 #'  \item \code{iter} Iteration number.
 #' }
@@ -18,8 +18,8 @@
 #' \itemize{
 #'  \item \code{inp} Updated input data.
 #'  \item \code{out} Updated output data.
-#'  \item \code{stiffness} Updated stiffness data.
-#'  \item \code{opt} Updated Optimizer.
+#'  \item \code{method} Updated embedded method.
+#'  \item \code{opt} Updated optimizer.
 #' }
 #'
 #' @param early_exaggeration If \code{TRUE}, then apply early exaggeration.
@@ -31,7 +31,7 @@ make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
                         exaggeration_off_iter = 50, verbose = TRUE) {
   tricks <- list()
   if (early_exaggeration) {
-    exaggeration_func <- function(inp, out, stiffness, opt, iter) {
+    exaggeration_func <- function(inp, out, method, opt, iter) {
       if (iter == 0) {
         inp$pm <- inp$pm * P_exaggeration
       }
@@ -47,22 +47,22 @@ make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
     tricks$exaggeration <- exaggeration_func
   }
 
-  function(inp, out, stiffness, opt, iter) {
+  function(inp, out, method, opt, iter) {
     for (name in names(tricks)) {
-      result <- tricks[[name]](inp, out, stiffness, opt, iter)
+      result <- tricks[[name]](inp, out, method, opt, iter)
       if (!is.null(result$inp)) {
         inp <- result$inp
       }
       if (!is.null(result$out)) {
         out <- result$out
       }
-      if (!is.null(result$stiffness)) {
-        stiffness <- result$stiffness
+      if (!is.null(result$method)) {
+        method <- result$method
       }
       if (!is.null(result$opt)) {
         opt <- result$opt
       }
     }
-    list(inp = inp, out = out, stiffness = stiffness, opt = opt)
+    list(inp = inp, out = out, method = method, opt = opt)
   }
 }

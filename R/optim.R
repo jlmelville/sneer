@@ -52,15 +52,15 @@ make_opt <- function(grad_pos_fn = classical_grad_pos,
                                          update_validation_fn = uv_fn,
                                          verbose = verbose)
 
-  opt$init <- function(opt, inp, out, stiffness) {
+  opt$init <- function(opt, inp, out, method) {
     if (!is.null(opt$direction_method$init)) {
-      opt <- opt$direction_method$init(opt, inp, out, stiffness)
+      opt <- opt$direction_method$init(opt, inp, out, method)
     }
     if (!is.null(opt$step_size_method$init)) {
-      opt <- opt$step_size_method$init(opt, inp, out, stiffness)
+      opt <- opt$step_size_method$init(opt, inp, out, method)
     }
     if (!is.null(opt$update_method$init)) {
-      opt <- opt$update_method$init(opt, inp, out, stiffness)
+      opt <- opt$update_method$init(opt, inp, out, method)
     }
 
     opt
@@ -70,12 +70,12 @@ make_opt <- function(grad_pos_fn = classical_grad_pos,
 }
 
 
-optimize_step <- function(opt, stiffness, inp, out, iter) {
+optimize_step <- function(opt, method, inp, out, iter) {
   if (iter == 0) {
-    opt <- opt$init(opt, inp, out, stiffness)
+    opt <- opt$init(opt, inp, out, method)
   }
 
-  grad_result <- opt$grad_pos_fn(opt, inp, out, stiffness)
+  grad_result <- opt$grad_pos_fn(opt, inp, out, method)
 
   if (any(is.nan(grad_result$gm))) {
     stop("NaN in grad. descent at iter ", iter)
@@ -87,7 +87,7 @@ optimize_step <- function(opt, stiffness, inp, out, iter) {
   }
 
   direction_result <-
-    opt$direction_method$get_direction(opt, inp, out, stiffness, iter)
+    opt$direction_method$get_direction(opt, inp, out, method, iter)
 
   if (!is.null(direction_result$opt)) {
     opt <- direction_result$opt
@@ -95,22 +95,22 @@ optimize_step <- function(opt, stiffness, inp, out, iter) {
   opt$direction_method$direction <- direction_result$direction
 
   opt$step_size_method$step_size <-
-    opt$step_size_method$get_step_size(opt, inp, out, stiffness)
+    opt$step_size_method$get_step_size(opt, inp, out, method)
 
   opt$update_method$update <-
-    opt$update_method$get_update(opt, inp, out, stiffness)
+    opt$update_method$get_update(opt, inp, out, method)
 
-  new_out <- update_solution(opt, inp, out, stiffness)
+  new_out <- update_solution(opt, inp, out, method)
 
   # intercept whether we want to accept the new solution e.g. bold driver
   ok <- TRUE
   if (!is.null(opt$validate)) {
-    validation_result <- opt$validate(opt, inp, out, new_out, stiffness)
+    validation_result <- opt$validate(opt, inp, out, new_out, method)
     opt <- validation_result$opt
     inp <- validation_result$inp
     out <- validation_result$out
     new_out <- validation_result$new_out
-    stiffness <- validation_result$stiffness
+    method <- validation_result$method
     ok <- validation_result$ok
   }
 
@@ -130,11 +130,11 @@ optimize_step <- function(opt, stiffness, inp, out, iter) {
 }
 
 # update out with new solution (Y, W, qm etc)
-update_solution <- function(opt, inp, out, stiffness) {
+update_solution <- function(opt, inp, out, method) {
   new_out <- out
   new_solution <- new_out[[opt$mat_name]] + opt$update_method$update
   new_out[[opt$mat_name]] <- new_solution
-  update_out(inp, new_out, stiffness, opt$mat_name)
+  update_out(inp, new_out, method, opt$mat_name)
 }
 
 make_after_step <- function(recenter = TRUE,
@@ -202,11 +202,11 @@ make_validate_solution <- function(direction_validation_fn = NULL,
     validate_solution$update_validation_func <- update_validation_fn
   }
 
-  function(opt, inp, out, new_out, stiffness) {
+  function(opt, inp, out, new_out, method) {
     all_good <- TRUE
 
     for (name in names(validate_solution)) {
-      result <- validate_solution[[name]](opt, inp, out, new_out, stiffness)
+      result <- validate_solution[[name]](opt, inp, out, new_out, method)
       if (!is.null(result$opt)) {
         opt <- result$opt
       }
@@ -219,8 +219,8 @@ make_validate_solution <- function(direction_validation_fn = NULL,
       if (!is.null(result$new_out)) {
         new_out <- result$new_out
       }
-      if (!is.null(result$stiffness)) {
-        stiffness <- result$stiffness
+      if (!is.null(result$method)) {
+        method <- result$method
       }
       if (!is.null(result$ok)) {
         if (!result$ok) {
@@ -229,24 +229,24 @@ make_validate_solution <- function(direction_validation_fn = NULL,
       }
     }
     list(ok = all_good, opt = opt, inp = inp, out = out, new_out = new_out,
-         stiffness = stiffness)
+         method = method)
   }
 }
 
 ### Gradient Locations ###
 
-classical_grad_pos <- function(opt, inp, out, stiffness) {
-  gradient(inp, out, stiffness, opt$mat_name)
+classical_grad_pos <- function(opt, inp, out, method) {
+  gradient(inp, out, method, opt$mat_name)
 }
 
-nesterov_grad_pos <- function(opt, inp, out, stiffness) {
+nesterov_grad_pos <- function(opt, inp, out, method) {
   prev_update <- opt$update_method$update
   mu <- opt$update_method$momentum
 
   opt$update_method$update <- mu * prev_update
-  new_out <- update_solution(opt, inp, out, stiffness)
+  new_out <- update_solution(opt, inp, out, method)
 
-  gradient(inp, new_out, stiffness, opt$mat_name)
+  gradient(inp, new_out, method, opt$mat_name)
 }
 
 
@@ -263,16 +263,16 @@ bold_driver <- function(increase_mult = 1.1, decrease_mult = 0.5,
     initial_step_size = initial_step_size,
     min_step_size = min_step_size,
     max_step_size = max_step_size,
-    init = function(opt, inp, out, stiffness) {
-      opt$step_size_method$old_cost <- stiffness$cost_fn(inp, out)
+    init = function(opt, inp, out, method) {
+      opt$step_size_method$old_cost <- method$cost_fn(inp, out)
       opt$step_size_method$step_size <- opt$step_size_method$initial_step_size
       opt
     },
-    get_step_size = function(opt, inp, out, stiffness) {
+    get_step_size = function(opt, inp, out, method) {
       opt$step_size_method$step_size
     },
-    validate = function(opt, inp, out, new_out, stiffness) {
-      cost <- stiffness$cost_fn(inp, new_out)
+    validate = function(opt, inp, out, new_out, method) {
+      cost <- method$cost_fn(inp, new_out)
       if (allow_uphill) {
         ok <- TRUE
       } else {
@@ -318,13 +318,13 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
     initial_step_size = init_step_size,
     min_step_size = min_step_size,
     max_step_size = max_step_size,
-    init = function(opt, inp, out, stiffness) {
+    init = function(opt, inp, out, method) {
       v <- out[[opt$mat_name]]
       opt$step_size_method$step_size <-
         matrix(opt$step_size_method$initial_step_size, nrow(v), ncol(v))
       opt
     },
-    get_step_size = function(opt, inp, out, stiffness) {
+    get_step_size = function(opt, inp, out, method) {
 
       gm <- opt$gm
       old_step_size <- opt$step_size_method$step_size
@@ -377,7 +377,7 @@ step_momentum <- function(initial_momentum = 0.5, final_momentum = 0.8,
     initial_momentum = initial_momentum,
     final_momentum = final_momentum,
     mom_switch_iter = switch_iter,
-    init = function(opt, inp, out, stiffness) {
+    init = function(opt, inp, out, method) {
       opt$update_method$momentum <- opt$update_method$initial_momentum
       opt$update_method$update <- matrix(0, nrow(out[[opt$mat_name]]),
                                          ncol(out[[opt$mat_name]]))
@@ -397,11 +397,12 @@ step_momentum <- function(initial_momentum = 0.5, final_momentum = 0.8,
   )
 }
 
-linear_momentum <- function(initial_momentum = 0, final_momentum = 0.9) {
+linear_momentum <- function(max_iter, initial_momentum = 0,
+                            final_momentum = 0.9) {
   list(
     initial_momentum = initial_momentum,
     final_momentum = final_momentum,
-    init = function(opt, inp, out, stiffness) {
+    init = function(opt, inp, out, method) {
       opt$update_method$momentum <- opt$update_method$initial_momentum
       opt$update_method$update <- matrix(0, nrow(out[[opt$mat_name]]),
                                          ncol(out[[opt$mat_name]]))
@@ -411,7 +412,7 @@ linear_momentum <- function(initial_momentum = 0, final_momentum = 0.9) {
     after_step = function(opt, inp, out, new_out, ok, iter) {
       mu_i <- opt$update_method$initial_momentum
       mu_f <- opt$update_method$final_momentum
-      mu <- (mu_f - mu_i) / opt$update_method$max_iter
+      mu <- (mu_f - mu_i) / max_iter
       opt$update_method$momentum <- (mu * iter) + mu_i
 
       list(opt = opt)
@@ -423,7 +424,7 @@ linear_momentum <- function(initial_momentum = 0, final_momentum = 0.9) {
 nesterov_non_convex_momentum <- function() {
   list(
     initial_momentum = 0.5,
-    init = function(opt, inp, out, stiffness) {
+    init = function(opt, inp, out, method) {
       opt$update_method$momentum <- opt$update_method$initial_momentum
       opt$update_method$update <- matrix(0, nrow(out[[opt$mat_name]]),
                                          ncol(out[[opt$mat_name]]))
@@ -440,7 +441,7 @@ nesterov_non_convex_momentum <- function() {
 
 no_momentum <- function() {
   list(
-    init = function(opt, inp, out, stiffness) {
+    init = function(opt, inp, out, method) {
       opt$update_method$momentum <- 0
       opt$update_method$update <- matrix(0, nrow(out[[opt$mat_name]]),
                                          ncol(out[[opt$mat_name]]))
@@ -451,7 +452,7 @@ no_momentum <- function() {
 }
 
 
-momentum_update <- function(opt, inp, out, stiffness) {
+momentum_update <- function(opt, inp, out, method) {
   direction <- opt$direction_method$direction
   step_size <- opt$step_size_method$step_size
   prev_update <- opt$update_method$update
@@ -464,7 +465,7 @@ momentum_update <- function(opt, inp, out, stiffness) {
 ## Steepest Descent ##
 steepest_descent <- function() {
   list(
-    get_direction = function(opt, inp, out, stiffness, iter) {
+    get_direction = function(opt, inp, out, method, iter) {
       list(direction = -opt$gm)
     }
   )
