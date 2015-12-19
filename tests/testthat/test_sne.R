@@ -2,8 +2,11 @@ library(sneer)
 context("SNE")
 
 tsne_iris <- embed_sim(iris[, 1:4],
-                       perplexity = 50, method = tsne(),
-                       input_weight_fn = sqrt_exp_weight,
+                       method = tsne_stiffness(),
+                       init_inp = make_init_inp(perplexity = 50,
+                                                input_weight_fn =
+                                                  sqrt_exp_weight,
+                                                verbose = FALSE),
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 200,
@@ -13,8 +16,11 @@ tsne_iris <- embed_sim(iris[, 1:4],
 expect_equal(formatC(tsne_iris$epoch_result$stress), "0.0578")
 
 ssne_iris <- embed_sim(iris[, 1:4],
-                       perplexity = 50, method = ssne(),
-                       input_weight_fn = sqrt_exp_weight,
+                       method = ssne_stiffness(),
+                       init_inp = make_init_inp(perplexity = 50,
+                                                input_weight_fn =
+                                                  sqrt_exp_weight,
+                                                verbose = FALSE),
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 200,
@@ -24,8 +30,11 @@ ssne_iris <- embed_sim(iris[, 1:4],
 expect_equal(formatC(ssne_iris$epoch_result$stress), "0.07265")
 
 asne_iris <- embed_sim(iris[, 1:4],
-                       perplexity = 50, method = asne(),
-                       input_weight_fn = sqrt_exp_weight,
+                       method = asne_stiffness(),
+                       init_inp = make_init_inp(perplexity = 50,
+                                                input_weight_fn =
+                                                  sqrt_exp_weight,
+                                                verbose = FALSE),
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 200,
@@ -34,8 +43,12 @@ asne_iris <- embed_sim(iris[, 1:4],
                        verbose = FALSE)
 expect_equal(formatC(asne_iris$epoch_result$stress), "0.08479")
 
-pca_iris <- embed_sim(iris[, 1:4], perplexity = 25, method = tsne(),
-                      input_weight_fn = sqrt_exp_weight,
+pca_iris <- embed_sim(iris[, 1:4],
+                      method = tsne_stiffness(),
+                      init_inp = make_init_inp(perplexity = 25,
+                                               input_weight_fn =
+                                                 sqrt_exp_weight,
+                                               verbose = FALSE),
                       preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                    verbose = FALSE),
                       max_iter = 0, verbose = FALSE,
@@ -45,8 +58,11 @@ expect_equal(formatC(pca_iris$epoch_result$cost), "1.598")
 
 context("jacobs")
 tsne_iris_jacobs <- embed_sim(iris[, 1:4],
-                              perplexity = 25, method = tsne(),
-                              input_weight_fn = sqrt_exp_weight,
+                              method = tsne_stiffness(),
+                              init_inp = make_init_inp(perplexity = 25,
+                                                       input_weight_fn =
+                                                         sqrt_exp_weight,
+                                                       verbose = FALSE),
                               preprocess = make_preprocess(
                                 range_scale_matrix = TRUE,
                                 verbose = FALSE),

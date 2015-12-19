@@ -16,6 +16,10 @@ tsne_stiffness <- function() {
     update_out_fn = function(inp, out, stiffness, wm) {
       out$wm <- wm
       out
+    },
+    after_init_fn = function(inp, out, stiffness) {
+      inp$pm <- prow_to_pjoint(inp$pm)
+      list(inp = inp)
     }
   )
 }
@@ -32,7 +36,11 @@ ssne_stiffness <- function() {
       f(inp$pm, out$qm)
     },
     prob_out_fn = weights_to_pcond,
-    update_out_fn = NULL
+    update_out_fn = NULL,
+    after_init_fn = function(inp, out, stiffness) {
+      inp$pm <- prow_to_pjoint(inp$pm)
+      list(inp = inp)
+    }
   )
 }
 
@@ -48,7 +56,12 @@ asne_stiffness <- function() {
     stiffness_fn = function(stiffness, inp, out) {
       f(inp$pm, out$qm)
     },
-    prob_out_fn = weights_to_prow
+    prob_out_fn = weights_to_prow,
+    update_out_fn = NULL,
+    after_init_fn = function(inp, out, stiffness) {
+      inp$pm <- clamp(inp$pm)
+      list(inp = inp)
+    }
   )
 }
 
@@ -68,6 +81,10 @@ tasne_stiffness <- function() {
     update_out_fn = function(inp, out, stiffness, wm) {
       out$wm <- wm
       out
+    },
+    after_init_fn = function(inp, out, stiffness) {
+      inp$pm <- clamp(inp$pm)
+      list(inp = inp)
     }
   )
 }

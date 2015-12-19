@@ -1,61 +1,96 @@
-#' Create an input initialization function.
+# Functions for initializing the input data.
+
+#' Create an input initialization callback.
 #'
-#' @param d_to_p_fn Function to convert distances to probabilities. Should
-#' have the signature: \code{d_to_p_fn(dm)} where \code{dm} is a distance
-#' matrix. Should return a list containing \code{pm}: the probabilities.
-#' @return Initialization function with signature \code{fn(xm)} where \code{xm}
+#' Factory function for input initialization callbacks. During input
+#' initialization, the high dimensional distances or coordinates will be used
+#' to generate the matrices necessary for the embedding, e.g. input distances
+#' and probabilities.
+#'
+#' The callback that is returned generates an input probability according
+#' to the method described in the TSNE paper: for each point in the input
+#' data, a probability distribution is generated with respect to all the
+#' other points such that the perplexity of the distribution is a user-defined
+#' value. This probability is suitable for use in the ASNE method. For SSNE
+#' and TSNE a further processing stage is required to create a joint probability
+#' over all pairs of points. This can be done in the \code{after_init} callback
+#' available to the embedding methods.
+#'
+#' @param perplexity Target perplexity value for the probability distributions.
+#' @param input_weight_fn Weighting function for distances. It should have the
+#' signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix of
+#' squared distances and \code{beta} is a real-valued scalar parameter which
+#' will be varied as part of the search to produce the desired
+#' \code{perplexity}. The function should return a matrix of weights
+#' corresponding to the transformed squared distances passed in as arguments.
+#' @param keep_all_results If \code{true} then the list returned by the callback
+#' will also contain a vector of \code{beta} parameters that generated the
+#' probability matrix. Otherwise, only the probability matrix is returned.
+#' @return A callback function with signature \code{fn(xm)} where \code{xm}
 #' is the input coordinates or a distance matrix. This function will return
-#' a list containing: \code{xm} the input coordinates if these were provided as
-#' input, \code{DX} input distances, \code{pm} the input probabilities,
-#' if \code{d_to_p_fn} is non-null.
-make_init_inp <- function(d_to_p_fn = NULL) {
+#' a list containing: \itemize{
+#'  \item \code{xm} Input coordinates if these were provided.
+#'  \item \code{dm} Input distances.
+#'  \item \code{pm} Input probabilities.
+#'  \item \code{beta} Input weighting parameters that produced the
+#'  probabilities. Only provided if \code{keep_all_results} is \code{TRUE}.
+#'}
+make_init_inp <- function(perplexity = 30,
+                          input_weight_fn = exp_weight,
+                          keep_all_results = FALSE,
+                          verbose = TRUE) {
   function(xm) {
     inp <- list()
     if (class(xm) == "dist") {
-      inp$dxm <- clamp(as.matrix(xm))
+      inp$dm <- clamp(as.matrix(xm))
     } else {
       inp$xm <- as.matrix(xm)
-      inp$dxm <- distance_matrix(inp$xm)
+      inp$dm <- distance_matrix(inp$xm)
     }
 
-    if (!is.null(d_to_p_fn)) {
-      inp$pm <- d_to_p_fn(inp$dxm)$pm
+    d_to_p_result <- d_to_p_perp_bisect(inp$dm, perplexity = perplexity,
+                                        weight_fn = input_weight_fn,
+                                        verbose = verbose)
+
+    if (keep_all_results) {
+      for (name in names(d_to_p_result)) {
+        inp[[name]] <- d_to_p_result[[name]]
+      }
+    }
+    else {
+      inp$pm <- d_to_p_result$pm
     }
 
     inp
   }
 }
 
-
-#' Create a function which creates a joint probability matrix from a
-#' distance matrix.
+#' Convert a row probability matrix to a conditional probability matrix.
 #'
-#' Used in SSNE and TSNE to create input probabilities.
+#' Given a row probability matrix (elements of each row are non-negative and
+#' sum to one), this function scales each element by the sum of the matrix so
+#' that the elements of the entire matrix sum to one.
 #'
-#' @param d_to_p_fn Function with signature \code{(DX)}, where \code{DX} is a
-#' distance matrix, and returns a list containing at least: \code{pm}: a row
-#' probability matrix.
-#' @return List containing: \code{pm}: a joint probability matrix.
-p_to_pjoint <- function(d_to_p_result) {
-  d_to_p_result$pm <- pcond_to_pjoint(d_to_p_result$pm)
-  d_to_p_result
+#' @param prow Row probability matrix.
+#' @return Conditional probability matrix.
+prow_to_pcond <- function(prow) {
+  clamp(prow/sum(prow))
 }
 
-#' Create a function which creates a conditional probability matrix from a
-#' distance matrix.
+#' Convert a row probability matrix to a join probability matrix.
 #'
-#' @param d_to_p_fn Function with signature \code{(DX)}, where \code{DX} is a
-#' distance matrix, and returns a list containing at least: \code{pm}: a row-wise
-#' probability matrix.
-#' @return List containing: \code{pm}: a conditional probability matrix.
-p_to_pcond <- function(d_to_p_result) {
-  pm <- d_to_p_result$pm
-  pm <- pm / sum(pm)
-  d_to_p_result$pm <- clamp(pm)
-  d_to_p_result
+#' Given a row probability matrix (elements of each row are non-negative and
+#' sum to one), this function scales each element by such that the elements of
+#' the entire matrix sum to one, and that the matrix is symmetric, i.e.
+#' \code{p[i, j] = p[j, i]}.
+#'
+#' @param prow Row probability matrix.
+#' @return Joint probability matrix.
+prow_to_pjoint <- function(prow) {
+  clamp(symmetrize_matrix(prow/sum(prow)))
 }
 
-#' Creates a symmetric matrix from a square matrix.
+#' Create a symmetric matrix from a square matrix.
 #'
 #' The matrix is symmetrized by setting \code{pm[i, j]} and \code{pm[j, i]} to
 #' their average, i.e. \code{Pij} = \code{(Pij + Pji)/2} = \code{Pji}.
@@ -65,25 +100,7 @@ p_to_pcond <- function(d_to_p_result) {
 #' matrix.
 #'
 #' @param pm Square matrix to symmetrize.
-#' @return The symmetrized matrix such that \code{pm[i, j]} = \code{pm[j, i]}
+#' @return Symmetrized matrix such that \code{pm[i, j]} = \code{pm[j, i]}
 symmetrize_matrix <- function(pm) {
   0.5 * (pm + t(pm))
 }
-
-#' Create a function which creates a row probability matrix from a
-#' distance matrix.
-#'
-#' Used in SSNE and TSNE to create input probabilities.
-#'
-#' @param d_to_p_fn Function with signature \code{(dm)}, where \code{dm} is a
-#' distance matrix, and returns a list containing at least: \code{pm}: a row
-#' probability matrix.
-#' @return List containing: \code{pm}: a row probability matrix.
-p_to_prow <- function(d_to_p_result) {
-  d_to_p_result$pm <- clamp(d_to_p_result$pm)
-  d_to_p_result
-}
-
-perp_prow <- compose(p_to_prow, d_to_p_perp_bisect)
-
-perp_pjoint <- compose(p_to_pjoint, d_to_p_perp_bisect)

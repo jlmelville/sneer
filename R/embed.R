@@ -25,12 +25,13 @@ compose <- function(f, g) {
 
 embed_sim <- function(xm,
                       mat_name = "ym",
-                      perplexity = 30,
-                      input_weight_fn = exp_weight,
+                      init_inp = make_init_inp(perplexity = 30,
+                                               input_weight_fn = exp_weight,
+                                               verbose = verbose),
                       init_out = make_init_out(from_PCA = TRUE,
                                                mat_name = mat_name,
                                                verbose = verbose),
-                      method = tsne(),
+                      method = tsne_stiffness(),
                       opt = make_opt(),
                       max_iter = 1000,
                       tricks = NULL,
@@ -39,20 +40,11 @@ embed_sim <- function(xm,
                       export = NULL,
                       after_embed = NULL,
                       verbose = TRUE) {
-
-  d_to_p_fn <- partial(method$prob_in_fn, perplexity = perplexity,
-                       weight_fn = input_weight_fn,
-                       verbose = verbose)
-
-  init_inp <- make_init_inp(d_to_p_fn)
-
   opt$mat_name <- mat_name
-
-  stiffness <- method$stiffness
 
   opt$update_method$max_iter <- max_iter
 
-  embed(xm, init_inp, init_out, stiffness, opt, max_iter, tricks,
+  embed(xm, init_inp, init_out, method, opt, max_iter, tricks,
         epoch, preprocess, export, after_embed)
 }
 
@@ -67,7 +59,10 @@ embed <- function(xm, init_inp, init_out, stiffness, opt, max_iter = 1000,
 
   # do late initialization that relies on input or output initialization
   # being completed
-  stiffness <- after_init(stiffness, inp, out)
+  after_init_result <- after_init(inp, out, stiffness)
+  inp <- after_init_result$inp
+  out <- after_init_result$out
+  stiffness <- after_init_result$stiffness
 
   # initialize matrices needed for gradient calculation
   out <- update_out(inp, out, stiffness, opt$mat_name)
@@ -80,18 +75,10 @@ embed <- function(xm, init_inp, init_out, stiffness, opt, max_iter = 1000,
   while (iter <= max_iter) {
     if (!is.null(tricks)) {
       tricks_result <- tricks(inp, out, stiffness, opt, iter)
-      if (!is.null(tricks_result$inp)) {
-        inp <- tricks_result$inp
-      }
-      if (!is.null(tricks_result$out)) {
-        out <- tricks_result$out
-      }
-      if (!is.null(tricks_result$stiffness)) {
-        stiffness <- tricks_result$stiffness
-      }
-      if (!is.null(tricks_result$opt)) {
-        opt <- tricks_result$opt
-      }
+      inp <- tricks_result$inp
+      out <- tricks_result$out
+      stiffness <- tricks_result$stiffness
+      opt <- tricks_result$opt
     }
 
     if (!is.null(epoch)) {
@@ -124,16 +111,24 @@ embed <- function(xm, init_inp, init_out, stiffness, opt, max_iter = 1000,
 #' Useful for doing data-dependent initialization of stiffness
 #' parameters, e.g. based on the parameterization of the input probabilities.
 #'
-#' @param stiffness Stiffness configuration.
 #' @param inp Input data.
 #' @param out Output data.
+#' @param stiffness Stiffness configuration.
 #' @return updated stiffness configuration.
-after_init <- function(stiffness, inp, out) {
-  if (!is.null(stiffness$after_init)) {
-    stiffness <- stiffness$after_init(stiffness, inp, out)
+after_init <- function(inp, out, stiffness) {
+  if (!is.null(stiffness$after_init_fn)) {
+    result <- stiffness$after_init_fn(inp, out, stiffness)
+    if (!is.null(result$inp)) {
+      inp <- result$inp
+    }
+    if (!is.null(result$out)) {
+      out <- result$out
+    }
+    if (!is.null(result$stiffness)) {
+      stiffness <- result$stiffness
+    }
   }
-
-  stiffness
+  list(inp = inp, out = out, stiffness = stiffness)
 }
 
 #' Calculate the gradient of the cost function for the current configuration.
