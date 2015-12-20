@@ -1,6 +1,5 @@
-# Optimization routines. Entirely home grown (and hence slow), without relying
-# on anything in e.g. the \code{optim} routines. But it does allow for a large
-# degree of flexibility.
+# Optimization routines. Pure R. But it's probably the cost function and
+# gradient evaluations that are the bottleneck.
 
 #' Create optimizer.
 #'
@@ -32,28 +31,88 @@
 #' control updating the internal state of the methods (e.g. step size and
 #' momentum).
 #'
-#' @param grad_pos_fn Method to calculate the gradient at a solution
-#' position.
-#' @param direction Method to calculate the direction to move.
-#' @param step_size Method to calculate the step size of the direction.
+#' @param gradient Method to calculate the gradient at a solution
+#' position. Set by calling a configuration function:
+#' \itemize{
+#'  \item \code{classical_gradient()} Calculates the gradient at the position of
+#'  the current solution. This is the default setting.
+#'  \item \code{nesterov_gradient()} Uses the Nesterov Accelerated Gradient
+#'  method. A suitable \code{update} scheme should be used if this option is
+#'  chosen, e.g. \code{nesterov_nsc_momentum}.
+#' }
+#' @param direction Method to calculate the direction to move. Set by calling a
+#' configuration function:
+#' \itemize{
+#'  \item \code{steepest_descent()} Move in the direction of steepest descent.
+#'  This is the default setting and it's the only currently defined method,
+#'  so that's easy.
+#' }
+#' @param step_size Method to calculate the step size of the direction. Set
+#' by calling a configuration function:
+#' \itemize{
+#'  \item \code{jacobs()} Jacobs method. Used in the t-SNE paper.
+#'  \item \code{bold_driver()} Bold driver.
+#' }
 #' @param update Method to combine a gradient descent with other terms (e.g.
-#' momentum) to produce the final update.
+#' momentum) to produce the final update. Set by calling a configuration
+#' function:
+#' \itemize{
+#'  \item \code{step_momentum()} Step momentum schedule. Used in the t-SNE paper.
+#'  \item \code{linear_momentum()} Linear momentum schedule.
+#'  \item \code{nesterov_nsc_momentum()} Nesterov momentum for non-strongly
+#'  convex problems. Use when the \code{gradient} method is
+#'  \code{nesterov_gradient}.
+#'  \item \code{no_momentum()} Don't use a momentum term, optimization will
+#'  only use gradient descent to update the solution. The default setting.
+#' }
 #' @param normalize_grads If \code{TRUE} the gradient matrix is normalized to
 #' a length of one.
 #' @param mat_name Name of the matrix in the output list \code{out} which
 #' contains the embedded coordinates.
 #' @param recenter If \code{TRUE}, recenter the coordinates after each
 #' optimization step.
-make_opt <- function(grad_pos_fn = classical_grad_pos,
-                     direction = steepest_descent(), step_size = bold_driver(),
-                     update = no_momentum(), normalize_grads = TRUE,
-                     mat_name = "ym", recenter = TRUE) {
+#' @return Optimizer.
+#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' an embedding, and \code{\link{tsne_opt}} and \code{\link{bold_nag_opt}} for
+#' some convenience functions that choose a set of defaults for you.
+#' @examples
+#' # Steepest descent with Jacobs adaptive step size and step momentum, as
+#' # used in the t-SNE paper.
+#' make_opt(step_size = jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
+#'                             min_step_size = 0.1),
+#'          update = step_momentum(initial_momentum = 0.5, final_momentum = 0.8,
+#'                                 switch_iter = 250),
+#'          normalize_grads = FALSE)
+#'
+#' # Use bold driver adaptive step size (1% step size increase, 25% decrease)
+#' # with step momentum and normalizing gradients.
+#' make_opt(step_size = bold_driver(inc_mult = 1.01, dec_mult = 0.75),
+#'          update = step_momentum(initial_momentum = 0.5, final_momentum = 0.8,
+#'                                 switch_iter = 250),
+#'          normalize_grads = TRUE)
+#'
+#' # Nesterov Accelerated Gradient optimizer with bold driver adaptive step size
+#' make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
+#'          update = nesterov_nsc_momentum())
+#'
+#' # Should be passed to the opt argument of an embedding function:
+#' \dontrun{
+#'  embed_sim(opt = make_opt(gradient = nesterov_gradient(),
+#'                           step_size = bold_driver(),
+#'                           update = nesterov_nsc_momentum()), ...)
+#' }
+make_opt <- function(gradient = classical_gradient(),
+                     direction = steepest_descent(),
+                     step_size = bold_driver(),
+                     update = no_momentum(),
+                     normalize_grads = TRUE, recenter = TRUE,
+                     mat_name = "ym") {
   opt <- list()
 
   opt$mat_name <- mat_name
   opt$normalize_grads <- normalize_grads
 
-  opt$grad_pos_fn <- grad_pos_fn
+  opt$grad_pos_fn <- gradient
   opt$direction_method <- direction
   opt$step_size_method <- step_size
   opt$update_method <- update
@@ -110,28 +169,48 @@ make_opt <- function(grad_pos_fn = classical_grad_pos,
 }
 
 #' t-SNE optimizer.
+#'
+#' Convenience factory function which sets the optimizer parameters to that
+#' from the t-SNE paper.
+#'
 #' @return optimizer with parameters from the t-SNE paper.
+#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' an embedding, and \code{\link{make_opt}} for a more generic function.
+#' @examples
+#' # Should be passed to the opt argument of an embedding function:
+#' \dontrun{
+#'  embed_sim(opt = tsne_opt(), ...)
+#' }
 tsne_opt <- function() {
-  make_opt(grad_pos_fn = classical_grad_pos,
-           direction = steepest_descent(), step_size = tsne_jacobs(),
-           update = step_momentum(), normalize_grads = FALSE,
-           mat_name = "ym", recenter = TRUE)
+  make_opt(gradient = classical_gradient(),
+           direction = steepest_descent(),
+           step_size = tsne_jacobs(),
+           update = step_momentum(),
+           normalize_grads = FALSE, recenter = TRUE,
+           mat_name = "ym")
 }
 
 #' Nesterov Accelerated Gradient optimizer with bold driver
 #'
-#' Convenience factory function which makes a very performant optimizer. Bonus:
-#' no parameters to fiddle with. Mixes the NAG descent method and momentum
-#' for non-strongly convex problems formulated by Sutkever et al., along with
-#' the bold driver method for step size.
+#' Convenience factory function which makes a very performant optimizer. Mixes
+#' the NAG descent method and momentum for non-strongly convex problems
+#' formulated by Sutkever et al., along with the bold driver method for step
+#' size.
 #'
 #' @return Optimizer with NAG parameters and bold driver step size.
+#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' an embedding, and \code{\link{make_opt}} for a more generic function.
+#' @examples
+#' # Should be passed to the opt argument of an embedding function:
+#' \dontrun{
+#'  embed_sim(opt = bold_nag_opt(), ...)
+#' }
 bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
                          initial_step_size = 1) {
-  make_opt(grad_pos_fn = nesterov_grad_pos,
+  make_opt(gradient = nesterov_gradient(),
            step_size = bold_driver(min_step_size = min_step_size,
                                    initial_step_size = initial_step_size),
-            update = nesterov_nsc_momentum())
+           update = nesterov_nsc_momentum())
 }
 
 #' Create callback to be invoked after the solution is updated.
@@ -313,10 +392,27 @@ nesterov_grad_pos <- function(opt, inp, out, method) {
   gradient(inp, new_out, method, opt$mat_name)
 }
 
-
-#' Bold Driver step size.
+#' Nesterov Accelerated Gradient.
 #'
-#' This function creates the 'Bold Driver' method for step size selection.
+#' Configuration function for optimizer gradient calculation.
+#'
+#' @return NAG calculation method.
+nesterov_gradient <- function() {
+  nesterov_grad_pos
+}
+
+#' Classical Gradient.
+#'
+#' Configuration function for optimizer gradient calculation.
+#'
+#' @return Classical gradient calculation method.
+classical_gradient <- function() {
+  classical_grad_pos
+}
+
+#' Bold driver step size.
+#'
+#' This function configures the 'Bold Driver' method for step size selection.
 #' If the costdecreases after an optimization step occurs, then the step
 #' size will be increased (normally by a conservative amount). If the cost
 #' increases, then the step size is decreased (normally by a more drastic

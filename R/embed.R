@@ -16,8 +16,9 @@
 #' result of \code{make_init_inp}.
 #' @param init_out Output initialization callback. Create by assigning the
 #' result of \code{make_init_out}.
-#' @param method Embedding method. Assign result of calling one of the following
-#' functions: \itemize{
+#' @param method Embedding method. Set by calling a configuration
+#' function:
+#' \itemize{
 #'  \item \code{tsne()} t-Distributed Stochastic Neighbor Embedding.
 #'  \item \code{ssne()} Symmetric Stochastic Neighbor Embedding.
 #'  \item \code{asne()} Asymmetric Stochastic Neighbor Embedding.
@@ -128,7 +129,7 @@
 #'  preprocess = make_preprocess(auto_scale = TRUE),
 #'  init_inp = make_init_inp(perplexity = 50),
 #'  init_out = make_init_out(from_PCA = TRUE),
-#'  opt = make_opt( grad_pos_fn = nesterov_grad_pos, step_size = bold_driver(),
+#'  opt = make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
 #'   update = nesterov_nsc_momentum()),
 #'   epoch = make_epoch(plot_fn = make_plot(s1k, "Label")))
 #'
