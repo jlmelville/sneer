@@ -5,10 +5,13 @@
 #' Creates a callback for use in the embedding routine. Preprocessing will be
 #' applied to the input coordinates (if provided) before embedding-specific
 #' input initialization occurs (e.g. calculation of distances and
-#' probabilities). A variety of common preprocessing options are available.
-#' The range scaling and auto scaling options are mutually exclusive, but can
-#' be combined with whitening if required. No preprocessing will be carried
-#' out if the input data is already a distance matrix.
+#' probabilities).
+#'
+#' Pass the result of this factory function to the preprocess argument of an
+#' embedding function, e.g. \code{embed_sim}. A variety of common preprocessing
+#' options are available. The range scaling and auto scaling options are
+#' mutually exclusive, but can be combined with whitening if required. No
+#' preprocessing will be carried out if the input data is a distance matrix.
 #'
 #' @param range_scale_matrix If \code{TRUE}, input coordinates will be scaled
 #' so that elements are between (\code{rmin}, \code{rmax}).
@@ -30,10 +33,30 @@
 #' @param verbose If \code{TRUE}, log information about preprocessing.
 #' @return Function with signature \code{fn(xm)} where \code{xm} is the input
 #' coordinate matrix. Function returns the coordinate matrix after applying
-#' the specificed preprocessing.
+#' the specified preprocessing.
+#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' an embedding.
+#' @examples
+#' # Scale the input data so the smallest element is 0, and the largest is 1.
+#' make_preprocess(range_scale_matrix = TRUE)
+#' # Scale the input data so the smallest element in each column is -1, and
+#' # the largest is 1.
+#' make_preprocess(range_scale = TRUE, rmin = -1)
+#' # Autoscale each column in the input data, to mean 0 and the sd 1.
+#' make_preprocess(auto_scale = TRUE)
+#' # Whiten the data after range scaling the matrix.
+#' make_preprocess(range_scale_matrix = TRUE, whiten = TRUE)
+#' # Whiten the data using 10 components.
+#' make_preprocess(range_scale_matrix = TRUE, whiten = TRUE, whiten_dims = 10)
+#' # Whiten the data with the ZCA technique, using 10 components.
+#' make_preprocess(range_scale_matrix = TRUE, zwhiten = TRUE, whiten_dims = 10)
+#' # Should be passed to the preprocess argument of an embedding function:
+#' \dontrun{
+#'  embed_sim(preprocess = make_preprocess(range_scale = TRUE, rmin = -1), ...)
+#' }
 make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
                             rmin = 0, rmax = 1, auto_scale = FALSE,
-                            whiten = FALSE, zwhiten = FALSE, initial_dims = 30,
+                            whiten = FALSE, zwhiten = FALSE, whiten_dims = 30,
                             preprocess_fn = NULL, verbose = TRUE) {
   preprocess <- list()
 
@@ -77,21 +100,21 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
 
   if (whiten) {
     preprocess$whiten <- function(xm) {
-      initial_dims <- min(initial_dims, ncol(xm))
+      whiten_dims <- min(whiten_dims, ncol(xm))
       if (verbose) {
-        message("PCA whitening with ", initial_dims, " components")
+        message("PCA whitening with ", whiten_dims, " components")
       }
-      whiten(xm, ncomp = initial_dims)
+      whiten(xm, ncomp = whiten_dims)
     }
   }
 
   if (zwhiten) {
     preprocess$zwhiten <- function(xm) {
-      initial_dims <- min(initial_dims, ncol(xm))
+      whiten_dims <- min(whiten_dims, ncol(xm))
       if (verbose) {
-        message("ZCA Whitening with ", initial_dims, " components")
+        message("ZCA Whitening with ", whiten_dims, " components")
       }
-      whiten(xm, ncomp = initial_dims, zca = TRUE)
+      whiten(xm, ncomp = whiten_dims, zca = TRUE)
     }
   }
 
