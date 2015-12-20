@@ -10,8 +10,8 @@
 #' @param xm A matrix or data frame to embed.
 #' @param mat_name Name of the matrix in the output data list that will contain
 #' the embedded coordinates.
-#' @param Input data preprocess callback. Create by assigning the result of
-#' \code{make_preprocess}.
+#' @param preprocess Input data preprocess callback. Create by assigning the
+#' result of \code{make_preprocess}.
 #' @param init_inp Input initialization callback. Create by assigning the
 #' result of \code{make_init_inp}.
 #' @param init_out Output initialization callback. Create by assigning the
@@ -74,8 +74,15 @@
 #'  function is called.
 #'  \item \code{iter} The iteration at which the epoch is evaluated.
 #' }
-#' @examples
+#' @seealso
+#' \code{\link{make_preprocess}} for configuring \code{preprocess},
+#' \code{\link{make_init_inp}} for configuring \code{init_inp},
+#' \code{\link{make_init_out}} for configuring \code{init_out},
+#' \code{\link{make_opt}} for configuring \code{opt},
+#' \code{\link{make_tricks}} for configuring \code{tricks},
+#' \code{\link{make_epoch}} for configuring \code{epoch}.
 #'
+#' @examples
 #' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
 #' # except initialize from PCA so output is repeatable.
 #' # plot 2D result during embedding with convenience function for iris plot.
@@ -225,6 +232,13 @@ embed_sim <- function(xm,
 #'  function is called.
 #'  \item \code{iter} The iteration at which the epoch is evaluated.
 #' }
+#' @seealso
+#' \code{\link{make_preprocess}} for configuring \code{preprocess},
+#' \code{\link{make_init_inp}} for configuring \code{init_inp},
+#' \code{\link{make_init_out}} for configuring \code{init_out},
+#' \code{\link{make_opt}} for configuring \code{opt},
+#' \code{\link{make_tricks}} for configuring \code{tricks},
+#' \code{\link{make_epoch}} for configuring \code{epoch}.
 embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
                   tricks = NULL, epoch = NULL, preprocess = NULL, export = NULL,
                   after_embed = NULL) {
