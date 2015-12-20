@@ -39,17 +39,23 @@
 #' @examples
 #' # Scale the input data so the smallest element is 0, and the largest is 1.
 #' make_preprocess(range_scale_matrix = TRUE)
+#'
 #' # Scale the input data so the smallest element in each column is -1, and
 #' # the largest is 1.
 #' make_preprocess(range_scale = TRUE, rmin = -1)
+#'
 #' # Autoscale each column in the input data, to mean 0 and the sd 1.
 #' make_preprocess(auto_scale = TRUE)
+#'
 #' # Whiten the data after range scaling the matrix.
 #' make_preprocess(range_scale_matrix = TRUE, whiten = TRUE)
+#'
 #' # Whiten the data using 10 components.
 #' make_preprocess(range_scale_matrix = TRUE, whiten = TRUE, whiten_dims = 10)
+#'
 #' # Whiten the data with the ZCA technique, using 10 components.
 #' make_preprocess(range_scale_matrix = TRUE, zwhiten = TRUE, whiten_dims = 10)
+#'
 #' # Should be passed to the preprocess argument of an embedding function:
 #' \dontrun{
 #'  embed_sim(preprocess = make_preprocess(range_scale = TRUE, rmin = -1), ...)

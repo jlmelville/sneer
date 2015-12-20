@@ -90,7 +90,7 @@
 #' tsne_iris <- embed_sim(iris[, 1:4], opt = tsne_opt(),
 #'                init_inp = make_init_inp(perplexity = 25),
 #'                tricks = tsne_tricks(),
-#'                epoch = make_epoch(plot_func = make_iris_plot()))
+#'                epoch = make_epoch(plot_fn = make_iris_plot()))
 #'
 #' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
 #' # and initialize from random. Use generic plot function, displaying the first
@@ -103,7 +103,7 @@
 #'                init_out = make_init_out(stdev = 1e-4)
 #'                tricks = tsne_tricks(),
 #'                epoch = make_epoch(
-#'                  plot_func = make_plot(iris, "Species", make_label_fn(2))))
+#'                  plot_fn = make_plot(iris, "Species", make_label(2))))
 #'
 #' # Use the SSNE method, and preprocess input data by range scaling. t-SNE
 #' # tricks and optimization are reasonable defaults for other similarity
@@ -116,7 +116,7 @@
 #'                init_out = make_init_out(stdev = 1e-4)
 #'                tricks = tsne_tricks(),
 #'                epoch = make_epoch(
-#'                  plot_func = make_plot(iris, "Species", make_label_fn(2))))
+#'                  plot_fn = make_plot(iris, "Species", make_label(2))))
 #'
 #' # ASNE method on the s1k dataset (10 overlapping 9D Gaussian blobs),
 #' # Set perplexity for input initialization to 50, initialize with PCA scores,
@@ -130,7 +130,7 @@
 #'  init_out = make_init_out(from_PCA = TRUE),
 #'  opt = make_opt( grad_pos_fn = nesterov_grad_pos, step_size = bold_driver(),
 #'   update = nesterov_nsc_momentum()),
-#'   epoch = make_epoch(plot_func = make_plot(s1k, "Label")))
+#'   epoch = make_epoch(plot_fn = make_plot(s1k, "Label")))
 #'
 #' # Same as above, but using convenience method to create optimizer with less
 #' # typing
@@ -139,7 +139,7 @@
 #'  init_inp = make_init_inp(perplexity = 50),
 #'  init_out = make_init_out(from_PCA = TRUE),
 #'  opt = bold_nag_opt(),
-#'  epoch = make_epoch(plot_func = make_plot(s1k, "Label")))
+#'  epoch = make_epoch(plot_fn = make_plot(s1k, "Label")))
 embed_sim <- function(xm,
                       mat_name = "ym",
                       preprocess = make_preprocess(verbose = verbose),

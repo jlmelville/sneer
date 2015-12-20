@@ -48,8 +48,10 @@
 #' # Initialize from PCA scores matrix (normally a decent starting point and
 #' # reproducible)
 #' make_init_out(from_PCA = TRUE)
+#'
 #' # Initialize from random small distances (used in t-SNE paper)
 #' make_init_out(stdev = 1e-4)
+#'
 #' # Should be passed to the init_out argument of an embedding function:
 #' \dontrun{
 #'  embed_sim(init_out = make_init_out(from_PCA = TRUE), ...)

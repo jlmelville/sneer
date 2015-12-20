@@ -40,12 +40,15 @@
 #' @examples
 #' # Set target perplexity of each probability distribution to 30
 #' make_init_inp(perplexity = 30)
+#'
 #' # Set target perplexity of each probability distribution to 30 but use
 #' # a different weighting function.
 #' make_init_inp(perplexity = 30, input_weight_fn = sqrt_exp_weight)
+#'
 #' # Perplexity of 50, and keep the values of the exponential parameter for
 #' # later processing or reporting.
 #' make_init_inp(perplexity = 50, keep_all_result = TRUE)
+#'
 #' # Should be passed to the init_inp argument of an embedding function:
 #' \dontrun{
 #'  embed_sim(init_inp = make_init_inp(perplexity = 30,

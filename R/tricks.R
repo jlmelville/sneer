@@ -34,6 +34,7 @@
 #' # Use early exaggeration as described in the t-SNE paper
 #' make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
 #'             exaggeration_off_iter = 50)
+#'
 #' # Should be passed to the tricks argument of an embedding function:
 #' \dontrun{
 #'  embed_sim(tricks = make_tricks(early_exaggeration = TRUE,

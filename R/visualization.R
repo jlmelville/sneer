@@ -10,7 +10,7 @@
 #' for each data point.
 #' @return a function which can be passed to the \code{label_fn} parameter
 #' of the \code{make_plot} function.
-make_label_fn <- function(num_label_chars = 1) {
+make_label <- function(num_label_chars = 1) {
   partial(substr, start = 0, stop = num_label_chars)
 }
 
@@ -30,6 +30,24 @@ make_label_fn <- function(num_label_chars = 1) {
 #' output list \code{out} which will be passed to the plot function.
 #' @return Function which will take an output list, and produce a 2D plot of
 #' the embedding.
+#' @seealso \code{\link{make_epoch}} for how to use this function for
+#' configuring visualization of the progress of an embedding, and
+#' \code{\link{make_iris_plot}} for a helper function when using the iris
+#' dataset that involves less typing.
+#' @examples
+#' # For s1k dataset, plot 2D embedding with "Label" factor to identify each
+#' # point on the plot
+#' make_plot(s1k, "Label")
+#'
+#' # For iris dataset, plot 2D embedding with first two characters of the
+#' # "Species" factor to identify each point on the plot
+#' make_plot(iris, "Species", make_label(2)))
+#'
+#' # Should be passed to the plot_fn argument of the epoch factory function:
+#' \dontrun{
+#'  embed_sim(epoch = make_epoch(epoch_every = 100, calc_stress = TRUE,
+#'                               plot_fn = make_plot(iris, "Species")), ...)
+#' }
 make_plot <- function(x, attr_name,
                       label_fn = function(labels) {
                         labels
@@ -53,5 +71,5 @@ make_plot <- function(x, attr_name,
 #' for each data point.
 #' @return Function for plotting the embedded iris data set.
 make_iris_plot <- function(num_label_chars = 1) {
-  make_plot(iris, "Species", make_label_fn(num_label_chars))
+  make_plot(iris, "Species", make_label(num_label_chars))
 }

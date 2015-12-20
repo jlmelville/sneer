@@ -42,7 +42,7 @@
 #' @param reltol If the relative tolerance of the cost function between
 #' invocations of the epoch function falls below this value, the optimization
 #' process if halted.
-#' @param plot_func Function for plotting embedding. Signature should be
+#' @param plot_fn Function for plotting embedding. Signature should be
 #' \code{plot_fn(out)} where \code{out} is the output data list. Return value
 #' of this function is ignored.
 #' @param calc_stress If \code{TRUE}, the cost calculated by the cost function
@@ -54,8 +54,36 @@
 #' will be logged to screen. If set to false, you will have to export the
 #' epoch result from the embedding routine to access any of the information.
 #' @return Epoch callback used by the embedding routine.
+#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' an embedding, and \code{\link{make_plot}} for 2D plot generation.
+#' @examples
+#' # Epoch calculation every 100 steps of optimization, log cost and also the
+#' # stress (scaled cost)
+#' make_epoch(epoch_every = 100, calc_stress = TRUE)
+#'
+#' # Stop optimization early if relative tolerance of costs falls below 0.001
+#' make_epoch(epoch_every = 100, reltol = 0.001)
+#'
+#' # For s1k dataset, plot 2D embedding at every epoch, with "Label" factor
+#' # to identify each point on the plot
+#' make_epoch(epoch_every = 100, plot_fn = make_plot(s1k, "Label"))
+#'
+#' # For iris dataset, plot 2D embedding at every epoch, with first two
+#' # characters of the "Species" factor to identify each point on the plot
+#' make_epoch(epoch_every = 100,
+#'            plot_fn = make_plot(iris, "Species", make_label(2)))
+#'
+#' # Keep all costs calculated during epochs, can be exported from the embedding
+#' # routine and plotted or otherwise used.
+#' make_epoch(epoch_every = 100, keep_costs = TRUE)
+#'
+#' # Should be passed to the epoch argument of an embedding function:
+#' \dontrun{
+#'  embed_sim(epoch = make_epoch(epoch_every = 100, calc_stress = TRUE,
+#'                               plot_fn = make_plot(iris, "Species")), ...)
+#' }
 make_epoch <- function(epoch_every = 100, min_cost = 0,
-                       reltol = sqrt(.Machine$double.eps), plot_func = NULL,
+                       reltol = sqrt(.Machine$double.eps), plot_fn = NULL,
                        calc_stress = TRUE, keep_costs = FALSE,
                        verbose = TRUE) {
   epoch <- list()
@@ -108,9 +136,9 @@ make_epoch <- function(epoch_every = 100, min_cost = 0,
     result
   }
 
-  if (!is.null(plot_func)) {
+  if (!is.null(plot_fn)) {
     epoch$plot_embedding <- function(iter, inp, out, method, result) {
-      plot_func(out)
+      plot_fn(out)
       result
     }
   }
