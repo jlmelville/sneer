@@ -82,7 +82,7 @@ make_init_out <- function(k = 2, initial_config = NULL, stdev = 1e-04,
     }
   } else {
     init_out$from_random <- function(inp, out) {
-      n <- nrow(inp$xm)
+      n <- nrow(inp$dm)
       out[[mat_name]] <- random_matrix(n, ncol = k, sd = stdev)
       out
     }
