@@ -1,5 +1,17 @@
 # Miscellaneous small functions.
 
+#' Partially apply a function.
+#'
+#' @param f Function to partially apply.
+#' @param ... params of \code{f} to apply.
+#' @return Partially applied version of \code{f}.
+partial <- function(f, ...) {
+  args <- list(...)
+  function(...) {
+    do.call(f, c(args, list(...)))
+  }
+}
+
 #' Clamp numerical values.
 #'
 #' Values are truncated so that they lie within (\code{min_val, max_val}). In
