@@ -27,6 +27,19 @@
 #' @param exaggeration_off_iter Iteration step to turn exaggeration off.
 #' @param verbose If \code{TRUE} log messages about trick application.
 #' @return Tricks callback.
+#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' an embedding, and \code{\link{tsne_tricks}} for a convenience function that
+#' supplies the parameters used in the t-SNE paper.
+#' @examples
+#' # Use early exaggeration as described in the t-SNE paper
+#' make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
+#'             exaggeration_off_iter = 50)
+#' # Should be passed to the tricks argument of an embedding function:
+#' \dontrun{
+#'  embed_sim(tricks = make_tricks(early_exaggeration = TRUE,
+#'                                 P_exaggeration = 4,
+#'                                 exaggeration_off_iter = 50), ...)
+#' }
 make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
                         exaggeration_off_iter = 50, verbose = TRUE) {
   tricks <- list()
@@ -69,7 +82,16 @@ make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
 
 #' Tricks from t-SNE paper.
 #'
+#' @param verbose If \code{TRUE} print message about tricks during the
+#' embedding.
 #' @return tricks callback parameterized to behave like the t-SNE paper.
+#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' an embedding, and \code{\link{make_tricks}} for a more generic function.
+#' @examples
+#' # Should be passed to the tricks argument of an embedding function:
+#' \dontrun{
+#'  embed_sim(tricks = tsne_tricks(), ...)
+#' }
 tsne_tricks <- function(verbose = TRUE) {
   make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
               exaggeration_off_iter = 50, verbose = verbose)
