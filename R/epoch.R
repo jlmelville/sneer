@@ -28,13 +28,13 @@
 #'  present if \code{calc_stress} was \code{TRUE}.
 #'  \item \code{costs} Matrix of all costs calculated for all invocations of
 #'  the epoch callback and the value of \code{iter} the epochs were invoked at.
-#'  Only present if \code{save_costs} was \code{TRUE}.
+#'  Only present if \code{keep_costs} was \code{TRUE}.
 #' }
 #'
 #' The result list is reused on each invocation of the callback so that the cost
 #' from the previous epoch can be compared with that of the current epoch,
 #' allowing for relative convergence early stopping, and appending of costs
-#' if \code{save_costs} is \code{TRUE}.
+#' if \code{keep_costs} is \code{TRUE}.
 #'
 #' @param epoch_every Number of steps between callback invocations.
 #' @param min_cost If the cost function used by the embedding falls below this
@@ -47,7 +47,7 @@
 #' of this function is ignored.
 #' @param calc_stress If \code{TRUE}, the cost calculated by the cost function
 #' will be converted to a stress and both values logged.
-#' @param save_costs If \code{TRUE}, all costs (and the iteration number at
+#' @param keep_costs If \code{TRUE}, all costs (and the iteration number at
 #' which they were calculated) will be stored on result list returned by the
 #' epoch callback. This can be exported by the embedding algorithm.
 #' @param verbose If \code{TRUE}, epoch callback results such as cost values
@@ -56,7 +56,7 @@
 #' @return Epoch callback used by the embedding routine.
 make_epoch <- function(epoch_every = 100, min_cost = 0,
                        reltol = sqrt(.Machine$double.eps), plot_func = NULL,
-                       calc_stress = TRUE, save_costs = FALSE,
+                       calc_stress = TRUE, keep_costs = FALSE,
                        verbose = TRUE) {
   epoch <- list()
 
@@ -96,7 +96,7 @@ make_epoch <- function(epoch_every = 100, min_cost = 0,
     }
 
     result$cost <- cost
-    if (save_costs) {
+    if (keep_costs) {
       result$costs <- rbind(result$costs, matrix(c(iter, cost), nrow = 1))
       colnames(result$costs) <- c("iter", "cost")
     }
