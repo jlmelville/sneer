@@ -79,9 +79,11 @@
 #' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
 #' # except initialize from PCA so output is repeatable.
 #' # plot 2D result during embedding with convenience function for iris plot.
-#' # Default method is tsne
-#' tsne_iris <- embed_sim(iris[, 1:4], opt = tsne_opt(), tricks = tsne_tricks(),
-#'                        epoch = make_epoch(plot_func = make_iris_plot()))
+#' # Default method is tsne. Set perplexity to 25.
+#' tsne_iris <- embed_sim(iris[, 1:4], opt = tsne_opt(),
+#'                init_inp = make_init_inp(perplexity = 25),
+#'                tricks = tsne_tricks(),
+#'                epoch = make_epoch(plot_func = make_iris_plot()))
 #'
 #' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
 #' # and initialize from random. Use generic plot function, displaying the first
@@ -90,6 +92,7 @@
 #' tsne_iris <- embed_sim(iris[, 1:4],
 #'                method = tsne(),
 #'                opt = tsne_opt(),
+#'                init_inp = make_init_inp(perplexity = 25),
 #'                init_out = make_init_out(stdev = 1e-4)
 #'                tricks = tsne_tricks(),
 #'                epoch = make_epoch(
@@ -101,6 +104,7 @@
 #' ssne_iris <- embed_sim(iris[, 1:4],
 #'                method = ssne(),
 #'                opt = tsne_opt(),
+#'                init_inp = make_init_inp(perplexity = 25),
 #'                preprocess = make_preprocess(range_scale_matrix = TRUE)
 #'                init_out = make_init_out(stdev = 1e-4)
 #'                tricks = tsne_tricks(),
@@ -108,12 +112,14 @@
 #'                  plot_func = make_plot(iris, "Species", make_label_fn(2))))
 #'
 #' # ASNE method on the s1k dataset (10 overlapping 9D Gaussian blobs),
-#' # initialize with PCA scores, preprocess by autoscaling columns, optimize
+#' # Set perplexity for input initialization to 50, initialize with PCA scores,
+#' # preprocess by autoscaling columns, optimize
 #' # with Nesterov Accelrated Gradient and bold driver step size
 #' # (highly recommended as an optimizer). Labels for s1k are one digit, so
 #' # can use simplified plot function.
 #' asne_s1k <- embed_sim(s1k[, 1:9], method = asne(),
 #'  preprocess = make_preprocess(auto_scale = TRUE),
+#'  init_inp = make_init_inp(perplexity = 50),
 #'  init_out = make_init_out(from_PCA = TRUE),
 #'  opt = make_opt( grad_pos_fn = nesterov_grad_pos, step_size = bold_driver(),
 #'   update = nesterov_nsc_momentum()),
@@ -123,6 +129,7 @@
 #' # typing
 #' asne_s1k <- embed_sim(s1k[, 1:9], method = asne(),
 #'  preprocess = make_preprocess(auto_scale = TRUE),
+#'  init_inp = make_init_inp(perplexity = 50),
 #'  init_out = make_init_out(from_PCA = TRUE),
 #'  opt = bold_nag_opt(),
 #'  epoch = make_epoch(plot_func = make_plot(s1k, "Label")))
