@@ -28,6 +28,8 @@
 #' @param from_PCA If \code{TRUE}, then the first \code{k} scores of the PCA
 #' of the input coordinates are used to initialize the embedded coordinates.
 #' Input coordinates are centered but not scaled before the PCA is carried out.
+#' This option can only be used if the input data is in the form of coordinates,
+#' and not a distance matrix.
 #' @param from_input_name Name of a matrix in the input data list \code{inp}
 #' which contains suitable initialization data. Must be a matrix with the same
 #' dimensions as the desired output coordinates.
@@ -49,20 +51,29 @@ make_init_out <- function(k = 2, initial_config = NULL, stdev = 1e-04,
 
   if (!is.null(initial_config) && is.matrix(initial_config)) {
     init_out$from_data <- function(inp, out) {
-      n <- nrow(inp$xm)
+      n <- nrow(inp$dm)
       if (nrow(initial_config) != n | ncol(initial_config) != k) {
-        stop("initial_config does not match necessary configuration for xm")
+        stop("initial_config does not match necessary configuration for ym")
       }
       out[[mat_name]] <- initial_config
       out
     }
   } else if (from_PCA) {
     init_out$from_PCA <- function(inp, out) {
+      if (is.null(inp$xm)) {
+        stop("PCA initialization is only possible with input coordinates")
+      }
       out[[mat_name]] <- scores_matrix(inp$xm, ncol = k, verbose = verbose)
       out
     }
   } else if (!is.null(from_input_name)) {
     init_out$from_input <- function(inp, out) {
+      n <- nrow(inp$dm)
+      initial_config <- inp[[from_input_name]]
+      if (nrow(initial_config) != n | ncol(initial_config) != k) {
+        stop("inp$", from_input_name, " does not match necessary configuration",
+             " for ym")
+      }
       if (verbose) {
         message("Initializing out$", mat_name, " from inp$", from_input_name)
       }

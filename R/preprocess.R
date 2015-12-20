@@ -1,13 +1,14 @@
 # Preprocessing functions for the input data.
 
-#' Create a preprocessing function.
+#' Create preprocessing callback
 #'
 #' Creates a callback for use in the embedding routine. Preprocessing will be
-#' applied to the input data before embedding-specific input initialization
-#' occurs (e.g. calculation of distances and probabilities). A variety of common
-#' preprocessing options are available. The range scaling and auto scaling
-#' options are mutually exclusive, but can be combined with whitening if
-#' required.
+#' applied to the input coordinates (if provided) before embedding-specific
+#' input initialization occurs (e.g. calculation of distances and
+#' probabilities). A variety of common preprocessing options are available.
+#' The range scaling and auto scaling options are mutually exclusive, but can
+#' be combined with whitening if required. No preprocessing will be carried
+#' out if the input data is already a distance matrix.
 #'
 #' @param range_scale_matrix If \code{TRUE}, input coordinates will be scaled
 #' so that elements are between (\code{rmin}, \code{rmax}).
@@ -104,8 +105,8 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
       for (name in names(preprocess)) {
         xm <- preprocess[[name]](xm)
       }
-      xm
     }
+    xm
   }
 }
 
