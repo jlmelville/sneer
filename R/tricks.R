@@ -66,3 +66,11 @@ make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
     list(inp = inp, out = out, method = method, opt = opt)
   }
 }
+
+#' Tricks from t-SNE paper.
+#'
+#' @return tricks callback parameterized to behave like the t-SNE paper.
+tsne_tricks <- function(verbose = TRUE) {
+  make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
+              exaggeration_off_iter = 50, verbose = verbose)
+}

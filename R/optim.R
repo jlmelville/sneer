@@ -109,6 +109,31 @@ make_opt <- function(grad_pos_fn = classical_grad_pos,
   opt
 }
 
+#' t-SNE optimizer.
+#' @return optimizer with parameters from the t-SNE paper.
+tsne_opt <- function() {
+  make_opt(grad_pos_fn = classical_grad_pos,
+           direction = steepest_descent(), step_size = tsne_jacobs(),
+           update = step_momentum(), normalize_grads = FALSE,
+           mat_name = "ym", recenter = TRUE)
+}
+
+#' Nesterov Accelerated Gradient optimizer with bold driver
+#'
+#' Convenience factory function which makes a very performant optimizer. Bonus:
+#' no parameters to fiddle with. Mixes the NAG descent method and momentum
+#' for non-strongly convex problems formulated by Sutkever et al., along with
+#' the bold driver method for step size.
+#'
+#' @return Optimizer with NAG parameters and bold driver step size.
+bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
+                         initial_step_size = 1) {
+  make_opt(grad_pos_fn = nesterov_grad_pos,
+           step_size = bold_driver(min_step_size = min_step_size,
+                                   initial_step_size = initial_step_size),
+            update = nesterov_nsc_momentum())
+}
+
 #' Create callback to be invoked after the solution is updated.
 #'
 #' The direction, step size and update methods of the optimizer may all have
