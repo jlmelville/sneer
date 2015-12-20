@@ -1,11 +1,53 @@
-# optim.R
-############################# optimization Routines ###
+# Optimization routines. Entirely home grown (and hence slow), without relying
+# on anything in e.g. the \code{optim} routines. But it does allow for a large
+# degree of flexibility.
 
+#' Create optimizer.
+#'
+#' Function to create an optimization method. The optimizer consists of
+#' \itemize{
+#'  \item A method to calculate the gradient at a certain position.
+#'  \item A method to calculate the direction to move in from the gradient
+#'  position.
+#'  \item A method to calculate the size of the step to move.
+#'  \item A method to calculate the update of the solution, consisting of the
+#'  gradient descent (as calculated by the previous three functions) and any
+#'  extra modifiers, normally a momentum term based on the previous solution
+#'  step.
+#' }
+#'
+#' Normalizing the gradients (by setting \code{normalize_grads} to
+#' \code{TRUE}) will scale the gradient matrix to length 1 before the
+#' optimization step. This has the effect of making the size of the gradient
+#' descent dependent only on the step size, rather than the product of the
+#' step size and the size of the gradient. This can increase the stability of
+#' step size methods like Bold Driver and the Jacobs method which iteratively
+#' update the step size based on previous values rather than doing a search,
+#' or with methods where the gradients can get extremely large (e.g. in
+#' traditional distance-based embeddings like MDS and Sammon mapping which
+#' involve dividing by potentially very small distances).
+#'
+#' The optimizer can validate the proposed solution, rejecting it
+#' if the solution is not acceptable of the methods it is comprised of. It also
+#' control updating the internal state of the methods (e.g. step size and
+#' momentum).
+#'
+#' @param grad_pos_fn Method to calculate the gradient at a solution
+#' position.
+#' @param direction Method to calculate the direction to move.
+#' @param step_size Method to calculate the step size of the direction.
+#' @param update Method to combine a gradient descent with other terms (e.g.
+#' momentum) to produce the final update.
+#' @param normalize_grads If \code{TRUE} the gradient matrix is normalized to
+#' a length of one.
+#' @param mat_name Name of the matrix in the output list \code{out} which
+#' contains the embedded coordinates.
+#' @param recenter If \code{TRUE}, recenter the coordinates after each
+#' optimization step.
 make_opt <- function(grad_pos_fn = classical_grad_pos,
                      direction = steepest_descent(), step_size = bold_driver(),
                      update = no_momentum(), normalize_grads = TRUE,
-                     mat_name = "ym", recenter = TRUE,
-                     verbose = TRUE) {
+                     mat_name = "ym", recenter = TRUE) {
   opt <- list()
 
   opt$mat_name <- mat_name
@@ -32,8 +74,7 @@ make_opt <- function(grad_pos_fn = classical_grad_pos,
   opt$after_step <- make_after_step(direction_after_step_fn = da_fn,
                                     step_size_after_step_fn = sa_fn,
                                     update_after_step_fn = ua_fn,
-                                    recenter = recenter,
-                                    verbose = verbose)
+                                    recenter = recenter)
 
   dv_fn <- NULL
   if (!is.null(direction$validate)) {
@@ -49,8 +90,7 @@ make_opt <- function(grad_pos_fn = classical_grad_pos,
   }
   opt$validate <- make_validate_solution(direction_validation_fn = dv_fn,
                                          step_size_validation_fn = sv_fn,
-                                         update_validation_fn = uv_fn,
-                                         verbose = verbose)
+                                         update_validation_fn = uv_fn)
 
   opt$init <- function(opt, inp, out, method) {
     if (!is.null(opt$direction_method$init)) {
@@ -69,78 +109,28 @@ make_opt <- function(grad_pos_fn = classical_grad_pos,
   opt
 }
 
-
-optimize_step <- function(opt, method, inp, out, iter) {
-  if (iter == 0) {
-    opt <- opt$init(opt, inp, out, method)
-  }
-
-  grad_result <- opt$grad_pos_fn(opt, inp, out, method)
-
-  if (any(is.nan(grad_result$gm))) {
-    stop("NaN in grad. descent at iter ", iter)
-  }
-  opt$gm <- grad_result$gm
-
-  if (opt$normalize_grads) {
-    opt$gm <- normalize(opt$gm)
-  }
-
-  direction_result <-
-    opt$direction_method$get_direction(opt, inp, out, method, iter)
-
-  if (!is.null(direction_result$opt)) {
-    opt <- direction_result$opt
-  }
-  opt$direction_method$direction <- direction_result$direction
-
-  opt$step_size_method$step_size <-
-    opt$step_size_method$get_step_size(opt, inp, out, method)
-
-  opt$update_method$update <-
-    opt$update_method$get_update(opt, inp, out, method)
-
-  new_out <- update_solution(opt, inp, out, method)
-
-  # intercept whether we want to accept the new solution e.g. bold driver
-  ok <- TRUE
-  if (!is.null(opt$validate)) {
-    validation_result <- opt$validate(opt, inp, out, new_out, method)
-    opt <- validation_result$opt
-    inp <- validation_result$inp
-    out <- validation_result$out
-    new_out <- validation_result$new_out
-    method <- validation_result$method
-    ok <- validation_result$ok
-  }
-
-  if (!ok) {
-    new_out <- out
-  }
-
-  if (!is.null(opt$after_step)) {
-    after_step_result <- opt$after_step(opt, inp, out, new_out, ok, iter)
-    opt <- after_step_result$opt
-    inp <- after_step_result$inp
-    out <- after_step_result$out
-    new_out <- after_step_result$new_out
-  }
-
-  list(opt = opt, inp = inp, out = new_out)
-}
-
-# update out with new solution (Y, W, qm etc)
-update_solution <- function(opt, inp, out, method) {
-  new_out <- out
-  new_solution <- new_out[[opt$mat_name]] + opt$update_method$update
-  new_out[[opt$mat_name]] <- new_solution
-  update_out(inp, new_out, method, opt$mat_name)
-}
-
+#' Create callback to be invoked after the solution is updated.
+#'
+#' The direction, step size and update methods of the optimizer may all have
+#' to update their internal state after the solution has been updated (e.g.
+#' updating step sizes or momentum terms according to a schedule). This function
+#' accumulates all the provided function into a single callback that the
+#' optimizer will invoke whenever it updates the solution.
+#'
+#' @param recenter If \code{TRUE}, translate the embedded coordinates so they
+#' are centered around the origin.
+#' @param direction_after_step_fn Function provided by the direction method to
+#' be invoked after the solution has been updated.
+#' @param step_size_after_step_fn Function provided by the step size method to
+#' be invoked after the solution has been updated.
+#' @param update_after_step_fn Function provided by the update method to be
+#' invoked after the solution has been updated.
+#' @return Callback to be invoked by the optimizer after the solution has been
+#' updated.
 make_after_step <- function(recenter = TRUE,
                             direction_after_step_fn = NULL,
                             step_size_after_step_fn = NULL,
-                            update_after_step_fn = NULL, verbose = FALSE) {
+                            update_after_step_fn = NULL) {
   after_step <- list()
 
   if (!is.null(direction_after_step_fn)) {
@@ -185,9 +175,31 @@ make_after_step <- function(recenter = TRUE,
   }
 }
 
+#' Create solution validation callback.
+#'
+#' Makes a callback to be used by the optimizer to validate a solution.
+#'
+#' The direction, step size or update part of the optimization step can "veto"
+#' a particular solution if it's not to their liking. For example, the bold
+#' driver step size method will flag an update as not ok if the cost increases.
+#' If the solution does not validate, then it will not be applied to the
+#' solution and the next iteration step takes place from the same position as
+#' the current iteration. Therefore it's important that the state of the
+#' optimizer also be changed if the validation has failed or the same failure
+#' will occur again. For example, in the case of the bold driver, a failed
+#' solution results in the step size being decreased.
+#'
+#' The callback, when invoked, will call the validation functions provided by
+#' the different components of the optimizer. If any of them return \code{FALSE}
+#' the the validation callback will indicate the step failed.
+#'
+#' @param direction_validation_fn Validation function for the direction method.
+#' @param step_size_validation_fn Validation function for the step size method.
+#' @param update_validation_fn Validation function for the update method.
+#' @return A validation callback.
 make_validate_solution <- function(direction_validation_fn = NULL,
                                    step_size_validation_fn = NULL,
-                                   update_validation_fn = NULL, verbose = FALSE) {
+                                   update_validation_fn = NULL) {
   validate_solution <- list()
 
   if (!is.null(direction_validation_fn)) {
@@ -233,12 +245,39 @@ make_validate_solution <- function(direction_validation_fn = NULL,
   }
 }
 
-### Gradient Locations ###
-
+#' Gradient calculation at current solution position.
+#'
+#' If the solution is currently at \code{out$ym}, this function calculates the
+#' gradient is calculated at this position. Contrast this with Nesterov
+#' Accelerated Gradient Descent.
+#'
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return List containing:
+#' \itemize{
+#'  \item \code{km} Stiffness matrix.
+#'  \item \code{gm} Gradient matrix.
+#' }
 classical_grad_pos <- function(opt, inp, out, method) {
   gradient(inp, out, method, opt$mat_name)
 }
 
+#' Nesterov Accelerated Gradient calculation.
+#'
+#' This function calculates the gradient at a position determined by applying
+#' the momentum update to the current solution position.
+#'
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return List containing:
+#' \itemize{
+#'  \item \code{km} Stiffness matrix.
+#'  \item \code{gm} Gradient matrix.
+#' }
 nesterov_grad_pos <- function(opt, inp, out, method) {
   prev_update <- opt$update_method$update
   mu <- opt$update_method$momentum
@@ -250,16 +289,51 @@ nesterov_grad_pos <- function(opt, inp, out, method) {
 }
 
 
-### Step Size ###
-bold_driver <- function(increase_mult = 1.1, decrease_mult = 0.5,
-                        increase_fn = partial(`*`, increase_mult),
-                        decrease_fn = partial(`*`, decrease_mult),
+#' Bold Driver step size.
+#'
+#' This function creates the 'Bold Driver' method for step size selection.
+#' If the costdecreases after an optimization step occurs, then the step
+#' size will be increased (normally by a conservative amount). If the cost
+#' increases, then the step size is decreased (normally by a more drastic
+#' amount).
+#'
+#' @param inc_mult Multiplier of the current step size when the cost
+#' decreases. Should be greater than one to increase the step size. This
+#' parameter is ignored if \code{inc_fun} is supplied.
+#' @param dec_mult Multiplier of the current step size when the cost
+#' increases. Should be smaller than one to decrease the step size. This
+#' parameter is ignored if \code{dec_fun} is supplied.
+#' @param inc_fn Function to apply to the current step size when the cost
+#' decreases. Should return a value greater than the current step size.
+#' @param dec_fn Function to apply to the current step size when the cost
+#' increases. Should return a value smaller than the current step size.
+#' @param initial_step_size Step size to attempt on the first step of
+#' optimization.
+#' @param min_step_size Minimum step size.
+#' @param max_step_size Maximum step size.
+#' @return Step size method, to be used by the Optimizer. A list containing:
+#' \itemize{
+#'  \item \code{inc_fn} Function to invoke to increase the step size.
+#'  \item \code{dec_fn} Function to invoke to decrease the step size.
+#'  \item \code{initial_step_size} Initial step size.
+#'  \item \code{min_step_size} Minimum step size.
+#'  \item \code{max_step_size} Maximum step size.
+#'  \item \code{init} Function to do any needed initialization.
+#'  \item \code{get_step_size} Function to return the current step size.
+#'  \item \code{validate} Function to validate whether the current step was
+#'  successful or not.
+#'  \item \code{after_step} Function to do any needed updating or internal state
+#'  before the next optimization step.
+#' }
+bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
+                        inc_fn = partial(`*`, inc_mult),
+                        dec_fn = partial(`*`, dec_mult),
                         initial_step_size = 1,
                         min_step_size = sqrt(.Machine$double.eps),
-                        max_step_size = NULL, allow_uphill = FALSE) {
+                        max_step_size = NULL) {
   list(
-    inc_fn = increase_fn,
-    dec_fn = decrease_fn,
+    inc_fn = inc_fn,
+    dec_fn = dec_fn,
     initial_step_size = initial_step_size,
     min_step_size = min_step_size,
     max_step_size = max_step_size,
@@ -273,19 +347,12 @@ bold_driver <- function(increase_mult = 1.1, decrease_mult = 0.5,
     },
     validate = function(opt, inp, out, new_out, method) {
       cost <- method$cost_fn(inp, new_out)
-      if (allow_uphill) {
-        ok <- TRUE
-      } else {
-        ok <- cost < opt$step_size_method$old_cost
-      }
+      ok <- cost < opt$step_size_method$old_cost
 
       opt$step_size_method$cost <- cost
       list(ok = ok, opt = opt)
     },
     after_step = function(opt, inp, out, new_out, ok, iter) {
-      if (allow_uphill) {
-        ok <- opt$step_size_method$cost < opt$step_size_method$old_cost
-      }
       s_old <- opt$step_size_method$step_size
       if (ok) {
         s_new <- opt$step_size_method$inc_fn(opt$step_size_method$step_size)
@@ -306,7 +373,61 @@ bold_driver <- function(increase_mult = 1.1, decrease_mult = 0.5,
 }
 
 
-## Jacobs ##
+#' Jacobs method step size selection.
+#'
+#' This function creates the Jacobs method for step size selection.
+#'
+#' Also known as the delta-bar-delta method. The method is described in:
+#' R.A. Jacobs. Increased rates of convergence through learning rate adaptation.
+#' Neural Networks, 1:295–307, 1988.
+#' In this implementation, the sign of the gradient is compared to the sign of
+#' the step size at the previous iteration (note that this includes any momentum
+#' term). If the signs are the same, then the step size is increased. If the
+#' signs differ, it is assumed that the minimum has been skipped over, and the
+#' step size is decreased.
+#'
+#' There are two differences from the method described in the paper:
+#' \enumerate{
+#'  \item As originally described, increases in the step size are achieved by
+#'  adding a fixed amount to current step size, while decreases occur by
+#'  multiplying the step size by a positive value less than one. The default
+#'  arguments here use multipliers for both increase and decrease.
+#'  \item In the paper, the sign of the gradient is compared to a weighted
+#'  average of gradients from several previous steps. In this implementation,
+#'  we use only the value from the previous step.
+#' }
+#'
+#' To use the settings as given in the t-SNE paper, see the \code{tsne_jacobs}
+#' function.
+#'
+#' @param inc_mult Multiplier of the current step size when the cost
+#' decreases. Should be greater than one to increase the step size. This
+#' parameter is ignored if \code{inc_fun} is supplied.
+#' @param dec_mult Multiplier of the current step size when the cost
+#' increases. Should be smaller than one to decrease the step size. This
+#' parameter is ignored if \code{dec_fun} is supplied.
+#' @param inc_fn Function to apply to the current step size when the cost
+#' decreases. Should return a value greater than the current step size.
+#' @param dec_fn Function to apply to the current step size when the cost
+#' increases. Should return a value smaller than the current step size.
+#' @param initial_step_size Step size to attempt on the first step of
+#' optimization.
+#' @param min_step_size Minimum step size.
+#' @param max_step_size Maximum step size.
+#' @return Step size method, to be used by the Optimizer. A list containing:
+#' \itemize{
+#'  \item \code{inc_fn} Function to invoke to increase the step size.
+#'  \item \code{dec_fn} Function to invoke to decrease the step size.
+#'  \item \code{initial_step_size} Initial step size.
+#'  \item \code{min_step_size} Minimum step size.
+#'  \item \code{max_step_size} Maximum step size.
+#'  \item \code{init} Function to do any needed initialization.
+#'  \item \code{get_step_size} Function to return the current step size.
+#'  \item \code{validate} Function to validate whether the current step was
+#'  successful or not.
+#'  \item \code{after_step} Function to do any needed updating or internal state
+#'  before the next optimization step.
+#' }
 jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
                    inc_fn = partial(`*`, inc_mult),
                    dec_fn = partial(`*`, dec_mult),
@@ -342,6 +463,7 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
   )
 }
 
+#' Jacobs step size method using parameters from the t-SNE paper.
 tsne_jacobs <- jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
                       min_step_size = 0.1)
 
@@ -356,7 +478,7 @@ tsne_jacobs <- jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
 #'
 #' @param gm Gradient matrix.
 #' @param step_size Step size for the previous iteration.
-#' @param update update_method matrix for the previous iteration.
+#' @param update Update_method matrix for the previous iteration.
 #' @param inc_fn Function to apply to \code{step_size} to increase its elements.
 #' @param dec_fn Function to apply to \code{step_size} to decrease its elements.
 #' @return the new step size.
@@ -368,9 +490,29 @@ jacobs_step_size <- function(gm, step_size, update, inc_fn, dec_fn) {
     dec_fn(step_size) * abs(sign(gm) == sign(update))
 }
 
-### update_method ###
-## Momentum ##
-
+#' Step momentum.
+#'
+#' Create an callback for the optimizer to use to update the embedding solution.
+#' Update is in the form of a step momentum function.
+#'
+#' @param initial_momentum Momentum value for the first \code{switch_iter}
+#' iterations.
+#' @param final_momentum Momentum value after \code{switch_iter} iterations.
+#' @param switch_iter Iteration number at which to switch from
+#' \code{initial_momentum} to \code{final_momentum}.
+#' @param verbose if \code{TRUE}, log info about the momentum.
+#' @return A solution update method for use by the optimizer. A list consisting
+#' of:
+#' \itemize{
+#'  \item \code{initial_momentum} Initial momentum.
+#'  \item \code{final_momentum} Final momentum.
+#'  \item \code{mom_switch_iter} Switch iteration.
+#'  \item \code{init} Function to do any needed initialization.
+#'  \item \code{get_update} Function to return the current update, which will
+#'  be added to current solution matrix.
+#'  \item \code{after_step} Function to do any needed updating or internal state
+#'  before the next optimization step.
+#' }
 step_momentum <- function(initial_momentum = 0.5, final_momentum = 0.8,
                           switch_iter = 250, verbose = TRUE) {
   list(
@@ -397,6 +539,27 @@ step_momentum <- function(initial_momentum = 0.5, final_momentum = 0.8,
   )
 }
 
+#' Linear momentum.
+#'
+#' Create an callback for the optimizer to use to update the embedding solution.
+#' Update is in the form of a linear momentum function.
+#'
+#' @param max_iter Number of iterations to scale the momentum over from
+#' \code{initial_momentum} to \code{final_momentum}.
+#' @param initial_momentum Momentum value for the first \code{switch_iter}
+#' iterations.
+#' @param final_momentum Momentum value after \code{switch_iter} iterations.
+#' @return A solution update method for use by the optimizer. A list consisting
+#' of:
+#' \itemize{
+#'  \item \code{initial_momentum} Initial momentum.
+#'  \item \code{final_momentum} Final momentum.
+#'  \item \code{init} Function to do any needed initialization.
+#'  \item \code{get_update} Function to return the current update, which will
+#'  be added to current solution matrix.
+#'  \item \code{after_step} Function to do any needed updating or internal state
+#'  before the next optimization step.
+#' }
 linear_momentum <- function(max_iter, initial_momentum = 0,
                             final_momentum = 0.9) {
   list(
@@ -420,8 +583,30 @@ linear_momentum <- function(max_iter, initial_momentum = 0,
   )
 }
 
-
-nesterov_non_convex_momentum <- function() {
+#' Momentum schedule for non-strongly convex problems.
+#'
+#' Create an callback for the optimizer to use to update the embedding solution.
+#' Update is in the form of a momentum schedule suggested in:
+#'
+#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
+#' On the importance of momentum and initialization in deep learning.
+#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
+#' JMLR: W&CP volume 28.
+#'
+#' which finds its origins in a publication by Nesterov. The version given by
+#' Sustkever et al. is \eqn{1-\frac{3}{t+5}}
+#'
+#' @return A solution update method for use by the optimizer. A list consisting
+#' of:
+#' \itemize{
+#'  \item \code{initial_momentum} Initial momentum.
+#'  \item \code{init} Function to do any needed initialization.
+#'  \item \code{get_update} Function to return the current update, which will
+#'  be added to current solution matrix.
+#'  \item \code{after_step} Function to do any needed updating or internal state
+#'  before the next optimization step.
+#' }
+nesterov_nsc_momentum <- function() {
   list(
     initial_momentum = 0.5,
     init = function(opt, inp, out, method) {
@@ -438,7 +623,18 @@ nesterov_non_convex_momentum <- function() {
   )
 }
 
-
+#' An update schedule with no momentum.
+#'
+#' Create an callback for the optimizer to use that uses strict gradient
+#' descent with no momentum term.
+#'
+#' @return A solution update method for use by the optimizer. A list consisting
+#' of:
+#' \itemize{
+#'  \item \code{init} Function to do any needed initialization.
+#'  \item \code{get_update} Function to return the current update, which will
+#'  be added to current solution matrix.
+#' }
 no_momentum <- function() {
   list(
     init = function(opt, inp, out, method) {
@@ -451,7 +647,16 @@ no_momentum <- function() {
   )
 }
 
-
+#' Solution update with momentum term.
+#'
+#' Carries out a solution update using a momentum term in additon to the
+#' gradient update.
+#'
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Update matrix, consisting of gradient update and momentum term.
 momentum_update <- function(opt, inp, out, method) {
   direction <- opt$direction_method$direction
   step_size <- opt$step_size_method$step_size
@@ -462,7 +667,16 @@ momentum_update <- function(opt, inp, out, method) {
   (mu * prev_update) + ((1 - mu) * grad_update)
 }
 
-## Steepest Descent ##
+#' Steepest Descent direction.
+#'
+#' Creates a gradient descent direction method for use by the optimizer.
+#' Uses the direction of steepest descent.
+#'
+#' @return Steepest Descent direction method. A list consisting of:
+#' \itemize{
+#'  \item get_direction Function invoked by the optimizer to find the direction
+#'  to move in the gradient descent part of the solution update.
+#' }
 steepest_descent <- function() {
   list(
     get_direction = function(opt, inp, out, method, iter) {

@@ -7,7 +7,7 @@
 #' generate input probabilities in SNE.
 #'
 #' Mainly useful for debugging. Also expresses beta as sigma, i.e. the
-#' Gaussian bandwidth \eqn{\frac{1}{\sqrt(2\beta)}}.
+#' Gaussian bandwidth \eqn{\frac{1}{\sqrt{2\beta}}}.
 #'
 #' @param betas Vector of parameters
 summarize_betas <- function(betas) {

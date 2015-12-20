@@ -10,6 +10,9 @@ partial <- function(f, ...) {
   }
 }
 
+#' Similarity-based embedding.
+#'
+#'
 embed_sim <- function(xm,
                       mat_name = "ym",
                       init_inp = make_init_inp(perplexity = 30,
@@ -19,7 +22,7 @@ embed_sim <- function(xm,
                                                mat_name = mat_name,
                                                verbose = verbose),
                       method = tsne(),
-                      opt = make_opt(),
+                      opt = make_opt(mat_name = mat_name),
                       max_iter = 1000,
                       tricks = NULL,
                       epoch = make_epoch(verbose = verbose),
@@ -27,12 +30,12 @@ embed_sim <- function(xm,
                       export = NULL,
                       after_embed = NULL,
                       verbose = TRUE) {
-  opt$mat_name <- mat_name
-
   embed(xm, init_inp, init_out, method, opt, max_iter, tricks,
         epoch, preprocess, export, after_embed)
 }
 
+#' Embed coordinates
+#'
 embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
                   tricks = NULL, epoch = NULL, preprocess = NULL, export = NULL,
                   after_embed = NULL) {
@@ -121,13 +124,109 @@ after_init <- function(inp, out, method) {
   list(inp = inp, out = out, method = method)
 }
 
+
+#' One step of optimization.
+#'
+#' @param opt Optimizer
+#' @param method Embedding method.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param iter Iteration number.
+#' @return List consisting of:
+#' \itemize{
+#'  \item \code{opt} Updated optimizer.
+#'  \item \code{inp} Updated input.
+#'  \item \code{out} Updated output.
+#' }
+optimize_step <- function(opt, method, inp, out, iter) {
+  if (iter == 0) {
+    opt <- opt$init(opt, inp, out, method)
+  }
+
+  grad_result <- opt$grad_pos_fn(opt, inp, out, method)
+
+  if (any(is.nan(grad_result$gm))) {
+    stop("NaN in grad. descent at iter ", iter)
+  }
+  opt$gm <- grad_result$gm
+
+  if (opt$normalize_grads) {
+    opt$gm <- normalize(opt$gm)
+  }
+
+  direction_result <-
+    opt$direction_method$get_direction(opt, inp, out, method, iter)
+
+  if (!is.null(direction_result$opt)) {
+    opt <- direction_result$opt
+  }
+  opt$direction_method$direction <- direction_result$direction
+
+  opt$step_size_method$step_size <-
+    opt$step_size_method$get_step_size(opt, inp, out, method)
+
+  opt$update_method$update <-
+    opt$update_method$get_update(opt, inp, out, method)
+
+  new_out <- update_solution(opt, inp, out, method)
+
+  # intercept whether we want to accept the new solution e.g. bold driver
+  ok <- TRUE
+  if (!is.null(opt$validate)) {
+    validation_result <- opt$validate(opt, inp, out, new_out, method)
+    opt <- validation_result$opt
+    inp <- validation_result$inp
+    out <- validation_result$out
+    new_out <- validation_result$new_out
+    method <- validation_result$method
+    ok <- validation_result$ok
+  }
+
+  if (!ok) {
+    new_out <- out
+  }
+
+  if (!is.null(opt$after_step)) {
+    after_step_result <- opt$after_step(opt, inp, out, new_out, ok, iter)
+    opt <- after_step_result$opt
+    inp <- after_step_result$inp
+    out <- after_step_result$out
+    new_out <- after_step_result$new_out
+  }
+
+  list(opt = opt, inp = inp, out = new_out)
+}
+
+#' Update output data.
+#'
+#' This function updates the embedded coordinates in the output data, based
+#' on the update information in the Optimizer, as well as updating any
+#' auxiliary output data that is dependent on the coordinates (e.g. distances
+#' and probabilities)
+#'
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Updated \code{out}.
+update_solution <- function(opt, inp, out, method) {
+  new_out <- out
+  new_solution <- new_out[[opt$mat_name]] + opt$update_method$update
+  new_out[[opt$mat_name]] <- new_solution
+  update_out(inp, new_out, method, opt$mat_name)
+}
+
+
 #' Calculate the gradient of the cost function for the current configuration.
 #'
 #' @param inp Input data.
 #' @param out Output data.
 #' @param method Embedding method.
-#' @return List with two items: \code{km} stiffness matrix,
-#' \code{gm}, the gradient matrix.
+#' @return List containing:
+#' \itemize{
+#'  \item \code{km} Stiffness matrix.
+#'  \item \code{gm} Gradient matrix.
+#' }
 gradient <- function(inp, out, method, mat_name = "ym") {
   km <- method$stiffness_fn(method, inp, out)
   gm <- stiff_to_grads(out[[mat_name]], km)
