@@ -73,7 +73,7 @@ tsne_iris_jacobs <- embed_sim(iris[, 1:4],
                                   normalize_grads = FALSE),
                               verbose = FALSE,
                               epoch = make_epoch(epoch_every = 1,
-                                                 save_costs = TRUE,
+                                                 keep_costs = TRUE,
                                                  verbose = FALSE),
                               export = c("epoch_result"))
 jacobs_costs <- tsne_iris_jacobs$epoch_result$costs[,"cost"]
