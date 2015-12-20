@@ -1,20 +1,134 @@
-#' Partially apply a function.
-#'
-#' @param f Function to partially apply.
-#' @param ... params of \code{f} to apply.
-#' @return Partially applied version of \code{f}.
-partial <- function(f, ...) {
-  args <- list(...)
-  function(...) {
-    do.call(f, c(args, list(...)))
-  }
-}
+# Functions to do the embedding. The interface to sneer. Also, core
+# functions to do with gradient calculation, optimization, updating and so on
+# that don't need to be overridden or changed.
 
 #' Similarity-based embedding.
 #'
+#' Carry out an embedding of a dataset using a similarity-based method
+#' (e.g. t-SNE), with some useful default parameters.
 #'
+#' @param xm A matrix or data frame to embed.
+#' @param mat_name Name of the matrix in the output data list that will contain
+#' the embedded coordinates.
+#' @param Input data preprocess callback. Create by assigning the result of
+#' \code{make_preprocess}.
+#' @param init_inp Input initialization callback. Create by assigning the
+#' result of \code{make_init_inp}.
+#' @param init_out Output initialization callback. Create by assigning the
+#' result of \code{make_init_out}.
+#' @param method Embedding method. Assign result of calling one of the following
+#' functions: \itemize{
+#'  \item \code{tsne()} t-Distributed Stochastic Neighbor Embedding.
+#'  \item \code{ssne()} Symmetric Stochastic Neighbor Embedding.
+#'  \item \code{asne()} Asymmetric Stochastic Neighbor Embedding.
+#' }
+#' @param opt Optimization method. Create by assigning the result of
+#' \code{make_opt}.
+#' @param max_iter Maximum number of optimization steps to take.
+#' @param tricks Tricks callback. Create by assigning the result of
+#'  \code{make_tricks}.
+#' @param epoch Epoch callback. Create by assigning the result of
+#' \code{make_epoch}.
+#' @param export Vector of names to export. Possible names are:
+#' \itemize{
+#'  \item "\code{inp}" The input data.
+#'  \item "\code{epoch_result}" The result of the last epoch.
+#' }
+#' @param after_embed Callback to run on input and output data before output
+#' data is returned.
+#' @return The output data. A list containing:
+#' \itemize{
+#'  \item \code{ym} Embedded coordinates. This name can be changed by
+#'  specifying \code{mat_name}.
+#'  \item \code{qm} Probability matrix generated from the weight matrix
+#'  \code{wm}.
+#'  \item \code{wm} Weight matrix generated from the distances between points
+#'  in \code{ym}.
+#'  \item \code{inp} The input data, if "\code{inp}" is included in the
+#'  \code{export} list parameter.
+#'  \item \code{epoch_result} Epoch result from the last epoch, if
+#'  "\code{epoch_result}" is included in the \code{export} list parameter.
+#' }
+#' If the \code{inp} list is present, it contains:
+#' \itemize{
+#'  \item \code{xm} The (potentially preprocessed) input coordinates if the
+#'  input data was not a distance matrix.
+#'  \item \code{dm} Input distance matrix.
+#'  \item \code{pm} Input probabilities.
+#'  \item \code{beta} Input weighting parameters. Only present if
+#'  \code{make_init_inp} is called with \code{keep_all_results} set to
+#'  \code{TRUE} in when creating the callback \code{init_inp}.
+#' }
+#' If the \code{epoch_result} list is present, it contains:
+#' \itemize{
+#'  \item \code{stop_early} If \code{TRUE}, the optimization stopped before
+#'  \code{max_iters} was reached.
+#'  \item \code{cost} Cost of the last epoch.
+#'  \item \code{costs} Matrix of all epoch costs and the iterations at which
+#'  they occurred. Only present if \code{keep_costs} is set to \code{TRUE}
+#'  when the \code{make_epoch} factory function is called.
+#'  \item \code{reltol} Relative tolerance of the difference between present
+#'  cost and the cost of the previous epoch.
+#'  \item \code{stress} Stress for the current epoch. Only present if
+#'  \code{calc_stress} is set to \code{TRUE} when the \code{make_epoch} factory
+#'  function is called.
+#'  \item \code{iter} The iteration at which the epoch is evaluated.
+#' }
+#' @examples
+#'
+#' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
+#' # except initialize from PCA so output is repeatable.
+#' # plot 2D result during embedding with convenience function for iris plot.
+#' # Default method is tsne
+#' tsne_iris <- embed_sim(iris[, 1:4], opt = tsne_opt(), tricks = tsne_tricks(),
+#'                        epoch = make_epoch(plot_func = make_iris_plot()))
+#'
+#' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
+#' # and initialize from random. Use generic plot function, displaying the first
+#' # two characters of the "Species" factor for the points. Explicitly choose
+#' # t-SNE as the method.
+#' tsne_iris <- embed_sim(iris[, 1:4],
+#'                method = tsne(),
+#'                opt = tsne_opt(),
+#'                init_out = make_init_out(stdev = 1e-4)
+#'                tricks = tsne_tricks(),
+#'                epoch = make_epoch(
+#'                  plot_func = make_plot(iris, "Species", make_label_fn(2))))
+#'
+#' # Use the SSNE method, and preprocess input data by range scaling. t-SNE
+#' # tricks and optimization are reasonable defaults for other similarity
+#' # embeddings.
+#' ssne_iris <- embed_sim(iris[, 1:4],
+#'                method = ssne(),
+#'                opt = tsne_opt(),
+#'                preprocess = make_preprocess(range_scale_matrix = TRUE)
+#'                init_out = make_init_out(stdev = 1e-4)
+#'                tricks = tsne_tricks(),
+#'                epoch = make_epoch(
+#'                  plot_func = make_plot(iris, "Species", make_label_fn(2))))
+#'
+#' # ASNE method on the s1k dataset (10 overlapping 9D Gaussian blobs),
+#' # initialize with PCA scores, preprocess by autoscaling columns, optimize
+#' # with Nesterov Accelrated Gradient and bold driver step size
+#' # (highly recommended as an optimizer). Labels for s1k are one digit, so
+#' # can use simplified plot function.
+#' asne_s1k <- embed_sim(s1k[, 1:9], method = asne(),
+#'  preprocess = make_preprocess(auto_scale = TRUE),
+#'  init_out = make_init_out(from_PCA = TRUE),
+#'  opt = make_opt( grad_pos_fn = nesterov_grad_pos, step_size = bold_driver(),
+#'   update = nesterov_nsc_momentum()),
+#'   epoch = make_epoch(plot_func = make_plot(s1k, "Label")))
+#'
+#' # Same as above, but using convenience method to create optimizer with less
+#' # typing
+#' asne_s1k <- embed_sim(s1k[, 1:9], method = asne(),
+#'  preprocess = make_preprocess(auto_scale = TRUE),
+#'  init_out = make_init_out(from_PCA = TRUE),
+#'  opt = bold_nag_opt(),
+#'  epoch = make_epoch(plot_func = make_plot(s1k, "Label")))
 embed_sim <- function(xm,
                       mat_name = "ym",
+                      preprocess = make_preprocess(verbose = verbose),
                       init_inp = make_init_inp(perplexity = 30,
                                                input_weight_fn = exp_weight,
                                                verbose = verbose),
@@ -26,7 +140,6 @@ embed_sim <- function(xm,
                       max_iter = 1000,
                       tricks = NULL,
                       epoch = make_epoch(verbose = verbose),
-                      preprocess = make_preprocess(verbose = verbose),
                       export = NULL,
                       after_embed = NULL,
                       verbose = TRUE) {
@@ -34,8 +147,77 @@ embed_sim <- function(xm,
         epoch, preprocess, export, after_embed)
 }
 
-#' Embed coordinates
+#' Generic embedding.
 #'
+#' Carrying out an embedding of a dataset.
+#'
+#' @param xm A matrix or data frame to embed.
+#' @param mat_name Name of the matrix in the output data list that will contain
+#' the embedded coordinates.
+#' @param Input data preprocess callback. Create by assigning the result of
+#' \code{make_preprocess}.
+#' @param init_inp Input initialization callback. Create by assigning the
+#' result of \code{make_init_inp}.
+#' @param init_out Output initialization callback. Create by assigning the
+#' result of \code{make_init_out}.
+#' @param method Embedding method. Assign result of calling one of the following
+#' functions: \itemize{
+#'  \item \code{tsne()} t-Distributed Stochastic Neighbor Embedding.
+#'  \item \code{ssne()} Symmetric Stochastic Neighbor Embedding.
+#'  \item \code{asne()} Asymmetric Stochastic Neighbor Embedding.
+#' }
+#' @param opt Optimization method. Create by assigning the result of
+#' \code{make_opt}.
+#' @param max_iter Maximum number of optimization steps to take.
+#' @param tricks Tricks callback. Create by assigning the result of
+#'  \code{make_tricks}.
+#' @param epoch Epoch callback. Create by assigning the result of
+#' \code{make_epoch}.
+#' @param export Vector of names to export. Possible names are:
+#' \itemize{
+#'  \item "\code{inp}" The input data.
+#'  \item "\code{epoch_result}" The result of the last epoch.
+#' }
+#' @param after_embed Callback to run on input and output data before output
+#' data is returned.
+#' @return The output data. A list containing:
+#' \itemize{
+#'  \item \code{ym} Embedded coordinates. This name can be changed by
+#'  specifying \code{mat_name}.
+#'  \item \code{qm} Probability matrix generated from the weight matrix
+#'  \code{wm}.
+#'  \item \code{wm} Weight matrix generated from the distances between points
+#'  in \code{ym}.
+#'  \item \code{inp} The input data, if "\code{inp}" is included in the
+#'  \code{export} list parameter.
+#'  \item \code{epoch_result} Epoch result from the last epoch, if
+#'  "\code{epoch_result}" is included in the \code{export} list parameter.
+#' }
+#' If the \code{inp} list is present, it contains:
+#' \itemize{
+#'  \item \code{xm} The (potentially preprocessed) input coordinates if the
+#'  input data was not a distance matrix.
+#'  \item \code{dm} Input distance matrix.
+#'  \item \code{pm} Input probabilities.
+#'  \item \code{beta} Input weighting parameters. Only present if
+#'  \code{make_init_inp} is called with \code{keep_all_results} set to
+#'  \code{TRUE} in when creating the callback \code{init_inp}.
+#' }
+#' If the \code{epoch_result} list is present, it contains:
+#' \itemize{
+#'  \item \code{stop_early} If \code{TRUE}, the optimization stopped before
+#'  \code{max_iters} was reached.
+#'  \item \code{cost} Cost of the last epoch.
+#'  \item \code{costs} Matrix of all epoch costs and the iterations at which
+#'  they occurred. Only present if \code{keep_costs} is set to \code{TRUE}
+#'  when the \code{make_epoch} factory function is called.
+#'  \item \code{reltol} Relative tolerance of the difference between present
+#'  cost and the cost of the previous epoch.
+#'  \item \code{stress} Stress for the current epoch. Only present if
+#'  \code{calc_stress} is set to \code{TRUE} when the \code{make_epoch} factory
+#'  function is called.
+#'  \item \code{iter} The iteration at which the epoch is evaluated.
+#' }
 embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
                   tricks = NULL, epoch = NULL, preprocess = NULL, export = NULL,
                   after_embed = NULL) {
