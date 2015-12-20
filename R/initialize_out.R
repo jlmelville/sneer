@@ -1,12 +1,13 @@
 # Functions for initializing the output embedding.
 
-#' Create an output initialization callback function.
+#' Create an output initialization callback.
 #'
 #' Factory function that creates a callback that used by the embedding routine.
 #' When invoked, it will initialize the output data.
 #'
-#' The return value of the callback is the initialized output data, a list
-#' containing:
+#' The callback has the signature \code{init_out(inp)} where \code{inp}
+#' is the initialized input data list. The return value of the callback is the
+#' initialized output data, a list containing:
 #'
 #' \itemize{
 #'  \item \code{ym} A matrix containing the initialized output coordinates. The
@@ -39,11 +40,20 @@
 #' plotting function in epoch callbacks) are also passed the same value.
 #' @param verbose If \code{TRUE} information about the initialization will be
 #' logged to screen.
-#' @return a callback function to be used by the embedding routine to initialize
-#' the output data. Has the signature \code{init_out(inp)} where \code{inp}
-#' is the initialized input data list. The callback returns \code{out}, the
-#' initialized output list with initial embedded coordinates in the matrix with
-#' name \code{mat_name}.
+#' @return Callback to be used by the embedding routine to initialize
+#' the output data.
+#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' an embedding.
+#' @examples
+#' # Initialize from PCA scores matrix (normally a decent starting point and
+#' # reproducible)
+#' make_init_out(from_PCA = TRUE)
+#' # Initialize from random small distances (used in t-SNE paper)
+#' make_init_out(stdev = 1e-4)
+#' # Should be passed to the init_out argument of an embedding function:
+#' \dontrun{
+#'  embed_sim(init_out = make_init_out(from_PCA = TRUE), ...)
+#' }
 make_init_out <- function(k = 2, initial_config = NULL, stdev = 1e-04,
                           from_PCA = FALSE, from_input_name = NULL,
                           mat_name = "ym", verbose = TRUE) {
