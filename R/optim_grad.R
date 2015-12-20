@@ -14,6 +14,11 @@ classical_gradient <- function() {
 #' Configuration function for optimizer gradient calculation.
 #'
 #' @return NAG calculation method.
+#' @references
+#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
+#' On the importance of momentum and initialization in deep learning.
+#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
+#' JMLR: W&CP volume 28.
 nesterov_gradient <- function() {
   nesterov_grad_pos
 }
@@ -52,6 +57,11 @@ classical_grad_pos <- function(opt, inp, out, method) {
 #'  \item \code{km} Stiffness matrix.
 #'  \item \code{gm} Gradient matrix.
 #' }
+#' @references
+#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
+#' On the importance of momentum and initialization in deep learning.
+#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
+#' JMLR: W&CP volume 28.
 nesterov_grad_pos <- function(opt, inp, out, method) {
   prev_update <- opt$update_method$update
   mu <- opt$update_method$momentum

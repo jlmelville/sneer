@@ -96,15 +96,8 @@ linear_momentum <- function(max_iter, initial_momentum = 0,
 #' Momentum schedule for non-strongly convex problems.
 #'
 #' Create an callback for the optimizer to use to update the embedding solution.
-#' Update is in the form of a momentum schedule suggested in:
-#'
-#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
-#' On the importance of momentum and initialization in deep learning.
-#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
-#' JMLR: W&CP volume 28.
-#'
-#' which finds its origins in a publication by Nesterov. The version given by
-#' Sustkever et al. is \eqn{1-\frac{3}{t+5}}
+#' Update is in the form of a momentum schedule of the form
+#' \eqn{1-\frac{3}{t+5}}
 #'
 #' @return A solution update method for use by the optimizer. A list consisting
 #' of:
@@ -116,6 +109,11 @@ linear_momentum <- function(max_iter, initial_momentum = 0,
 #'  \item \code{after_step} Function to do any needed updating or internal state
 #'  before the next optimization step.
 #' }
+#' @references
+#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
+#' On the importance of momentum and initialization in deep learning.
+#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
+#' JMLR: W&CP volume 28.
 nesterov_nsc_momentum <- function() {
   list(
     initial_momentum = 0.5,

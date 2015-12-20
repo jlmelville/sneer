@@ -20,6 +20,10 @@
 #'  the input probability matrix must be converted from a row probability
 #'  matrix to a joint probability matrix.
 #' }
+#' @references
+#' Laurens van der Maarten, Geoffrey Hinton.
+#' Visualizing Data using t-SNE.
+#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
 tsne <- function() {
   f <- function(pm, qm, wm) {
     4 * (pm - qm) * wm
@@ -62,6 +66,15 @@ tsne <- function() {
 #'  the input probability matrix must be converted from a row probability
 #'  matrix to a joint probability matrix.
 #' }
+#' @references
+#' J.A. Cook, I. Sutskever, A. Mnih, and G.E. Hinton.
+#' Visualizing similarity data with a mixture of maps.
+#' In Proceedings of the 11th International Conference on Artificial
+#' Intelligence and Statistics, volume 2, pages 67-74, 2007.
+#'
+#' Laurens van der Maarten, Geoffrey Hinton.
+#' Visualizing Data using t-SNE.
+#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
 ssne <- function() {
   f <- function(pm, qm) {
     4 * (pm - qm)
@@ -99,6 +112,11 @@ ssne <- function() {
 #'  \item \code{after_init_fn} Method-specific initialization function to
 #'  invoke after input and output initialization callbacks.
 #' }
+#' @references
+#' G.E. Hinton and S.T. Roweis.
+#' Stochastic Neighbor Embedding.
+#' In Advances in Neural Information Processing Systems, volume 15,
+#' pages 833–840, Cambridge, MA, USA, 2002. The MIT Press.
 asne <- function() {
   f <- function(pm, qm) {
     km <- 2 * (pm - qm)

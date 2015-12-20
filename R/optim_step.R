@@ -86,23 +86,22 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 
 #' Jacobs method step size selection.
 #'
-#' This function creates the Jacobs method for step size selection.
+#' This function creates the Jacobs method for step size selection. Also known
+#' as the delta-bar-delta method.
 #'
-#' Also known as the delta-bar-delta method. The method is described in:
-#' R.A. Jacobs. Increased rates of convergence through learning rate adaptation.
-#' Neural Networks, 1:295–307, 1988.
 #' In this implementation, the sign of the gradient is compared to the sign of
 #' the step size at the previous iteration (note that this includes any momentum
 #' term). If the signs are the same, then the step size is increased. If the
 #' signs differ, it is assumed that the minimum has been skipped over, and the
 #' step size is decreased.
 #'
-#' There are two differences from the method described in the paper:
+#' There are two differences from the method as originally described by Jacobs:
 #' \enumerate{
 #'  \item As originally described, increases in the step size are achieved by
 #'  adding a fixed amount to current step size, while decreases occur by
 #'  multiplying the step size by a positive value less than one. The default
-#'  arguments here use multipliers for both increase and decrease.
+#'  arguments here use multipliers for both increase and decrease. See the
+#'  paper by Janet and co-workers mentioned in the references for more details.
 #'  \item In the paper, the sign of the gradient is compared to a weighted
 #'  average of gradients from several previous steps. In this implementation,
 #'  we use only the value from the previous step.
@@ -139,6 +138,17 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #'  \item \code{after_step} Function to do any needed updating or internal state
 #'  before the next optimization step.
 #' }
+#' @references
+#' R.A. Jacobs.
+#' Increased rates of convergence through learning rate adaptation.
+#' Neural Networks, 1:295–307, 1988.
+#'
+#' J.A. Janet, S.M. Scoggins, S.M. Schultz, W.E. Snyder, M.W. White,
+#' J.C. Sutton III
+#' Shocking: an approach to stabilize backprop training with greedy adaptive
+#' learning rates
+#' 1998 IEEE International Joint Conference on Neural Networks Proceedings.
+#' IEEE World Congress on Computational Intelligence.
 jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
                    inc_fn = partial(`*`, inc_mult),
                    dec_fn = partial(`*`, dec_mult),
@@ -175,7 +185,16 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
 }
 
 #' Jacobs step size method using parameters from the t-SNE paper.
+#'
 #' @return A step size method suitable for use with t-SNE.
+#' @references
+#' Laurens van der Maarten, Geoffrey Hinton.
+#' Visualizing Data using t-SNE.
+#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#'
+#' R.A. Jacobs.
+#' Increased rates of convergence through learning rate adaptation.
+#' Neural Networks, 1:295–307, 1988.
 tsne_jacobs <- function() {
   jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
          min_step_size = 0.1)
