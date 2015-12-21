@@ -38,6 +38,19 @@
 #'                       reporter = make_reporter(
 #'                        plot_fn = make_plot(s1k, "Label")))
 #'
+#' # Same as the previus example but creating the NAG optimizer explicitly with
+#' # generic make_opt method
+#' asne_s1k <- embed_sim(s1k[, 1:9],
+#'                       method = asne(),
+#'                       preprocess = make_preprocess(auto_scale = TRUE),
+#'                       init_inp = make_init_inp(perplexity = 50),
+#'                       init_out = make_init_out(from_PCA = TRUE),
+#'                       opt = make_opt(gradient = nesterov_gradient(),
+#'                                      step_size = bold_driver(),
+#'                                      update = nesterov_nsc_momentum()),
+#'                       reporter = make_reporter(
+#'                        plot_fn = make_plot(s1k, "Label")))
+#'
 #' @seealso
 #' In writing this package, the emphasis has been on making it possible to
 #' implement multiple different methods and apply different optimization and
