@@ -160,6 +160,18 @@
 #'                       reporter = make_reporter(
 #'                        plot_fn = make_plot(s1k, "Label")))
 #' }
+#' @references
+#' t-SNE, SNE and ASNE:
+#' Laurens van der Maarten, Geoffrey Hinton.
+#' Visualizing Data using t-SNE.
+#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#'
+#' Nesterov Accelerated Gradient:
+#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
+#' On the importance of momentum and initialization in deep learning.
+#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
+#' JMLR: W&CP volume 28.
+#'
 #' @docType package
 #' @name sneer
 NULL
