@@ -37,7 +37,7 @@
 #' @param mat_name Name of the matrix on the output list to contain the
 #' initialized coordinates. Ensure that if you change this from the default that
 #' other callbacks that need this information (e.g. optimization routines,
-#' plotting function in epoch callbacks) are also passed the same value.
+#' plotting function in reporter callbacks) are also passed the same value.
 #' @param verbose If \code{TRUE} information about the initialization will be
 #' logged to screen.
 #' @return Callback to be used by the embedding routine to initialize

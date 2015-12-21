@@ -28,12 +28,12 @@
 #' @param max_iter Maximum number of optimization steps to take.
 #' @param tricks Tricks callback. Create by assigning the result of
 #'  \code{make_tricks}.
-#' @param epoch Epoch callback. Create by assigning the result of
-#' \code{make_epoch}.
+#' @param reporter Reporter callback. Create by assigning the result of
+#' \code{make_reporter}.
 #' @param export Vector of names to export. Possible names are:
 #' \itemize{
 #'  \item "\code{inp}" The input data.
-#'  \item "\code{epoch_result}" The result of the last epoch.
+#'  \item "\code{report}" The result of the last report.
 #' }
 #' @param after_embed Callback to run on input and output data before output
 #' data is returned.
@@ -47,8 +47,8 @@
 #'  in \code{ym}.
 #'  \item \code{inp} The input data, if "\code{inp}" is included in the
 #'  \code{export} list parameter.
-#'  \item \code{epoch_result} Epoch result from the last epoch, if
-#'  "\code{epoch_result}" is included in the \code{export} list parameter.
+#'  \item \code{report} Most recent report, if
+#'  "\code{report}" is included in the \code{export} list parameter.
 #' }
 #' If the \code{inp} list is present, it contains:
 #' \itemize{
@@ -60,20 +60,21 @@
 #'  \code{make_init_inp} is called with \code{keep_all_results} set to
 #'  \code{TRUE} in when creating the callback \code{init_inp}.
 #' }
-#' If the \code{epoch_result} list is present, it contains:
+#' If the \code{report} list is present, it contains:
 #' \itemize{
 #'  \item \code{stop_early} If \code{TRUE}, the optimization stopped before
 #'  \code{max_iters} was reached.
-#'  \item \code{cost} Cost of the last epoch.
-#'  \item \code{costs} Matrix of all epoch costs and the iterations at which
+#'  \item \code{cost} Cost of the embedded configuration in the most recent
+#'  iteration.
+#'  \item \code{costs} Matrix of all report costs and the iterations at which
 #'  they occurred. Only present if \code{keep_costs} is set to \code{TRUE}
-#'  when the \code{make_epoch} factory function is called.
+#'  when the \code{make_reporter} factory function is called.
 #'  \item \code{reltol} Relative tolerance of the difference between present
-#'  cost and the cost of the previous epoch.
-#'  \item \code{stress} Stress for the current epoch. Only present if
-#'  \code{calc_stress} is set to \code{TRUE} when the \code{make_epoch} factory
-#'  function is called.
-#'  \item \code{iter} The iteration at which the epoch is evaluated.
+#'  cost and the cost from the previous report.
+#'  \item \code{stress} Stress for the most recent iteration. Only present if
+#'  \code{calc_stress} is set to \code{TRUE} when the \code{make_reporter}
+#'  factory function is called.
+#'  \item \code{iter} The iteration at which the report is generated.
 #' }
 #' @seealso
 #' \code{\link{make_preprocess}} for configuring \code{preprocess},
@@ -81,7 +82,7 @@
 #' \code{\link{make_init_out}} for configuring \code{init_out},
 #' \code{\link{make_opt}} for configuring \code{opt},
 #' \code{\link{make_tricks}} for configuring \code{tricks},
-#' \code{\link{make_epoch}} for configuring \code{epoch}.
+#' \code{\link{make_reporter}} for configuring \code{reporter}.
 #'
 #' @examples
 #' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
@@ -91,7 +92,7 @@
 #' tsne_iris <- embed_sim(iris[, 1:4], opt = tsne_opt(),
 #'                init_inp = make_init_inp(perplexity = 25),
 #'                tricks = tsne_tricks(),
-#'                epoch = make_epoch(plot_fn = make_iris_plot()))
+#'                reporter = make_reporter(plot_fn = make_iris_plot()))
 #'
 #' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
 #' # and initialize from random. Use generic plot function, displaying the first
@@ -103,7 +104,7 @@
 #'                init_inp = make_init_inp(perplexity = 25),
 #'                init_out = make_init_out(stdev = 1e-4)
 #'                tricks = tsne_tricks(),
-#'                epoch = make_epoch(
+#'                reporter = make_reporter(
 #'                  plot_fn = make_plot(iris, "Species", make_label(2))))
 #'
 #' # Use the SSNE method, and preprocess input data by range scaling. t-SNE
@@ -116,7 +117,7 @@
 #'                preprocess = make_preprocess(range_scale_matrix = TRUE)
 #'                init_out = make_init_out(stdev = 1e-4)
 #'                tricks = tsne_tricks(),
-#'                epoch = make_epoch(
+#'                reporter = make_reporter(
 #'                  plot_fn = make_plot(iris, "Species", make_label(2))))
 #'
 #' # ASNE method on the s1k dataset (10 overlapping 9D Gaussian blobs),
@@ -131,7 +132,7 @@
 #'  init_out = make_init_out(from_PCA = TRUE),
 #'  opt = make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
 #'   update = nesterov_nsc_momentum()),
-#'   epoch = make_epoch(plot_fn = make_plot(s1k, "Label")))
+#'   reporter = make_reporter(plot_fn = make_plot(s1k, "Label")))
 #'
 #' # Same as above, but using convenience method to create optimizer with less
 #' # typing
@@ -140,7 +141,7 @@
 #'  init_inp = make_init_inp(perplexity = 50),
 #'  init_out = make_init_out(from_PCA = TRUE),
 #'  opt = bold_nag_opt(),
-#'  epoch = make_epoch(plot_fn = make_plot(s1k, "Label")))
+#'  reporter = make_reporter(plot_fn = make_plot(s1k, "Label")))
 embed_sim <- function(xm,
                       mat_name = "ym",
                       preprocess = make_preprocess(verbose = verbose),
@@ -154,12 +155,12 @@ embed_sim <- function(xm,
                       opt = make_opt(mat_name = mat_name),
                       max_iter = 1000,
                       tricks = NULL,
-                      epoch = make_epoch(verbose = verbose),
+                      reporter = make_reporter(verbose = verbose),
                       export = NULL,
                       after_embed = NULL,
                       verbose = TRUE) {
   embed(xm, init_inp, init_out, method, opt, max_iter, tricks,
-        epoch, preprocess, export, after_embed)
+        reporter, preprocess, export, after_embed)
 }
 
 #' Generic embedding.
@@ -186,12 +187,12 @@ embed_sim <- function(xm,
 #' @param max_iter Maximum number of optimization steps to take.
 #' @param tricks Tricks callback. Create by assigning the result of
 #'  \code{make_tricks}.
-#' @param epoch Epoch callback. Create by assigning the result of
-#' \code{make_epoch}.
+#' @param reporter Report callback. Create by assigning the result of
+#' \code{make_reporter}.
 #' @param export Vector of names to export. Possible names are:
 #' \itemize{
 #'  \item "\code{inp}" The input data.
-#'  \item "\code{epoch_result}" The result of the last epoch.
+#'  \item "\code{report}" The most recent report.
 #' }
 #' @param after_embed Callback to run on input and output data before output
 #' data is returned.
@@ -205,8 +206,8 @@ embed_sim <- function(xm,
 #'  in \code{ym}.
 #'  \item \code{inp} The input data, if "\code{inp}" is included in the
 #'  \code{export} list parameter.
-#'  \item \code{epoch_result} Epoch result from the last epoch, if
-#'  "\code{epoch_result}" is included in the \code{export} list parameter.
+#'  \item \code{report} Most recent report, if "\code{report}" is included in
+#'  the \code{export} list parameter.
 #' }
 #' If the \code{inp} list is present, it contains:
 #' \itemize{
@@ -218,20 +219,20 @@ embed_sim <- function(xm,
 #'  \code{make_init_inp} is called with \code{keep_all_results} set to
 #'  \code{TRUE} in when creating the callback \code{init_inp}.
 #' }
-#' If the \code{epoch_result} list is present, it contains:
+#' If the \code{report} list is present, it contains:
 #' \itemize{
 #'  \item \code{stop_early} If \code{TRUE}, the optimization stopped before
 #'  \code{max_iters} was reached.
-#'  \item \code{cost} Cost of the last epoch.
-#'  \item \code{costs} Matrix of all epoch costs and the iterations at which
-#'  they occurred. Only present if \code{keep_costs} is set to \code{TRUE}
-#'  when the \code{make_epoch} factory function is called.
+#'  \item \code{cost} Cost of the configuration at iteration \code{iter}.
+#'  \item \code{costs} Matrix of all costs and the iterations at which
+#'  the reports were made. Only present if \code{keep_costs} is set to
+#'  \code{TRUE} when the \code{make_reporter} factory function is called.
 #'  \item \code{reltol} Relative tolerance of the difference between present
-#'  cost and the cost of the previous epoch.
-#'  \item \code{stress} Stress for the current epoch. Only present if
-#'  \code{calc_stress} is set to \code{TRUE} when the \code{make_epoch} factory
-#'  function is called.
-#'  \item \code{iter} The iteration at which the epoch is evaluated.
+#'  cost and the cost evaluted by the previous report
+#'  \item \code{stress} Stress for the current configuration Only present if
+#'  \code{calc_stress} is set to \code{TRUE} when the \code{make_reporter}
+#'  factory function is called.
+#'  \item \code{iter} The iteration at which the report is generated.
 #' }
 #' @seealso
 #' \code{\link{make_preprocess}} for configuring \code{preprocess},
@@ -239,9 +240,9 @@ embed_sim <- function(xm,
 #' \code{\link{make_init_out}} for configuring \code{init_out},
 #' \code{\link{make_opt}} for configuring \code{opt},
 #' \code{\link{make_tricks}} for configuring \code{tricks},
-#' \code{\link{make_epoch}} for configuring \code{epoch}.
+#' \code{\link{make_reporter}} for configuring \code{reporter}.
 embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
-                  tricks = NULL, epoch = NULL, preprocess = NULL, export = NULL,
+                  tricks = NULL, reporter = NULL, preprocess = NULL, export = NULL,
                   after_embed = NULL) {
   if (!is.null(preprocess)) {
     xm <- preprocess(xm)
@@ -259,9 +260,9 @@ embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
   # initialize matrices needed for gradient calculation
   out <- update_out(inp, out, method, opt$mat_name)
 
-  # epoch result may contain info from previous epoch that controls
-  # whether to stop early (e.g. relative convergence tolerance)
-  epoch_result <- list()
+  # reuse reports from old invocation of reporter, so we can use info
+  # to determine whether to stop early (e.g. relative convergence tolerance)
+  report <- list()
 
   iter <- 0
   while (iter <= max_iter) {
@@ -273,9 +274,9 @@ embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
       opt <- tricks_result$opt
     }
 
-    if (!is.null(epoch)) {
-      epoch_result <- epoch(iter, inp, out, method, epoch_result)
-      if (epoch_result$stop_early) {
+    if (!is.null(reporter)) {
+      report <- reporter(iter, inp, out, method, report)
+      if (report$stop_early) {
         break
       }
     }
