@@ -10,10 +10,10 @@ tsne_iris <- embed_sim(iris[, 1:4],
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 200,
-                       epoch = make_epoch(verbose = FALSE),
-                       export = c("epoch_result"),
+                       reporter = make_reporter(verbose = FALSE),
+                       export = c("report"),
                        verbose = FALSE)
-expect_equal(formatC(tsne_iris$epoch_result$stress), "0.0578")
+expect_equal(formatC(tsne_iris$report$stress), "0.0578")
 
 ssne_iris <- embed_sim(iris[, 1:4],
                        method = ssne(),
@@ -24,10 +24,10 @@ ssne_iris <- embed_sim(iris[, 1:4],
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 200,
-                       epoch = make_epoch(verbose = FALSE),
-                       export = c("epoch_result"),
+                       reporter = make_reporter(verbose = FALSE),
+                       export = c("report"),
                        verbose = FALSE)
-expect_equal(formatC(ssne_iris$epoch_result$stress), "0.07265")
+expect_equal(formatC(ssne_iris$report$stress), "0.07265")
 
 asne_iris <- embed_sim(iris[, 1:4],
                        method = asne(),
@@ -38,10 +38,10 @@ asne_iris <- embed_sim(iris[, 1:4],
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 200,
-                       epoch = make_epoch(verbose = FALSE),
-                       export = c("epoch_result"),
+                       reporter = make_reporter(verbose = FALSE),
+                       export = c("report"),
                        verbose = FALSE)
-expect_equal(formatC(asne_iris$epoch_result$stress), "0.08479")
+expect_equal(formatC(asne_iris$report$stress), "0.08479")
 
 pca_iris <- embed_sim(iris[, 1:4],
                       method = tsne(),
@@ -52,9 +52,10 @@ pca_iris <- embed_sim(iris[, 1:4],
                       preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                    verbose = FALSE),
                       max_iter = 0, verbose = FALSE,
-                      epoch = make_epoch(epoch_every = 1, verbose = FALSE),
-                      export = c("epoch_result"))
-expect_equal(formatC(pca_iris$epoch_result$cost), "1.598")
+                      reporter = make_reporter(report_every = 1,
+                                               verbose = FALSE),
+                      export = c("report"))
+expect_equal(formatC(pca_iris$report$cost), "1.598")
 
 context("jacobs")
 tsne_iris_jacobs <- embed_sim(iris[, 1:4],
@@ -72,11 +73,11 @@ tsne_iris_jacobs <- embed_sim(iris[, 1:4],
                                     dec_mult = 0.8, min_step_size = 0.1),
                                   normalize_grads = FALSE),
                               verbose = FALSE,
-                              epoch = make_epoch(epoch_every = 1,
-                                                 keep_costs = TRUE,
-                                                 verbose = FALSE),
-                              export = c("epoch_result"))
-jacobs_costs <- tsne_iris_jacobs$epoch_result$costs[,"cost"]
+                              reporter = make_reporter(report_every = 1,
+                                                       keep_costs = TRUE,
+                                                       verbose = FALSE),
+                              export = c("report"))
+jacobs_costs <- tsne_iris_jacobs$report$costs[,"cost"]
 expect_equal(formatC(jacobs_costs[1]),  "1.598")
 expect_equal(formatC(jacobs_costs[2]),  "1.594")
 expect_equal(formatC(jacobs_costs[3]),  "1.589")
