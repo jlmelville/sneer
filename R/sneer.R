@@ -9,48 +9,6 @@
 #' example, how much of an effect does the early exaggeration trick in t-SNE
 #' have on the embedding?
 #'
-#' First, some examples of how to use the package for embedding. A longer
-#' discussion of the package structure follows.
-#'
-#' @examples
-#' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
-#' # and initialize from random. Use generic plot function, displaying the first
-#' # two characters of the "Species" factor for the points. Explicitly choose
-#' # t-SNE as the method.
-#' tsne_iris <- embed_sim(iris[, 1:4],
-#'                        method = tsne(),
-#'                        opt = tsne_opt(),
-#'                        init_inp = make_init_inp(perplexity = 25),
-#'                        init_out = make_init_out(stdev = 1e-4)
-#'                        tricks = tsne_tricks(),
-#'                        reporter = make_reporter(plot_fn = make_plot(
-#'                          iris, "Species", make_label(2))))
-#'
-#' # Do ASNE on the synthetic the s1k dataset (10 overlapping 9D Gaussian blobs),
-#' # Autoscale the input, use PCA to initialize the embedding, and use
-#' # Nesterov Accelerated Gradient to do the optimization.
-#' asne_s1k <- embed_sim(s1k[, 1:9],
-#'                       method = asne(),
-#'                       preprocess = make_preprocess(auto_scale = TRUE),
-#'                       init_inp = make_init_inp(perplexity = 50),
-#'                       init_out = make_init_out(from_PCA = TRUE),
-#'                       opt = bold_nag_opt(),
-#'                       reporter = make_reporter(
-#'                        plot_fn = make_plot(s1k, "Label")))
-#'
-#' # Same as the previus example but creating the NAG optimizer explicitly with
-#' # generic make_opt method
-#' asne_s1k <- embed_sim(s1k[, 1:9],
-#'                       method = asne(),
-#'                       preprocess = make_preprocess(auto_scale = TRUE),
-#'                       init_inp = make_init_inp(perplexity = 50),
-#'                       init_out = make_init_out(from_PCA = TRUE),
-#'                       opt = make_opt(gradient = nesterov_gradient(),
-#'                                      step_size = bold_driver(),
-#'                                      update = nesterov_nsc_momentum()),
-#'                       reporter = make_reporter(
-#'                        plot_fn = make_plot(s1k, "Label")))
-#'
 #' @seealso
 #' In writing this package, the emphasis has been on making it possible to
 #' implement multiple different methods and apply different optimization and
@@ -161,6 +119,45 @@
 #' preserving embedding methods provided in this package (PCA does a horrible
 #' job of separated the 10 clusters in the data). See \code{?s1k} for more
 #' details.
+#'
+#' @examples
+#' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
+#' # and initialize from random. Use generic plot function, displaying the first
+#' # two characters of the "Species" factor for the points. Explicitly choose
+#' # t-SNE as the method.
+#' tsne_iris <- embed_sim(iris[, 1:4],
+#'                        method = tsne(),
+#'                        opt = tsne_opt(),
+#'                        init_inp = make_init_inp(perplexity = 25),
+#'                        init_out = make_init_out(stdev = 1e-4)
+#'                        tricks = tsne_tricks(),
+#'                        reporter = make_reporter(plot_fn = make_plot(
+#'                          iris, "Species", make_label(2))))
+#'
+#' # Do ASNE on the synthetic the s1k dataset (10 overlapping 9D Gaussian blobs),
+#' # Autoscale the input, use PCA to initialize the embedding, and use
+#' # Nesterov Accelerated Gradient to do the optimization.
+#' asne_s1k <- embed_sim(s1k[, 1:9],
+#'                       method = asne(),
+#'                       preprocess = make_preprocess(auto_scale = TRUE),
+#'                       init_inp = make_init_inp(perplexity = 50),
+#'                       init_out = make_init_out(from_PCA = TRUE),
+#'                       opt = bold_nag_opt(),
+#'                       reporter = make_reporter(
+#'                        plot_fn = make_plot(s1k, "Label")))
+#'
+#' # Same as the previous example but creating the NAG optimizer explicitly with
+#' # generic make_opt method
+#' asne_s1k <- embed_sim(s1k[, 1:9],
+#'                       method = asne(),
+#'                       preprocess = make_preprocess(auto_scale = TRUE),
+#'                       init_inp = make_init_inp(perplexity = 50),
+#'                       init_out = make_init_out(from_PCA = TRUE),
+#'                       opt = make_opt(gradient = nesterov_gradient(),
+#'                                      step_size = bold_driver(),
+#'                                      update = nesterov_nsc_momentum()),
+#'                       reporter = make_reporter(
+#'                        plot_fn = make_plot(s1k, "Label")))
 #'
 #' @docType package
 #' @name sneer
