@@ -242,8 +242,8 @@ embed_sim <- function(xm,
 #' \code{\link{make_tricks}} for configuring \code{tricks},
 #' \code{\link{make_reporter}} for configuring \code{reporter}.
 embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
-                  tricks = NULL, reporter = NULL, preprocess = NULL, export = NULL,
-                  after_embed = NULL) {
+                  tricks = NULL, reporter = NULL, preprocess = NULL,
+                  export = NULL, after_embed = NULL) {
   if (!is.null(preprocess)) {
     xm <- preprocess(xm)
   }

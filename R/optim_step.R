@@ -74,8 +74,9 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
       ds <- s_new - s_old
 
       opt$step_size_method$step_size <- s_old + ds
-      opt$step_size_method$step_size <- clamp(opt$step_size_method$step_size,
-                                              opt$step_size_method$min_step_size)
+      opt$step_size_method$step_size <-
+        clamp(opt$step_size_method$step_size,
+              opt$step_size_method$min_step_size)
       opt$step_size_method$old_cost <- opt$step_size_method$cost
 
       list(opt = opt)

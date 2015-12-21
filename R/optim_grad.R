@@ -71,6 +71,3 @@ nesterov_grad_pos <- function(opt, inp, out, method) {
 
   gradient(inp, new_out, method, opt$mat_name)
 }
-
-
-

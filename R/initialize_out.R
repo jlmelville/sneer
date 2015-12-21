@@ -158,4 +158,3 @@ scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
 random_matrix <- function(nrow, ncol = 2, sd = 1.0e-4) {
   matrix(rnorm(ncol * nrow, mean = 0, sd = sd), nrow = nrow)
 }
-

@@ -93,7 +93,7 @@ make_init_inp <- function(perplexity = 30,
 #' @param prow Row probability matrix.
 #' @return Conditional probability matrix.
 prow_to_pcond <- function(prow) {
-  clamp(prow/sum(prow))
+  clamp(prow / sum(prow))
 }
 
 #' Convert a row probability matrix to a join probability matrix.
@@ -106,7 +106,7 @@ prow_to_pcond <- function(prow) {
 #' @param prow Row probability matrix.
 #' @return Joint probability matrix.
 prow_to_pjoint <- function(prow) {
-  clamp(symmetrize_matrix(prow/sum(prow)))
+  clamp(symmetrize_matrix(prow / sum(prow)))
 }
 
 #' Create a symmetric matrix from a square matrix.

@@ -97,4 +97,3 @@ distance_matrix <- function(xm, min_dist = .Machine$double.eps) {
 upper_tri <- function(x) {
   x[upper.tri(x)]
 }
-

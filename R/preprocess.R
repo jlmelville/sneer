@@ -252,5 +252,3 @@ varfilter <- function(xm, minvar = 0.0) {
   vars <- apply(xm, 2, var)
   xm[, vars > minvar, drop = FALSE]
 }
-
-
