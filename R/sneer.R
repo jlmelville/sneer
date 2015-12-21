@@ -154,6 +154,14 @@
 #' and stopping early if necessary. Also, you can plot the current state of the
 #' embedding. See \code{?make_reporter} for more details.
 #'
+#' @section Synthetic Dataset:
+#' There's a synthetic dataset in this package, called \code{s1k}. It consists
+#' of a 1000 points representing a fuzzy 9D simplex. It's intended to
+#' demonstrate the "crowding effect" and require the sort of similarity
+#' preserving embedding methods provided in this package (PCA does a horrible
+#' job of separated the 10 clusters in the data). See \code{?s1k} for more
+#' details.
+#'
 #' @docType package
 #' @name sneer
 NULL
