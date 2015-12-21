@@ -41,6 +41,7 @@
 #'                                 P_exaggeration = 4,
 #'                                 exaggeration_off_iter = 50), ...)
 #' }
+#' @export
 make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
                         exaggeration_off_iter = 50, verbose = TRUE) {
   tricks <- list()
@@ -93,6 +94,7 @@ make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
 #' \dontrun{
 #'  embed_sim(tricks = tsne_tricks(), ...)
 #' }
+#' @export
 tsne_tricks <- function(verbose = TRUE) {
   make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
               exaggeration_off_iter = 50, verbose = verbose)

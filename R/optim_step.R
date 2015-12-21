@@ -18,7 +18,7 @@
 #' decreases. Should return a value greater than the current step size.
 #' @param dec_fn Function to apply to the current step size when the cost
 #' increases. Should return a value smaller than the current step size.
-#' @param initial_step_size Step size to attempt on the first step of
+#' @param init_step_size Step size to attempt on the first step of
 #' optimization.
 #' @param min_step_size Minimum step size.
 #' @param max_step_size Maximum step size.
@@ -26,7 +26,7 @@
 #' \itemize{
 #'  \item \code{inc_fn} Function to invoke to increase the step size.
 #'  \item \code{dec_fn} Function to invoke to decrease the step size.
-#'  \item \code{initial_step_size} Initial step size.
+#'  \item \code{init_step_size} Initial step size.
 #'  \item \code{min_step_size} Minimum step size.
 #'  \item \code{max_step_size} Maximum step size.
 #'  \item \code{init} Function to do any needed initialization.
@@ -36,21 +36,22 @@
 #'  \item \code{after_step} Function to do any needed updating or internal state
 #'  before the next optimization step.
 #' }
+#' @export
 bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
                         inc_fn = partial(`*`, inc_mult),
                         dec_fn = partial(`*`, dec_mult),
-                        initial_step_size = 1,
+                        init_step_size = 1,
                         min_step_size = sqrt(.Machine$double.eps),
                         max_step_size = NULL) {
   list(
     inc_fn = inc_fn,
     dec_fn = dec_fn,
-    initial_step_size = initial_step_size,
+    init_step_size = init_step_size,
     min_step_size = min_step_size,
     max_step_size = max_step_size,
     init = function(opt, inp, out, method) {
       opt$step_size_method$old_cost <- method$cost_fn(inp, out)
-      opt$step_size_method$step_size <- opt$step_size_method$initial_step_size
+      opt$step_size_method$step_size <- opt$step_size_method$init_step_size
       opt
     },
     get_step_size = function(opt, inp, out, method) {
@@ -121,7 +122,7 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' decreases. Should return a value greater than the current step size.
 #' @param dec_fn Function to apply to the current step size when the cost
 #' increases. Should return a value smaller than the current step size.
-#' @param initial_step_size Step size to attempt on the first step of
+#' @param init_step_size Step size to attempt on the first step of
 #' optimization.
 #' @param min_step_size Minimum step size.
 #' @param max_step_size Maximum step size.
@@ -129,7 +130,7 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' \itemize{
 #'  \item \code{inc_fn} Function to invoke to increase the step size.
 #'  \item \code{dec_fn} Function to invoke to decrease the step size.
-#'  \item \code{initial_step_size} Initial step size.
+#'  \item \code{init_step_size} Initial step size.
 #'  \item \code{min_step_size} Minimum step size.
 #'  \item \code{max_step_size} Maximum step size.
 #'  \item \code{init} Function to do any needed initialization.
@@ -140,16 +141,18 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #'  before the next optimization step.
 #' }
 #' @references
-#' R.A. Jacobs.
+#' R. A. Jacobs.
 #' Increased rates of convergence through learning rate adaptation.
-#' Neural Networks, 1:295–307, 1988.
+#' Neural Networks, 1:295-307, 1988.
 #'
-#' J.A. Janet, S.M. Scoggins, S.M. Schultz, W.E. Snyder, M.W. White,
-#' J.C. Sutton III
+#' J. A. Janet, S. M. Scoggins, S. M. Schultz, W. E. Snyder, M. W. White,
+#' J. C. Sutton III
 #' Shocking: an approach to stabilize backprop training with greedy adaptive
 #' learning rates
 #' 1998 IEEE International Joint Conference on Neural Networks Proceedings.
 #' IEEE World Congress on Computational Intelligence.
+#'
+#' @export
 jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
                    inc_fn = partial(`*`, inc_mult),
                    dec_fn = partial(`*`, dec_mult),
@@ -158,13 +161,13 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
   list(
     inc_fn = inc_fn,
     dec_fn = dec_fn,
-    initial_step_size = init_step_size,
+    init_step_size = init_step_size,
     min_step_size = min_step_size,
     max_step_size = max_step_size,
     init = function(opt, inp, out, method) {
       v <- out[[opt$mat_name]]
       opt$step_size_method$step_size <-
-        matrix(opt$step_size_method$initial_step_size, nrow(v), ncol(v))
+        matrix(opt$step_size_method$init_step_size, nrow(v), ncol(v))
       opt
     },
     get_step_size = function(opt, inp, out, method) {
@@ -193,9 +196,11 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' Visualizing Data using t-SNE.
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
 #'
-#' R.A. Jacobs.
+#' R. A. Jacobs.
 #' Increased rates of convergence through learning rate adaptation.
-#' Neural Networks, 1:295–307, 1988.
+#' Neural Networks, 1:295-307, 1988.
+#'
+#' @export
 tsne_jacobs <- function() {
   jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
          min_step_size = 0.1)

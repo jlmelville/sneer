@@ -12,6 +12,7 @@
 #' @param d2m Matrix of squared distances.
 #' @param beta xponential parameter.
 #' @return Weight matrix.
+#' @export
 exp_weight <- function(d2m, beta = 1) {
   exp(-beta * d2m)
 }
@@ -27,6 +28,7 @@ exp_weight <- function(d2m, beta = 1) {
 #' @param d2m Matrix of squared distances.
 #' @param beta Exponential parameter.
 #' @return Weight matrix.
+#' @export
 sqrt_exp_weight <- function(d2m, beta = 1) {
   exp(-beta * sqrt(d2m))
 }
@@ -40,6 +42,7 @@ sqrt_exp_weight <- function(d2m, beta = 1) {
 #'
 #' @param d2m Matrix of squared distances.
 #' @return Weight matrix.
+#' @export
 tdist_weight <- function(d2m) {
   1 / (1 + d2m)
 }

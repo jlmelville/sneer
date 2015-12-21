@@ -37,6 +37,7 @@
 #' }
 #' @param after_embed Callback to run on input and output data before output
 #' data is returned.
+#' @param verbose If \code{TRUE} display messages about the embedding progress.
 #' @return The output data. A list containing:
 #' \itemize{
 #'  \item \code{ym} Embedded coordinates. This name can be changed by
@@ -85,6 +86,7 @@
 #' \code{\link{make_reporter}} for configuring \code{reporter}.
 #'
 #' @examples
+#' \dontrun{
 #' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
 #' # except initialize from PCA so output is repeatable.
 #' # plot 2D result during embedding with convenience function for iris plot.
@@ -102,7 +104,7 @@
 #'                method = tsne(),
 #'                opt = tsne_opt(),
 #'                init_inp = make_init_inp(perplexity = 25),
-#'                init_out = make_init_out(stdev = 1e-4)
+#'                init_out = make_init_out(stdev = 1e-4),
 #'                tricks = tsne_tricks(),
 #'                reporter = make_reporter(
 #'                  plot_fn = make_plot(iris, "Species", make_label(2))))
@@ -114,8 +116,8 @@
 #'                method = ssne(),
 #'                opt = tsne_opt(),
 #'                init_inp = make_init_inp(perplexity = 25),
-#'                preprocess = make_preprocess(range_scale_matrix = TRUE)
-#'                init_out = make_init_out(stdev = 1e-4)
+#'                preprocess = make_preprocess(range_scale_matrix = TRUE),
+#'                init_out = make_init_out(stdev = 1e-4),
 #'                tricks = tsne_tricks(),
 #'                reporter = make_reporter(
 #'                  plot_fn = make_plot(iris, "Species", make_label(2))))
@@ -142,6 +144,8 @@
 #'  init_out = make_init_out(from_PCA = TRUE),
 #'  opt = bold_nag_opt(),
 #'  reporter = make_reporter(plot_fn = make_plot(s1k, "Label")))
+#' }
+#'@export
 embed_sim <- function(xm,
                       mat_name = "ym",
                       preprocess = make_preprocess(verbose = verbose),
@@ -168,10 +172,8 @@ embed_sim <- function(xm,
 #' Carrying out an embedding of a dataset.
 #'
 #' @param xm A matrix or data frame to embed.
-#' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
-#' @param Input data preprocess callback. Create by assigning the result of
-#' \code{make_preprocess}.
+#' @param preprocess Input data preprocess callback. Create by assigning the
+#' result of \code{make_preprocess}.
 #' @param init_inp Input initialization callback. Create by assigning the
 #' result of \code{make_init_inp}.
 #' @param init_out Output initialization callback. Create by assigning the
@@ -427,6 +429,8 @@ update_solution <- function(opt, inp, out, method) {
 #' @param inp Input data.
 #' @param out Output data.
 #' @param method Embedding method.
+#' @param mat_name Name of the matrix in the output data list that contains the
+#' embedded coordinates.
 #' @return List containing:
 #' \itemize{
 #'  \item \code{km} Stiffness matrix.

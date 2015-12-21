@@ -5,6 +5,7 @@
 #' Configuration function for optimizer gradient calculation.
 #'
 #' @return Classical gradient calculation method.
+#' @export
 classical_gradient <- function() {
   classical_grad_pos
 }
@@ -19,6 +20,7 @@ classical_gradient <- function() {
 #' On the importance of momentum and initialization in deep learning.
 #' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
 #' JMLR: W&CP volume 28.
+#' @export
 nesterov_gradient <- function() {
   nesterov_grad_pos
 }

@@ -82,7 +82,7 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
                           perplexity = perplexity, h_base = h_base)
 
   result <- root_bisect(fn = fn, tol = tol, max_iters = max_iters,
-                        x_neg = Inf, x_pos = 0, x_init = beta_init)
+                        x_lower = 0, x_upper = Inf, x_init = beta_init)
 
   list(pr = result$best$pr, perplexity = h_base ^ result$best$h,
        beta = result$x)
@@ -100,8 +100,9 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 #' @param tol Tolerance. If \code{abs(y_target - y) < tol} then the search will
 #' terminate.
 #' @param max_iters Maximum number of iterations to search for.
-#' @param lower Lower bracket of x.
-#' @param upper Upper bracket of x.
+#' @param x_lower Lower bracket of x.
+#' @param x_upper Upper bracket of x.
+#' @param x_init Initial value of x.
 #' @return a list containing:
 #' \itemize{
 #'  \item \code{x} Optimized value of x.
@@ -110,11 +111,11 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 #'  \item \code{best} Return value of calling \code{fn} with the optimized
 #'  value of \code{x}.
 #'}
-root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_pos,
-                        x_neg, x_init = (x_pos + x_neg) / 2) {
+root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_lower,
+                        x_upper, x_init = (x_lower + x_upper) / 2) {
   result <- fn(x_init)
   value <- result$value
-  bounds <- list(lower = min(x_neg, x_pos), upper = max(x_neg,x_pos),
+  bounds <- list(lower = min(x_lower, x_upper), upper = max(x_lower, x_upper),
                  mid = x_init)
   iter <- 0
   while (abs(value) > tol && iter < max_iters) {

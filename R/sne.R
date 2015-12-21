@@ -24,6 +24,7 @@
 #' Laurens van der Maarten, Geoffrey Hinton.
 #' Visualizing Data using t-SNE.
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#' @export
 tsne <- function() {
   f <- function(pm, qm, wm) {
     4 * (pm - qm) * wm
@@ -75,6 +76,7 @@ tsne <- function() {
 #' Laurens van der Maarten, Geoffrey Hinton.
 #' Visualizing Data using t-SNE.
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#' @export
 ssne <- function() {
   f <- function(pm, qm) {
     4 * (pm - qm)
@@ -116,7 +118,8 @@ ssne <- function() {
 #' G.E. Hinton and S.T. Roweis.
 #' Stochastic Neighbor Embedding.
 #' In Advances in Neural Information Processing Systems, volume 15,
-#' pages 833–840, Cambridge, MA, USA, 2002. The MIT Press.
+#' pages 833-840, Cambridge, MA, USA, 2002. The MIT Press.
+#' @export
 asne <- function() {
   f <- function(pm, qm) {
     km <- 2 * (pm - qm)
@@ -158,6 +161,7 @@ asne <- function() {
 #'  \item \code{after_init_fn} Method-specific initialization function to
 #'  invoke after input and output initialization callbacks.
 #' }
+#' @export
 tasne <- function() {
   f <- function(pm, qm, wm) {
     km <- 2 * (pm - qm) * wm

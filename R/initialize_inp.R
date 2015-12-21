@@ -26,6 +26,8 @@
 #' @param keep_all_results If \code{true} then the list returned by the callback
 #' will also contain a vector of \code{beta} parameters that generated the
 #' probability matrix. Otherwise, only the probability matrix is returned.
+#' @param verbose If \code{TRUE} display messages about progress of
+#' initialization.
 #' @return A callback function with signature \code{fn(xm)} where \code{xm}
 #' is the input coordinates or a distance matrix. This function will return
 #' a list containing: \itemize{
@@ -54,6 +56,7 @@
 #'  embed_sim(init_inp = make_init_inp(perplexity = 30,
 #'                                     input_weight_fn = exp_weight), ...)
 #' }
+#' @export
 make_init_inp <- function(perplexity = 30,
                           input_weight_fn = exp_weight,
                           keep_all_results = FALSE,
@@ -79,7 +82,7 @@ make_init_inp <- function(perplexity = 30,
     else {
       inp$pm <- d_to_p_result$pm
     }
-
+    flush.console()
     inp
   }
 }

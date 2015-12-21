@@ -82,6 +82,7 @@
 #'                                     plot_fn = make_plot(iris, "Species")),
 #'                                     ...)
 #' }
+#' @export
 make_reporter <- function(report_every = 100, min_cost = 0,
                           reltol = sqrt(.Machine$double.eps), plot_fn = NULL,
                           calc_stress = TRUE, keep_costs = FALSE,
@@ -104,7 +105,8 @@ make_reporter <- function(report_every = 100, min_cost = 0,
       if (calc_stress) {
         cost_str <- paste0(cost_str, " stress = ", formatC(stress))
       }
-      message("reporter: Iteration #", iter, cost_str)
+      message("Iteration #", iter, cost_str)
+      flush.console()
     }
     if (cost < min_cost) {
       if (verbose) {

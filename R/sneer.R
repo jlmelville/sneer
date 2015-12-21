@@ -17,7 +17,7 @@
 #' of an embedding algorithm is spread out over multiple functions. If you
 #' just want to understand how, for example, t-SNE is implemented, it's better
 #' to look at the code in 'tsne' package
-#' \link{https://github.com/jdonaldson/rtsne}.
+#' \url{https://github.com/jdonaldson/rtsne}.
 #'
 #' @section Embedding:
 #' Currently, only the similarity-based embedding techniques related to
@@ -121,6 +121,7 @@
 #' details.
 #'
 #' @examples
+#' \dontrun{
 #' # Do t-SNE on the iris dataset with the same options as the t-SNE paper
 #' # and initialize from random. Use generic plot function, displaying the first
 #' # two characters of the "Species" factor for the points. Explicitly choose
@@ -129,7 +130,7 @@
 #'                        method = tsne(),
 #'                        opt = tsne_opt(),
 #'                        init_inp = make_init_inp(perplexity = 25),
-#'                        init_out = make_init_out(stdev = 1e-4)
+#'                        init_out = make_init_out(stdev = 1e-4),
 #'                        tricks = tsne_tricks(),
 #'                        reporter = make_reporter(plot_fn = make_plot(
 #'                          iris, "Species", make_label(2))))
@@ -158,7 +159,7 @@
 #'                                      update = nesterov_nsc_momentum()),
 #'                       reporter = make_reporter(
 #'                        plot_fn = make_plot(s1k, "Label")))
-#'
+#' }
 #' @docType package
 #' @name sneer
 NULL

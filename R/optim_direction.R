@@ -10,6 +10,7 @@
 #'  \item \code{get_direction} Function invoked by the optimizer to find the direction
 #'  to move in the gradient descent part of the solution update.
 #' }
+#' @export
 steepest_descent <- function() {
   list(
     get_direction = function(opt, inp, out, method, iter) {

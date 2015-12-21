@@ -20,11 +20,11 @@
 #' stiffness calculations.
 #'
 #' @param k Number of output dimensions. For 2D visualization this is always 2.
-#' @param initial_config Input data to initialize the coordinates from. Must
+#' @param init_config Input data to initialize the coordinates from. Must
 #' be a matrix with the same dimensions as the desired output coordinates.
 #' @param stdev The standard deviation of the gaussian used to generate the
 #' output coordinates. Used only if \code{from_PCA} is \code{FALSE},
-#' \code{initial_config} is \code{NULL} and \code{from_input_name} is
+#' \code{init_config} is \code{NULL} and \code{from_input_name} is
 #' \code{NULL}.
 #' @param from_PCA If \code{TRUE}, then the first \code{k} scores of the PCA
 #' of the input coordinates are used to initialize the embedded coordinates.
@@ -56,18 +56,19 @@
 #' \dontrun{
 #'  embed_sim(init_out = make_init_out(from_PCA = TRUE), ...)
 #' }
-make_init_out <- function(k = 2, initial_config = NULL, stdev = 1e-04,
+#' @export
+make_init_out <- function(k = 2, init_config = NULL, stdev = 1e-04,
                           from_PCA = FALSE, from_input_name = NULL,
                           mat_name = "ym", verbose = TRUE) {
   init_out <- list()
 
-  if (!is.null(initial_config) && is.matrix(initial_config)) {
+  if (!is.null(init_config) && is.matrix(init_config)) {
     init_out$from_data <- function(inp, out) {
       n <- nrow(inp$dm)
-      if (nrow(initial_config) != n | ncol(initial_config) != k) {
-        stop("initial_config does not match necessary configuration for ym")
+      if (nrow(init_config) != n | ncol(init_config) != k) {
+        stop("init_config does not match necessary configuration for ym")
       }
-      out[[mat_name]] <- initial_config
+      out[[mat_name]] <- init_config
       out
     }
   } else if (from_PCA) {
@@ -81,8 +82,8 @@ make_init_out <- function(k = 2, initial_config = NULL, stdev = 1e-04,
   } else if (!is.null(from_input_name)) {
     init_out$from_input <- function(inp, out) {
       n <- nrow(inp$dm)
-      initial_config <- inp[[from_input_name]]
-      if (nrow(initial_config) != n | ncol(initial_config) != k) {
+      init_config <- inp[[from_input_name]]
+      if (nrow(init_config) != n | ncol(init_config) != k) {
         stop("inp$", from_input_name, " does not match necessary configuration",
              " for ym")
       }
@@ -105,6 +106,7 @@ make_init_out <- function(k = 2, initial_config = NULL, stdev = 1e-04,
     for (name in names(init_out)) {
       out <- init_out[[name]](inp, out)
     }
+    flush.console()
     out
   }
 }
@@ -121,10 +123,12 @@ make_init_out <- function(k = 2, initial_config = NULL, stdev = 1e-04,
 #' is the same as that of \code{xm}.
 #'
 #' @examples
+#' \dontrun{
 #' # first two components of PCA
-#' scores <- scores_matrix(xm, ncol = 2)
+#' scores <- scores_matrix(iris[, 1:4], ncol = 2)
 #' # all scores
-#' scores <- scores_matrix(xm)
+#' scores <- scores_matrix(iris[, 1:4])
+#' }
 scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
                           verbose = TRUE) {
 
@@ -151,10 +155,12 @@ scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
 #' @return Random matrix with \code{nrow} rows and \code{ncol} columns.
 #'
 #' @examples
+#' \dontrun{
 #' # matrix with 5 rows, 3 columns and standard deviation of 0.1
 #' xm <- random_matrix(5, 3, 0.1)
 #' # matrix with 100 rows
 #' xm <- random_matrix(100)
+#' }
 random_matrix <- function(nrow, ncol = 2, sd = 1.0e-4) {
   matrix(rnorm(ncol * nrow, mean = 0, sd = sd), nrow = nrow)
 }

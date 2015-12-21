@@ -1,19 +1,6 @@
 # Functions to help with visualizing embedding during the optimization
 # procedure.
 
-#' Create a label function for 2D embedding plot.
-#'
-#' Even quite short labels can create a crowded looking embedding plot.
-#' Use this function to only print the first few characters of each label.
-#'
-#' @param num_label_chars The number of characters to plot from the label
-#' for each data point.
-#' @return a function which can be passed to the \code{label_fn} parameter
-#' of the \code{make_plot} function.
-make_label <- function(num_label_chars = 1) {
-  partial(substr, start = 0, stop = num_label_chars)
-}
-
 #' Create a plotting function.
 #'
 #' Factory function for a plotting callback which can be used by the reporter
@@ -41,7 +28,7 @@ make_label <- function(num_label_chars = 1) {
 #'
 #' # For iris dataset, plot 2D embedding with first two characters of the
 #' # "Species" factor to identify each point on the plot
-#' make_plot(iris, "Species", make_label(2)))
+#' make_plot(iris, "Species", make_label(2))
 #'
 #' # Should be passed to the plot_fn argument of the reporter factory function:
 #' \dontrun{
@@ -49,6 +36,7 @@ make_label <- function(num_label_chars = 1) {
 #'                                     plot_fn = make_plot(iris, "Species")),
 #'                                      ...)
 #' }
+#' @export
 make_plot <- function(x, attr_name,
                       label_fn = function(labels) {
                         labels
@@ -64,6 +52,20 @@ make_plot <- function(x, attr_name,
   }
 }
 
+#' Create a label function for 2D embedding plot.
+#'
+#' Even quite short labels can create a crowded looking embedding plot.
+#' Use this function to only print the first few characters of each label.
+#'
+#' @param num_label_chars The number of characters to plot from the label
+#' for each data point.
+#' @return a function which can be passed to the \code{label_fn} parameter
+#' of the \code{make_plot} function.
+#' @export
+make_label <- function(num_label_chars = 1) {
+  partial(substr, start = 0, stop = num_label_chars)
+}
+
 #' Helper function for visualizing the iris data set. If embedding the iris
 #' data set, the result of invoking this can be passed to the \code{plot_fn}
 #' parameter of the \code{make_reporter} function.
@@ -71,6 +73,7 @@ make_plot <- function(x, attr_name,
 #' @param num_label_chars The number of characters to plot from the label
 #' for each data point.
 #' @return Function for plotting the embedded iris data set.
+#' @export
 make_iris_plot <- function(num_label_chars = 1) {
   make_plot(iris, "Species", make_label(num_label_chars))
 }

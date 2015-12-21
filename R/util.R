@@ -5,6 +5,7 @@
 #' @param f Function to partially apply.
 #' @param ... params of \code{f} to apply.
 #' @return Partially applied version of \code{f}.
+#' @export
 partial <- function(f, ...) {
   args <- list(...)
   function(...) {

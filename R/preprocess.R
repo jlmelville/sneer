@@ -25,7 +25,7 @@
 #' @param whiten If \code{TRUE}, input coordinates will be whitened.
 #' @param zwhiten If \code{TRUE}, input coordinates will be whitened using the
 #' ZCA transform.
-#' @param initial_dims Number of components to use in the whitening preprocess.
+#' @param whiten_dims Number of components to use in the whitening preprocess.
 #' Only use if \code{whiten} or \code{zwhiten} is \code{TRUE}.
 #' @param preprocess_fn Custom preprocessing function to be applied. Should have
 #' the signature \code{xm} where \code{xm} is the input coordinate matrix, and
@@ -60,6 +60,7 @@
 #' \dontrun{
 #'  embed_sim(preprocess = make_preprocess(range_scale = TRUE, rmin = -1), ...)
 #' }
+#' @export
 make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
                             rmin = 0, rmax = 1, auto_scale = FALSE,
                             whiten = FALSE, zwhiten = FALSE, whiten_dims = 30,
@@ -135,6 +136,7 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
         xm <- preprocess[[name]](xm)
       }
     }
+    flush.console()
     xm
   }
 }

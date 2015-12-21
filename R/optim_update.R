@@ -5,16 +5,16 @@
 #' Create an callback for the optimizer to use to update the embedding solution.
 #' Update is in the form of a step momentum function.
 #'
-#' @param initial_momentum Momentum value for the first \code{switch_iter}
+#' @param init_momentum Momentum value for the first \code{switch_iter}
 #' iterations.
 #' @param final_momentum Momentum value after \code{switch_iter} iterations.
 #' @param switch_iter Iteration number at which to switch from
-#' \code{initial_momentum} to \code{final_momentum}.
+#' \code{init_momentum} to \code{final_momentum}.
 #' @param verbose if \code{TRUE}, log info about the momentum.
 #' @return A solution update method for use by the optimizer. A list consisting
 #' of:
 #' \itemize{
-#'  \item \code{initial_momentum} Initial momentum.
+#'  \item \code{init_momentum} Initial momentum.
 #'  \item \code{final_momentum} Final momentum.
 #'  \item \code{mom_switch_iter} Switch iteration.
 #'  \item \code{init} Function to do any needed initialization.
@@ -23,14 +23,15 @@
 #'  \item \code{after_step} Function to do any needed updating or internal state
 #'  before the next optimization step.
 #' }
-step_momentum <- function(initial_momentum = 0.5, final_momentum = 0.8,
+#' @export
+step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
                           switch_iter = 250, verbose = TRUE) {
   list(
-    initial_momentum = initial_momentum,
+    init_momentum = init_momentum,
     final_momentum = final_momentum,
     mom_switch_iter = switch_iter,
     init = function(opt, inp, out, method) {
-      opt$update_method$momentum <- opt$update_method$initial_momentum
+      opt$update_method$momentum <- opt$update_method$init_momentum
       opt$update_method$update <- matrix(0, nrow(out[[opt$mat_name]]),
                                          ncol(out[[opt$mat_name]]))
       opt
@@ -55,14 +56,14 @@ step_momentum <- function(initial_momentum = 0.5, final_momentum = 0.8,
 #' Update is in the form of a linear momentum function.
 #'
 #' @param max_iter Number of iterations to scale the momentum over from
-#' \code{initial_momentum} to \code{final_momentum}.
-#' @param initial_momentum Momentum value for the first \code{switch_iter}
+#' \code{init_momentum} to \code{final_momentum}.
+#' @param init_momentum Momentum value for the first \code{switch_iter}
 #' iterations.
 #' @param final_momentum Momentum value after \code{switch_iter} iterations.
 #' @return A solution update method for use by the optimizer. A list consisting
 #' of:
 #' \itemize{
-#'  \item \code{initial_momentum} Initial momentum.
+#'  \item \code{init_momentum} Initial momentum.
 #'  \item \code{final_momentum} Final momentum.
 #'  \item \code{init} Function to do any needed initialization.
 #'  \item \code{get_update} Function to return the current update, which will
@@ -70,20 +71,21 @@ step_momentum <- function(initial_momentum = 0.5, final_momentum = 0.8,
 #'  \item \code{after_step} Function to do any needed updating or internal state
 #'  before the next optimization step.
 #' }
-linear_momentum <- function(max_iter, initial_momentum = 0,
+#' @export
+linear_momentum <- function(max_iter, init_momentum = 0,
                             final_momentum = 0.9) {
   list(
-    initial_momentum = initial_momentum,
+    init_momentum = init_momentum,
     final_momentum = final_momentum,
     init = function(opt, inp, out, method) {
-      opt$update_method$momentum <- opt$update_method$initial_momentum
+      opt$update_method$momentum <- opt$update_method$init_momentum
       opt$update_method$update <- matrix(0, nrow(out[[opt$mat_name]]),
                                          ncol(out[[opt$mat_name]]))
       opt
     },
     get_update = momentum_update,
     after_step = function(opt, inp, out, new_out, ok, iter) {
-      mu_i <- opt$update_method$initial_momentum
+      mu_i <- opt$update_method$init_momentum
       mu_f <- opt$update_method$final_momentum
       mu <- (mu_f - mu_i) / max_iter
       opt$update_method$momentum <- (mu * iter) + mu_i
@@ -102,7 +104,7 @@ linear_momentum <- function(max_iter, initial_momentum = 0,
 #' @return A solution update method for use by the optimizer. A list consisting
 #' of:
 #' \itemize{
-#'  \item \code{initial_momentum} Initial momentum.
+#'  \item \code{init_momentum} Initial momentum.
 #'  \item \code{init} Function to do any needed initialization.
 #'  \item \code{get_update} Function to return the current update, which will
 #'  be added to current solution matrix.
@@ -114,11 +116,12 @@ linear_momentum <- function(max_iter, initial_momentum = 0,
 #' On the importance of momentum and initialization in deep learning.
 #' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
 #' JMLR: W&CP volume 28.
+#' @export
 nesterov_nsc_momentum <- function() {
   list(
-    initial_momentum = 0.5,
+    init_momentum = 0.5,
     init = function(opt, inp, out, method) {
-      opt$update_method$momentum <- opt$update_method$initial_momentum
+      opt$update_method$momentum <- opt$update_method$init_momentum
       opt$update_method$update <- matrix(0, nrow(out[[opt$mat_name]]),
                                          ncol(out[[opt$mat_name]]))
       opt
@@ -143,6 +146,7 @@ nesterov_nsc_momentum <- function() {
 #'  \item \code{get_update} Function to return the current update, which will
 #'  be added to current solution matrix.
 #' }
+#' @export
 no_momentum <- function() {
   list(
     init = function(opt, inp, out, method) {

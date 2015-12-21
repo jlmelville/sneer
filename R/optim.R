@@ -79,14 +79,14 @@
 #' # used in the t-SNE paper.
 #' make_opt(step_size = jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
 #'                             min_step_size = 0.1),
-#'          update = step_momentum(initial_momentum = 0.5, final_momentum = 0.8,
+#'          update = step_momentum(init_momentum = 0.5, final_momentum = 0.8,
 #'                                 switch_iter = 250),
 #'          normalize_grads = FALSE)
 #'
 #' # Use bold driver adaptive step size (1% step size increase, 25% decrease)
 #' # with step momentum and normalizing gradients.
 #' make_opt(step_size = bold_driver(inc_mult = 1.01, dec_mult = 0.75),
-#'          update = step_momentum(initial_momentum = 0.5, final_momentum = 0.8,
+#'          update = step_momentum(init_momentum = 0.5, final_momentum = 0.8,
 #'                                 switch_iter = 250),
 #'          normalize_grads = TRUE)
 #'
@@ -100,6 +100,7 @@
 #'                           step_size = bold_driver(),
 #'                           update = nesterov_nsc_momentum()), ...)
 #' }
+#' @export
 make_opt <- function(gradient = classical_gradient(),
                      direction = steepest_descent(),
                      step_size = bold_driver(),
@@ -180,6 +181,7 @@ make_opt <- function(gradient = classical_gradient(),
 #' \dontrun{
 #'  embed_sim(opt = tsne_opt(), ...)
 #' }
+#' @export
 tsne_opt <- function() {
   make_opt(gradient = classical_gradient(),
            direction = steepest_descent(),
@@ -195,7 +197,8 @@ tsne_opt <- function() {
 #' the NAG descent method and momentum for non-strongly convex problems
 #' formulated by Sutkever et al., along with the bold driver method for step
 #' size.
-#'
+#' @param min_step_size Minimum step size allowed.
+#' @param init_step_size Initial step size.
 #' @return Optimizer with NAG parameters and bold driver step size.
 #' @seealso \code{\link{embed_sim}} for how to use this function for configuring
 #' an embedding, and \code{\link{make_opt}} for a more generic function.
@@ -204,11 +207,12 @@ tsne_opt <- function() {
 #' \dontrun{
 #'  embed_sim(opt = bold_nag_opt(), ...)
 #' }
+#' @export
 bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
-                         initial_step_size = 1) {
+                         init_step_size = 1) {
   make_opt(gradient = nesterov_gradient(),
            step_size = bold_driver(min_step_size = min_step_size,
-                                   initial_step_size = initial_step_size),
+                                   init_step_size = init_step_size),
            update = nesterov_nsc_momentum())
 }
 
