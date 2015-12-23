@@ -92,9 +92,9 @@ If the \code{report} list is present, it contains:
  when the \code{make_reporter} factory function is called.
  \item \code{reltol} Relative tolerance of the difference between present
  cost and the cost from the previous report.
- \item \code{stress} Stress for the most recent iteration. Only present if
- \code{calc_stress} is set to \code{TRUE} when the \code{make_reporter}
- factory function is called.
+ \item \code{norm} Normalized cost for the most recent iteration. Only
+ present if \code{normalize_cost} is set to \code{TRUE} when the
+ \code{make_reporter} factory function is called.
  \item \code{iter} The iteration at which the report is generated.
 }
 }

@@ -32,7 +32,8 @@
 #'
 #' # Should be passed to the plot_fn argument of the reporter factory function:
 #' \dontrun{
-#'  embed_sim(reporter = make_reporter(report_every = 100, calc_stress = TRUE,
+#'  embed_sim(reporter = make_reporter(report_every = 100,
+#'                                     normalize_cost = TRUE,
 #'                                     plot_fn = make_plot(iris, "Species")),
 #'                                      ...)
 #' }

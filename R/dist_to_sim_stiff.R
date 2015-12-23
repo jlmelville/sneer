@@ -1,6 +1,30 @@
 # Functions to generate probabilities from coordinates, as used in similarity
 # based embedding methods.
 
+#' Create a weight matrix.
+#'
+#' Creates a matrix of positive weights from the distance matrix of the
+#' embedded coordinates.
+#'
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Weight matrix for the embedded coordinates in \code{out}.
+weights <- function(out, method) {
+  coords_to_weights(out[[method$mat_name]], method$weight_fn)
+}
+
+#' Create a weight matrix.
+#'
+#' @param ym Matrix of coordinates.
+#' @param weight_fn Function with signature \code{weight_fn(d2m)}
+#' where \code{d2m} is a matrix of squared distances between the output
+#' coordinates. It should return a weight matrix.
+#' @return Weight matrix.
+coords_to_weights <- function(ym, weight_fn) {
+  d2m <- coords_to_dist2(ym)
+  dist2_to_weights(d2m, weight_fn)
+}
+
 #' Generate a weights matrix from squared coordinates.
 #'
 #' Weights are subsequently normalized to probabilities in similarity embedding.
@@ -16,32 +40,6 @@ dist2_to_weights <- function(d2m, weight_fn) {
   diag(wm) <- 0  # set self-weights to 0
   wm
 }
-
-#' Update matrices that are dependent on embedding coordinates.
-#'
-#' After embedding coordinates are updated, other matrices may need
-#' to be also updated: e.g. distance matrix and for similarity-based
-#' embedding weights and probability matrices.
-#'
-#' @param inp Input data.
-#' @param out Output data.
-#' @param method Embedding method.
-#' @param mat_name Name of the matrix in \code{out} which contains the
-#' coordinates.
-#' @return Updated version of \code{out}.
-update_out <- function(inp, out, method, mat_name = "ym") {
-  d2m <- coords_to_dist2(out[[mat_name]])
-
-  wm <- dist2_to_weights(d2m, method$weight_fn)
-  out$qm <- method$prob_out_fn(wm)
-
-  if (!is.null(method$update_out_fn)) {
-    out <- method$update_out_fn(inp, out, method, wm)
-  }
-
-  out
-}
-
 
 #' Converts a weight matrix to a row probability matrix.
 #'

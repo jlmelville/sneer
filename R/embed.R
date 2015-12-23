@@ -72,9 +72,9 @@
 #'  when the \code{make_reporter} factory function is called.
 #'  \item \code{reltol} Relative tolerance of the difference between present
 #'  cost and the cost from the previous report.
-#'  \item \code{stress} Stress for the most recent iteration. Only present if
-#'  \code{calc_stress} is set to \code{TRUE} when the \code{make_reporter}
-#'  factory function is called.
+#'  \item \code{norm} Normalized cost for the most recent iteration. Only
+#'  present if \code{normalize_cost} is set to \code{TRUE} when the
+#'  \code{make_reporter} factory function is called.
 #'  \item \code{iter} The iteration at which the report is generated.
 #' }
 #' @seealso
@@ -231,9 +231,9 @@ embed_sim <- function(xm,
 #'  \code{TRUE} when the \code{make_reporter} factory function is called.
 #'  \item \code{reltol} Relative tolerance of the difference between present
 #'  cost and the cost evaluted by the previous report
-#'  \item \code{stress} Stress for the current configuration Only present if
-#'  \code{calc_stress} is set to \code{TRUE} when the \code{make_reporter}
-#'  factory function is called.
+#'  \item \code{norm} Normalized cost for the most recent iteration. Only
+#'  present if \code{normalize_cost} is set to \code{TRUE} when the
+#'  \code{make_reporter} factory function is called.
 #'  \item \code{iter} The iteration at which the report is generated.
 #' }
 #' @seealso
@@ -260,7 +260,7 @@ embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
   method <- after_init_result$method
 
   # initialize matrices needed for gradient calculation
-  out <- update_out(inp, out, method, opt$mat_name)
+  out <- method$update_out_fn(inp, out, method)
 
   # reuse reports from old invocation of reporter, so we can use info
   # to determine whether to stop early (e.g. relative convergence tolerance)
@@ -420,7 +420,7 @@ update_solution <- function(opt, inp, out, method) {
   new_out <- out
   new_solution <- new_out[[opt$mat_name]] + opt$update_method$update
   new_out[[opt$mat_name]] <- new_solution
-  update_out(inp, new_out, method, opt$mat_name)
+  method$update_out_fn(inp, new_out, method)
 }
 
 

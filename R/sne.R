@@ -4,6 +4,8 @@
 #'
 #' Creates a list of functions that collectively implement t-SNE.
 #'
+#' @param mat_name Name of the matrix in the output data list that will contain
+#' the embedded coordinates.
 #' @return a list with the following members:
 #' \itemize{
 #'  \item \code{cost_fn} Cost function for the embedding: the Kullback-Leibler
@@ -25,7 +27,7 @@
 #' Visualizing Data using t-SNE.
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
 #' @export
-tsne <- function() {
+tsne <- function(mat_name = "ym") {
   f <- function(pm, qm, wm) {
     4 * (pm - qm) * wm
   }
@@ -36,15 +38,17 @@ tsne <- function() {
     stiffness_fn = function(method, inp, out) {
       f(inp$pm, out$qm, out$wm)
     },
-    prob_out_fn = weights_to_pcond,
-    update_out_fn = function(inp, out, method, wm) {
+    update_out_fn = function(inp, out, method) {
+      wm <- weights(out, method)
+      out$qm <- weights_to_pcond(wm)
       out$wm <- wm
       out
     },
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       list(inp = inp)
-    }
+    },
+    mat_name = mat_name
   )
 }
 
@@ -52,6 +56,8 @@ tsne <- function() {
 #'
 #' Creates a list of functions that collectively implement SSNE.
 #'
+#' @param mat_name Name of the matrix in the output data list that will contain
+#' the embedded coordinates.
 #' @return a list with the following members:
 #' \itemize{
 #'  \item \code{cost_fn} Cost function for the embedding: the Kullback-Leibler
@@ -77,7 +83,7 @@ tsne <- function() {
 #' Visualizing Data using t-SNE.
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
 #' @export
-ssne <- function() {
+ssne <- function(mat_name = "ym") {
   f <- function(pm, qm) {
     4 * (pm - qm)
   }
@@ -88,12 +94,16 @@ ssne <- function() {
     stiffness_fn = function(method, inp, out) {
       f(inp$pm, out$qm)
     },
-    prob_out_fn = weights_to_pcond,
-    update_out_fn = NULL,
+    update_out_fn = function(inp, out, method) {
+      wm <- weights(out, method)
+      out$qm <- weights_to_pcond(wm)
+      out
+    },
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       list(inp = inp)
-    }
+    },
+    mat_name = mat_name
   )
 }
 
@@ -101,6 +111,8 @@ ssne <- function() {
 #'
 #' Creates a list of functions that collectively implement ASNE.
 #'
+#' @param mat_name Name of the matrix in the output data list that will contain
+#' the embedded coordinates.
 #' @return a list with the following members:
 #' \itemize{
 #'  \item \code{cost_fn} Cost function for the embedding: the Kullback-Leibler
@@ -120,7 +132,7 @@ ssne <- function() {
 #' In Advances in Neural Information Processing Systems, volume 15,
 #' pages 833-840, Cambridge, MA, USA, 2002. The MIT Press.
 #' @export
-asne <- function() {
+asne <- function(mat_name = "ym") {
   f <- function(pm, qm) {
     km <- 2 * (pm - qm)
     km + t(km)
@@ -132,12 +144,16 @@ asne <- function() {
     stiffness_fn = function(method, inp, out) {
       f(inp$pm, out$qm)
     },
-    prob_out_fn = weights_to_prow,
-    update_out_fn = NULL,
+    update_out_fn = function(inp, out, method) {
+      wm <- weights(out, method)
+      out$qm <- weights_to_prow(wm)
+      out
+    },
     after_init_fn = function(inp, out, method) {
       inp$pm <- clamp(inp$pm)
       list(inp = inp)
-    }
+    },
+    mat_name = mat_name
   )
 }
 
@@ -148,6 +164,8 @@ asne <- function() {
 #' within sneer: this uses the t-distributed distance weighting of t-SNE, but
 #' for probability generation uses the point-wise distribution of ASNE.
 #'
+#' @param mat_name Name of the matrix in the output data list that will contain
+#' the embedded coordinates.
 #' @return a list with the following members:
 #' \itemize{
 #'  \item \code{cost_fn} Cost function for the embedding: the Kullback-Leibler
@@ -162,7 +180,7 @@ asne <- function() {
 #'  invoke after input and output initialization callbacks.
 #' }
 #' @export
-tasne <- function() {
+tasne <- function(mat_name = "ym") {
   f <- function(pm, qm, wm) {
     km <- 2 * (pm - qm) * wm
     km + t(km)
@@ -174,14 +192,16 @@ tasne <- function() {
     stiffness_fn = function(method, inp, out) {
       f(inp$pm, out$qm, out$wm)
     },
-    prob_out_fn = weights_to_prow,
-    update_out_fn = function(inp, out, method, wm) {
+    update_out_fn = function(inp, out, method) {
+      wm <- weights(out, method)
+      out$qm <- weights_to_prow(wm)
       out$wm <- wm
       out
     },
     after_init_fn = function(inp, out, method) {
       inp$pm <- clamp(inp$pm)
       list(inp = inp)
-    }
+    },
+    mat_name = mat_name
   )
 }

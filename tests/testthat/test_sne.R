@@ -13,7 +13,7 @@ tsne_iris <- embed_sim(iris[, 1:4],
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
                        verbose = FALSE)
-expect_equal(formatC(tsne_iris$report$stress), "0.0578")
+expect_equal(formatC(tsne_iris$report$norm), "0.0578")
 
 ssne_iris <- embed_sim(iris[, 1:4],
                        method = ssne(),
@@ -27,7 +27,7 @@ ssne_iris <- embed_sim(iris[, 1:4],
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
                        verbose = FALSE)
-expect_equal(formatC(ssne_iris$report$stress), "0.07265")
+expect_equal(formatC(ssne_iris$report$norm), "0.07265")
 
 asne_iris <- embed_sim(iris[, 1:4],
                        method = asne(),
@@ -41,7 +41,7 @@ asne_iris <- embed_sim(iris[, 1:4],
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
                        verbose = FALSE)
-expect_equal(formatC(asne_iris$report$stress), "0.08479")
+expect_equal(formatC(asne_iris$report$norm), "0.08479")
 
 pca_iris <- embed_sim(iris[, 1:4],
                       method = tsne(),

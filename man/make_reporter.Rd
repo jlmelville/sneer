@@ -5,8 +5,8 @@
 \title{Create a reporter callback.}
 \usage{
 make_reporter(report_every = 100, min_cost = 0,
-  reltol = sqrt(.Machine$double.eps), plot_fn = NULL, calc_stress = TRUE,
-  keep_costs = FALSE, verbose = TRUE)
+  reltol = sqrt(.Machine$double.eps), plot_fn = NULL,
+  normalize_cost = TRUE, keep_costs = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{report_every}{Number of steps between callback invocations.}
@@ -22,8 +22,8 @@ halted.}
 \code{plot_fn(out)} where \code{out} is the output data list. Return value
 of this function is ignored.}
 
-\item{calc_stress}{If \code{TRUE}, the cost calculated by the cost function
-will be converted to a stress and both values logged.}
+\item{normalize_cost}{If \code{TRUE}, the cost calculated by the cost
+function will be normalized and both values logged.}
 
 \item{keep_costs}{If \code{TRUE}, all costs (and the iteration number at
 which they were calculated) will be stored on result list returned by the
@@ -59,10 +59,11 @@ the following elements:
  \item \code{reltol} Relative convergence value.
  \item \code{iter} Iteration number that the callback was invoked at.
  \item \code{cost} Cost for this reporter.
- \item \code{stress} Stress value (scaled cost value) for this reporter. Only
- present if \code{calc_stress} was \code{TRUE}.
+ \item \code{norm} Normalized cost for the most recent iteration. Only
+ present if \code{normalize_cost} was \code{TRUE}.
  \item \code{costs} Matrix of all costs calculated for all invocations of
- the reporter callback and the value of \code{iter} the reporters were invoked at.
+ the reporter callback and the value of \code{iter} the reporters were
+ invoked at.
  Only present if \code{keep_costs} was \code{TRUE}.
 }
 
@@ -73,8 +74,8 @@ if \code{keep_costs} is \code{TRUE}.
 }
 \examples{
 # reporter calculation every 100 steps of optimization, log cost and also the
-# stress (scaled cost)
-make_reporter(report_every = 100, calc_stress = TRUE)
+# normalized cost
+make_reporter(report_every = 100, normalize_cost = TRUE)
 
 # Stop optimization early if relative tolerance of costs falls below 0.001
 make_reporter(report_every = 100, reltol = 0.001)
@@ -94,7 +95,8 @@ make_reporter(report_every = 100, keep_costs = TRUE)
 
 # Should be passed to the reporter argument of an embedding function:
 \dontrun{
- embed_sim(reporter = make_reporter(report_every = 100, calc_stress = TRUE,
+ embed_sim(reporter = make_reporter(report_every = 100,
+                                    normalize_cost = TRUE,
                                     plot_fn = make_plot(iris, "Species")),
                                     ...)
 }

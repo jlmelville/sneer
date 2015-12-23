@@ -4,7 +4,11 @@
 \alias{tsne}
 \title{t-distributed Stochastic Neighbor Embedding.}
 \usage{
-tsne()
+tsne(mat_name = "ym")
+}
+\arguments{
+\item{mat_name}{Name of the matrix in the output data list that will contain
+the embedded coordinates.}
 }
 \value{
 a list with the following members:
