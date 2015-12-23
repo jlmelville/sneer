@@ -16,8 +16,8 @@
 #' made to make this package fast or memory efficient; and the entire workflow
 #' of an embedding algorithm is spread out over multiple functions. If you
 #' just want to understand how, for example, t-SNE is implemented, it's better
-#' to look at the code in 'tsne' package
-#' \url{https://github.com/jdonaldson/rtsne}.
+#' to look at the code in the
+#' \url{https://github.com/jdonaldson/rtsne}{'tsne' R package}.
 #'
 #' @section Embedding:
 #' Currently, only the similarity-based embedding techniques related to
