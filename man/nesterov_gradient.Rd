@@ -18,4 +18,7 @@ On the importance of momentum and initialization in deep learning.
 30th International Conference on Machine Learning, Atlanta, USA, 2013.
 JMLR: W&CP volume 28.
 }
+\seealso{
+Other sneer optimization gradient methods: \code{\link{classical_gradient}}
+}
 

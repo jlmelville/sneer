@@ -5,6 +5,7 @@
 #' Configuration function for optimizer gradient calculation.
 #'
 #' @return Classical gradient calculation method.
+#' @family sneer optimization gradient methods
 #' @export
 classical_gradient <- function() {
   classical_grad_pos
@@ -20,6 +21,7 @@ classical_gradient <- function() {
 #' On the importance of momentum and initialization in deep learning.
 #' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
 #' JMLR: W&CP volume 28.
+#' @family sneer optimization gradient methods
 #' @export
 nesterov_gradient <- function() {
   nesterov_grad_pos
@@ -37,10 +39,8 @@ nesterov_gradient <- function() {
 #' @param out Output data.
 #' @param method Embedding method.
 #' @return List containing:
-#' \itemize{
-#'  \item \code{km} Stiffness matrix.
-#'  \item \code{gm} Gradient matrix.
-#' }
+#'  \item{\code{km}}{Stiffness matrix.}
+#'  \item{\code{gm}}{Gradient matrix.}
 classical_grad_pos <- function(opt, inp, out, method) {
   gradient(inp, out, method, opt$mat_name)
 }
@@ -55,10 +55,8 @@ classical_grad_pos <- function(opt, inp, out, method) {
 #' @param out Output data.
 #' @param method Embedding method.
 #' @return List containing:
-#' \itemize{
-#'  \item \code{km} Stiffness matrix.
-#'  \item \code{gm} Gradient matrix.
-#' }
+#'  \item{\code{km}}{Stiffness matrix.}
+#'  \item{\code{gm}}{Gradient matrix.}
 #' @references
 #' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
 #' On the importance of momentum and initialization in deep learning.

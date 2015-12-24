@@ -8,10 +8,11 @@ make_normalized_cost_fn(cost_fn)
 }
 \arguments{
 \item{cost_fn}{Cost function. Should have the signature
-\code{cost_fn(inp, out)} and return a scalar numeric cost value. In addition
-it should have an appropriate \code{sneer_cost_type} attribute set. For cost
-functions that act on probabilities, this should be \code{"prob"}. For cost
-function that act on distances, this should be \code{"dist"}.}
+\code{cost_fn(inp, out, method)} and return a scalar numeric cost value.
+In addition it should have an appropriate \code{sneer_cost_type} attribute
+set. For cost functions that act on probabilities, this should be
+\code{"prob"}. For cost function that act on distances, this should be
+\code{"dist"}.}
 }
 \value{
 Normalized cost function with the signature

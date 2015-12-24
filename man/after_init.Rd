@@ -15,11 +15,9 @@ after_init(inp, out, method)
 }
 \value{
 List consisting of:
-\itemize{
- \item \code{inp} Updated input data.
- \item \code{out} Updated output data.
- \item \code{method} Updated embedding method.
-}
+\item{\code{inp}}{Updated input data.}
+\item{\code{out}}{Updated output data.}
+\item{\code{method}}{Updated embedding method.}
 }
 \description{
 Useful for doing data-dependent initialization of stiffness

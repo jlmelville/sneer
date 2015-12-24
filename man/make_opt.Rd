@@ -11,44 +11,45 @@ make_opt(gradient = classical_gradient(), direction = steepest_descent(),
 \arguments{
 \item{gradient}{Method to calculate the gradient at a solution
 position. Set by calling a configuration function:
-\itemize{
- \item \code{classical_gradient()} Calculates the gradient at the position of
- the current solution. This is the default setting.
- \item \code{nesterov_gradient()} Uses the Nesterov Accelerated Gradient
+\describe{
+ \item{\code{\link{classical_gradient}}}{Calculates the gradient at the position of
+ the current solution. This is the default setting.}
+ \item{\code{\link{nesterov_gradient}}}{Uses the Nesterov Accelerated Gradient
  method. A suitable \code{update} scheme should be used if this option is
- chosen, e.g. \code{nesterov_nsc_momentum}.
+ chosen, e.g. \code{nesterov_nsc_momentum}}.
 }}
 
 \item{direction}{Method to calculate the direction to move. Set by calling a
 configuration function:
-\itemize{
- \item \code{steepest_descent()} Move in the direction of steepest descent.
- This is the default setting and it's the only currently defined method,
- so that's easy.
+\describe{
+ \item{\code{\link{steepest_descent}}}{Move in the direction of steepest
+ descent. This is the default setting and it's the only currently defined
+ method, so that's easy.}
 }}
 
 \item{step_size}{Method to calculate the step size of the direction. Set
 by calling a configuration function:
-\itemize{
- \item \code{jacobs()} Jacobs method. Used in the t-SNE paper.
- \item \code{bold_driver()} Bold driver.
+\describe{
+ \item{\code{\link{jacobs}}}{Jacobs method. Used in the t-SNE paper.}
+ \item{\code{\link{bold_driver}}}{Bold driver.}
 }}
 
 \item{update}{Method to combine a gradient descent with other terms (e.g.
 momentum) to produce the final update. Set by calling a configuration
 function:
-\itemize{
- \item \code{step_momentum()} Step momentum schedule. Used in the t-SNE paper.
- \item \code{linear_momentum()} Linear momentum schedule.
- \item \code{nesterov_nsc_momentum()} Nesterov momentum for non-strongly
- convex problems. Use when the \code{gradient} method is
- \code{nesterov_gradient}.
- \item \code{no_momentum()} Don't use a momentum term, optimization will
- only use gradient descent to update the solution. The default setting.
+\describe{
+ \item{\code{\link{step_momentum}}}{Step momentum schedule. Used in the
+ t-SNE paper.}
+ \item{\code{\link{linear_momentum}}}{Linear momentum schedule.}
+ \item{\code{\link{nesterov_nsc_momentum}}}{Nesterov momentum for
+ non-strongly convex problems. Use when the \code{gradient} method is
+ \code{\link{nesterov_gradient}}.}
+ \item{\code{\link{no_momentum}}}{Don't use a momentum term, optimization
+ will only use gradient descent to update the solution. The default setting.}
 }}
 
 \item{normalize_grads}{If \code{TRUE} the gradient matrix is normalized to
-a length of one.}
+a length of one before step size calculation.}
 
 \item{recenter}{If \code{TRUE}, recenter the coordinates after each
 optimization step.}
@@ -60,7 +61,10 @@ contains the embedded coordinates.}
 Optimizer.
 }
 \description{
-Function to create an optimization method. The optimizer consists of
+Function to create an optimization method, used in an embedding function.
+}
+\details{
+The optimizer consists of
 \itemize{
  \item A method to calculate the gradient at a certain position.
  \item A method to calculate the direction to move in from the gradient
@@ -71,8 +75,7 @@ Function to create an optimization method. The optimizer consists of
  extra modifiers, normally a momentum term based on the previous solution
  step.
 }
-}
-\details{
+
 Normalizing the gradients (by setting \code{normalize_grads} to
 \code{TRUE}) will scale the gradient matrix to length 1 before the
 optimization step. This has the effect of making the size of the gradient
@@ -118,7 +121,9 @@ make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
 }
 \seealso{
 \code{\link{embed_sim}} for how to use this function for configuring
-an embedding, and \code{\link{tsne_opt}} and \code{\link{bold_nag_opt}} for
-some convenience functions that choose a set of defaults for you.
+an embedding.
+
+Other sneer optimization methods: \code{\link{bold_nag_opt}},
+  \code{\link{tsne_opt}}
 }
 

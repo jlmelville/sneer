@@ -6,7 +6,8 @@
 \usage{
 make_reporter(report_every = 100, min_cost = 0,
   reltol = sqrt(.Machine$double.eps), plot_fn = NULL,
-  normalize_cost = TRUE, keep_costs = FALSE, verbose = TRUE)
+  normalize_cost = TRUE, keep_costs = FALSE, extra_costs = NULL,
+  verbose = TRUE)
 }
 \arguments{
 \item{report_every}{Number of steps between callback invocations.}
@@ -29,48 +30,49 @@ function will be normalized and both values logged.}
 which they were calculated) will be stored on result list returned by the
 reporter callback. This can be exported by the embedding algorithm.}
 
+\item{extra_costs}{List containing the names of cost functions to be reported,
+in addition to the cost associated with the embedding method, which will
+always be logged. Possible cost functions include:
+\describe{
+ \item{\code{\link{kl_cost}}}{Kullback-Leibler divergence.}
+}
+Note that note all costs are compatible with all embedding methods, because
+they may require specific matrices or other values to be precalculated in the
+Input and Output data. See the help text for each cost function for details.}
+
 \item{verbose}{If \code{TRUE}, report results such as cost values
 will be logged to screen. If set to false, you will have to export the
 report from the embedding routine to access any of the information.}
 }
 \value{
-reporter callback used by the embedding routine.
-}
-\description{
-Factory function which returns a function which will be invoked by the
-embedding algorithm at regular intervals during the optimization.
-}
-\details{
-The result of this function is a callback with the signature
-\code{reporter(iter, inp, out, method, report)} where:
-\itemize{
- \item \code{iter} Iteration number.
- \item \code{inp} Input data.
- \item \code{method} Embedding method.
- \item \code{report} Report from previous reporter invocation.
-}
-
+Reporter callback used by the embedding routine. The callback has the
+signature \code{reporter(iter, inp, out, method, report)} where:
+ \item{\code{iter}}{Iteration number.}
+ \item{\code{inp}}{Input data.}
+ \item{\code{method}}{Embedding method.}
+ \item{\code{report}}{Report from previous reporter invocation.}
 The return value of the callback is an updated
-version of the \code{report} passed as a parameter to the callback. It has
-the following elements:
-\itemize{
- \item \code{stop_early} If \code{TRUE} then optimization stopped before
- the maximum number of iterations specified by the embedding algorithm.
- \item \code{reltol} Relative convergence value.
- \item \code{iter} Iteration number that the callback was invoked at.
- \item \code{cost} Cost for this reporter.
- \item \code{norm} Normalized cost for the most recent iteration. Only
- present if \code{normalize_cost} was \code{TRUE}.
- \item \code{costs} Matrix of all costs calculated for all invocations of
+version of the \code{report} passed as a parameter to the callback. A list
+containing:
+ \item{\code{stop_early}}{If \code{TRUE} then optimization stopped before
+ the maximum number of iterations specified by the embedding algorithm.}
+ \item{\code{reltol}}{Relative convergence value.}
+ \item{\code{iter}}{Iteration number that the callback was invoked at.}
+ \item{\code{cost}}{Cost for this reporter.}
+ \item{\code{norm}}{Normalized cost for the most recent iteration. Only
+ present if \code{normalize_cost} was \code{TRUE}.}
+ \item{\code{costs}}{Matrix of all costs calculated for all invocations of
  the reporter callback and the value of \code{iter} the reporters were
- invoked at.
- Only present if \code{keep_costs} was \code{TRUE}.
-}
+ invoked at. Only present if \code{keep_costs} was \code{TRUE}.}
 
 The result list is reused on each invocation of the callback so that the cost
 from the previous report can be compared with that of the current report,
 allowing for relative convergence early stopping, and appending of costs
 if \code{keep_costs} is \code{TRUE}.
+}
+\description{
+Factory function which returns a function which will be invoked by the
+embedding algorithm at regular intervals during the optimization.
 }
 \examples{
 # reporter calculation every 100 steps of optimization, log cost and also the

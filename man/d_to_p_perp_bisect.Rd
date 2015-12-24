@@ -23,12 +23,10 @@ have the following signature: \code{function(d2m, beta)}}
 }
 \value{
 List with the following members:
-\itemize{
- \item \code{pm} Row probability matrix. Each row is a probability
- distribution with a perplexity within \code{tol} of \code{perplexity}.
- \item \code{beta} Matrix of beta parameters used with \code{weight_fn} that
- generated \code{pm}.
-}
+ \item{\code{pm}}{Row probability matrix. Each row is a probability
+ distribution with a perplexity within \code{tol} of \code{perplexity}.}
+ \item{\code{beta}}{Matrix of beta parameters used with \code{weight_fn} that
+ generated \code{pm}.}
 }
 \description{
 For each row, finds the value of beta which generates the probability

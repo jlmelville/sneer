@@ -8,10 +8,8 @@ steepest_descent()
 }
 \value{
 Steepest Descent direction method. A list consisting of:
-\itemize{
- \item \code{get_direction} Function invoked by the optimizer to find the direction
- to move in the gradient descent part of the solution update.
-}
+\item{\code{get_direction}}{Function invoked by the optimizer to find the
+direction to move in the gradient descent part of the solution update.}
 }
 \description{
 Creates a gradient descent direction method for use by the optimizer.

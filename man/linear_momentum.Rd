@@ -18,18 +18,20 @@ iterations.}
 \value{
 A solution update method for use by the optimizer. A list consisting
 of:
-\itemize{
- \item \code{init_momentum} Initial momentum.
- \item \code{final_momentum} Final momentum.
- \item \code{init} Function to do any needed initialization.
- \item \code{get_update} Function to return the current update, which will
- be added to current solution matrix.
- \item \code{after_step} Function to do any needed updating or internal state
- before the next optimization step.
-}
+ \item{\code{init_momentum}}{Initial momentum.}
+ \item{\code{final_momentum}}{Final momentum.}
+ \item{\code{init}}{Function to do any needed initialization.}
+ \item{\code{get_update}}{Function to return the current update, which will
+ be added to current solution matrix.}
+ \item{\code{after_step}}{Function to do any needed updating or internal state
+ before the next optimization step.}
 }
 \description{
 Create an callback for the optimizer to use to update the embedding solution.
 Update is in the form of a linear momentum function.
+}
+\seealso{
+Other sneer optimization update methods: \code{\link{nesterov_nsc_momentum}},
+  \code{\link{no_momentum}}, \code{\link{step_momentum}}
 }
 

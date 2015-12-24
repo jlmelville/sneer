@@ -5,15 +5,17 @@
 \title{Calculate the Kullback Leibler divergence between two matrices of
 probabilities.}
 \usage{
-kl_divergence(pm, qm)
+kl_divergence(pm, qm, eps = .Machine$double.eps)
 }
 \arguments{
 \item{pm}{Probability Matrix. First probability in the divergence.}
 
 \item{qm}{Probability Matrix. Second probability in the divergence.}
+
+\item{eps}{Small floating point value used to avoid numerical problems.}
 }
 \value{
-the KL divergence between \code{pm} and \code{qm}.
+KL divergence between \code{pm} and \code{qm}.
 }
 \description{
 If the matrices represent row probabilities, then the returned divergence

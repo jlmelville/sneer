@@ -5,20 +5,6 @@
 #' Factory function that creates a callback that used by the embedding routine.
 #' When invoked, it will initialize the output data.
 #'
-#' The callback has the signature \code{init_out(inp)} where \code{inp}
-#' is the initialized input data list. The return value of the callback is the
-#' initialized output data, a list containing:
-#'
-#' \itemize{
-#'  \item \code{ym} A matrix containing the initialized output coordinates. The
-#'  name of the matrix can be changed by setting the \code{mat_name} parameter.
-#' }
-#'
-#' Depending on the type of embedding carried out, the \code{out} list will
-#' accumulate other auxiliary data associated with the embedded coordinates,
-#' e.g. distances, probabilities, divergences or other data required for
-#' stiffness calculations.
-#'
 #' @param k Number of output dimensions. For 2D visualization this is always 2.
 #' @param init_config Input data to initialize the coordinates from. Must
 #' be a matrix with the same dimensions as the desired output coordinates.
@@ -41,7 +27,15 @@
 #' @param verbose If \code{TRUE} information about the initialization will be
 #' logged to screen.
 #' @return Callback to be used by the embedding routine to initialize
-#' the output data.
+#' the output data. The callback has the signature \code{init_out(inp)} where
+#' \code{inp} is the initialized input data list. The return value of the
+#' callback is the initialized output data, a list containing:
+#' \item{\code{ym}}{A matrix containing the initialized output coordinates. The
+#'  name of the matrix can be changed by setting the \code{mat_name} parameter.}
+#' Depending on the type of embedding carried out, the \code{out} list will
+#' accumulate other auxiliary data associated with the embedded coordinates,
+#' e.g. distances, probabilities, divergences or other data required for
+#' stiffness calculations.
 #' @seealso \code{\link{embed_sim}} for how to use this function for configuring
 #' an embedding.
 #' @examples

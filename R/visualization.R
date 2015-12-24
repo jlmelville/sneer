@@ -18,9 +18,7 @@
 #' @return Function which will take an output list, and produce a 2D plot of
 #' the embedding.
 #' @seealso \code{\link{make_reporter}} for how to use this function for
-#' configuring visualization of the progress of an embedding, and
-#' \code{\link{make_iris_plot}} for a helper function when using the iris
-#' dataset that involves less typing.
+#' configuring visualization of the progress of an embedding.
 #' @examples
 #' # For s1k dataset, plot 2D embedding with "Label" factor to identify each
 #' # point on the plot
@@ -37,6 +35,7 @@
 #'                                     plot_fn = make_plot(iris, "Species")),
 #'                                      ...)
 #' }
+#' @family sneer plot functions
 #' @export
 make_plot <- function(x, attr_name,
                       label_fn = function(labels) {
@@ -74,6 +73,7 @@ make_label <- function(num_label_chars = 1) {
 #' @param num_label_chars The number of characters to plot from the label
 #' for each data point.
 #' @return Function for plotting the embedded iris data set.
+#' @family sneer plot functions
 #' @export
 make_iris_plot <- function(num_label_chars = 1) {
   make_plot(iris, "Species", make_label(num_label_chars))

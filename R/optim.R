@@ -2,7 +2,9 @@
 
 #' Create optimizer.
 #'
-#' Function to create an optimization method. The optimizer consists of
+#' Function to create an optimization method, used in an embedding function.
+#'
+#' The optimizer consists of
 #' \itemize{
 #'  \item A method to calculate the gradient at a certain position.
 #'  \item A method to calculate the direction to move in from the gradient
@@ -32,48 +34,48 @@
 #'
 #' @param gradient Method to calculate the gradient at a solution
 #' position. Set by calling a configuration function:
-#' \itemize{
-#'  \item \code{classical_gradient()} Calculates the gradient at the position of
-#'  the current solution. This is the default setting.
-#'  \item \code{nesterov_gradient()} Uses the Nesterov Accelerated Gradient
+#' \describe{
+#'  \item{\code{\link{classical_gradient}}}{Calculates the gradient at the position of
+#'  the current solution. This is the default setting.}
+#'  \item{\code{\link{nesterov_gradient}}}{Uses the Nesterov Accelerated Gradient
 #'  method. A suitable \code{update} scheme should be used if this option is
-#'  chosen, e.g. \code{nesterov_nsc_momentum}.
+#'  chosen, e.g. \code{nesterov_nsc_momentum}}.
 #' }
 #' @param direction Method to calculate the direction to move. Set by calling a
 #' configuration function:
-#' \itemize{
-#'  \item \code{steepest_descent()} Move in the direction of steepest descent.
-#'  This is the default setting and it's the only currently defined method,
-#'  so that's easy.
+#' \describe{
+#'  \item{\code{\link{steepest_descent}}}{Move in the direction of steepest
+#'  descent. This is the default setting and it's the only currently defined
+#'  method, so that's easy.}
 #' }
 #' @param step_size Method to calculate the step size of the direction. Set
 #' by calling a configuration function:
-#' \itemize{
-#'  \item \code{jacobs()} Jacobs method. Used in the t-SNE paper.
-#'  \item \code{bold_driver()} Bold driver.
+#' \describe{
+#'  \item{\code{\link{jacobs}}}{Jacobs method. Used in the t-SNE paper.}
+#'  \item{\code{\link{bold_driver}}}{Bold driver.}
 #' }
 #' @param update Method to combine a gradient descent with other terms (e.g.
 #' momentum) to produce the final update. Set by calling a configuration
 #' function:
-#' \itemize{
-#'  \item \code{step_momentum()} Step momentum schedule. Used in the t-SNE paper.
-#'  \item \code{linear_momentum()} Linear momentum schedule.
-#'  \item \code{nesterov_nsc_momentum()} Nesterov momentum for non-strongly
-#'  convex problems. Use when the \code{gradient} method is
-#'  \code{nesterov_gradient}.
-#'  \item \code{no_momentum()} Don't use a momentum term, optimization will
-#'  only use gradient descent to update the solution. The default setting.
+#' \describe{
+#'  \item{\code{\link{step_momentum}}}{Step momentum schedule. Used in the
+#'  t-SNE paper.}
+#'  \item{\code{\link{linear_momentum}}}{Linear momentum schedule.}
+#'  \item{\code{\link{nesterov_nsc_momentum}}}{Nesterov momentum for
+#'  non-strongly convex problems. Use when the \code{gradient} method is
+#'  \code{\link{nesterov_gradient}}.}
+#'  \item{\code{\link{no_momentum}}}{Don't use a momentum term, optimization
+#'  will only use gradient descent to update the solution. The default setting.}
 #' }
 #' @param normalize_grads If \code{TRUE} the gradient matrix is normalized to
-#' a length of one.
+#' a length of one before step size calculation.
 #' @param mat_name Name of the matrix in the output list \code{out} which
 #' contains the embedded coordinates.
 #' @param recenter If \code{TRUE}, recenter the coordinates after each
 #' optimization step.
 #' @return Optimizer.
 #' @seealso \code{\link{embed_sim}} for how to use this function for configuring
-#' an embedding, and \code{\link{tsne_opt}} and \code{\link{bold_nag_opt}} for
-#' some convenience functions that choose a set of defaults for you.
+#' an embedding.
 #' @examples
 #' # Steepest descent with Jacobs adaptive step size and step momentum, as
 #' # used in the t-SNE paper.
@@ -100,6 +102,7 @@
 #'                           step_size = bold_driver(),
 #'                           update = nesterov_nsc_momentum()), ...)
 #' }
+#' @family sneer optimization methods
 #' @export
 make_opt <- function(gradient = classical_gradient(),
                      direction = steepest_descent(),
@@ -175,12 +178,13 @@ make_opt <- function(gradient = classical_gradient(),
 #'
 #' @return optimizer with parameters from the t-SNE paper.
 #' @seealso \code{\link{embed_sim}} for how to use this function for configuring
-#' an embedding, and \code{\link{make_opt}} for a more generic function.
+#' an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
 #' \dontrun{
 #'  embed_sim(opt = tsne_opt(), ...)
 #' }
+#' @family sneer optimization methods
 #' @export
 tsne_opt <- function() {
   make_opt(gradient = classical_gradient(),
@@ -201,12 +205,13 @@ tsne_opt <- function() {
 #' @param init_step_size Initial step size.
 #' @return Optimizer with NAG parameters and bold driver step size.
 #' @seealso \code{\link{embed_sim}} for how to use this function for configuring
-#' an embedding, and \code{\link{make_opt}} for a more generic function.
+#' an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
 #' \dontrun{
 #'  embed_sim(opt = bold_nag_opt(), ...)
 #' }
+#' @family sneer optimization methods
 #' @export
 bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
                          init_step_size = 1) {

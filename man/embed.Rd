@@ -11,36 +11,36 @@ embed(xm, init_inp, init_out, method, opt, max_iter = 1000, tricks = NULL,
 \item{xm}{A matrix or data frame to embed.}
 
 \item{init_inp}{Input initialization callback. Create by assigning the
-result of \code{make_init_inp}.}
+result of \code{\link{make_init_inp}} or \code{\link{make_init_inp_dist}}.}
 
 \item{init_out}{Output initialization callback. Create by assigning the
-result of \code{make_init_out}.}
+result of \code{\link{make_init_out}}.}
 
 \item{method}{Embedding method. Assign result of calling one of the following
-functions: \itemize{
- \item \code{tsne()} t-Distributed Stochastic Neighbor Embedding.
- \item \code{ssne()} Symmetric Stochastic Neighbor Embedding.
- \item \code{asne()} Asymmetric Stochastic Neighbor Embedding.
+functions: \describe{
+ \item{\code{\link{tsne}}}{t-Distributed Stochastic Neighbor Embedding.}
+ \item{\code{\link{ssne}}}{Symmetric Stochastic Neighbor Embedding.}
+ \item{\code{\link{asne}}}{Asymmetric Stochastic Neighbor Embedding.}
 }}
 
 \item{opt}{Optimization method. Create by assigning the result of
-\code{make_opt}.}
+\code{\link{make_opt}}.}
 
 \item{max_iter}{Maximum number of optimization steps to take.}
 
 \item{tricks}{Tricks callback. Create by assigning the result of
-\code{make_tricks}.}
+\code{\link{make_tricks}}.}
 
 \item{reporter}{Report callback. Create by assigning the result of
-\code{make_reporter}.}
+\code{\link{make_reporter}}.}
 
 \item{preprocess}{Input data preprocess callback. Create by assigning the
-result of \code{make_preprocess}.}
+result of \code{\link{make_preprocess}}.}
 
 \item{export}{Vector of names to export. Possible names are:
-\itemize{
- \item "\code{inp}" The input data.
- \item "\code{report}" The most recent report.
+\describe{
+ \item{"\code{inp}"}{The input data.}
+ \item{"\code{report}"}{The most recent report.}
 }}
 
 \item{after_embed}{Callback to run on input and output data before output
@@ -48,43 +48,32 @@ data is returned.}
 }
 \value{
 The output data. A list containing:
-\itemize{
- \item \code{ym} Embedded coordinates. This name can be changed by
- specifying \code{mat_name}.
- \item \code{qm} Probability matrix generated from the weight matrix
- \code{wm}.
- \item \code{wm} Weight matrix generated from the distances between points
- in \code{ym}.
- \item \code{inp} The input data, if "\code{inp}" is included in the
- \code{export} list parameter.
- \item \code{report} Most recent report, if "\code{report}" is included in
- the \code{export} list parameter.
-}
+\item{\code{ym}}{Embedded coordinates. This name can be changed by
+specifying \code{mat_name}.}
+\item{\code{inp}}{The input data, if "\code{inp}" is included in the
+\code{export} list parameter.}
+\item{\code{report}}{Most recent report, if "\code{report}" is included in
+the \code{export} list parameter.}
+Additional items may appear in the output list, depending on the embedding
+method and initialization methods. See the documentation of those functions
+for details.
 If the \code{inp} list is present, it contains:
-\itemize{
- \item \code{xm} The (potentially preprocessed) input coordinates if the
- input data was not a distance matrix.
- \item \code{dm} Input distance matrix.
- \item \code{pm} Input probabilities.
- \item \code{beta} Input weighting parameters. Only present if
- \code{make_init_inp} is called with \code{keep_all_results} set to
- \code{TRUE} in when creating the callback \code{init_inp}.
-}
+\item{\code{xm}}{The (potentially preprocessed) input coordinates if the
+input data was not a distance matrix.}
+\item{\code{dm}}{Input distance matrix.}
 If the \code{report} list is present, it contains:
-\itemize{
- \item \code{stop_early} If \code{TRUE}, the optimization stopped before
- \code{max_iters} was reached.
- \item \code{cost} Cost of the configuration at iteration \code{iter}.
- \item \code{costs} Matrix of all costs and the iterations at which
- the reports were made. Only present if \code{keep_costs} is set to
- \code{TRUE} when the \code{make_reporter} factory function is called.
- \item \code{reltol} Relative tolerance of the difference between present
- cost and the cost evaluted by the previous report
- \item \code{norm} Normalized cost for the most recent iteration. Only
- present if \code{normalize_cost} is set to \code{TRUE} when the
- \code{make_reporter} factory function is called.
- \item \code{iter} The iteration at which the report is generated.
-}
+\item{\code{stop_early}}{If \code{TRUE}, the optimization stopped before
+\code{max_iters} was reached.}
+\item{\code{cost}}{Cost of the configuration at iteration \code{iter}.}
+\item{\code{costs}}{Matrix of all costs and the iterations at which
+the reports were made. Only present if \code{keep_costs} is set to
+\code{TRUE} when the \code{make_reporter} factory function is called.}
+\item{\code{reltol}}{Relative tolerance of the difference between present
+cost and the cost evaluted by the previous report.}
+\item{\code{norm}}{Normalized cost for the most recent iteration. Only
+present if \code{normalize_cost} is set to \code{TRUE} when the
+\code{make_reporter} factory function is called.}
+\item{\code{iter}}{The iteration at which the report is generated.}
 }
 \description{
 Carrying out an embedding of a dataset.

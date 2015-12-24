@@ -4,30 +4,46 @@
 #'
 #' Creates a list of functions that collectively implement t-SNE.
 #'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
+#'  specifying \code{mat_name}.}
+#'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
+#'  \code{wm}.}
+#'  \item{\code{wm}}{Weight matrix generated from the distances between points
+#'  in \code{ym}.}
+#' }
+#'
 #' @param mat_name Name of the matrix in the output data list that will contain
 #' the embedded coordinates.
-#' @return a list with the following members:
-#' \itemize{
-#'  \item \code{cost_fn} Cost function for the embedding: the Kullback-Leibler
-#'  divergence between the input and output probabilities.
-#'  \item \code{weight_fn} Weight function for mapping squared distances in the
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @return a list containing:
+#'  \item{\code{cost_fn}}{Cost function for the embedding: the Kullback-Leibler
+#'  divergence between the input and output probabilities.}
+#'  \item{\code{weight_fn}}{Weight function for mapping squared distances in the
 #'  embedded coordinates to weights, which are in turn converted to
 #'  probabilities: t-SNE uses the Student t-distribution with one degree of
-#'  freedom.
-#'  \item \code{stiffness_fn} Stiffness function.
-#'  \item \code{prob_out_fn} Function to convert weights matrix to a specific
-#'  probability matrix, e.g. row-based or joint.
-#'  \item \code{after_init_fn} Method-specific initialization function to
+#'  freedom.}
+#'  \item{\code{stiffness_fn}}{Stiffness function.}
+#'  \item{\code{update_out_fn}}{Function to calculate and store any needed
+#'  data after a coordinate update.}
+#'  \item{\code{after_init_fn}}{Method-specific initialization function to
 #'  invoke after input and output initialization callbacks. For this method,
 #'  the input probability matrix must be converted from a row probability
-#'  matrix to a joint probability matrix.
-#' }
+#'  matrix to a joint probability matrix.}
+#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
+#'  contain the embedded coordinates.}
+#'  \item{\code{eps}}{Small floating point value used to prevent numerical
+#'  problems, e.g. in gradients and cost functions.}
 #' @references
 #' Laurens van der Maarten, Geoffrey Hinton.
 #' Visualizing Data using t-SNE.
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
 #' @export
-tsne <- function(mat_name = "ym") {
+#' @family sneer embedding methods
+tsne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(pm, qm, wm) {
     4 * (pm - qm) * wm
   }
@@ -48,7 +64,8 @@ tsne <- function(mat_name = "ym") {
       inp$pm <- prow_to_pjoint(inp$pm)
       list(inp = inp)
     },
-    mat_name = mat_name
+    mat_name = mat_name,
+    eps = eps
   )
 }
 
@@ -56,23 +73,35 @@ tsne <- function(mat_name = "ym") {
 #'
 #' Creates a list of functions that collectively implement SSNE.
 #'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
+#'  specifying \code{mat_name}.}
+#'  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
+#' }
+#'
 #' @param mat_name Name of the matrix in the output data list that will contain
 #' the embedded coordinates.
-#' @return a list with the following members:
-#' \itemize{
-#'  \item \code{cost_fn} Cost function for the embedding: the Kullback-Leibler
-#'  divergence between the input and output probabilities.
-#'  \item \code{weight_fn} Weight function for mapping squared distances in the
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @return a list containing:
+#'  \item{\code{cost_fn}}{Cost function for the embedding: the Kullback-Leibler
+#'  divergence between the input and output probabilities.}
+#'  \item{\code{weight_fn}}{Weight function for mapping squared distances in the
 #'  embedded coordinates to weights, which are in turn converted to
-#'  probabilities: SSNE uses the exponential function.
-#'  \item \code{stiffness_fn} Stiffness function.
-#'  \item \code{prob_out_fn} Function to convert weights matrix to a specific
-#'  probability matrix, e.g. row-based or joint.
-#'  \item \code{after_init_fn} Method-specific initialization function to
+#'  probabilities: SSNE uses the exponential function.}
+#'  \item{\code{stiffness_fn}}{Stiffness function.}
+#'  \item{\code{update_out_fn}}{Function to calculate and store any needed
+#'  data after a coordinate update.}
+#'  \item{\code{after_init_fn}}{Method-specific initialization function to
 #'  invoke after input and output initialization callbacks. For this method,
 #'  the input probability matrix must be converted from a row probability
-#'  matrix to a joint probability matrix.
-#' }
+#'  matrix to a joint probability matrix.}
+#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
+#'  contain the embedded coordinates.}
+#'  \item{\code{eps}}{Small floating point value used to prevent numerical
+#'  problems, e.g. in gradients and cost functions.}
 #' @references
 #' J.A. Cook, I. Sutskever, A. Mnih, and G.E. Hinton.
 #' Visualizing similarity data with a mixture of maps.
@@ -82,8 +111,9 @@ tsne <- function(mat_name = "ym") {
 #' Laurens van der Maarten, Geoffrey Hinton.
 #' Visualizing Data using t-SNE.
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#' @family sneer embedding methods
 #' @export
-ssne <- function(mat_name = "ym") {
+ssne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(pm, qm) {
     4 * (pm - qm)
   }
@@ -103,7 +133,8 @@ ssne <- function(mat_name = "ym") {
       inp$pm <- prow_to_pjoint(inp$pm)
       list(inp = inp)
     },
-    mat_name = mat_name
+    mat_name = mat_name,
+    eps = .Machine$double.eps
   )
 }
 
@@ -111,28 +142,41 @@ ssne <- function(mat_name = "ym") {
 #'
 #' Creates a list of functions that collectively implement ASNE.
 #'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
+#'  specifying \code{mat_name}.}
+#'  \item{\code{qm}}{Row probability matrix based on embedded coordinates.}
+#' }
+#'
 #' @param mat_name Name of the matrix in the output data list that will contain
 #' the embedded coordinates.
-#' @return a list with the following members:
-#' \itemize{
-#'  \item \code{cost_fn} Cost function for the embedding: the Kullback-Leibler
-#'  divergence between the input and output probabilities.
-#'  \item \code{weight_fn} Weight function for mapping squared distances in the
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @return a list containing:
+#'  \item{\code{cost_fn}}{Cost function for the embedding: the Kullback-Leibler
+#'  divergence between the input and output probabilities.}
+#'  \item{\code{weight_fn}}{Weight function for mapping squared distances in the
 #'  embedded coordinates to weights, which are in turn converted to
-#'  probabilities: ASNE uses the exponential function.
-#'  \item \code{stiffness_fn} Stiffness function.
-#'  \item \code{prob_out_fn} Function to convert weights matrix to a specific
-#'  probability matrix, e.g. row-based or joint.
-#'  \item \code{after_init_fn} Method-specific initialization function to
-#'  invoke after input and output initialization callbacks.
-#' }
+#'  probabilities: ASNE uses the exponential function.}
+#'  \item{\code{stiffness_fn}}{Stiffness function.}
+#'  \item{\code{update_out_fn}}{Function to calculate and store any needed
+#'  data after a coordinate update.}
+#'  \item{\code{after_init_fn}}{Method-specific initialization function to
+#'  invoke after input and output initialization callbacks.}
+#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
+#'  contain the embedded coordinates.}
+#'  \item{\code{eps}}{Small floating point value used to prevent numerical
+#'  problems, e.g. in gradients and cost functions.}
 #' @references
 #' G.E. Hinton and S.T. Roweis.
 #' Stochastic Neighbor Embedding.
 #' In Advances in Neural Information Processing Systems, volume 15,
 #' pages 833-840, Cambridge, MA, USA, 2002. The MIT Press.
+#' @family sneer embedding methods
 #' @export
-asne <- function(mat_name = "ym") {
+asne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(pm, qm) {
     km <- 2 * (pm - qm)
     km + t(km)
@@ -153,7 +197,8 @@ asne <- function(mat_name = "ym") {
       inp$pm <- clamp(inp$pm)
       list(inp = inp)
     },
-    mat_name = mat_name
+    mat_name = mat_name,
+    eps = eps
   )
 }
 
@@ -164,23 +209,39 @@ asne <- function(mat_name = "ym") {
 #' within sneer: this uses the t-distributed distance weighting of t-SNE, but
 #' for probability generation uses the point-wise distribution of ASNE.
 #'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
+#'  specifying \code{mat_name}.}
+#'  \item{\code{qm}}{Row probability matrix based on the weight matrix
+#'  \code{wm}.}
+#'  \item{\code{wm}}{Weight matrix generated from the distances between points
+#'  in \code{ym}.}
+#' }
+#'
 #' @param mat_name Name of the matrix in the output data list that will contain
 #' the embedded coordinates.
-#' @return a list with the following members:
-#' \itemize{
-#'  \item \code{cost_fn} Cost function for the embedding: the Kullback-Leibler
-#'  divergence between the input and output probabilities.
-#'  \item \code{weight_fn} Weight function for mapping squared distances in the
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @return a list containing:
+#'  \item{\code{cost_fn}}{Cost function for the embedding: the Kullback-Leibler
+#'  divergence between the input and output probabilities.}
+#'  \item{\code{weight_fn}}{Weight function for mapping squared distances in the
 #'  embedded coordinates to weights, which are in turn converted to
-#'  probabilities: tASNE uses the exponential function.
-#'  \item \code{stiffness_fn} Stiffness function.
-#'  \item \code{prob_out_fn} Function to convert weights matrix to a specific
-#'  probability matrix, e.g. row-based or joint.
-#'  \item \code{after_init_fn} Method-specific initialization function to
-#'  invoke after input and output initialization callbacks.
-#' }
+#'  probabilities: t-ASNE uses the exponential function.}
+#'  \item{\code{stiffness_fn}}{Stiffness function.}
+#'  \item{\code{update_out_fn}}{Function to calculate and store any needed
+#'  data after a coordinate update.}
+#'  \item{\code{after_init_fn}}{Method-specific initialization function to
+#'  invoke after input and output initialization callbacks.}
+#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
+#'  contain the embedded coordinates.}
+#'  \item{\code{eps}}{Small floating point value used to prevent numerical
+#'  problems, e.g. in gradients and cost functions.}
+#' @family sneer embedding methods
 #' @export
-tasne <- function(mat_name = "ym") {
+tasne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(pm, qm, wm) {
     km <- 2 * (pm - qm) * wm
     km + t(km)
@@ -202,6 +263,7 @@ tasne <- function(mat_name = "ym") {
       inp$pm <- clamp(inp$pm)
       list(inp = inp)
     },
-    mat_name = mat_name
+    mat_name = mat_name,
+    eps = eps
   )
 }

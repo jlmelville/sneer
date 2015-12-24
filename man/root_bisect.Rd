@@ -13,7 +13,7 @@ return a list containing at least one element called \code{y}, which should
 contain the scalar numeric value. The list may contain other elements, so
 that other useful values can be returned from the search routine.}
 
-\item{tol}{Tolerance. If \code{abs(y_target - y) < tol} then the search will
+\item{tol}{Tolerance. If \eqn{abs(y_target - y) < tol} then the search will
 terminate.}
 
 \item{max_iters}{Maximum number of iterations to search for.}
@@ -26,13 +26,11 @@ terminate.}
 }
 \value{
 a list containing:
-\itemize{
- \item \code{x} Optimized value of x.
- \item \code{y} Value of y at convergence or \code{max_iters}
- \item \code{iter} Number of iterations at which convergence was reached.
- \item \code{best} Return value of calling \code{fn} with the optimized
- value of \code{x}.
-}
+ \item{\code{x}}{Optimized value of x.}
+ \item{\code{y}}{Value of y at convergence or \code{max_iters}}
+ \item{\code{iter}}{Number of iterations at which convergence was reached.}
+ \item{\code{best}}{Return value of calling \code{fn} with the optimized
+ value of \code{x}.}
 }
 \description{
 the root.

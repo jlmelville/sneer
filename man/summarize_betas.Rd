@@ -15,6 +15,6 @@ generate input probabilities in SNE.
 }
 \details{
 Mainly useful for debugging. Also expresses beta as sigma, i.e. the
-Gaussian bandwidth \eqn{\frac{1}{\sqrt{2\beta}}}.
+Gaussian bandwidth \eqn{\frac{1}{\sqrt{2\beta}}}{1/sqrt(2*beta)}.
 }
 

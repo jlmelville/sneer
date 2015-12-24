@@ -2,19 +2,32 @@
 % Please edit documentation in R/cost.R
 \name{kl_cost}
 \alias{kl_cost}
-\title{Calculate the Kullback Leibler divergence from input and output data.}
+\title{Kullback Leibler divergence.}
 \usage{
-kl_cost(inp, out)
+kl_cost(inp, out, method)
 }
 \arguments{
 \item{inp}{Input data.}
 
 \item{out}{Output data.}
+
+\item{method}{Embedding method.}
 }
 \value{
 the KL divergence between \code{inp$pm} and \code{out$qm}.
 }
 \description{
 Calculate the Kullback Leibler divergence from input and output data.
+}
+\details{
+This cost function requires the following matrices to be defined:
+\describe{
+ \item{\code{inp$pm}}{Input probabilities.}
+ \item{\code{out$qm}}{Output probabilities.}
+}
+}
+\seealso{
+Other sneer cost functions: \code{\link{rms_dist_cost}},
+  \code{\link{rss_dist_cost}}, \code{\link{sammon_cost}}
 }
 

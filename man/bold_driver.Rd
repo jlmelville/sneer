@@ -32,19 +32,17 @@ optimization.}
 }
 \value{
 Step size method, to be used by the Optimizer. A list containing:
-\itemize{
- \item \code{inc_fn} Function to invoke to increase the step size.
- \item \code{dec_fn} Function to invoke to decrease the step size.
- \item \code{init_step_size} Initial step size.
- \item \code{min_step_size} Minimum step size.
- \item \code{max_step_size} Maximum step size.
- \item \code{init} Function to do any needed initialization.
- \item \code{get_step_size} Function to return the current step size.
- \item \code{validate} Function to validate whether the current step was
- successful or not.
- \item \code{after_step} Function to do any needed updating or internal state
- before the next optimization step.
-}
+ \item{\code{inc_fn}}{Function to invoke to increase the step size.}
+ \item{\code{dec_fn}}{Function to invoke to decrease the step size.}
+ \item{\code{init_step_size}}{Initial step size.}
+ \item{\code{min_step_size}}{Minimum step size.}
+ \item{\code{max_step_size}}{Maximum step size.}
+ \item{\code{init}}{Function to do any needed initialization.}
+ \item{\code{get_step_size}}{Function to return the current step size.}
+ \item{\code{validate}}{Function to validate whether the current step was
+ successful or not.}
+ \item{\code{after_step}}{Function to do any needed updating or internal state
+ before the next optimization step.}
 }
 \description{
 This function configures the 'Bold Driver' method for step size selection.
@@ -52,5 +50,9 @@ If the costdecreases after an optimization step occurs, then the step
 size will be increased (normally by a conservative amount). If the cost
 increases, then the step size is decreased (normally by a more drastic
 amount).
+}
+\seealso{
+Other sneer optimization step size methods: \code{\link{jacobs}},
+  \code{\link{tsne_jacobs}}
 }
 

@@ -23,20 +23,19 @@
 #' @param min_step_size Minimum step size.
 #' @param max_step_size Maximum step size.
 #' @return Step size method, to be used by the Optimizer. A list containing:
-#' \itemize{
-#'  \item \code{inc_fn} Function to invoke to increase the step size.
-#'  \item \code{dec_fn} Function to invoke to decrease the step size.
-#'  \item \code{init_step_size} Initial step size.
-#'  \item \code{min_step_size} Minimum step size.
-#'  \item \code{max_step_size} Maximum step size.
-#'  \item \code{init} Function to do any needed initialization.
-#'  \item \code{get_step_size} Function to return the current step size.
-#'  \item \code{validate} Function to validate whether the current step was
-#'  successful or not.
-#'  \item \code{after_step} Function to do any needed updating or internal state
-#'  before the next optimization step.
-#' }
+#'  \item{\code{inc_fn}}{Function to invoke to increase the step size.}
+#'  \item{\code{dec_fn}}{Function to invoke to decrease the step size.}
+#'  \item{\code{init_step_size}}{Initial step size.}
+#'  \item{\code{min_step_size}}{Minimum step size.}
+#'  \item{\code{max_step_size}}{Maximum step size.}
+#'  \item{\code{init}}{Function to do any needed initialization.}
+#'  \item{\code{get_step_size}}{Function to return the current step size.}
+#'  \item{\code{validate}}{Function to validate whether the current step was
+#'  successful or not.}
+#'  \item{\code{after_step}}{Function to do any needed updating or internal state
+#'  before the next optimization step.}
 #' @export
+#' @family sneer optimization step size methods
 bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
                         inc_fn = partial(`*`, inc_mult),
                         dec_fn = partial(`*`, dec_mult),
@@ -50,7 +49,7 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
     min_step_size = min_step_size,
     max_step_size = max_step_size,
     init = function(opt, inp, out, method) {
-      opt$step_size_method$old_cost <- method$cost_fn(inp, out)
+      opt$step_size_method$old_cost <- method$cost_fn(inp, out, method)
       opt$step_size_method$step_size <- opt$step_size_method$init_step_size
       opt
     },
@@ -58,7 +57,7 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
       opt$step_size_method$step_size
     },
     validate = function(opt, inp, out, new_out, method) {
-      cost <- method$cost_fn(inp, new_out)
+      cost <- method$cost_fn(inp, new_out, method)
       ok <- cost < opt$step_size_method$old_cost
 
       opt$step_size_method$cost <- cost
@@ -127,19 +126,17 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' @param min_step_size Minimum step size.
 #' @param max_step_size Maximum step size.
 #' @return Step size method, to be used by the Optimizer. A list containing:
-#' \itemize{
-#'  \item \code{inc_fn} Function to invoke to increase the step size.
-#'  \item \code{dec_fn} Function to invoke to decrease the step size.
-#'  \item \code{init_step_size} Initial step size.
-#'  \item \code{min_step_size} Minimum step size.
-#'  \item \code{max_step_size} Maximum step size.
-#'  \item \code{init} Function to do any needed initialization.
-#'  \item \code{get_step_size} Function to return the current step size.
-#'  \item \code{validate} Function to validate whether the current step was
-#'  successful or not.
-#'  \item \code{after_step} Function to do any needed updating or internal state
-#'  before the next optimization step.
-#' }
+#'  \item{\code{inc_fn}}{Function to invoke to increase the step size.}
+#'  \item{\code{dec_fn}}{Function to invoke to decrease the step size.}
+#'  \item{\code{init_step_size}}{Initial step size.}
+#'  \item{\code{min_step_size}}{Minimum step size.}
+#'  \item{\code{max_step_size}}{Maximum step size.}
+#'  \item{\code{init}}{Function to do any needed initialization.}
+#'  \item{\code{get_step_size}}{Function to return the current step size.}
+#'  \item{\code{validate}}{Function to validate whether the current step was
+#'  successful or not.}
+#'  \item{\code{after_step}}{Function to do any needed updating or internal
+#'  state before the next optimization step.}
 #' @references
 #' R. A. Jacobs.
 #' Increased rates of convergence through learning rate adaptation.
@@ -151,7 +148,7 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' learning rates
 #' 1998 IEEE International Joint Conference on Neural Networks Proceedings.
 #' IEEE World Congress on Computational Intelligence.
-#'
+#' @family sneer optimization step size methods
 #' @export
 jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
                    inc_fn = partial(`*`, inc_mult),
@@ -201,6 +198,7 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' Neural Networks, 1:295-307, 1988.
 #'
 #' @export
+#' @family sneer optimization step size methods
 tsne_jacobs <- function() {
   jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
          min_step_size = 0.1)

@@ -5,31 +5,30 @@
 #' Create tricks callback.
 #'
 #' Creates a callback which the embedding routine will call before each
-#' optimization step. The callback has the signature
-#' \code{inp, out, method, opt, iter} where:
-#' \itemize{
-#'  \item \code{inp} Input data.
-#'  \item \code{out} Output data.
-#'  \item \code{method} Embedding method.
-#'  \item \code{opt} Optimizer.
-#'  \item \code{iter} Iteration number.
-#' }
-#' and returns a list containing:
-#' \itemize{
-#'  \item \code{inp} Updated input data.
-#'  \item \code{out} Updated output data.
-#'  \item \code{method} Updated embedded method.
-#'  \item \code{opt} Updated optimizer.
-#' }
+#' optimization step.
 #'
 #' @param early_exaggeration If \code{TRUE}, then apply early exaggeration.
 #' @param P_exaggeration The size of the exaggeration.
 #' @param exaggeration_off_iter Iteration step to turn exaggeration off.
 #' @param verbose If \code{TRUE} log messages about trick application.
-#' @return Tricks callback.
+#' @return Tricks callback with the signature \code{tricks(inp, out, method,
+#' opt, iter)} where:
+#' \describe{
+#'  \item{\code{inp}}{Input data.}
+#'  \item{\code{out}}{Output data.}
+#'  \item{\code{method}}{Embedding method.}
+#'  \item{\code{opt}}{Optimizer.}
+#'  \item{\code{iter}}{Iteration number.}
+#' }
+#' and returns a list containing:
+#' \describe{
+#'  \item{\code{inp}}{Updated input data.}
+#'  \item{\code{out}}{Updated output data.}
+#'  \item{\code{method}}{Updated embedded method.}
+#'  \item{\code{opt}}{Updated optimizer.}
+#' }
 #' @seealso \code{\link{embed_sim}} for how to use this function for configuring
-#' an embedding, and \code{\link{tsne_tricks}} for a convenience function that
-#' supplies the parameters used in the t-SNE paper.
+#' an embedding.
 #' @examples
 #' # Use early exaggeration as described in the t-SNE paper
 #' make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
@@ -41,6 +40,7 @@
 #'                                 P_exaggeration = 4,
 #'                                 exaggeration_off_iter = 50), ...)
 #' }
+#' @family sneer tricks
 #' @export
 make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
                         exaggeration_off_iter = 50, verbose = TRUE) {
@@ -88,12 +88,13 @@ make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
 #' embedding.
 #' @return tricks callback parameterized to behave like the t-SNE paper.
 #' @seealso \code{\link{embed_sim}} for how to use this function for configuring
-#' an embedding, and \code{\link{make_tricks}} for a more generic function.
+#' an embedding.
 #' @examples
 #' # Should be passed to the tricks argument of an embedding function:
 #' \dontrun{
 #'  embed_sim(tricks = tsne_tricks(), ...)
 #' }
+#' @family sneer tricks
 #' @export
 tsne_tricks <- function(verbose = TRUE) {
   make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,

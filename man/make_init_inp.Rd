@@ -27,13 +27,12 @@ initialization.}
 \value{
 A callback function with signature \code{fn(xm)} where \code{xm}
 is the input coordinates or a distance matrix. This function will return
-a list containing: \itemize{
- \item \code{xm} Input coordinates if these were provided.
- \item \code{dm} Input distances.
- \item \code{pm} Input probabilities.
- \item \code{beta} Input weighting parameters that produced the
- probabilities. Only provided if \code{keep_all_results} is \code{TRUE}.
-}
+a list containing:
+\item{\code{xm}}{Input coordinates if these were provided.}
+\item{\code{dm}}{Input distances.}
+\item{\code{pm}}{Input probabilities.}
+\item{\code{beta}}{Input weighting parameters that produced the
+probabilities. Only provided if \code{keep_all_results} is \code{TRUE}.}
 }
 \description{
 Factory function for input initialization callbacks. During input

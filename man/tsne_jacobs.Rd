@@ -21,4 +21,8 @@ R. A. Jacobs.
 Increased rates of convergence through learning rate adaptation.
 Neural Networks, 1:295-307, 1988.
 }
+\seealso{
+Other sneer optimization step size methods: \code{\link{bold_driver}},
+  \code{\link{jacobs}}
+}
 

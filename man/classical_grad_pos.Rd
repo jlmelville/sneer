@@ -17,10 +17,8 @@ classical_grad_pos(opt, inp, out, method)
 }
 \value{
 List containing:
-\itemize{
- \item \code{km} Stiffness matrix.
- \item \code{gm} Gradient matrix.
-}
+ \item{\code{km}}{Stiffness matrix.}
+ \item{\code{gm}}{Gradient matrix.}
 }
 \description{
 If the solution is currently at \code{out$ym}, this function calculates the

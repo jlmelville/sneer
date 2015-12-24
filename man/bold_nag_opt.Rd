@@ -28,6 +28,9 @@ size.
 }
 \seealso{
 \code{\link{embed_sim}} for how to use this function for configuring
-an embedding, and \code{\link{make_opt}} for a more generic function.
+an embedding.
+
+Other sneer optimization methods: \code{\link{make_opt}},
+  \code{\link{tsne_opt}}
 }
 

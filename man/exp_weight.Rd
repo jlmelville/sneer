@@ -9,16 +9,22 @@ exp_weight(d2m, beta = 1)
 \arguments{
 \item{d2m}{Matrix of squared distances.}
 
-\item{beta}{xponential parameter.}
+\item{beta}{exponential parameter.}
 }
 \value{
 Weight matrix.
 }
 \description{
-Applies exponential weighting to the squared distances. Can also be thought
-of as gaussian weighting of the distances.
+Applies exponential weighting to the squared distances.
 }
 \details{
-\eqn{W = e^{-\beta D^2}}
+The weight matrix, \eqn{W} is generated from the squared distances matrix,
+\eqn{D2} by:
+
+\deqn{W = e^{-\beta D2}}{exp(-beta * D2)}
+}
+\seealso{
+Other sneer weight functions: \code{\link{sqrt_exp_weight}},
+  \code{\link{tdist_weight}}
 }
 

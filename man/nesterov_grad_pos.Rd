@@ -17,10 +17,8 @@ nesterov_grad_pos(opt, inp, out, method)
 }
 \value{
 List containing:
-\itemize{
- \item \code{km} Stiffness matrix.
- \item \code{gm} Gradient matrix.
-}
+ \item{\code{km}}{Stiffness matrix.}
+ \item{\code{gm}}{Gradient matrix.}
 }
 \description{
 This function calculates the gradient at a position determined by applying

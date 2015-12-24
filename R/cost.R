@@ -1,12 +1,23 @@
 # Cost functions. Used by optimization routines to improve the embedding.
 
+#' Kullback Leibler divergence.
+#'
 #' Calculate the Kullback Leibler divergence from input and output data.
+#'
+#' This cost function requires the following matrices to be defined:
+#' \describe{
+#'  \item{\code{inp$pm}}{Input probabilities.}
+#'  \item{\code{out$qm}}{Output probabilities.}
+#' }
 #'
 #' @param inp Input data.
 #' @param out Output data.
+#' @param method Embedding method.
 #' @return the KL divergence between \code{inp$pm} and \code{out$qm}.
-kl_cost <- function(inp, out) {
-  kl_divergence(inp$pm, out$qm)
+#' @family sneer cost functions
+#' @export
+kl_cost <- function(inp, out, method) {
+  kl_divergence(inp$pm, out$qm, method$eps)
 }
 attr(kl_cost, "sneer_cost_type") <- "prob"
 
@@ -18,10 +29,10 @@ attr(kl_cost, "sneer_cost_type") <- "prob"
 #'
 #' @param pm Probability Matrix. First probability in the divergence.
 #' @param qm Probability Matrix. Second probability in the divergence.
-#' @return the KL divergence between \code{pm} and \code{qm}.
-kl_divergence <- function(pm, qm) {
-  sum(apply(pm * log((pm + .Machine$double.eps) /
-                       (qm + .Machine$double.eps)), 1, sum)) / sum(pm)
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return KL divergence between \code{pm} and \code{qm}.
+kl_divergence <- function(pm, qm, eps = .Machine$double.eps) {
+  sum(apply(pm * log((pm + eps) / (qm + eps)), 1, sum)) / sum(pm)
 }
 
 #' Factory function to normalize a cost function.
@@ -44,10 +55,11 @@ kl_divergence <- function(pm, qm) {
 #' cost of 1.2 is basically worse than guessing.
 #'
 #' @param cost_fn Cost function. Should have the signature
-#' \code{cost_fn(inp, out)} and return a scalar numeric cost value. In addition
-#' it should have an appropriate \code{sneer_cost_type} attribute set. For cost
-#' functions that act on probabilities, this should be \code{"prob"}. For cost
-#' function that act on distances, this should be \code{"dist"}.
+#' \code{cost_fn(inp, out, method)} and return a scalar numeric cost value.
+#' In addition it should have an appropriate \code{sneer_cost_type} attribute
+#' set. For cost functions that act on probabilities, this should be
+#' \code{"prob"}. For cost function that act on distances, this should be
+#' \code{"dist"}.
 #' @return Normalized cost function with the signature
 #' \code{norm_fn(inp, out)} and which return a scalar numeric cost value.
 make_normalized_cost_fn <- function(cost_fn) {
@@ -62,10 +74,10 @@ make_normalized_cost_fn <- function(cost_fn) {
   else {
     stop("No known null model matrix name for cost type '", cost_type, "'")
   }
-  function(inp, out) {
-    cost <- cost_fn(inp, out)
+  function(inp, out, method) {
+    cost <- cost_fn(inp, out, method)
     out[[mat_name]] <- do.call(null_model_fn_name, list(out[[mat_name]]))
-    null_cost <- cost_fn(inp, out)
+    null_cost <- cost_fn(inp, out, method)
     cost / null_cost
   }
 }

@@ -19,11 +19,9 @@ optimize_step(opt, method, inp, out, iter)
 }
 \value{
 List consisting of:
-\itemize{
- \item \code{opt} Updated optimizer.
- \item \code{inp} Updated input.
- \item \code{out} Updated output.
-}
+\item{\code{opt}}{Updated optimizer.}
+\item{\code{inp}}{Updated input.}
+\item{\code{out}}{Updated output.}
 }
 \description{
 One step of optimization.

@@ -17,26 +17,26 @@ make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
 \item{verbose}{If \code{TRUE} log messages about trick application.}
 }
 \value{
-Tricks callback.
+Tricks callback with the signature \code{tricks(inp, out, method,
+opt, iter)} where:
+\describe{
+ \item{\code{inp}}{Input data.}
+ \item{\code{out}}{Output data.}
+ \item{\code{method}}{Embedding method.}
+ \item{\code{opt}}{Optimizer.}
+ \item{\code{iter}}{Iteration number.}
+}
+and returns a list containing:
+\describe{
+ \item{\code{inp}}{Updated input data.}
+ \item{\code{out}}{Updated output data.}
+ \item{\code{method}}{Updated embedded method.}
+ \item{\code{opt}}{Updated optimizer.}
+}
 }
 \description{
 Creates a callback which the embedding routine will call before each
-optimization step. The callback has the signature
-\code{inp, out, method, opt, iter} where:
-\itemize{
- \item \code{inp} Input data.
- \item \code{out} Output data.
- \item \code{method} Embedding method.
- \item \code{opt} Optimizer.
- \item \code{iter} Iteration number.
-}
-and returns a list containing:
-\itemize{
- \item \code{inp} Updated input data.
- \item \code{out} Updated output data.
- \item \code{method} Updated embedded method.
- \item \code{opt} Updated optimizer.
-}
+optimization step.
 }
 \examples{
 # Use early exaggeration as described in the t-SNE paper
@@ -52,7 +52,8 @@ make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
 }
 \seealso{
 \code{\link{embed_sim}} for how to use this function for configuring
-an embedding, and \code{\link{tsne_tricks}} for a convenience function that
-supplies the parameters used in the t-SNE paper.
+an embedding.
+
+Other sneer tricks: \code{\link{tsne_tricks}}
 }
 

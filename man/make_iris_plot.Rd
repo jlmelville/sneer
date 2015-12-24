@@ -20,4 +20,7 @@ Helper function for visualizing the iris data set. If embedding the iris
 data set, the result of invoking this can be passed to the \code{plot_fn}
 parameter of the \code{make_reporter} function.
 }
+\seealso{
+Other sneer plot functions: \code{\link{make_plot}}
+}
 

@@ -5,37 +5,6 @@
 #' Factory function which returns a function which will be invoked by the
 #' embedding algorithm at regular intervals during the optimization.
 #'
-#' The result of this function is a callback with the signature
-#' \code{reporter(iter, inp, out, method, report)} where:
-#' \itemize{
-#'  \item \code{iter} Iteration number.
-#'  \item \code{inp} Input data.
-#'  \item \code{method} Embedding method.
-#'  \item \code{report} Report from previous reporter invocation.
-#' }
-#'
-#' The return value of the callback is an updated
-#' version of the \code{report} passed as a parameter to the callback. It has
-#' the following elements:
-#' \itemize{
-#'  \item \code{stop_early} If \code{TRUE} then optimization stopped before
-#'  the maximum number of iterations specified by the embedding algorithm.
-#'  \item \code{reltol} Relative convergence value.
-#'  \item \code{iter} Iteration number that the callback was invoked at.
-#'  \item \code{cost} Cost for this reporter.
-#'  \item \code{norm} Normalized cost for the most recent iteration. Only
-#'  present if \code{normalize_cost} was \code{TRUE}.
-#'  \item \code{costs} Matrix of all costs calculated for all invocations of
-#'  the reporter callback and the value of \code{iter} the reporters were
-#'  invoked at.
-#'  Only present if \code{keep_costs} was \code{TRUE}.
-#' }
-#'
-#' The result list is reused on each invocation of the callback so that the cost
-#' from the previous report can be compared with that of the current report,
-#' allowing for relative convergence early stopping, and appending of costs
-#' if \code{keep_costs} is \code{TRUE}.
-#'
 #' @param report_every Number of steps between callback invocations.
 #' @param min_cost If the cost function used by the embedding falls below this
 #' value, the optimization process is halted.
@@ -50,10 +19,42 @@
 #' @param keep_costs If \code{TRUE}, all costs (and the iteration number at
 #' which they were calculated) will be stored on result list returned by the
 #' reporter callback. This can be exported by the embedding algorithm.
+#' @param extra_costs List containing the names of cost functions to be reported,
+#' in addition to the cost associated with the embedding method, which will
+#' always be logged. Possible cost functions include:
+#' \describe{
+#'  \item{\code{\link{kl_cost}}}{Kullback-Leibler divergence.}
+#' }
+#' Note that note all costs are compatible with all embedding methods, because
+#' they may require specific matrices or other values to be precalculated in the
+#' Input and Output data. See the help text for each cost function for details.
 #' @param verbose If \code{TRUE}, report results such as cost values
 #' will be logged to screen. If set to false, you will have to export the
 #' report from the embedding routine to access any of the information.
-#' @return reporter callback used by the embedding routine.
+#' @return Reporter callback used by the embedding routine. The callback has the
+#' signature \code{reporter(iter, inp, out, method, report)} where:
+#'  \item{\code{iter}}{Iteration number.}
+#'  \item{\code{inp}}{Input data.}
+#'  \item{\code{method}}{Embedding method.}
+#'  \item{\code{report}}{Report from previous reporter invocation.}
+#' The return value of the callback is an updated
+#' version of the \code{report} passed as a parameter to the callback. A list
+#' containing:
+#'  \item{\code{stop_early}}{If \code{TRUE} then optimization stopped before
+#'  the maximum number of iterations specified by the embedding algorithm.}
+#'  \item{\code{reltol}}{Relative convergence value.}
+#'  \item{\code{iter}}{Iteration number that the callback was invoked at.}
+#'  \item{\code{cost}}{Cost for this reporter.}
+#'  \item{\code{norm}}{Normalized cost for the most recent iteration. Only
+#'  present if \code{normalize_cost} was \code{TRUE}.}
+#'  \item{\code{costs}}{Matrix of all costs calculated for all invocations of
+#'  the reporter callback and the value of \code{iter} the reporters were
+#'  invoked at. Only present if \code{keep_costs} was \code{TRUE}.}
+#'
+#' The result list is reused on each invocation of the callback so that the cost
+#' from the previous report can be compared with that of the current report,
+#' allowing for relative convergence early stopping, and appending of costs
+#' if \code{keep_costs} is \code{TRUE}.
 #' @seealso \code{\link{embed_sim}} for how to use this function for configuring
 #' an embedding, and \code{\link{make_plot}} for 2D plot generation.
 #' @examples
@@ -88,18 +89,18 @@
 make_reporter <- function(report_every = 100, min_cost = 0,
                           reltol = sqrt(.Machine$double.eps), plot_fn = NULL,
                           normalize_cost = TRUE, keep_costs = FALSE,
-                          verbose = TRUE) {
+                          extra_costs = NULL, verbose = TRUE) {
   reporter <- list()
 
   reporter$cost_log <- function(iter, inp, out, method, result) {
-    cost <- method$cost_fn(inp, out)
+    cost <- method$cost_fn(inp, out, method)
     if (is.null(result$cost)) {
       result$cost <- .Machine$double.xmax
     }
 
     if (normalize_cost) {
       norm_fn <- make_normalized_cost_fn(method$cost_fn)
-      norm_cost <- norm_fn(inp, out)
+      norm_cost <- norm_fn(inp, out, method)
     }
 
     if (verbose) {
@@ -107,6 +108,16 @@ make_reporter <- function(report_every = 100, min_cost = 0,
       if (normalize_cost) {
         cost_str <- paste0(cost_str, " norm = ", formatC(norm_cost))
       }
+      if (!is.null(extra_costs)) {
+        for (extra_cost_name in extra_costs) {
+          extra_cost_fn <- get(extra_cost_name)
+
+          extra_cost <- extra_cost_fn(inp, out, method)
+          cost_str <- paste0(cost_str, " ", extra_cost_name, " = ",
+                            formatC(extra_cost))
+        }
+      }
+
       message("Iteration #", iter, cost_str)
       flush.console()
     }

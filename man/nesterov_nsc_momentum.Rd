@@ -9,24 +9,29 @@ nesterov_nsc_momentum()
 \value{
 A solution update method for use by the optimizer. A list consisting
 of:
-\itemize{
- \item \code{init_momentum} Initial momentum.
- \item \code{init} Function to do any needed initialization.
- \item \code{get_update} Function to return the current update, which will
- be added to current solution matrix.
- \item \code{after_step} Function to do any needed updating or internal state
- before the next optimization step.
-}
+ \item{\code{init_momentum}}{Initial momentum.}
+ \item{\code{init}}{Function to do any needed initialization.}
+ \item{\code{get_update}}{Function to return the current update, which will
+ be added to current solution matrix.}
+ \item{\code{after_step}}{Function to do any needed updating or internal state
+ before the next optimization step.}
 }
 \description{
-Create an callback for the optimizer to use to update the embedding solution.
+Create an callback for the optimizer to use to update the embedding solution,
+using momentum scheme suggested by Nesterov.
+}
+\details{
 Update is in the form of a momentum schedule of the form
-\eqn{1-\frac{3}{t+5}}
+\eqn{1-\frac{3}{t+5}}{1-(3/(t+5))}
 }
 \references{
 Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
 On the importance of momentum and initialization in deep learning.
 30th International Conference on Machine Learning, Atlanta, USA, 2013.
 JMLR: W&CP volume 28.
+}
+\seealso{
+Other sneer optimization update methods: \code{\link{linear_momentum}},
+  \code{\link{no_momentum}}, \code{\link{step_momentum}}
 }
 

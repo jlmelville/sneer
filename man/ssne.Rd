@@ -4,31 +4,45 @@
 \alias{ssne}
 \title{Symmetric Stochastic Neighbor Embedding.}
 \usage{
-ssne(mat_name = "ym")
+ssne(mat_name = "ym", eps = .Machine$double.eps)
 }
 \arguments{
 \item{mat_name}{Name of the matrix in the output data list that will contain
 the embedded coordinates.}
+
+\item{eps}{Small floating point value used to prevent numerical problems,
+e.g. in gradients and cost functions.}
 }
 \value{
-a list with the following members:
-\itemize{
- \item \code{cost_fn} Cost function for the embedding: the Kullback-Leibler
- divergence between the input and output probabilities.
- \item \code{weight_fn} Weight function for mapping squared distances in the
+a list containing:
+ \item{\code{cost_fn}}{Cost function for the embedding: the Kullback-Leibler
+ divergence between the input and output probabilities.}
+ \item{\code{weight_fn}}{Weight function for mapping squared distances in the
  embedded coordinates to weights, which are in turn converted to
- probabilities: SSNE uses the exponential function.
- \item \code{stiffness_fn} Stiffness function.
- \item \code{prob_out_fn} Function to convert weights matrix to a specific
- probability matrix, e.g. row-based or joint.
- \item \code{after_init_fn} Method-specific initialization function to
+ probabilities: SSNE uses the exponential function.}
+ \item{\code{stiffness_fn}}{Stiffness function.}
+ \item{\code{update_out_fn}}{Function to calculate and store any needed
+ data after a coordinate update.}
+ \item{\code{after_init_fn}}{Method-specific initialization function to
  invoke after input and output initialization callbacks. For this method,
  the input probability matrix must be converted from a row probability
- matrix to a joint probability matrix.
-}
+ matrix to a joint probability matrix.}
+ \item{\code{mat_name}}{Name of the matrix in the output data list that will
+ contain the embedded coordinates.}
+ \item{\code{eps}}{Small floating point value used to prevent numerical
+ problems, e.g. in gradients and cost functions.}
 }
 \description{
 Creates a list of functions that collectively implement SSNE.
+}
+\section{Output Data}{
+
+If used in an embedding, the output data list will contain:
+\describe{
+ \item{\code{ym}}{Embedded coordinates. This name can be changed by
+ specifying \code{mat_name}.}
+ \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
+}
 }
 \references{
 J.A. Cook, I. Sutskever, A. Mnih, and G.E. Hinton.
@@ -39,5 +53,10 @@ Intelligence and Statistics, volume 2, pages 67-74, 2007.
 Laurens van der Maarten, Geoffrey Hinton.
 Visualizing Data using t-SNE.
 Journal of Machine Learning Research, 2008, 9, 2579-2605.
+}
+\seealso{
+Other sneer embedding methods: \code{\link{asne}},
+  \code{\link{mds}}, \code{\link{sammon}},
+  \code{\link{tasne}}, \code{\link{tsne}}
 }
 

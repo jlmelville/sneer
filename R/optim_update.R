@@ -13,16 +13,15 @@
 #' @param verbose if \code{TRUE}, log info about the momentum.
 #' @return A solution update method for use by the optimizer. A list consisting
 #' of:
-#' \itemize{
-#'  \item \code{init_momentum} Initial momentum.
-#'  \item \code{final_momentum} Final momentum.
-#'  \item \code{mom_switch_iter} Switch iteration.
-#'  \item \code{init} Function to do any needed initialization.
-#'  \item \code{get_update} Function to return the current update, which will
-#'  be added to current solution matrix.
-#'  \item \code{after_step} Function to do any needed updating or internal state
-#'  before the next optimization step.
-#' }
+#'  \item{\code{init_momentum}}{Initial momentum.}
+#'  \item{\code{final_momentum}}{Final momentum.}
+#'  \item{\code{mom_switch_iter}}{Switch iteration.}
+#'  \item{\code{init}}{Function to do any needed initialization.}
+#'  \item{\code{get_update}}{Function to return the current update, which will
+#'  be added to current solution matrix.}
+#'  \item{\code{after_step}}{Function to do any needed updating or internal
+#'  state before the next optimization step.}
+#' @family sneer optimization update methods
 #' @export
 step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
                           switch_iter = 250, verbose = TRUE) {
@@ -62,15 +61,14 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
 #' @param final_momentum Momentum value after \code{switch_iter} iterations.
 #' @return A solution update method for use by the optimizer. A list consisting
 #' of:
-#' \itemize{
-#'  \item \code{init_momentum} Initial momentum.
-#'  \item \code{final_momentum} Final momentum.
-#'  \item \code{init} Function to do any needed initialization.
-#'  \item \code{get_update} Function to return the current update, which will
-#'  be added to current solution matrix.
-#'  \item \code{after_step} Function to do any needed updating or internal state
-#'  before the next optimization step.
-#' }
+#'  \item{\code{init_momentum}}{Initial momentum.}
+#'  \item{\code{final_momentum}}{Final momentum.}
+#'  \item{\code{init}}{Function to do any needed initialization.}
+#'  \item{\code{get_update}}{Function to return the current update, which will
+#'  be added to current solution matrix.}
+#'  \item{\code{after_step}}{Function to do any needed updating or internal state
+#'  before the next optimization step.}
+#' @family sneer optimization update methods
 #' @export
 linear_momentum <- function(max_iter, init_momentum = 0,
                             final_momentum = 0.9) {
@@ -97,25 +95,26 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 
 #' Momentum schedule for non-strongly convex problems.
 #'
-#' Create an callback for the optimizer to use to update the embedding solution.
+#' Create an callback for the optimizer to use to update the embedding solution,
+#' using momentum scheme suggested by Nesterov.
+#'
 #' Update is in the form of a momentum schedule of the form
-#' \eqn{1-\frac{3}{t+5}}
+#' \eqn{1-\frac{3}{t+5}}{1-(3/(t+5))}
 #'
 #' @return A solution update method for use by the optimizer. A list consisting
 #' of:
-#' \itemize{
-#'  \item \code{init_momentum} Initial momentum.
-#'  \item \code{init} Function to do any needed initialization.
-#'  \item \code{get_update} Function to return the current update, which will
-#'  be added to current solution matrix.
-#'  \item \code{after_step} Function to do any needed updating or internal state
-#'  before the next optimization step.
-#' }
+#'  \item{\code{init_momentum}}{Initial momentum.}
+#'  \item{\code{init}}{Function to do any needed initialization.}
+#'  \item{\code{get_update}}{Function to return the current update, which will
+#'  be added to current solution matrix.}
+#'  \item{\code{after_step}}{Function to do any needed updating or internal state
+#'  before the next optimization step.}
 #' @references
 #' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
 #' On the importance of momentum and initialization in deep learning.
 #' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
 #' JMLR: W&CP volume 28.
+#' @family sneer optimization update methods
 #' @export
 nesterov_nsc_momentum <- function() {
   list(
@@ -141,11 +140,10 @@ nesterov_nsc_momentum <- function() {
 #'
 #' @return A solution update method for use by the optimizer. A list consisting
 #' of:
-#' \itemize{
-#'  \item \code{init} Function to do any needed initialization.
-#'  \item \code{get_update} Function to return the current update, which will
-#'  be added to current solution matrix.
-#' }
+#'  \item{\code{init}}{Function to do any needed initialization.}
+#'  \item{\code{get_update}}{Function to return the current update, which will
+#'  be added to current solution matrix.}
+#' @family sneer optimization update methods
 #' @export
 no_momentum <- function() {
   list(

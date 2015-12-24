@@ -18,10 +18,8 @@ embedded coordinates.}
 }
 \value{
 List containing:
-\itemize{
- \item \code{km} Stiffness matrix.
- \item \code{gm} Gradient matrix.
-}
+\item{\code{km}}{Stiffness matrix.}
+\item{\code{gm}}{Gradient matrix.}
 }
 \description{
 Calculate the gradient of the cost function for the current configuration.

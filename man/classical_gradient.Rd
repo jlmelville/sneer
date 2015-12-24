@@ -12,4 +12,7 @@ Classical gradient calculation method.
 \description{
 Configuration function for optimizer gradient calculation.
 }
+\seealso{
+Other sneer optimization gradient methods: \code{\link{nesterov_gradient}}
+}
 

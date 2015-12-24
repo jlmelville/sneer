@@ -17,7 +17,7 @@
 #' of an embedding algorithm is spread out over multiple functions. If you
 #' just want to understand how, for example, t-SNE is implemented, it's better
 #' to look at the code in the
-#' \url{https://github.com/jdonaldson/rtsne}{'tsne' R package}.
+#' \href{https://github.com/jdonaldson/rtsne}{'tsne' R package}.
 #'
 #' @section Embedding:
 #' Currently, only the similarity-based embedding techniques related to
@@ -31,14 +31,11 @@
 #' the distances by some non-linear weighting function.
 #'
 #' The entry point for these similarity
-#' preserving embeddings is the function \code{embed_sim}. Apart from the
-#' description of the various parts of the embedding below, you can get more info
-#' and examples by looking up the help by running
-#'
-#' \code{?embed_sim}
-#'
-#' and then further help by looking up the functions mentioned in the
-#' \code{See Also} section.
+#' preserving embeddings is the function \code{\link{embed_sim}}. Apart from the
+#' description of the various parts of the embedding below, you can get more
+#' info and examples by looking up the help page for that function and then
+#' further help by looking up the functions mentioned in the \code{See Also}
+#' section.
 #'
 #' To carry out an embedding, you need to provide quite a bit of information
 #' to parameterise it correctly. Rather then requiring it all be passed as
@@ -50,21 +47,21 @@
 #' @section Preprocessing:
 #' Entirely optional, but provides some way to preprocess the input data, e.g.
 #' various scaling methods, filtering of zero-variance columns, whitening.
-#' See \code{?make_preprocess} for more details.
+#' See \code{\link{make_preprocess}} for more details.
 #'
 #' @section Input Initialization:
 #' Generates the input matrices used in the embedding. For SNE and related
 #' methods, a probability matrix is needed. There's really only one way of
 #' doing this, which involves specifying a target perplexity for row-wise
-#' probabilities. See \code{?make_init_inp} for more details.
+#' probabilities. See \code{\link{make_init_inp}} for more details.
 #'
 #' @section Output Initialization:
 #' Generates the initial embedded coordinates. A random initialization from
 #' a gaussian distribution with a very small standard deviation (e.g. 1e-4) is
 #' very popular. But that makes comparing different results difficult. Using
 #' PCA to generate a two-component scores matrix gives repeatable results with
-#' a computational cost that is entirely reasonable. See \code{?make_init_out}
-#' for more details.
+#' a computational cost that is entirely reasonable. See
+#' \code{\link{make_init_out}} for more details.
 #'
 #' @section Embedding Method:
 #' I take the view that the essentials of any embedding method (or at least the
@@ -99,12 +96,12 @@
 #' stepping Wolfe line search for step size selection, but you would also need
 #' a good guess for the trace of the Hessian, and NAG works well enough with
 #' the bold driver method for step size selection without all that.
-#' See \code{?make_opt} for more details.
+#' See \code{\link{make_opt}} for more details.
 #'
 #' @section Tricks:
 #' Various embedding methods use different heuristics to speed up convergence.
 #' Only the "early exaggeration" method described in the t-SNE paper is
-#' currently implemented. See \code{?make_tricks} for more details.
+#' currently implemented. See \code{\link{make_tricks}} for more details.
 #'
 #' @section Reporter:
 #' Optional functions that will run on a regular schedule during the
@@ -117,7 +114,7 @@
 #' of a 1000 points representing a fuzzy 9D simplex. It's intended to
 #' demonstrate the "crowding effect" and require the sort of similarity
 #' preserving embedding methods provided in this package (PCA does a horrible
-#' job of separated the 10 clusters in the data). See \code{?s1k} for more
+#' job of separated the 10 clusters in the data). See \code{\link{s1k}} for more
 #' details.
 #'
 #' @examples

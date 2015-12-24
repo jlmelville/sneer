@@ -26,14 +26,12 @@ have the following signature: \code{function(D2i, beta)}}
 }
 \value{
 List with the following members:
-\itemize{
- \item \code{pm} Matrix with one row containing a probability distribution
- with a perplexity within \code{tol} of \code{perplexity}.
- \item \code{beta} Beta parameter used with \code{weight_fn} that generated
- \code{pm}.
- \item \code{perp} Final perplexity of the probability, differing from
- \code{perplexity} only if \code{max_iters} was exceeded.
-}
+ \item{\code{pm}}{Matrix with one row containing a probability distribution
+ with a perplexity within \code{tol} of \code{perplexity}.}
+ \item{\code{beta}}{Beta parameter used with \code{weight_fn} that generated
+ \code{pm}.}
+ \item{\code{perp}}{Final perplexity of the probability, differing from
+ \code{perplexity} only if \code{max_iters} was exceeded.}
 }
 \description{
 Find the value of beta that produces a specific perplexity when a row of

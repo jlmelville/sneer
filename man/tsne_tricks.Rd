@@ -24,6 +24,8 @@ Tricks from t-SNE paper.
 }
 \seealso{
 \code{\link{embed_sim}} for how to use this function for configuring
-an embedding, and \code{\link{make_tricks}} for a more generic function.
+an embedding.
+
+Other sneer tricks: \code{\link{make_tricks}}
 }
 

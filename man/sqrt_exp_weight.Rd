@@ -16,10 +16,18 @@ Weight matrix.
 }
 \description{
 Applies exponential weighting to the distances, rather than the square of
-the distances. Included so results can be compared with other implementations
-of TSNE, although you'd normally use the squared distances.
+the distances.
 }
 \details{
-\eqn{W = e^{-\beta D}}
+Included so results can be compared with other implementations
+of TSNE, although you'd normally use the squared distances. The weight
+matrix, \eqn{W} is generated from the squared distances matrix,
+\eqn{D2} by:
+
+\deqn{W = e^{-\beta \sqrt{D2}}}{W = exp(-beta * sqrt(D2))}
+}
+\seealso{
+Other sneer weight functions: \code{\link{exp_weight}},
+  \code{\link{tdist_weight}}
 }
 

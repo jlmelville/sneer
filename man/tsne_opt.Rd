@@ -21,6 +21,9 @@ from the t-SNE paper.
 }
 \seealso{
 \code{\link{embed_sim}} for how to use this function for configuring
-an embedding, and \code{\link{make_opt}} for a more generic function.
+an embedding.
+
+Other sneer optimization methods: \code{\link{bold_nag_opt}},
+  \code{\link{make_opt}}
 }
 

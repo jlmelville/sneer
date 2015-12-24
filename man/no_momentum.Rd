@@ -9,14 +9,17 @@ no_momentum()
 \value{
 A solution update method for use by the optimizer. A list consisting
 of:
-\itemize{
- \item \code{init} Function to do any needed initialization.
- \item \code{get_update} Function to return the current update, which will
- be added to current solution matrix.
-}
+ \item{\code{init}}{Function to do any needed initialization.}
+ \item{\code{get_update}}{Function to return the current update, which will
+ be added to current solution matrix.}
 }
 \description{
 Create an callback for the optimizer to use that uses strict gradient
 descent with no momentum term.
+}
+\seealso{
+Other sneer optimization update methods: \code{\link{linear_momentum}},
+  \code{\link{nesterov_nsc_momentum}},
+  \code{\link{step_momentum}}
 }
 

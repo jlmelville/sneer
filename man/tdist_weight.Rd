@@ -14,9 +14,16 @@ Weight matrix.
 }
 \description{
 Applies weighting using the Student-t distribution with one degree of
-freedom. Compared to the exponential weighting this has a much heavier tail.
+freedom.
 }
 \details{
-\eqn{W = \frac{1}{(1 + D^2)}}
+Compared to the exponential weighting this has a much heavier tail.
+The weight matrix, \eqn{W} is generated from the squared distances matrix,
+\eqn{D2} by:
+\deqn{W = \frac{1}{(1 + D2)}}{W = 1/(1 + D2)}
+}
+\seealso{
+Other sneer weight functions: \code{\link{exp_weight}},
+  \code{\link{sqrt_exp_weight}}
 }
 
