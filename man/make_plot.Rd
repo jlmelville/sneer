@@ -27,7 +27,7 @@ the embedding.
 }
 \description{
 Factory function for a plotting callback which can be used by the reporter
-function of an embedding to plot the current (two-dimensional embedding).
+function of an embedding to plot the current (two-dimensional) embedding.
 }
 \examples{
 # For s1k dataset, plot 2D embedding with "Label" factor to identify each

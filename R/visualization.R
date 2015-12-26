@@ -4,7 +4,7 @@
 #' Create a plotting function.
 #'
 #' Factory function for a plotting callback which can be used by the reporter
-#' function of an embedding to plot the current (two-dimensional embedding).
+#' function of an embedding to plot the current (two-dimensional) embedding.
 #'
 #' @param x Data frame containing label information for the embedded data.
 #' @param attr_name Name of the label column in \code{x}.
@@ -42,13 +42,56 @@ make_plot <- function(x, attr_name,
                         labels
                       },
                       mat_name = "ym") {
+  embedding_plot <- make_embedding_plot(x, attr_name, label_fn)
+  function(out) {
+    embedding_plot(out[[mat_name]])
+  }
+}
+
+#' Create embedding plot.
+#'
+#' Create a function which when invoked on a 2D matrix, plots the embedding
+#' with color-coded labels.
+#'
+#' @param x Data frame containing label information for the embedded data.
+#' @param attr_name Name of the label column in \code{x}.
+#' @param label_fn Function with the signature \code{label_fn(labels)} where
+#' \code{labels} is a vector of labels for each point in the data set. The
+#' function should return a vector of labels suitable for displaying in the
+#' plot.
+#' @return Function which will take an output list, and produce a 2D plot of
+#' the embedding.
+#' @seealso \code{\link{make_label}} for an example of a suitable
+#' argument to \code{label_fn}.
+#'
+#' @examples
+#' \dontrun{
+#' # Create a plot function for the Iris dataset
+#' iris_plot <- make_embedding_plot(iris, "Species")
+#'
+#' # PCA on iris
+#' pca_iris <- prcomp(iris[, 1:4], center = TRUE, retx = TRUE)
+#' # view the first two scores:
+#' iris_plot(pca_iris$x[, 1:2])
+#'
+#' # TSNE on iris
+#' tsne_iris <- embed_sim(iris[, 1:4], method = tsne())
+#' # view the TSNE embedding
+#' iris_plot(tsne_iris$ym)
+#'}
+#'@export
+make_embedding_plot <- function(x, attr_name,
+                               label_fn = function(labels) {
+                                labels
+                               },
+                               mat_name = "ym") {
   attr <- x[[attr_name]]
   uniq_attr <- sort(unique(attr))
   colors <- rainbow(length(uniq_attr))
   names(colors) <- uniq_attr
-  function(out) {
-    plot(out[[mat_name]], type = "n", xlab = "D1", ylab = "D2")
-    text(out[[mat_name]], labels = label_fn(attr), col = colors[attr])
+  function(ym) {
+    plot(ym, type = "n", xlab = "D1", ylab = "D2")
+    text(ym, labels = label_fn(attr), col = colors[attr])
   }
 }
 
