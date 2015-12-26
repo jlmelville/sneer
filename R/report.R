@@ -16,16 +16,17 @@
 #' of this function is ignored.
 #' @param normalize_cost If \code{TRUE}, the cost calculated by the cost
 #' function will be normalized and both values logged.
-#' @param keep_costs If \code{TRUE}, all costs (and the iteration number at
-#' which they were calculated) will be stored on result list returned by the
-#' reporter callback. This can be exported by the embedding algorithm.
+#' @param keep_costs If \code{TRUE}, all costs (including those specified in
+#' \code{extra_costs}) and the iteration number at
+#' which they were calculated will be stored on result list returned by the
+#' reporter callback.
 #' @param extra_costs List containing the names of cost functions to be reported,
 #' in addition to the cost associated with the embedding method, which will
 #' always be logged. Possible cost functions include:
 #' \describe{
-#'  \item{\code{\link{kl_cost}}}{Kullback-Leibler divergence.}
+#'  \item{\code{"kl"}}{Kullback-Leibler divergence, \code{\link{kl_cost}}.}
 #' }
-#' Note that note all costs are compatible with all embedding methods, because
+#' Note that not all costs are compatible with all embedding methods, because
 #' they may require specific matrices or other values to be precalculated in the
 #' Input and Output data. See the help text for each cost function for details.
 #' @param verbose If \code{TRUE}, report results such as cost values
@@ -110,11 +111,12 @@ make_reporter <- function(report_every = 100, min_cost = 0,
       }
       if (!is.null(extra_costs)) {
         for (extra_cost_name in extra_costs) {
-          extra_cost_fn <- get(extra_cost_name)
-
+          # append "_cost" to the name in the array to get the actual func name
+          extra_cost_fn <- get(paste0(extra_cost_name, "_cost"))
           extra_cost <- extra_cost_fn(inp, out, method)
           cost_str <- paste0(cost_str, " ", extra_cost_name, " = ",
                             formatC(extra_cost))
+          result[[extra_cost_name]] <- extra_cost
         }
       }
 
@@ -139,13 +141,20 @@ make_reporter <- function(report_every = 100, min_cost = 0,
     }
 
     result$cost <- cost
-    if (keep_costs) {
-      result$costs <- rbind(result$costs, matrix(c(iter, cost), nrow = 1))
-      colnames(result$costs) <- c("iter", "cost")
-    }
 
     if (normalize_cost) {
       result$norm <- norm_cost
+    }
+
+    if (keep_costs) {
+      if (normalize_cost) {
+        names <- c("iter", "cost", "norm", extra_costs)
+      } else {
+        names <- c("iter", "cost", extra_costs)
+      }
+      cost_row <- matrix(unlist(result[names]), nrow = 1)
+      result$costs <- rbind(result$costs, cost_row)
+      colnames(result$costs) <- names
     }
 
     result
@@ -161,10 +170,10 @@ make_reporter <- function(report_every = 100, min_cost = 0,
   function(iter, inp, out, method, report) {
     report$stop_early <- FALSE
     if (iter %% report_every == 0) {
+      report$iter <- iter
       for (name in names(reporter)) {
         report <- reporter[[name]](iter, inp, out, method, report)
       }
-      report$iter <- iter
     }
     report
   }
