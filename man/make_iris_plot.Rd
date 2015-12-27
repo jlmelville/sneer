@@ -2,9 +2,7 @@
 % Please edit documentation in R/visualization.R
 \name{make_iris_plot}
 \alias{make_iris_plot}
-\title{Helper function for visualizing the iris data set. If embedding the iris
-data set, the result of invoking this can be passed to the \code{plot_fn}
-parameter of the \code{make_reporter} function.}
+\title{Iris dataset plot factory function.}
 \usage{
 make_iris_plot(num_label_chars = 1)
 }
@@ -16,7 +14,11 @@ for each data point.}
 Function for plotting the embedded iris data set.
 }
 \description{
-Helper function for visualizing the iris data set. If embedding the iris
+Creates a function which can be used to visualize embeddings of the iris
+dataset.
+}
+\details{
+Wrapper function for visualizing the iris data set. If embedding the iris
 data set, the result of invoking this can be passed to the \code{plot_fn}
 parameter of the \code{make_reporter} function.
 }
