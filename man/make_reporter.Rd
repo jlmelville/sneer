@@ -59,6 +59,8 @@ signature \code{reporter(iter, inp, out, method, report)} where:
  \item{\code{inp}}{Input data.}
  \item{\code{method}}{Embedding method.}
  \item{\code{report}}{Report from previous reporter invocation.}
+ \item{\code{force}}{If TRUE, then the report will be generated even if the
+ iteration number doesn't meet the \code{report_every} criterion.}
 The return value of the callback is an updated
 version of the \code{report} passed as a parameter to the callback. A list
 containing:
