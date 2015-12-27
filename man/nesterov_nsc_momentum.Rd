@@ -4,7 +4,10 @@
 \alias{nesterov_nsc_momentum}
 \title{Momentum schedule for non-strongly convex problems.}
 \usage{
-nesterov_nsc_momentum()
+nesterov_nsc_momentum(max_momentum = 1)
+}
+\arguments{
+\item{max_momentum}{Maximum value the momentum may take.}
 }
 \value{
 A solution update method for use by the optimizer. A list consisting

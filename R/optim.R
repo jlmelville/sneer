@@ -203,6 +203,7 @@ tsne_opt <- function() {
 #' size.
 #' @param min_step_size Minimum step size allowed.
 #' @param init_step_size Initial step size.
+#' @param max_momentum Maximum value the momentum may take.
 #' @return Optimizer with NAG parameters and bold driver step size.
 #' @seealso \code{\link{embed_sim}} for how to use this function for configuring
 #' an embedding.

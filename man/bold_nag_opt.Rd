@@ -4,12 +4,15 @@
 \alias{bold_nag_opt}
 \title{Nesterov Accelerated Gradient optimizer with bold driver}
 \usage{
-bold_nag_opt(min_step_size = sqrt(.Machine$double.eps), init_step_size = 1)
+bold_nag_opt(min_step_size = sqrt(.Machine$double.eps), init_step_size = 1,
+  max_momentum = 1)
 }
 \arguments{
 \item{min_step_size}{Minimum step size allowed.}
 
 \item{init_step_size}{Initial step size.}
+
+\item{max_momentum}{Maximum value the momentum may take.}
 }
 \value{
 Optimizer with NAG parameters and bold driver step size.
