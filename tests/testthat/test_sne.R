@@ -23,10 +23,11 @@ ssne_iris <- embed_sim(iris[, 1:4],
                                                 verbose = FALSE),
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
-                       max_iter = 200,
+                       max_iter = 60,
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
-                       verbose = FALSE)
+                       verbose = FALSE,
+                       opt = bold_nag_opt())
 expect_equal(formatC(ssne_iris$report$norm), "0.07265")
 
 asne_iris <- embed_sim(iris[, 1:4],
@@ -37,10 +38,11 @@ asne_iris <- embed_sim(iris[, 1:4],
                                                 verbose = FALSE),
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
-                       max_iter = 200,
+                       max_iter = 70,
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
-                       verbose = FALSE)
+                       verbose = FALSE,
+                       opt = bold_nag_opt(max_momentum = 0.85))
 expect_equal(formatC(asne_iris$report$norm), "0.08479")
 
 pca_iris <- embed_sim(iris[, 1:4],

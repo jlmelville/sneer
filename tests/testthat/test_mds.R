@@ -10,7 +10,7 @@ mds_iris <- embed_dist(iris[, 1:4],
                        opt = bold_nag_opt(),
                        reporter = make_reporter(
                          extra_costs = c("kruskal_stress"), verbose = FALSE),
-                       export = c("report"), verbose = FALSE)
+                       export = c("report"), verbose = FALSE, max_iter = 40)
 expect_equal(formatC(mds_iris$report$kruskal_stress), "0.03273")
 
 # Compared to:
@@ -30,5 +30,5 @@ sammon_iris <- embed_dist(iris[c(1:142, 144:150), 1:4],
                           method = sammon_map(),
                           opt = bold_nag_opt(),
                           reporter = make_reporter(verbose = FALSE),
-                          export = c("report"), verbose = FALSE)
+                          export = c("report"), verbose = FALSE, max_iter = 40)
 expect_equal(formatC(sammon_iris$report$cost), "0.00396")
