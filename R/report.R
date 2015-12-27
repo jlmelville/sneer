@@ -24,7 +24,14 @@
 #' in addition to the cost associated with the embedding method, which will
 #' always be logged. Possible cost functions include:
 #' \describe{
-#'  \item{\code{"kl"}}{Kullback-Leibler divergence, \code{\link{kl_cost}}.}
+#'  \item{\code{"kl"}}{\code{\link{kl_cost}}.}
+#'  \item{\code{"kruskal_stress"}}{\code{\link{kruskal_stress_cost}}.}
+#'  \item{\code{"mean_relative_error"}}{\code{\link{mean_relative_error_cost}}.}
+#'  \item{\code{"metric_sstress"}}{\code{\link{metric_sstress_cost}}.}
+#'  \item{\code{"metric_stress"}}{\code{\link{metric_stress_cost}}.}
+#'  \item{\code{"normalized_stress"}}{\code{\link{normalized_stress_cost}}.}
+#'  \item{\code{"rms_metric_stress"}}{\code{\link{rms_metric_stress_cost}}.}
+#'  \item{\code{"sammon_stress"}}{\code{\link{sammon_stress_cost}}.}
 #' }
 #' Note that not all costs are compatible with all embedding methods, because
 #' they may require specific matrices or other values to be precalculated in the
@@ -79,6 +86,10 @@
 #' # embedding routine and plotted or otherwise used.
 #' make_reporter(report_every = 100, keep_costs = TRUE)
 #'
+#' # Report normalized stress, Kruskal stress and Sammon stress:
+#' make_reporter(extra_costs =
+#'                 c("normalized_stress", "kruskal_stress", "sammon_stress"))
+#'
 #' # Should be passed to the reporter argument of an embedding function:
 #' \dontrun{
 #'  embed_sim(reporter = make_reporter(report_every = 100,
@@ -109,17 +120,22 @@ make_reporter <- function(report_every = 100, min_cost = 0,
       if (normalize_cost) {
         cost_str <- paste0(cost_str, " norm = ", formatC(norm_cost))
       }
-      if (!is.null(extra_costs)) {
-        for (extra_cost_name in extra_costs) {
-          # append "_cost" to the name in the array to get the actual func name
-          extra_cost_fn <- get(paste0(extra_cost_name, "_cost"))
-          extra_cost <- extra_cost_fn(inp, out, method)
-          cost_str <- paste0(cost_str, " ", extra_cost_name, " = ",
-                            formatC(extra_cost))
-          result[[extra_cost_name]] <- extra_cost
-        }
-      }
+    }
 
+    if (!is.null(extra_costs)) {
+      for (extra_cost_name in extra_costs) {
+        # append "_cost" to the name in the array to get the actual func name
+        extra_cost_fn <- get(paste0(extra_cost_name, "_cost"))
+        extra_cost <- extra_cost_fn(inp, out, method)
+        if (verbose) {
+          cost_str <- paste0(cost_str, " ", extra_cost_name, " = ",
+                             formatC(extra_cost))
+        }
+        result[[extra_cost_name]] <- extra_cost
+      }
+    }
+
+    if (verbose) {
       message("Iteration #", iter, cost_str)
       flush.console()
     }

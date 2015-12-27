@@ -56,7 +56,8 @@ Journal of Machine Learning Research, 2008, 9, 2579-2605.
 }
 \seealso{
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{mds}}, \code{\link{sammon}},
-  \code{\link{tasne}}, \code{\link{tsne}}
+  \code{\link{mmds}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{tasne}},
+  \code{\link{tsne}}
 }
 

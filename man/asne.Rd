@@ -49,8 +49,9 @@ In Advances in Neural Information Processing Systems, volume 15,
 pages 833-840, Cambridge, MA, USA, 2002. The MIT Press.
 }
 \seealso{
-Other sneer embedding methods: \code{\link{mds}},
-  \code{\link{sammon}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tsne}}
+Other sneer embedding methods: \code{\link{mmds}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tsne}}
 }
 

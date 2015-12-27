@@ -26,17 +26,25 @@ of this function is ignored.}
 \item{normalize_cost}{If \code{TRUE}, the cost calculated by the cost
 function will be normalized and both values logged.}
 
-\item{keep_costs}{If \code{TRUE}, all costs (and the iteration number at
-which they were calculated) will be stored on result list returned by the
-reporter callback. This can be exported by the embedding algorithm.}
+\item{keep_costs}{If \code{TRUE}, all costs (including those specified in
+\code{extra_costs}) and the iteration number at
+which they were calculated will be stored on result list returned by the
+reporter callback.}
 
 \item{extra_costs}{List containing the names of cost functions to be reported,
 in addition to the cost associated with the embedding method, which will
 always be logged. Possible cost functions include:
 \describe{
- \item{\code{\link{kl_cost}}}{Kullback-Leibler divergence.}
+ \item{\code{"kl"}}{\code{\link{kl_cost}}.}
+ \item{\code{"kruskal_stress"}}{\code{\link{kruskal_stress_cost}}.}
+ \item{\code{"mean_relative_error"}}{\code{\link{mean_relative_error_cost}}.}
+ \item{\code{"metric_sstress"}}{\code{\link{metric_sstress_cost}}.}
+ \item{\code{"metric_stress"}}{\code{\link{metric_stress_cost}}.}
+ \item{\code{"normalized_stress"}}{\code{\link{normalized_stress_cost}}.}
+ \item{\code{"rms_metric_stress"}}{\code{\link{rms_metric_stress_cost}}.}
+ \item{\code{"sammon_stress"}}{\code{\link{sammon_stress_cost}}.}
 }
-Note that note all costs are compatible with all embedding methods, because
+Note that not all costs are compatible with all embedding methods, because
 they may require specific matrices or other values to be precalculated in the
 Input and Output data. See the help text for each cost function for details.}
 
@@ -94,6 +102,10 @@ make_reporter(report_every = 100,
 # Keep all costs calculated during reporters, can be exported from the
 # embedding routine and plotted or otherwise used.
 make_reporter(report_every = 100, keep_costs = TRUE)
+
+# Report normalized stress, Kruskal stress and Sammon stress:
+make_reporter(extra_costs =
+                c("normalized_stress", "kruskal_stress", "sammon_stress"))
 
 # Should be passed to the reporter argument of an embedding function:
 \dontrun{

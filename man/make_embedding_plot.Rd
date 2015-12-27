@@ -4,8 +4,7 @@
 \alias{make_embedding_plot}
 \title{Create embedding plot.}
 \usage{
-make_embedding_plot(x, attr_name, label_fn = function(labels) {     labels },
-  mat_name = "ym")
+make_embedding_plot(x, attr_name, label_fn = function(labels) {     labels })
 }
 \arguments{
 \item{x}{Data frame containing label information for the embedded data.}

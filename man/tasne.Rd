@@ -50,7 +50,8 @@ If used in an embedding, the output data list will contain:
 }
 \seealso{
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{mds}}, \code{\link{sammon}},
-  \code{\link{ssne}}, \code{\link{tsne}}
+  \code{\link{mmds}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{ssne}},
+  \code{\link{tsne}}
 }
 

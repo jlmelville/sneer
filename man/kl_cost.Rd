@@ -27,7 +27,12 @@ This cost function requires the following matrices to be defined:
 }
 }
 \seealso{
-Other sneer cost functions: \code{\link{rms_dist_cost}},
-  \code{\link{rss_dist_cost}}, \code{\link{sammon_cost}}
+Other sneer cost functions: \code{\link{kruskal_stress_cost}},
+  \code{\link{mean_relative_error_cost}},
+  \code{\link{metric_sstress_cost}},
+  \code{\link{metric_stress_cost}},
+  \code{\link{normalized_stress_cost}},
+  \code{\link{rms_metric_stress_cost}},
+  \code{\link{sammon_stress_cost}}
 }
 

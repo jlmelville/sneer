@@ -17,22 +17,33 @@ have on the embedding?
 }
 \section{Embedding}{
 
-Currently, only the similarity-based embedding techniques related to
-Stochastic Neighbor Embedding (SNE) are supported: the popular t-Distributed
-Stochastic Neighbor Embedding (t-SNE) technique, and two older (and
-generally less useful) methods asymmetric SNE (ASNE, what was originally just
-called SNE) and symmetric SNE (SSNE).
+Currently, the following techniques are implemented:
+\itemize{
+ \item{Metric MDS using the STRESS and SSTRESS functions}
+ \item{Sammon Mapping}
+ \item{t-Distributed Stochastic Neighbor Embedding (t-SNE)}
+ \item{Asymmetric SNE (ASNE, what was originally just called SNE)}
+ \item{Symmetic SNE (SSNE)}
+}
 
-A characteristic quality of these methods is that they don't attempt to
-preserve the input distances but input probabilities, which are based on
-the distances by some non-linear weighting function.
+The first two methods are traditional non-linear mapping techniques that
+attempt to reproduce the input distances in the output space. These are older
+techniques that only work well when the input dimension is not too large.
+They're useful as benchmarks for testing more advanced methods, though.
 
-The entry point for these similarity
-preserving embeddings is the function \code{\link{embed_sim}}. Apart from the
-description of the various parts of the embedding below, you can get more
-info and examples by looking up the help page for that function and then
-further help by looking up the functions mentioned in the \code{See Also}
-section.
+The SNE family of algorithms are focussed on preserving similarity: they
+don't attempt to preserve the input distances but input probabilities, which
+are based on the distances by some non-linear weighting function.
+
+To carry out a distance-based embedding, use the \code{\link{embed_dist}}
+function. The entry point for similarity preserving embeddings is the
+function \code{\link{embed_sim}}. They have a similar signature, but
+provide useful defaults.
+
+Apart from the description of the various parts of the embedding below, you
+can get more info and examples by looking up the help page for that function
+and then further help by looking up the functions mentioned in the
+\code{See Also} section.
 
 To carry out an embedding, you need to provide quite a bit of information
 to parameterise it correctly. Rather then requiring it all be passed as
@@ -75,14 +86,10 @@ in turn depends on the cost function used. For similarity preserving methods
 like SNE, the exact form of the gradient is also dependent on the weighting
 function that converts distances to probabilities, and how the probability
 is defined (e.g. joint versus conditional probabilities). The embedding
-method defines the functions needed to do this conversion. For now, the
-only available methods are ASNE, SSNE and TSNE. More complicated embedding
-methods such as JSE and NeRV can be implemented in this framework, and also
-distance-preserving embeddings like MDS and Sammon mapping, which don't
-involve probabilities at all. These are all coming soon. If the embedding can
-have a stiffness matrix defined for it it should be possible to implement it
-as a method in sneer, although it requires a little knowledge of the
-internals.
+method defines the functions needed to do this conversion. If the embedding
+can have a stiffness matrix defined for it it should be possible to
+implement it as a method in sneer, although it requires a little knowledge
+of the internals of the package.
 }
 
 \section{Optimization}{
@@ -169,9 +176,54 @@ asne_s1k <- embed_sim(s1k[, 1:9],
                                      update = nesterov_nsc_momentum()),
                       reporter = make_reporter(
                        plot_fn = make_plot(s1k, "Label")))
+
+# Do metric MDS on the iris data set
+# In addition to the STRESS loss function also report the Kruskal Stress
+# (often used in MDS applications) and the mean relative error, which can
+# be multiplied by 100 and interpreted as a percentage error. Also, use
+# the make_iris_plot function, which wrap the make_plot function specifically
+# for the iris dataset, which is quite handy for testing.
+mds_iris <- embed_dist(iris[, 1:4],
+                       method = mmds(),
+                       opt = bold_nag_opt(),
+                       reporter = make_reporter(
+                         extra_costs = c("kruskal_stress",
+                                         "mean_relative_error")),
+                                         plot_fn = make_iris_plot())
+
+# Sammon map the iris data set, which turns out to be a surprisingly tough
+# assignment. Increase epsilon substantially to 1e-4 to avoid the gradient
+# being overwhelmed by zero distances in the input space. Additionally, we
+# report two other normalized stress functions used in MDS. The Sammon
+# mapping cost function is already normalized, so tell the make_reporter
+# function not to report an automatically normalized version in the logging
+# output.
+sammon_iris <- embed_dist(iris[, 1:4],
+                          method = sammon_map(eps = 1e-4),
+                          opt = bold_nag_opt(),
+                          init_out = make_init_out(stdev = 1e-4),
+                          reporter = make_reporter(normalize_cost = FALSE,
+                                       extra_costs = c("normalized_stress",
+                                                       "kruskal_stress"),
+                                       plot_fn = make_iris_plot()))
 }
 }
 \references{
+MDS
+Jan de Leeuw, Patrick Mair (2009).
+Multidimensional Scaling Using Majorization: SMACOF in R.
+Journal of Statistical Software, 31(3), 1-30.
+URL http://www.jstatsoft.org/v31/i03/.
+
+Ingwer Borg, Patrick J. F. Groenen
+Modern Multidimensional Scaling: Theory and Applications
+Springer Science & Business Media, Aug 4, 2005
+
+Sammon Mapping
+Sammon, J. W. (1969)
+A non-linear mapping for data structure analysis.
+IEEE Trans. Comput., C-18 401-409.
+
 t-SNE, SNE and ASNE:
 Laurens van der Maarten, Geoffrey Hinton.
 Visualizing Data using t-SNE.

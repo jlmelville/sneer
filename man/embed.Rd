@@ -18,6 +18,11 @@ result of \code{\link{make_init_out}}.}
 
 \item{method}{Embedding method. Assign result of calling one of the following
 functions: \describe{
+ \item{\code{\link{mmds}}}{Metric Multidimensional Scaling using the STRESS
+ cost function.}
+ \item{\code{\link{smmds}}}{Metric Multidimensional Scaling using the SSTRESS
+ cost function.}
+ \item{\code{\link{sammon_map}}}{Sammon Mapping.}
  \item{\code{\link{tsne}}}{t-Distributed Stochastic Neighbor Embedding.}
  \item{\code{\link{ssne}}}{Symmetric Stochastic Neighbor Embedding.}
  \item{\code{\link{asne}}}{Asymmetric Stochastic Neighbor Embedding.}

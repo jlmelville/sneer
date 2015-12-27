@@ -6,7 +6,7 @@ including the popular t-Distributed Stochastic Neighbor Embedding (t-SNE).
 
 ### Installing:
 ```R
-install.packages("devtools")
+# install.packages("devtools")
 devtools::install_github("jlmelville/sneer")
 ```
 
@@ -16,7 +16,8 @@ devtools::install_github("jlmelville/sneer")
 package?sneer
 
 # Embedding function documentation
-?embed_sim
+?embed_sim # t-SNE and similar methods
+?embed_dist # Sammon mapping and metric MDS
 ```
 
 ### Example
@@ -56,6 +57,7 @@ Sneer is very new so there's not a lot here that's isn't available in other
 packages right now. But currently it offers:
 
 * Embedding with t-SNE and its variants ASNE and SSNE.
+* Sammon mapping and metric Multidimensional Scaling.
 * Nesterov Accelerated Gradient method for optimization.
 * The usual t-SNE Steepest descent with momentum and Jacobs adaptive step size
 if NAG is too racy for you.
@@ -74,7 +76,6 @@ Some new algorithms coming soon:
 * Heavy-Tailed Symmetric SNE (HSSNE).
 * Neighbor Retrieval Visualizer (NeRV).
 * Jensen-Shannon Embedding (JSE).
-* MDS and Sammon Mapping for completeness' sake.
 * Numerical scores for qualitatively evaluating the embedding.
 
 I've implemented the above already, I'm just too ashamed of the terrible code it

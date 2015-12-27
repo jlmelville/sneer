@@ -162,6 +162,138 @@ embed_sim <- function(xm,
         reporter, preprocess, export, after_embed)
 }
 
+#' Distance-based embedding.
+#'
+#' Carry out an embedding of a dataset using a distance-based method
+#' (e.g. Sammon Mapping), with some useful default parameters.
+#'
+#' @param xm A matrix or data frame to embed.
+#' @param mat_name Name of the matrix in the output data list that will contain
+#' the embedded coordinates.
+#' @param preprocess Input data preprocess callback. Create by assigning the
+#' result of \code{\link{make_preprocess}}.
+#' @param init_inp Input initialization callback. Create by assigning the
+#' result of \code{\link{make_init_inp_dist}}.
+#' @param init_out Output initialization callback. Create by assigning the
+#' result of \code{\link{make_init_out}}.
+#' @param method Embedding method. Set by calling a configuration
+#' function:
+#' \describe{
+#'  \item{\code{\link{mmds}}}{Metric Multidimensional Scaling using the STRESS
+#'  cost function.}
+#'  \item{\code{\link{smmds}}}{Metric Multidimensional Scaling using the SSTRESS
+#'  cost function.}
+#'  \item{\code{\link{sammon_map}}}{Sammon Mapping.}
+#' }
+#' @param opt Optimization method. Create by assigning the result of
+#' \code{\link{make_opt}}.
+#' @param max_iter Maximum number of optimization steps to take.
+#' @param tricks Tricks callback. Create by assigning the result of
+#'  \code{\link{make_tricks}}.
+#' @param reporter Reporter callback. Create by assigning the result of
+#' \code{\link{make_reporter}}.
+#' @param export Vector of names to export. Possible names are:
+#' \describe{
+#'  \item{\code{"inp"}}{The input data.}
+#'  \item{\code{"report"}}{The result of the last report.}
+#' }
+#' @param after_embed Callback to run on input and output data before output
+#' data is returned.
+#' @param verbose If \code{TRUE} display messages about the embedding progress.
+#' @return The output data. A list containing:
+#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
+#'  specifying \code{mat_name}.}
+#'  \item{\code{dm}}{Distance matrix generated from the embedded coordinates.
+#'  \code{wm}.}
+#'  \item{\code{inp}}{The input data, if "\code{inp}" is included in the
+#'  \code{export} list parameter.}
+#'  \item{\code{report}}{Most recent report, if
+#'  "\code{report}" is included in the \code{export} list parameter.}
+#' Additional items may appear in the output list, depending on the embedding
+#' method and initialization methods. See the documentation of those functions
+#' for details.
+#' If the \code{inp} list is present, it contains:
+#'  \item{\code{xm}}{The (potentially preprocessed) input coordinates if the
+#'  input data was not a distance matrix.}
+#'  \item{\code{dm}}{Input distance matrix.}
+#' If the \code{report} list is present, it contains:
+#'  \item{\code{stop_early}}{If \code{TRUE}, the optimization stopped before
+#'  \code{max_iters} was reached.}
+#'  \item{\code{cost}}{Cost of the embedded configuration in the most recent
+#'  iteration.}
+#'  \item{\code{costs}}{Matrix of all report costs and the iterations at which
+#'  they occurred. Only present if \code{keep_costs} is set to \code{TRUE}
+#'  when the \code{make_reporter} factory function is called.}
+#'  \item{\code{reltol}}{Relative tolerance of the difference between present
+#'  cost and the cost from the previous report.}
+#'  \item{\code{norm}}{Normalized cost for the most recent iteration. Only
+#'  present if \code{normalize_cost} is set to \code{TRUE} when the
+#'  \code{make_reporter} factory function is called.}
+#'  \item{\code{iter}}{The iteration at which the report is generated.}
+#' @seealso
+#' \code{\link{make_preprocess}} for configuring \code{preprocess},
+#' \code{\link{make_init_inp_dist}} for configuring \code{init_inp},
+#' \code{\link{make_init_out}} for configuring \code{init_out},
+#' \code{\link{make_opt}} for configuring \code{opt},
+#' \code{\link{make_tricks}} for configuring \code{tricks},
+#' \code{\link{make_reporter}} for configuring \code{reporter}.
+#'
+#' @examples
+#' \dontrun{
+#' # Do metric MDS on the iris data set
+#' # In addition to the STRESS loss function also report the Kruskal Stress
+#' # (often used in MDS applications) and the mean relative error, which can
+#' # be multiplied by 100 and interpreted as a percentage error. Also, use
+#' # the make_iris_plot function, which wrap the make_plot function specifically
+#' # for the iris dataset, which is quite handy for testing.
+#' mds_iris <- embed_dist(iris[, 1:4],
+#'                        method = mmds(),
+#'                        opt = bold_nag_opt(),
+#'                        reporter = make_reporter(
+#'                          extra_costs = c("kruskal_stress",
+#'                                          "mean_relative_error")),
+#'                                          plot_fn = make_iris_plot())
+#'
+#' # Sammon map the autoscaled iris data set, which turns out to be a
+#' # surprisingly tough assignment. Increase epsilon substantially to 1e-4 to
+#' # avoid the gradient being overwhelmed by zero distances in the input space.
+#' # Additionally, we report two other normalized stress functions often used
+#' # in MDS. The Sammon mapping cost function is already normalized, so tell the
+#' # make_reporter function not to report an automatically normalized version in
+#' # the output.
+#' sammon_iris <- embed_dist(iris[, 1:4],
+#'                           method = sammon_map(eps = 1e-4),
+#'                           opt = bold_nag_opt(),
+#'                           preprocess = make_preprocess(auto_scale = TRUE),
+#'                           init_out = make_init_out(stdev = 1e-4),
+#'                           reporter = make_reporter(normalize_cost = FALSE,
+#'                                        extra_costs = c("normalized_stress",
+#'                                                        "kruskal_stress"),
+#'                                        plot_fn = make_plot(iris, "Species",
+#'                                                            make_label())))
+#' }
+#' @family sneer embedding functions
+#' @export
+embed_dist <- function(xm,
+                       mat_name = "ym",
+                       preprocess = make_preprocess(verbose = verbose),
+                       init_inp = make_init_inp_dist(),
+                       init_out = make_init_out(from_PCA = TRUE,
+                                                mat_name = mat_name,
+                                                verbose = verbose),
+                       method = mmds(),
+                       opt = make_opt(mat_name = mat_name),
+                       max_iter = 1000,
+                       tricks = NULL,
+                       reporter = make_reporter(verbose = verbose),
+                       export = NULL,
+                       after_embed = NULL,
+                       verbose = TRUE) {
+  embed(xm, init_inp, init_out, method, opt, max_iter, tricks,
+        reporter, preprocess, export, after_embed)
+}
+
+
 #' Generic embedding.
 #'
 #' Carrying out an embedding of a dataset.
@@ -175,6 +307,11 @@ embed_sim <- function(xm,
 #' result of \code{\link{make_init_out}}.
 #' @param method Embedding method. Assign result of calling one of the following
 #' functions: \describe{
+#'  \item{\code{\link{mmds}}}{Metric Multidimensional Scaling using the STRESS
+#'  cost function.}
+#'  \item{\code{\link{smmds}}}{Metric Multidimensional Scaling using the SSTRESS
+#'  cost function.}
+#'  \item{\code{\link{sammon_map}}}{Sammon Mapping.}
 #'  \item{\code{\link{tsne}}}{t-Distributed Stochastic Neighbor Embedding.}
 #'  \item{\code{\link{ssne}}}{Symmetric Stochastic Neighbor Embedding.}
 #'  \item{\code{\link{asne}}}{Asymmetric Stochastic Neighbor Embedding.}

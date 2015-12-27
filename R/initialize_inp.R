@@ -1,5 +1,38 @@
 # Functions for initializing the input data.
 
+#' Create an input initialization callback for distance-based methods.
+#'
+#' Factory function for input initialization callbacks. During input
+#' initialization, the high dimensional distances or coordinates will be used
+#' to generate the a distance matrix.
+#'
+#' @return A callback function with signature \code{fn(xm)} where \code{xm}
+#' is the input coordinates or a distance matrix. This function will return
+#' a list containing:
+#'  \item{\code{xm}}{Input coordinates if these were provided.}
+#'  \item{\code{dm}}{Input distances.}
+#'
+#' @seealso \code{\link{embed_dist}} for how to use this function for
+#' configuring an embedding.
+#' @examples
+#' # Should be passed to the init_inp argument of an embedding function:
+#' \dontrun{
+#'  embed_dist(init_inp = make_init_inp_dist(), ...)
+#' }
+#' @export
+make_init_inp_dist <- function() {
+  function(xm) {
+    inp <- list()
+    if (class(xm) == "dist") {
+      inp$dm <- as.matrix(xm)
+    } else {
+      inp$xm <- as.matrix(xm)
+      inp$dm <- distance_matrix(inp$xm)
+    }
+    inp
+  }
+}
+
 #' Create an input initialization callback.
 #'
 #' Factory function for input initialization callbacks. During input

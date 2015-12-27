@@ -83,8 +83,7 @@ make_plot <- function(x, attr_name,
 make_embedding_plot <- function(x, attr_name,
                                label_fn = function(labels) {
                                 labels
-                               },
-                               mat_name = "ym") {
+                               }) {
   attr <- x[[attr_name]]
   uniq_attr <- sort(unique(attr))
   colors <- rainbow(length(uniq_attr))
