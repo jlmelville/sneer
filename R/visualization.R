@@ -79,7 +79,6 @@ make_plot <- function(x, attr_name,
 #' # view the TSNE embedding
 #' iris_plot(tsne_iris$ym)
 #'}
-#'@export
 make_embedding_plot <- function(x, attr_name,
                                label_fn = function(labels) {
                                 labels
@@ -108,7 +107,12 @@ make_label <- function(num_label_chars = 1) {
   partial(substr, start = 0, stop = num_label_chars)
 }
 
-#' Helper function for visualizing the iris data set. If embedding the iris
+#' Iris dataset plot factory function.
+#'
+#' Creates a function which can be used to visualize embeddings of the iris
+#' dataset.
+#'
+#' Wrapper function for visualizing the iris data set. If embedding the iris
 #' data set, the result of invoking this can be passed to the \code{plot_fn}
 #' parameter of the \code{make_reporter} function.
 #'
@@ -120,3 +124,79 @@ make_label <- function(num_label_chars = 1) {
 make_iris_plot <- function(num_label_chars = 1) {
   make_plot(iris, "Species", make_label(num_label_chars))
 }
+
+#' ggplot2 embedding viewer factory function
+#'
+#' Creates a function which can be used to visualize embeddings from sneer
+#' output results for a particular dataset using ggplot2.
+#'#'
+#' @note Use of this function requires that the \code{ggplot2} package be
+#' installed.
+#'
+#' @param x Data frame containing label information for the embedded data.
+#' @param attr_name Name of the label column in \code{x}.
+#' @param mat_name The name of the matrix containing the embedded data in the
+#' output list \code{out} which will be passed to the plot function.
+#' @return Function with signature \code{plot_fn(out)} where \code{out} is
+#' a return value from a sneer embedding function. On invocation, the
+#' data will be plotted.
+#' @examples
+#' \dontrun{
+#' mds_iris <- embed_dist(iris[, 1:4], method = mmds(eps = 1e-4),
+#'                        opt = bold_nag_opt(), max_iter = 40)
+#' iris_view <- make_qplot(iris, "Species")
+#' iris_view(mds_iris)
+#' }
+#' @export
+make_qplot <- function(x, attr_name, mat_name = "ym") {
+  if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
+    stop("qplot function requires 'ggplot2' package")
+  }
+  embedding_plot <- make_embedding_qplot(x, attr_name)
+
+  function(out) {
+      embedding_plot(out[[mat_name]])
+  }
+}
+
+#' ggplot2 embedding viewer factory function
+#'
+#' Creates a ggplot2 function for embeddings of a given dataset.
+#'
+#' @note Use of this function requires that the \code{ggplot2} package be
+#' installed.
+#'
+#' @param x Data frame containing label information for the embedded data.
+#' @param attr_name Name of the label column in \code{x}.
+#' @return Function with signature \code{plot_fn(ym)} where \code{ym} is a
+#' 2D matrix of embedded coordinates of data set \code{x}. On invocation, the
+#' data will be plotted.
+#' @examples
+#' \dontrun{
+#' # make two different embeddings of the iris dataset
+#' prcomp_iris <- prcomp(iris[, 1:4], center = TRUE, retx = TRUE)
+#' mds_iris <- embed_dist(iris[, 1:4], method = mmds(eps = 1e-4),
+#'                        opt = bold_nag_opt(), init_out = make_init_out(
+#'                          init_config = prcomp_iris$x[, 1:2]),
+#'                        max_iter = 40)
+#' iris_view <- make_embedding_qplot(iris, "Species")
+#' iris_view(prcomp_iris$x)
+#' iris_view(mds_iris$ym)
+#' }
+make_embedding_qplot <- function(x, attr_name) {
+  function(ym) {
+    if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
+      stop("qplot function requires 'ggplot2' package")
+    }
+    colnames(ym) <- NULL
+    df <- as.data.frame(ym)
+    print(
+      ggplot2::qplot(df$V1, df$V2, data = df,
+                     colour = factor(x[[attr_name]]), size = I(3)) +
+        ggplot2::scale_colour_brewer(palette = "Set3") +
+        ggplot2::theme_dark() +
+        ggplot2::labs(colour = attr_name)
+    )
+  }
+}
+
