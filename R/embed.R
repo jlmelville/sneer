@@ -411,12 +411,22 @@ embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
     iter <- iter + 1
   }
 
-  for (obj_name in export) {
-    out[[obj_name]] <- get(obj_name)
-  }
-
   if (!is.null(after_embed)) {
     out <- after_embed(inp, out)
+  }
+
+  # If we're exporting the report, force an update on the report if it wasn't
+  # triggered on the final iteration
+  if ((is.null(report$iter) || report$iter != iter - 1) &&
+      "report" %in% export)
+  {
+    if (!is.null(reporter)) {
+      report <- reporter(iter - 1, inp, out, method, report, force = TRUE)
+    }
+  }
+
+  for (obj_name in export) {
+    out[[obj_name]] <- get(obj_name)
   }
 
   out
