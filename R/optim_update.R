@@ -101,6 +101,7 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 #' Update is in the form of a momentum schedule of the form
 #' \eqn{1-\frac{3}{t+5}}{1-(3/(t+5))}
 #'
+#' @param max_momentum Maximum value the momentum may take.
 #' @return A solution update method for use by the optimizer. A list consisting
 #' of:
 #'  \item{\code{init_momentum}}{Initial momentum.}
@@ -116,7 +117,7 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 #' JMLR: W&CP volume 28.
 #' @family sneer optimization update methods
 #' @export
-nesterov_nsc_momentum <- function() {
+nesterov_nsc_momentum <- function(max_momentum = 1) {
   list(
     init_momentum = 0.5,
     init = function(opt, inp, out, method) {
@@ -127,7 +128,8 @@ nesterov_nsc_momentum <- function() {
     },
     get_update = momentum_update,
     after_step = function(opt, inp, out, new_out, ok, iter) {
-      opt$update_method$momentum <- 1 - (3 / (iter + 5))
+      mu <- 1 - (3 / (iter + 5))
+      opt$update_method$momentum <- min(max_momentum, mu)
       list(opt = opt)
     }
   )

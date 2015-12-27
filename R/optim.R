@@ -214,11 +214,12 @@ tsne_opt <- function() {
 #' @family sneer optimization methods
 #' @export
 bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
-                         init_step_size = 1) {
+                         init_step_size = 1,
+                         max_momentum = 1) {
   make_opt(gradient = nesterov_gradient(),
            step_size = bold_driver(min_step_size = min_step_size,
                                    init_step_size = init_step_size),
-           update = nesterov_nsc_momentum())
+           update = nesterov_nsc_momentum(max_momentum = max_momentum))
 }
 
 #' Create callback to be invoked after the solution is updated.
