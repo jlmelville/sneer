@@ -79,17 +79,19 @@ make_plot <- function(x, attr_name,
 #' # view the TSNE embedding
 #' iris_plot(tsne_iris$ym)
 #'}
-make_embedding_plot <- function(x, attr_name,
-                               label_fn = function(labels) {
-                                labels
-                               }) {
+make_embedding_plot <- function(x, attr_name, label_fn) {
   attr <- x[[attr_name]]
   uniq_attr <- sort(unique(attr))
   colors <- rainbow(length(uniq_attr))
   names(colors) <- uniq_attr
+  if (!is.null(label_fn)) {
+    labels <- label_fn(attr)
+  } else {
+    labels <- attr
+  }
   function(ym) {
     plot(ym, type = "n", xlab = "D1", ylab = "D2")
-    text(ym, labels = label_fn(attr), col = colors[attr])
+    text(ym, labels = labels, col = colors[attr])
   }
 }
 
@@ -199,4 +201,3 @@ make_embedding_qplot <- function(x, attr_name) {
     )
   }
 }
-
