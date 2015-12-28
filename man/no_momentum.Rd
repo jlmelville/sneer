@@ -7,17 +7,25 @@
 no_momentum()
 }
 \value{
-A solution update method for use by the optimizer. A list consisting
-of:
- \item{\code{init}}{Function to do any needed initialization.}
- \item{\code{get_update}}{Function to return the current update, which will
- be added to current solution matrix.}
+Zero-momentum update method, to be used by the optimizer.
 }
 \description{
+Factory function for creating an optimizer update method.
+}
+\details{
 Create an callback for the optimizer to use that uses strict gradient
 descent with no momentum term.
 }
+\examples{
+# Use as part of the make_opt function for configuring an optimizer's
+# update method:
+make_opt(update = no_momentum())
+}
 \seealso{
+The return value of this function is intended for internal use of
+the sneer framework only. See \code{\link{optimizer_update}} for details
+on the functions and values defined for this method.
+
 Other sneer optimization update methods: \code{\link{linear_momentum}},
   \code{\link{nesterov_nsc_momentum}},
   \code{\link{step_momentum}}

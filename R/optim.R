@@ -117,7 +117,7 @@ make_opt <- function(gradient = classical_gradient(),
     gradient = gradient,
     direction = direction,
     step_size = step_size,
-    update_method = update,
+    update = update,
 
     init = make_opt_init(direction_fn = direction$init,
                          step_size_fn = step_size$init,

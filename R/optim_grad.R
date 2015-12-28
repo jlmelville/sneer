@@ -114,10 +114,10 @@ classical_grad_pos <- function(opt, inp, out, method) {
 #' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
 #' JMLR: W&CP volume 28.
 nesterov_grad_pos <- function(opt, inp, out, method) {
-  prev_update <- opt$update_method$update
-  mu <- opt$update_method$momentum
+  prev_update <- opt$update$value
+  mu <- opt$update$momentum
 
-  opt$update_method$update <- mu * prev_update
+  opt$update$value <- mu * prev_update
   new_out <- update_solution(opt, inp, out, method)
 
   gradient(inp, new_out, method, opt$mat_name)

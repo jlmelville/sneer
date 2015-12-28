@@ -16,21 +16,25 @@ iterations.}
 \item{final_momentum}{Momentum value after \code{switch_iter} iterations.}
 }
 \value{
-A solution update method for use by the optimizer. A list consisting
-of:
- \item{\code{init_momentum}}{Initial momentum.}
- \item{\code{final_momentum}}{Final momentum.}
- \item{\code{init}}{Function to do any needed initialization.}
- \item{\code{get_update}}{Function to return the current update, which will
- be added to current solution matrix.}
- \item{\code{after_step}}{Function to do any needed updating or internal state
- before the next optimization step.}
+Linear momentum update method, to be used by the optimizer.
 }
 \description{
-Create an callback for the optimizer to use to update the embedding solution.
+Factory function for creating an optimizer update method.
+}
+\details{
+Create a callback for the optimizer to use to update the embedding solution.
 Update is in the form of a linear momentum function.
 }
+\examples{
+# Use as part of the make_opt function for configuring an optimizer's
+# update method:
+make_opt(update = linear_momentum())
+}
 \seealso{
+The return value of this function is intended for internal use of
+the sneer framework only. See \code{\link{optimizer_update}} for details
+on the functions and values defined for this method.
+
 Other sneer optimization update methods: \code{\link{nesterov_nsc_momentum}},
   \code{\link{no_momentum}}, \code{\link{step_momentum}}
 }

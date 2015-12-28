@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_update.R
 \name{nesterov_nsc_momentum}
 \alias{nesterov_nsc_momentum}
-\title{Momentum schedule for non-strongly convex problems.}
+\title{Momentum schedule for non-strongly convex functions.}
 \usage{
 nesterov_nsc_momentum(max_momentum = 1)
 }
@@ -10,22 +10,23 @@ nesterov_nsc_momentum(max_momentum = 1)
 \item{max_momentum}{Maximum value the momentum may take.}
 }
 \value{
-A solution update method for use by the optimizer. A list consisting
-of:
- \item{\code{init_momentum}}{Initial momentum.}
- \item{\code{init}}{Function to do any needed initialization.}
- \item{\code{get_update}}{Function to return the current update, which will
- be added to current solution matrix.}
- \item{\code{after_step}}{Function to do any needed updating or internal state
- before the next optimization step.}
+Nesterov momentum update method, to be used by the optimizer.
 }
 \description{
-Create an callback for the optimizer to use to update the embedding solution,
-using momentum scheme suggested by Nesterov.
+Factory function for creating an optimizer update method.
 }
 \details{
+Create a callback for the optimizer to use to update the embedding solution,
+using momentum scheme suggested by Nesterov.
+
 Update is in the form of a momentum schedule of the form
-\eqn{1-\frac{3}{t+5}}{1-(3/(t+5))}
+\deqn{\mu_{t} = 1-\frac{3}{t+5}}{mu_t = 1-[3/(t+5)]}
+where \eqn{t} is the iteration number.
+}
+\examples{
+# Use as part of the make_opt function for configuring an optimizer's
+# update method:
+make_opt(update = nesterov_nsc_momentum())
 }
 \references{
 Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
@@ -34,6 +35,10 @@ On the importance of momentum and initialization in deep learning.
 JMLR: W&CP volume 28.
 }
 \seealso{
+The return value of this function is intended for internal use of
+the sneer framework only. See \code{\link{optimizer_update}} for details
+on the functions and values defined for this method.
+
 Other sneer optimization update methods: \code{\link{linear_momentum}},
   \code{\link{no_momentum}}, \code{\link{step_momentum}}
 }

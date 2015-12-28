@@ -12,7 +12,7 @@ jacobs_step_size(gm, step_size, update, inc_fn, dec_fn)
 
 \item{step_size}{Step size for the previous iteration.}
 
-\item{update}{Update_method matrix for the previous iteration.}
+\item{update}{update matrix for the previous iteration.}
 
 \item{inc_fn}{Function to apply to \code{step_size} to increase its elements.}
 

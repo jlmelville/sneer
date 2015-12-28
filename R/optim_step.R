@@ -1,6 +1,6 @@
 #' Optimizer step size methods.
 #'
-#' Part of the optimizer that finds the step size of the descent.
+#' Part of the optimizer that finds the step size of the gradient descent.
 #'
 #' @section Interface:
 #' A step size method is a list containing:
@@ -261,7 +261,7 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
       old_step_size <- opt$step_size$value
       inc_fn <- opt$step_size$inc_fn
       dec_fn <- opt$step_size$dec_fn
-      old_update <- opt$update_method$update
+      old_update <- opt$update$value
       min_step_size <- opt$step_size$min_step_size
 
       new_step_size <- jacobs_step_size(gm, old_step_size,
@@ -313,7 +313,7 @@ tsne_jacobs <- function() {
 #'
 #' @param gm Gradient matrix.
 #' @param step_size Step size for the previous iteration.
-#' @param update Update_method matrix for the previous iteration.
+#' @param update update matrix for the previous iteration.
 #' @param inc_fn Function to apply to \code{step_size} to increase its elements.
 #' @param dec_fn Function to apply to \code{step_size} to decrease its elements.
 #' @return the new step size.
