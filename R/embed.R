@@ -477,7 +477,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
     opt <- opt$init(opt, inp, out, method)
   }
 
-  grad_result <- opt$grad_pos_fn(opt, inp, out, method)
+  grad_result <- opt$gradient$calculate(opt, inp, out, method)
 
   if (any(is.nan(grad_result$gm))) {
     stop("NaN in grad. descent at iter ", iter)

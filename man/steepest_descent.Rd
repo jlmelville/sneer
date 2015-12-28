@@ -10,7 +10,7 @@ steepest_descent()
 Steepest Descent direction method.
 }
 \description{
-Optimizer direction method.
+Factory function for creating an optimizer direction method.
 }
 \details{
 Creates a gradient descent direction method for use by the optimizer.

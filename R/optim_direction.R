@@ -28,8 +28,8 @@
 #'    \item{\code{method}}{Embedding method.}
 #'    \item{\code{iter}}{Iteration number.}
 #'  }
-#'  The function should \code{opt$direction$value} with the current direction
-#'  of descent and return a list containing:
+#'  The function should set \code{opt$direction$value} with the current
+#'  direction of descent and return a list containing:
 #'  \describe{
 #'    \item{\code{opt}}{Optimizer containing updated \code{direction$value}.}
 #'  }
@@ -44,7 +44,7 @@ NULL
 
 #' Steepest Descent direction.
 #'
-#' Optimizer direction method.
+#' Factory function for creating an optimizer direction method.
 #'
 #' Creates a gradient descent direction method for use by the optimizer.
 #' Uses the direction of steepest descent.

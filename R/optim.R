@@ -115,7 +115,7 @@ make_opt <- function(gradient = classical_gradient(),
   opt$mat_name <- mat_name
   opt$normalize_grads <- normalize_grads
 
-  opt$grad_pos_fn <- gradient
+  opt$gradient <- gradient
   opt$direction <- direction
   opt$step_size_method <- step_size
   opt$update_method <- update

@@ -1,21 +1,69 @@
-# Optimizer gradient methods.
+#' Optimizer gradient methods.
+#'
+#' Part of the optimizer that calculates the gradient at a position in the
+#' solution space.
+#'
+#' @section Interface:
+#' A gradient method is a list containing
+#' \describe{
+#' \item{\code{calculate(opt, inp, out, method, iter)}}{Calculation function
+#' with the following arguments:
+#'  \describe{
+#'    \item{\code{opt}}{Optimizer.}
+#'    \item{\code{inp}}{Input data.}
+#'    \item{\code{out}}{Output data.}
+#'    \item{\code{method}}{Embedding method.}
+#'    \item{\code{iter}}{Iteration number.}
+#'  }
+#' The function should calculate the gradient and return a list containing:
+#'  \describe{
+#'    \item{\code{gm}}{Gradient matrix.}
+#'  }
+#' }
+#' @keywords internal
+#' @name optimizer_gradient
+NULL
 
 #' Classical Gradient.
 #'
-#' Configuration function for optimizer gradient calculation.
+#' Factory function for creating an optimizer gradient method.
+#'
+#' Calculates the gradient at the current location of the solution.
+#'
+#' @seealso The return value of this function is intended for internal use of
+#' the sneer framework only. See \code{\link{optimizer_gradient}} for details
+#' on the functions and values defined for this method.
 #'
 #' @return Classical gradient calculation method.
+#' @examples
+#' # Use as part of the make_opt function for configuring an optimizer's
+#' # gradient method:
+#' make_opt(gradient = classical_gradient())
 #' @family sneer optimization gradient methods
 #' @export
 classical_gradient <- function() {
-  classical_grad_pos
+  list(
+    calculate = classical_grad_pos
+  )
 }
+
 
 #' Nesterov Accelerated Gradient.
 #'
-#' Configuration function for optimizer gradient calculation.
+#' Factory function for creating an optimizer gradient method.
 #'
-#' @return NAG calculation method.
+#' Calculates the gradient according to the Nesterov Accelerated Gradient
+#' method.
+#'
+#' @seealso The return value of this function is intended for internal use of
+#' the sneer framework only. See \code{\link{optimizer_gradient}} for details
+#' on the functions and values defined for this method.
+#'
+#' @return NAG method for gradient calculation.
+#' @examples
+#' # Use as part of the make_opt function for configuring an optimizer's
+#' # gradient method:
+#' make_opt(gradient = nesterov_gradient())
 #' @references
 #' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
 #' On the importance of momentum and initialization in deep learning.
@@ -24,7 +72,9 @@ classical_gradient <- function() {
 #' @family sneer optimization gradient methods
 #' @export
 nesterov_gradient <- function() {
-  nesterov_grad_pos
+  list(
+    calculate = nesterov_grad_pos
+  )
 }
 
 

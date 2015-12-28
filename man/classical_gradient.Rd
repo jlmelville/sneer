@@ -10,9 +10,21 @@ classical_gradient()
 Classical gradient calculation method.
 }
 \description{
-Configuration function for optimizer gradient calculation.
+Factory function for creating an optimizer gradient method.
+}
+\details{
+Calculates the gradient at the current location of the solution.
+}
+\examples{
+# Use as part of the make_opt function for configuring an optimizer's
+# gradient method:
+make_opt(gradient = classical_gradient())
 }
 \seealso{
+The return value of this function is intended for internal use of
+the sneer framework only. See \code{\link{optimizer_gradient}} for details
+on the functions and values defined for this method.
+
 Other sneer optimization gradient methods: \code{\link{nesterov_gradient}}
 }
 

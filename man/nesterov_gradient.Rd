@@ -7,10 +7,19 @@
 nesterov_gradient()
 }
 \value{
-NAG calculation method.
+NAG method for gradient calculation.
 }
 \description{
-Configuration function for optimizer gradient calculation.
+Factory function for creating an optimizer gradient method.
+}
+\details{
+Calculates the gradient according to the Nesterov Accelerated Gradient
+method.
+}
+\examples{
+# Use as part of the make_opt function for configuring an optimizer's
+# gradient method:
+make_opt(gradient = nesterov_gradient())
 }
 \references{
 Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
@@ -19,6 +28,10 @@ On the importance of momentum and initialization in deep learning.
 JMLR: W&CP volume 28.
 }
 \seealso{
+The return value of this function is intended for internal use of
+the sneer framework only. See \code{\link{optimizer_gradient}} for details
+on the functions and values defined for this method.
+
 Other sneer optimization gradient methods: \code{\link{classical_gradient}}
 }
 
