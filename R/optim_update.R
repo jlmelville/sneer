@@ -170,7 +170,7 @@ no_momentum <- function() {
 #' @param method Embedding method.
 #' @return Update matrix, consisting of gradient update and momentum term.
 momentum_update <- function(opt, inp, out, method) {
-  direction <- opt$direction_method$direction
+  direction <- opt$direction$value
   step_size <- opt$step_size_method$step_size
   prev_update <- opt$update_method$update
   mu <- opt$update_method$momentum

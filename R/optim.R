@@ -116,7 +116,7 @@ make_opt <- function(gradient = classical_gradient(),
   opt$normalize_grads <- normalize_grads
 
   opt$grad_pos_fn <- gradient
-  opt$direction_method <- direction
+  opt$direction <- direction
   opt$step_size_method <- step_size
   opt$update_method <- update
 
@@ -155,8 +155,8 @@ make_opt <- function(gradient = classical_gradient(),
                                          update_validation_fn = uv_fn)
 
   opt$init <- function(opt, inp, out, method) {
-    if (!is.null(opt$direction_method$init)) {
-      opt <- opt$direction_method$init(opt, inp, out, method)
+    if (!is.null(opt$direction$init)) {
+      opt <- opt$direction$init(opt, inp, out, method)
     }
     if (!is.null(opt$step_size_method$init)) {
       opt <- opt$step_size_method$init(opt, inp, out, method)

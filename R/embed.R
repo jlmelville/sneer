@@ -488,13 +488,11 @@ optimize_step <- function(opt, method, inp, out, iter) {
     opt$gm <- normalize(opt$gm)
   }
 
-  direction_result <-
-    opt$direction_method$get_direction(opt, inp, out, method, iter)
+  direction_result <- opt$direction$calculate(opt, inp, out, method, iter)
 
   if (!is.null(direction_result$opt)) {
     opt <- direction_result$opt
   }
-  opt$direction_method$direction <- direction_result$direction
 
   opt$step_size_method$step_size <-
     opt$step_size_method$get_step_size(opt, inp, out, method)

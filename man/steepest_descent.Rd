@@ -7,12 +7,23 @@
 steepest_descent()
 }
 \value{
-Steepest Descent direction method. A list consisting of:
-\item{\code{get_direction}}{Function invoked by the optimizer to find the
-direction to move in the gradient descent part of the solution update.}
+Steepest Descent direction method.
 }
 \description{
+Optimizer direction method.
+}
+\details{
 Creates a gradient descent direction method for use by the optimizer.
 Uses the direction of steepest descent.
+}
+\examples{
+# Use as part of the make_opt function for configuring an optimizer's
+# direction method:
+make_opt(direction = steepest_descent())
+}
+\seealso{
+The return value of this function is intended for internal use of
+the sneer framework only. See \code{\link{optimizer_direction}} for details
+on the functions and values defined for this method.
 }
 
