@@ -10,7 +10,12 @@ tsne_jacobs()
 A step size method suitable for use with t-SNE.
 }
 \description{
-Jacobs step size method using parameters from the t-SNE paper.
+Factory function for creating an optimizer step size method.
+}
+\examples{
+# Use as part of the make_opt function for configuring an optimizer's
+# step size method:
+make_opt(step_size = tsne_jacobs())
 }
 \references{
 Laurens van der Maarten, Geoffrey Hinton.
@@ -22,6 +27,10 @@ Increased rates of convergence through learning rate adaptation.
 Neural Networks, 1:295-307, 1988.
 }
 \seealso{
+The return value of this function is intended for internal use of
+the sneer framework only. See \code{\link{optimizer_step_size}} for details
+on the functions and values defined for this method.
+
 Other sneer optimization step size methods: \code{\link{bold_driver}},
   \code{\link{jacobs}}
 }

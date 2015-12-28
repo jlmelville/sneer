@@ -98,3 +98,16 @@ distance_matrix <- function(xm, min_dist = .Machine$double.eps) {
 upper_tri <- function(x) {
   x[upper.tri(x)]
 }
+
+#' Remove NULL members from a list.
+#'
+#' @param l List.
+#' @return List with NULL members removed.
+#' @examples
+#' \dontrun{
+#' mylist <- list(foo = "bar", cleesh = NULL, baz = "qux", nitfol = NULL)
+#' names(remove_nulls(mylist)) == c("foo", "baz")
+#' }
+remove_nulls <- function(l) {
+  l[!sapply(l, is.null)]
+}

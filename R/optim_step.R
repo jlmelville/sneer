@@ -1,9 +1,105 @@
-# Optimizer step size methods.
+#' Optimizer step size methods.
+#'
+#' Part of the optimizer that finds the step size of the descent.
+#'
+#' @section Interface:
+#' A step size method is a list containing:
+#' \describe{
+#'  \item{\code{value}}{The current step size. It should either be a scalar or
+#'  a matrix with the same dimensions as the gradient.}
+#'  \item{\code{calculate(opt, inp, out, method)}}{Calculation function
+#'  with the following arguments:
+#'    \describe{
+#'      \item{\code{opt}}{Optimizer.}
+#'      \item{\code{inp}}{Input data.}
+#'      \item{\code{out}}{Output data.}
+#'      \item{\code{method}}{Embedding method.}
+#'    }
+#'    The function should set \code{opt$step_size$value} with the current
+#'    step size and return a list containing:
+#'    \describe{
+#'      \item{\code{opt}}{Optimizer containing updated \code{step_size$value}.}
+#'    }
+#'  }
+#'  \item{\code{init(opt, inp, out, method)}}{Optional initialization function
+#'  with the following arguments:
+#'    \describe{
+#'      \item{\code{opt}}{Optimizer.}
+#'      \item{\code{inp}}{Input data.}
+#'      \item{\code{out}}{Output data.}
+#'      \item{\code{method}}{Embedding method.}
+#'    }
+#'    The function should set any needed state on \code{opt$step_size} and
+#'    return a list containing:
+#'    \describe{
+#'      \item{\code{opt}}{Optimizer containing initialized \code{step_size}
+#'      method.}
+#'    }
+#'  }
+#'  \item{\code{validate(opt, inp, out, proposed_out, method)}}{Optional
+#'  validation function with the following arguments:
+#'    \describe{
+#'      \item{\code{opt}}{Optimizer.}
+#'      \item{\code{inp}}{Input data.}
+#'      \item{\code{out}}{Output data from the start of the iteration.}
+#'      \item{\code{proposed_out}}{Proposed updated output for this iteration.}
+#'      \item{\code{method}}{Embedding method.}
+#'    }
+#'    The function should do any validation required by this method on the state
+#'    of \code{proposed_out}, e.g. check that the proposed solution reduces the
+#'    cost function. In addition it should update the state of any of the other
+#'    arguments passed to the validation function on the basis of the pass or
+#'    failure of the validation.
+#'    The return value of the function should be a list containing:
+#'    \describe{
+#'      \item{\code{opt}}{Optimizer.}
+#'      \item{\code{inp}}{Input data.}
+#'      \item{\code{out}}{Output data from the start of the iteration.}
+#'      \item{\code{proposed_out}}{Proposed updated output for this iteration.}
+#'      \item{\code{method}}{Embedding method.}
+#'      \item{\code{ok}}{Logical value, \code{TRUE} if \code{proposed_out}
+#'      passed validation, \code{FALSE} otherwise}
+#'    }
+#'    Note that if any validation functions fail the proposed solution by
+#'    setting \code{ok} to \code{FALSE} in their return value, the optimizer
+#'    will reject \code{proposed_out} and use \code{out} as the starting point
+#'    for the next iteration of the optimization process.
+#'  }
+#'  \item{\code{after_step(opt, inp, out, new_out, ok, iter)}}{Optional function
+#'  to invoke after the solution has been updated with the following arguments:
+#'    \describe{
+#'      \item{\code{opt}}{Optimizer.}
+#'      \item{\code{inp}}{Input data.}
+#'      \item{\code{out}}{Output data from the start of the iteration.}
+#'      \item{\code{new_out}}{Output data which will be the starting solution
+#'      for the next iteration of optimization. If the validation stage failed,
+#'      then this may be the same solution as \code{out}.}
+#'      \item{\code{ok}}{\code{TRUE} if the current iteration passed validation,
+#'      \code{FALSE} otherwise.}
+#'      \item{\code{iter}}{Current iteration number.}
+#'    }
+#'    The function should do any processing of this method's internal state to
+#'    prepare for the next iteration and call to \code{calculate}. The
+#'    return value of the function should be a list containing:
+#'    \describe{
+#'      \item{\code{opt}}{Updated optimizer.}
+#'      \item{\code{inp}}{Input data.}
+#'      \item{\code{out}}{Output data from the start of the iteration.}
+#'      \item{\code{new_out}}{New output to be used in the next iteration.}
+#'    }
+#'  }
+#' }
+#'
+#' @keywords internal
+#' @name optimizer_step_size
+NULL
 
-#' Bold driver step size.
+#' Bold driver step size method.
+#'
+#' Factory function for creating an optimizer step size method.
 #'
 #' This function configures the 'Bold Driver' method for step size selection.
-#' If the costdecreases after an optimization step occurs, then the step
+#' If the cost decreases after an optimization step occurs, then the step
 #' size will be increased (normally by a conservative amount). If the cost
 #' increases, then the step size is decreased (normally by a more drastic
 #' amount).
@@ -22,18 +118,14 @@
 #' optimization.
 #' @param min_step_size Minimum step size.
 #' @param max_step_size Maximum step size.
-#' @return Step size method, to be used by the Optimizer. A list containing:
-#'  \item{\code{inc_fn}}{Function to invoke to increase the step size.}
-#'  \item{\code{dec_fn}}{Function to invoke to decrease the step size.}
-#'  \item{\code{init_step_size}}{Initial step size.}
-#'  \item{\code{min_step_size}}{Minimum step size.}
-#'  \item{\code{max_step_size}}{Maximum step size.}
-#'  \item{\code{init}}{Function to do any needed initialization.}
-#'  \item{\code{get_step_size}}{Function to return the current step size.}
-#'  \item{\code{validate}}{Function to validate whether the current step was
-#'  successful or not.}
-#'  \item{\code{after_step}}{Function to do any needed updating or internal state
-#'  before the next optimization step.}
+#' @return Bold driver step size method, to be used by the optimizer.
+#' @seealso The return value of this function is intended for internal use of
+#' the sneer framework only. See \code{\link{optimizer_step_size}} for details
+#' on the functions and values defined for this method.
+#' @examples
+#' # Use as part of the make_opt function for configuring an optimizer's
+#' # step size method:
+#' make_opt(step_size = bold_driver())
 #' @export
 #' @family sneer optimization step size methods
 bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
@@ -49,43 +141,44 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
     min_step_size = min_step_size,
     max_step_size = max_step_size,
     init = function(opt, inp, out, method) {
-      opt$step_size_method$old_cost <- method$cost_fn(inp, out, method)
-      opt$step_size_method$step_size <- opt$step_size_method$init_step_size
+      opt$step_size$old_cost <- method$cost_fn(inp, out, method)
+      opt$step_size$value <- opt$step_size$init_step_size
       opt
     },
-    get_step_size = function(opt, inp, out, method) {
-      opt$step_size_method$step_size
+    calculate = function(opt, inp, out, method) {
+      list(opt = opt)
     },
-    validate = function(opt, inp, out, new_out, method) {
-      cost <- method$cost_fn(inp, new_out, method)
-      ok <- cost < opt$step_size_method$old_cost
+    validate = function(opt, inp, out, proposed_out, method) {
+      cost <- method$cost_fn(inp, proposed_out, method)
+      ok <- cost < opt$step_size$old_cost
 
-      opt$step_size_method$cost <- cost
+      opt$step_size$cost <- cost
       list(ok = ok, opt = opt)
     },
     after_step = function(opt, inp, out, new_out, ok, iter) {
-      s_old <- opt$step_size_method$step_size
+      s_old <- opt$step_size$value
       if (ok) {
-        s_new <- opt$step_size_method$inc_fn(opt$step_size_method$step_size)
+        s_new <- opt$step_size$inc_fn(opt$step_size$value)
       } else {
-        s_new <- opt$step_size_method$dec_fn(opt$step_size_method$step_size)
-        opt$step_size_method$cost <- opt$step_size_method$old_cost
+        s_new <- opt$step_size$dec_fn(opt$step_size$value)
+        opt$step_size$cost <- opt$step_size$old_cost
       }
       ds <- s_new - s_old
 
-      opt$step_size_method$step_size <- s_old + ds
-      opt$step_size_method$step_size <-
-        clamp(opt$step_size_method$step_size,
-              opt$step_size_method$min_step_size)
-      opt$step_size_method$old_cost <- opt$step_size_method$cost
+      opt$step_size$value <- s_old + ds
+      opt$step_size$value <-
+        clamp(opt$step_size$value,
+              opt$step_size$min_step_size)
+      opt$step_size$old_cost <- opt$step_size$cost
 
       list(opt = opt)
     }
   )
 }
 
-
-#' Jacobs method step size selection.
+#' Jacobs step size method.
+#'
+#' Factory function for creating an optimizer step size method.
 #'
 #' This function creates the Jacobs method for step size selection. Also known
 #' as the delta-bar-delta method.
@@ -108,9 +201,6 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #'  we use only the value from the previous step.
 #' }
 #'
-#' To use the settings as given in the t-SNE paper, see the \code{tsne_jacobs}
-#' function.
-#'
 #' @param inc_mult Multiplier of the current step size when the cost
 #' decreases. Should be greater than one to increase the step size. This
 #' parameter is ignored if \code{inc_fun} is supplied.
@@ -125,18 +215,16 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' optimization.
 #' @param min_step_size Minimum step size.
 #' @param max_step_size Maximum step size.
-#' @return Step size method, to be used by the Optimizer. A list containing:
-#'  \item{\code{inc_fn}}{Function to invoke to increase the step size.}
-#'  \item{\code{dec_fn}}{Function to invoke to decrease the step size.}
-#'  \item{\code{init_step_size}}{Initial step size.}
-#'  \item{\code{min_step_size}}{Minimum step size.}
-#'  \item{\code{max_step_size}}{Maximum step size.}
-#'  \item{\code{init}}{Function to do any needed initialization.}
-#'  \item{\code{get_step_size}}{Function to return the current step size.}
-#'  \item{\code{validate}}{Function to validate whether the current step was
-#'  successful or not.}
-#'  \item{\code{after_step}}{Function to do any needed updating or internal
-#'  state before the next optimization step.}
+#' @return Jacobs step size method, to be used by the optimizer.
+#' @seealso The return value of this function is intended for internal use of
+#' the sneer framework only. See \code{\link{optimizer_step_size}} for details
+#' on the functions and values defined for this method.
+#' \code{\link{tsne_jacobs}} provides a wrapper around for this method to use
+#' the settings as given in the t-SNE paper.
+#' @examples
+#' # Use as part of the make_opt function for configuring an optimizer's
+#' # step size method:
+#' make_opt(step_size = jacobs())
 #' @references
 #' R. A. Jacobs.
 #' Increased rates of convergence through learning rate adaptation.
@@ -163,31 +251,41 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
     max_step_size = max_step_size,
     init = function(opt, inp, out, method) {
       v <- out[[opt$mat_name]]
-      opt$step_size_method$step_size <-
-        matrix(opt$step_size_method$init_step_size, nrow(v), ncol(v))
+      opt$step_size$value <-
+        matrix(opt$step_size$init_step_size, nrow(v), ncol(v))
       opt
     },
-    get_step_size = function(opt, inp, out, method) {
+    calculate = function(opt, inp, out, method) {
 
       gm <- opt$gm
-      old_step_size <- opt$step_size_method$step_size
-      inc_fn <- opt$step_size_method$inc_fn
-      dec_fn <- opt$step_size_method$dec_fn
+      old_step_size <- opt$step_size$value
+      inc_fn <- opt$step_size$inc_fn
+      dec_fn <- opt$step_size$dec_fn
       old_update <- opt$update_method$update
-      min_step_size <- opt$step_size_method$min_step_size
+      min_step_size <- opt$step_size$min_step_size
 
       new_step_size <- jacobs_step_size(gm, old_step_size,
                                         old_update, inc_fn, dec_fn)
 
       # clamp to min_gain to avoid negative learning rate
-      new_step_size <- clamp(new_step_size, min_step_size)
+      opt$step_size$value <- clamp(new_step_size, min_step_size)
+      list(opt = opt)
     }
   )
 }
 
 #' Jacobs step size method using parameters from the t-SNE paper.
 #'
+#' Factory function for creating an optimizer step size method.
+#'
 #' @return A step size method suitable for use with t-SNE.
+#' @seealso The return value of this function is intended for internal use of
+#' the sneer framework only. See \code{\link{optimizer_step_size}} for details
+#' on the functions and values defined for this method.
+#' @examples
+#' # Use as part of the make_opt function for configuring an optimizer's
+#' # step size method:
+#' make_opt(step_size = tsne_jacobs())
 #' @references
 #' Laurens van der Maarten, Geoffrey Hinton.
 #' Visualizing Data using t-SNE.

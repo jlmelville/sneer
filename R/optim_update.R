@@ -171,7 +171,7 @@ no_momentum <- function() {
 #' @return Update matrix, consisting of gradient update and momentum term.
 momentum_update <- function(opt, inp, out, method) {
   direction <- opt$direction$value
-  step_size <- opt$step_size_method$step_size
+  step_size <- opt$step_size$value
   prev_update <- opt$update_method$update
   mu <- opt$update_method$momentum
   grad_update <- step_size * direction

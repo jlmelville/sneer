@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_step.R
 \name{jacobs}
 \alias{jacobs}
-\title{Jacobs method step size selection.}
+\title{Jacobs step size method.}
 \usage{
 jacobs(inc_mult = 1.1, dec_mult = 0.5, inc_fn = partial(`*`, inc_mult),
   dec_fn = partial(`*`, dec_mult), init_step_size = 1,
@@ -31,24 +31,15 @@ optimization.}
 \item{max_step_size}{Maximum step size.}
 }
 \value{
-Step size method, to be used by the Optimizer. A list containing:
- \item{\code{inc_fn}}{Function to invoke to increase the step size.}
- \item{\code{dec_fn}}{Function to invoke to decrease the step size.}
- \item{\code{init_step_size}}{Initial step size.}
- \item{\code{min_step_size}}{Minimum step size.}
- \item{\code{max_step_size}}{Maximum step size.}
- \item{\code{init}}{Function to do any needed initialization.}
- \item{\code{get_step_size}}{Function to return the current step size.}
- \item{\code{validate}}{Function to validate whether the current step was
- successful or not.}
- \item{\code{after_step}}{Function to do any needed updating or internal
- state before the next optimization step.}
+Jacobs step size method, to be used by the optimizer.
 }
 \description{
-This function creates the Jacobs method for step size selection. Also known
-as the delta-bar-delta method.
+Factory function for creating an optimizer step size method.
 }
 \details{
+This function creates the Jacobs method for step size selection. Also known
+as the delta-bar-delta method.
+
 In this implementation, the sign of the gradient is compared to the sign of
 the step size at the previous iteration (note that this includes any momentum
 term). If the signs are the same, then the step size is increased. If the
@@ -66,9 +57,11 @@ There are two differences from the method as originally described by Jacobs:
  average of gradients from several previous steps. In this implementation,
  we use only the value from the previous step.
 }
-
-To use the settings as given in the t-SNE paper, see the \code{tsne_jacobs}
-function.
+}
+\examples{
+# Use as part of the make_opt function for configuring an optimizer's
+# step size method:
+make_opt(step_size = jacobs())
 }
 \references{
 R. A. Jacobs.
@@ -83,6 +76,12 @@ learning rates
 IEEE World Congress on Computational Intelligence.
 }
 \seealso{
+The return value of this function is intended for internal use of
+the sneer framework only. See \code{\link{optimizer_step_size}} for details
+on the functions and values defined for this method.
+\code{\link{tsne_jacobs}} provides a wrapper around for this method to use
+the settings as given in the t-SNE paper.
+
 Other sneer optimization step size methods: \code{\link{bold_driver}},
   \code{\link{tsne_jacobs}}
 }

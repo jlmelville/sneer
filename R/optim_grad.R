@@ -6,18 +6,19 @@
 #' @section Interface:
 #' A gradient method is a list containing
 #' \describe{
-#' \item{\code{calculate(opt, inp, out, method, iter)}}{Calculation function
-#' with the following arguments:
-#'  \describe{
-#'    \item{\code{opt}}{Optimizer.}
-#'    \item{\code{inp}}{Input data.}
-#'    \item{\code{out}}{Output data.}
-#'    \item{\code{method}}{Embedding method.}
-#'    \item{\code{iter}}{Iteration number.}
-#'  }
-#' The function should calculate the gradient and return a list containing:
-#'  \describe{
-#'    \item{\code{gm}}{Gradient matrix.}
+#'  \item{\code{calculate(opt, inp, out, method, iter)}}{Calculation function
+#'  with the following arguments:
+#'    \describe{
+#'      \item{\code{opt}}{Optimizer.}
+#'      \item{\code{inp}}{Input data.}
+#'      \item{\code{out}}{Output data.}
+#'      \item{\code{method}}{Embedding method.}
+#'      \item{\code{iter}}{Iteration number.}
+#'    }
+#'    The function should calculate the gradient and return a list containing:
+#'    \describe{
+#'      \item{\code{gm}}{Gradient matrix.}
+#'    }
 #'  }
 #' }
 #' @keywords internal

@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_step.R
 \name{bold_driver}
 \alias{bold_driver}
-\title{Bold driver step size.}
+\title{Bold driver step size method.}
 \usage{
 bold_driver(inc_mult = 1.1, dec_mult = 0.5, inc_fn = partial(`*`,
   inc_mult), dec_fn = partial(`*`, dec_mult), init_step_size = 1,
@@ -31,27 +31,28 @@ optimization.}
 \item{max_step_size}{Maximum step size.}
 }
 \value{
-Step size method, to be used by the Optimizer. A list containing:
- \item{\code{inc_fn}}{Function to invoke to increase the step size.}
- \item{\code{dec_fn}}{Function to invoke to decrease the step size.}
- \item{\code{init_step_size}}{Initial step size.}
- \item{\code{min_step_size}}{Minimum step size.}
- \item{\code{max_step_size}}{Maximum step size.}
- \item{\code{init}}{Function to do any needed initialization.}
- \item{\code{get_step_size}}{Function to return the current step size.}
- \item{\code{validate}}{Function to validate whether the current step was
- successful or not.}
- \item{\code{after_step}}{Function to do any needed updating or internal state
- before the next optimization step.}
+Bold driver step size method, to be used by the optimizer.
 }
 \description{
+Factory function for creating an optimizer step size method.
+}
+\details{
 This function configures the 'Bold Driver' method for step size selection.
-If the costdecreases after an optimization step occurs, then the step
+If the cost decreases after an optimization step occurs, then the step
 size will be increased (normally by a conservative amount). If the cost
 increases, then the step size is decreased (normally by a more drastic
 amount).
 }
+\examples{
+# Use as part of the make_opt function for configuring an optimizer's
+# step size method:
+make_opt(step_size = bold_driver())
+}
 \seealso{
+The return value of this function is intended for internal use of
+the sneer framework only. See \code{\link{optimizer_step_size}} for details
+on the functions and values defined for this method.
+
 Other sneer optimization step size methods: \code{\link{jacobs}},
   \code{\link{tsne_jacobs}}
 }

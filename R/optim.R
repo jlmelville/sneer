@@ -110,65 +110,28 @@ make_opt <- function(gradient = classical_gradient(),
                      update = no_momentum(),
                      normalize_grads = TRUE, recenter = TRUE,
                      mat_name = "ym") {
-  opt <- list()
+  list(
+    mat_name = mat_name,
+    normalize_grads = normalize_grads,
 
-  opt$mat_name <- mat_name
-  opt$normalize_grads <- normalize_grads
+    gradient = gradient,
+    direction = direction,
+    step_size = step_size,
+    update_method = update,
 
-  opt$gradient <- gradient
-  opt$direction <- direction
-  opt$step_size_method <- step_size
-  opt$update_method <- update
+    init = make_opt_init(direction_fn = direction$init,
+                         step_size_fn = step_size$init,
+                         update_fn = update$init),
 
-  da_fn <- NULL
-  if (!is.null(direction$after_step)) {
-    da_fn <- direction$after_step
-  }
-  sa_fn <- NULL
-  if (!is.null(step_size$after_step)) {
-    sa_fn <- step_size$after_step
-  }
-  ua_fn <- NULL
-  if (!is.null(update$after_step)) {
-    ua_fn <- update$after_step
-  }
+    validate = make_opt_validate(direction_fn = direction$validate,
+                                 step_size_fn = step_size$validate,
+                                 update_fn = update$validate),
 
-  opt$after_step <- make_after_step(direction_after_step_fn = da_fn,
-                                    step_size_after_step_fn = sa_fn,
-                                    update_after_step_fn = ua_fn,
-                                    recenter = recenter)
-
-  dv_fn <- NULL
-  if (!is.null(direction$validate)) {
-    dv_fn <- direction$validate
-  }
-  sv_fn <- NULL
-  if (!is.null(step_size$validate)) {
-    sv_fn <- step_size$validate
-  }
-  uv_fn <- NULL
-  if (!is.null(update$validate)) {
-    uv_fn <- update$validate
-  }
-  opt$validate <- make_validate_solution(direction_validation_fn = dv_fn,
-                                         step_size_validation_fn = sv_fn,
-                                         update_validation_fn = uv_fn)
-
-  opt$init <- function(opt, inp, out, method) {
-    if (!is.null(opt$direction$init)) {
-      opt <- opt$direction$init(opt, inp, out, method)
-    }
-    if (!is.null(opt$step_size_method$init)) {
-      opt <- opt$step_size_method$init(opt, inp, out, method)
-    }
-    if (!is.null(opt$update_method$init)) {
-      opt <- opt$update_method$init(opt, inp, out, method)
-    }
-
-    opt
-  }
-
-  opt
+    after_step = make_opt_after_step(direction_fn = direction$after_step,
+                                     step_size_fn = step_size$after_step,
+                                     update_fn = update$after_step,
+                                     recenter = recenter)
+  )
 }
 
 #' t-SNE optimizer.
@@ -223,6 +186,103 @@ bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
            update = nesterov_nsc_momentum(max_momentum = max_momentum))
 }
 
+#' Create optimizer initialization.
+#'
+#' Create callback to be invoked when the optimizer is initialized.
+#'
+#' The direction, step size and update methods of the optimizer may all provide
+#' initialization methods to set their internal state before the first
+#' optimization step. This function accumulates all the provided function into
+#' a single callback that the optimizer will invoke whenever it updates the
+#' solution.
+#'
+#' @param direction_fn Function provided by the direction method to be invoked
+#' during initialization.
+#' @param step_size_fn Function provided by the step size method to be invoked
+#' during initialization.
+#' @param update_fn Function provided by the update method to be invoked during
+#' initialization.
+#' @return Callback to be invoked by the optimizer during initialization.
+make_opt_init <- function(direction_fn = NULL,
+                      step_size_fn = NULL,
+                      update_fn = NULL) {
+  init <- remove_nulls(list(
+    direction = direction_fn,
+    step_size = step_size_fn,
+    update = update_fn
+  ))
+
+  function(opt, inp, out, method) {
+    for (name in names(init)) {
+      opt <- init[[name]](opt, inp, out, method)
+    }
+    opt
+  }
+}
+
+#' Create solution validation callback.
+#'
+#' Makes a callback to be used by the optimizer to validate a solution.
+#'
+#' The direction, step size or update part of the optimization step can "veto"
+#' a particular solution if it's not to their liking. For example, the bold
+#' driver step size method will flag an update as not ok if the cost increases.
+#' If the solution does not validate, then it will not be applied to the
+#' solution and the next iteration step takes place from the same position as
+#' the current iteration. Therefore it's important that the state of the
+#' optimizer also be changed if the validation has failed or the same failure
+#' will occur again. For example, in the case of the bold driver, a failed
+#' solution results in the step size being decreased.
+#'
+#' The callback, when invoked, will call the validation functions provided by
+#' the different components of the optimizer. If any of them return \code{FALSE}
+#' the the validation callback will indicate the step failed.
+#'
+#' @param direction_fn Validation function for the direction method.
+#' @param step_size_fn Validation function for the step size method.
+#' @param update_fn Validation function for the update method.
+#' @return A validation callback.
+make_opt_validate <- function(direction_fn = NULL,
+                              step_size_fn = NULL,
+                              update_fn = NULL) {
+
+  validate <- remove_nulls(list(
+    direction = direction_fn,
+    step_size = step_size_fn,
+    update = update_fn
+  ))
+
+  function(opt, inp, out, proposed_out, method) {
+    all_good <- TRUE
+
+    for (name in names(validate)) {
+      result <- validate[[name]](opt, inp, out, proposed_out, method)
+      if (!is.null(result$opt)) {
+        opt <- result$opt
+      }
+      if (!is.null(result$inp)) {
+        inp <- result$inp
+      }
+      if (!is.null(result$out)) {
+        out <- result$out
+      }
+      if (!is.null(result$proposed_out)) {
+        proposed_out <- result$proposed_out
+      }
+      if (!is.null(result$method)) {
+        method <- result$method
+      }
+      if (!is.null(result$ok)) {
+        if (!result$ok) {
+          all_good <- FALSE
+        }
+      }
+    }
+    list(ok = all_good, opt = opt, inp = inp, out = out,
+         proposed_out = proposed_out, method = method)
+  }
+}
+
 #' Create callback to be invoked after the solution is updated.
 #'
 #' The direction, step size and update methods of the optimizer may all have
@@ -233,31 +293,23 @@ bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
 #'
 #' @param recenter If \code{TRUE}, translate the embedded coordinates so they
 #' are centered around the origin.
-#' @param direction_after_step_fn Function provided by the direction method to
-#' be invoked after the solution has been updated.
-#' @param step_size_after_step_fn Function provided by the step size method to
-#' be invoked after the solution has been updated.
-#' @param update_after_step_fn Function provided by the update method to be
-#' invoked after the solution has been updated.
+#' @param direction_fn Function provided by the direction method to be invoked
+#' after the solution has been updated.
+#' @param step_size_fn Function provided by the step size method to be invoked
+#' after the solution has been updated.
+#' @param update_fn Function provided by the update method to be invoked after
+#' the solution has been updated.
 #' @return Callback to be invoked by the optimizer after the solution has been
 #' updated.
-make_after_step <- function(recenter = TRUE,
-                            direction_after_step_fn = NULL,
-                            step_size_after_step_fn = NULL,
-                            update_after_step_fn = NULL) {
-  after_step <- list()
-
-  if (!is.null(direction_after_step_fn)) {
-    after_step$direction <- direction_after_step_fn
-  }
-
-  if (!is.null(step_size_after_step_fn)) {
-    after_step$step_size <- step_size_after_step_fn
-  }
-
-  if (!is.null(update_after_step_fn)) {
-    after_step$update <- update_after_step_fn
-  }
+make_opt_after_step <- function(recenter = TRUE,
+                            direction_fn = NULL,
+                            step_size_fn = NULL,
+                            update_fn = NULL) {
+  after_step <- remove_nulls(list(
+    direction = direction_fn,
+    step_size = step_size_fn,
+    update = update_fn
+  ))
 
   if (recenter) {
     after_step$recenter <- function(opt, inp, out, new_out, ok, iter) {
@@ -286,75 +338,5 @@ make_after_step <- function(recenter = TRUE,
       }
     }
     list(opt = opt, inp = inp, out = out, new_out = new_out)
-  }
-}
-
-#' Create solution validation callback.
-#'
-#' Makes a callback to be used by the optimizer to validate a solution.
-#'
-#' The direction, step size or update part of the optimization step can "veto"
-#' a particular solution if it's not to their liking. For example, the bold
-#' driver step size method will flag an update as not ok if the cost increases.
-#' If the solution does not validate, then it will not be applied to the
-#' solution and the next iteration step takes place from the same position as
-#' the current iteration. Therefore it's important that the state of the
-#' optimizer also be changed if the validation has failed or the same failure
-#' will occur again. For example, in the case of the bold driver, a failed
-#' solution results in the step size being decreased.
-#'
-#' The callback, when invoked, will call the validation functions provided by
-#' the different components of the optimizer. If any of them return \code{FALSE}
-#' the the validation callback will indicate the step failed.
-#'
-#' @param direction_validation_fn Validation function for the direction method.
-#' @param step_size_validation_fn Validation function for the step size method.
-#' @param update_validation_fn Validation function for the update method.
-#' @return A validation callback.
-make_validate_solution <- function(direction_validation_fn = NULL,
-                                   step_size_validation_fn = NULL,
-                                   update_validation_fn = NULL) {
-  validate_solution <- list()
-
-  if (!is.null(direction_validation_fn)) {
-    validate_solution$direction_validation_func <- direction_validation_fn
-  }
-
-  if (!is.null(step_size_validation_fn)) {
-    validate_solution$step_size_validation_func <- step_size_validation_fn
-  }
-
-  if (!is.null(update_validation_fn)) {
-    validate_solution$update_validation_func <- update_validation_fn
-  }
-
-  function(opt, inp, out, new_out, method) {
-    all_good <- TRUE
-
-    for (name in names(validate_solution)) {
-      result <- validate_solution[[name]](opt, inp, out, new_out, method)
-      if (!is.null(result$opt)) {
-        opt <- result$opt
-      }
-      if (!is.null(result$inp)) {
-        inp <- result$inp
-      }
-      if (!is.null(result$out)) {
-        out <- result$out
-      }
-      if (!is.null(result$new_out)) {
-        new_out <- result$new_out
-      }
-      if (!is.null(result$method)) {
-        method <- result$method
-      }
-      if (!is.null(result$ok)) {
-        if (!result$ok) {
-          all_good <- FALSE
-        }
-      }
-    }
-    list(ok = all_good, opt = opt, inp = inp, out = out, new_out = new_out,
-         method = method)
   }
 }

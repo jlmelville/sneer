@@ -489,32 +489,31 @@ optimize_step <- function(opt, method, inp, out, iter) {
   }
 
   direction_result <- opt$direction$calculate(opt, inp, out, method, iter)
+  opt <- direction_result$opt
 
-  if (!is.null(direction_result$opt)) {
-    opt <- direction_result$opt
-  }
-
-  opt$step_size_method$step_size <-
-    opt$step_size_method$get_step_size(opt, inp, out, method)
+  step_size_result <- opt$step_size$calculate(opt, inp, out, method)
+  opt <- step_size_result$opt
 
   opt$update_method$update <-
     opt$update_method$get_update(opt, inp, out, method)
 
-  new_out <- update_solution(opt, inp, out, method)
+  proposed_out <- update_solution(opt, inp, out, method)
 
   # intercept whether we want to accept the new solution e.g. bold driver
   ok <- TRUE
   if (!is.null(opt$validate)) {
-    validation_result <- opt$validate(opt, inp, out, new_out, method)
+    validation_result <- opt$validate(opt, inp, out, proposed_out, method)
     opt <- validation_result$opt
     inp <- validation_result$inp
     out <- validation_result$out
-    new_out <- validation_result$new_out
+    proposed_out <- validation_result$proposed_out
     method <- validation_result$method
     ok <- validation_result$ok
   }
 
-  if (!ok) {
+  if (ok) {
+    new_out <- proposed_out
+  } else {
     new_out <- out
   }
 
