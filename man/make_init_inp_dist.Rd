@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialize_inp.R
 \name{make_init_inp_dist}
 \alias{make_init_inp_dist}
-\title{Create an input initialization callback for distance-based methods.}
+\title{Input Initialization for Distance Embedding}
 \usage{
 make_init_inp_dist()
 }

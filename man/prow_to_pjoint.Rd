@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialize_inp.R
 \name{prow_to_pjoint}
 \alias{prow_to_pjoint}
-\title{Convert a row probability matrix to a join probability matrix.}
+\title{Joint Probability Matrix from Row Probability Matrix}
 \usage{
 prow_to_pjoint(prow)
 }

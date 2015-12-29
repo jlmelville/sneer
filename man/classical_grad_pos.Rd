@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_grad.R
 \name{classical_grad_pos}
 \alias{classical_grad_pos}
-\title{Gradient calculation at current solution position.}
+\title{Classical Gradient Calculation}
 \usage{
 classical_grad_pos(opt, inp, out, method)
 }

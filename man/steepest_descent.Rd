@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_direction.R
 \name{steepest_descent}
 \alias{steepest_descent}
-\title{Steepest Descent direction.}
+\title{Steepest Descent Direction}
 \usage{
 steepest_descent()
 }
@@ -23,7 +23,9 @@ make_opt(direction = steepest_descent())
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimizer_direction}} for details
-on the functions and values defined for this method.
+the sneer framework only. See \code{\link{optimization_direction_interface}}
+for details on the functions and values defined for this method.
+
+Other sneer optimization direction methods: \code{\link{optimization_direction}}
 }
 

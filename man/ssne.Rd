@@ -2,7 +2,7 @@
 % Please edit documentation in R/sne.R
 \name{ssne}
 \alias{ssne}
-\title{Symmetric Stochastic Neighbor Embedding.}
+\title{Symmetric Stochastic Neighbor Embedding}
 \usage{
 ssne(mat_name = "ym", eps = .Machine$double.eps)
 }
@@ -56,8 +56,12 @@ Journal of Machine Learning Research, 2008, 9, 2579-2605.
 }
 \seealso{
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{mmds}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{tasne}},
-  \code{\link{tsne}}
+  \code{\link{embedding_methods}}, \code{\link{mmds}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{tasne}}, \code{\link{tsne}}
+
+Other sneer probability embedding methods: \code{\link{asne}},
+  \code{\link{probability_embedding_methods}},
+  \code{\link{tasne}}, \code{\link{tsne}}
 }
 

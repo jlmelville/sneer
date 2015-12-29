@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist_to_sim_stiff.R
 \name{coords_to_weights}
 \alias{coords_to_weights}
-\title{Create a weight matrix.}
+\title{Create Weight Matrix from Coordinates Matrix}
 \usage{
 coords_to_weights(ym, weight_fn)
 }
@@ -17,6 +17,6 @@ coordinates. It should return a weight matrix.}
 Weight matrix.
 }
 \description{
-Create a weight matrix.
+Create Weight Matrix from Coordinates Matrix
 }
 

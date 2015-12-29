@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim.R
 \name{initialize_optimizer}
 \alias{initialize_optimizer}
-\title{Optimizer initialization.}
+\title{Optimizer Initialization.}
 \usage{
 initialize_optimizer(opt, inp, out, method)
 }

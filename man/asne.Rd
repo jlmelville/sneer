@@ -2,7 +2,7 @@
 % Please edit documentation in R/sne.R
 \name{asne}
 \alias{asne}
-\title{Asymmetric Stochastic Neighbor Embedding.}
+\title{Asymmetric Stochastic Neighbor Embedding}
 \usage{
 asne(mat_name = "ym", eps = .Machine$double.eps)
 }
@@ -49,8 +49,12 @@ In Advances in Neural Information Processing Systems, volume 15,
 pages 833-840, Cambridge, MA, USA, 2002. The MIT Press.
 }
 \seealso{
-Other sneer embedding methods: \code{\link{mmds}},
-  \code{\link{sammon_map}}, \code{\link{smmds}},
+Other sneer embedding methods: \code{\link{embedding_methods}},
+  \code{\link{mmds}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tsne}}
+
+Other sneer probability embedding methods: \code{\link{probability_embedding_methods}},
   \code{\link{ssne}}, \code{\link{tasne}},
   \code{\link{tsne}}
 }

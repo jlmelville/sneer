@@ -2,7 +2,7 @@
 % Please edit documentation in R/mds.R
 \name{mmds}
 \alias{mmds}
-\title{Metric Multi-dimensional scaling (MDS) using the STRESS cost function.}
+\title{Metric Multi-dimensional Scaling (MDS) Using STRESS Cost Function}
 \usage{
 mmds(mat_name = "ym", eps = .Machine$double.eps)
 }
@@ -83,7 +83,11 @@ they are in sneer), the result is identical to PCA, so the output will
 always have a higher stress than the sneer MDS embedding.}
 }
 
+Other sneer distance embedding methods: \code{\link{distance_embedding_methods}},
+  \code{\link{sammon_map}}, \code{\link{smmds}}
+
 Other sneer embedding methods: \code{\link{asne}},
+  \code{\link{embedding_methods}},
   \code{\link{sammon_map}}, \code{\link{smmds}},
   \code{\link{ssne}}, \code{\link{tasne}},
   \code{\link{tsne}}

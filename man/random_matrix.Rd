@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialize_out.R
 \name{random_matrix}
 \alias{random_matrix}
-\title{Creates a matrix of normally distributed data with zero mean.}
+\title{Random Matrix}
 \usage{
 random_matrix(nrow, ncol = 2, sd = 1e-04)
 }

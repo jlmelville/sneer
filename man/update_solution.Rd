@@ -2,7 +2,7 @@
 % Please edit documentation in R/embed.R
 \name{update_solution}
 \alias{update_solution}
-\title{Update output data.}
+\title{Output Data Update}
 \usage{
 update_solution(opt, inp, out, method)
 }

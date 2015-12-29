@@ -2,7 +2,7 @@
 % Please edit documentation in R/sne.R
 \name{tasne}
 \alias{tasne}
-\title{t-distributed Asymmetric Stochastic Neighbor Embedding.}
+\title{t-distributed Asymmetric Stochastic Neighbor Embedding}
 \usage{
 tasne(mat_name = "ym", eps = .Machine$double.eps)
 }
@@ -50,8 +50,12 @@ If used in an embedding, the output data list will contain:
 }
 \seealso{
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{mmds}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{ssne}},
-  \code{\link{tsne}}
+  \code{\link{embedding_methods}}, \code{\link{mmds}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{ssne}}, \code{\link{tsne}}
+
+Other sneer probability embedding methods: \code{\link{asne}},
+  \code{\link{probability_embedding_methods}},
+  \code{\link{ssne}}, \code{\link{tsne}}
 }
 

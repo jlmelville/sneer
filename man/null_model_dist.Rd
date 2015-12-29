@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{null_model_dist}
 \alias{null_model_dist}
-\title{Null model for distance-based costs.}
+\title{Null Model for Distance Matrices}
 \usage{
 null_model_dist(dm)
 }

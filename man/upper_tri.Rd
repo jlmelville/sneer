@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{upper_tri}
 \alias{upper_tri}
-\title{Upper triangle of a matrix as a vector.}
+\title{Upper Triangle of a Matrix as a Vector}
 \usage{
 upper_tri(x)
 }

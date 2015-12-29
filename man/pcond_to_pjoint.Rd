@@ -2,15 +2,15 @@
 % Please edit documentation in R/dist_to_sim_stiff.R
 \name{pcond_to_pjoint}
 \alias{pcond_to_pjoint}
-\title{Convert a conditional probability matrix to a joint probability matrix.}
+\title{Create Joint Probability Matrix from Conditional Probability Matrix}
 \usage{
 pcond_to_pjoint(pm)
 }
 \arguments{
-\item{pm}{a conditional probability matrix or row stochastic matrix.}
+\item{pm}{Conditional probability matrix or row stochastic matrix.}
 }
 \value{
-a joint probability matrix, such that the elements sum to 1 and
+a Joint probability matrix, such that the elements sum to 1 and
 \code{pm[i, j]} = \code{pm[j, i]}.
 }
 \description{

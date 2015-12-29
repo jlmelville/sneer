@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialize_out.R
 \name{make_init_out}
 \alias{make_init_out}
-\title{Create an output initialization callback.}
+\title{Output Initialization}
 \usage{
 make_init_out(k = 2, init_config = NULL, stdev = 1e-04,
   from_PCA = FALSE, from_input_name = NULL, mat_name = "ym",
@@ -63,11 +63,11 @@ make_init_out(stdev = 1e-4)
 
 # Should be passed to the init_out argument of an embedding function:
 \dontrun{
- embed_sim(init_out = make_init_out(from_PCA = TRUE), ...)
+ embed_prob(init_out = make_init_out(from_PCA = TRUE), ...)
 }
 }
 \seealso{
-\code{\link{embed_sim}} for how to use this function for configuring
+\code{\link{embed_prob}} for how to use this function for configuring
 an embedding.
 }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{partial}
 \alias{partial}
-\title{Partially apply a function.}
+\title{Partial Function Application}
 \usage{
 partial(f, ...)
 }
@@ -15,6 +15,6 @@ partial(f, ...)
 Partially applied version of \code{f}.
 }
 \description{
-Partially apply a function.
+Partial Function Application
 }
 

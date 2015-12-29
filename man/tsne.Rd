@@ -2,7 +2,7 @@
 % Please edit documentation in R/sne.R
 \name{tsne}
 \alias{tsne}
-\title{t-distributed Stochastic Neighbor Embedding.}
+\title{t-Distributed Stochastic Neighbor Embedding}
 \usage{
 tsne(mat_name = "ym", eps = .Machine$double.eps)
 }
@@ -55,8 +55,12 @@ Journal of Machine Learning Research, 2008, 9, 2579-2605.
 }
 \seealso{
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{mmds}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{ssne}},
-  \code{\link{tasne}}
+  \code{\link{embedding_methods}}, \code{\link{mmds}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{ssne}}, \code{\link{tasne}}
+
+Other sneer probability embedding methods: \code{\link{asne}},
+  \code{\link{probability_embedding_methods}},
+  \code{\link{ssne}}, \code{\link{tasne}}
 }
 

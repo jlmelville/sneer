@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{remove_nulls}
 \alias{remove_nulls}
-\title{Remove NULL members from a list.}
+\title{Remove NULL Members from a List}
 \usage{
 remove_nulls(l)
 }
@@ -13,7 +13,7 @@ remove_nulls(l)
 List with NULL members removed.
 }
 \description{
-Remove NULL members from a list.
+Remove NULL Members from a List
 }
 \examples{
 \dontrun{

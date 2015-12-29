@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualization.R
 \name{make_embedding_plot}
 \alias{make_embedding_plot}
-\title{Create embedding plot.}
+\title{Embedding Plot Using \code{graphics} Library}
 \usage{
 make_embedding_plot(x, attr_name, label_fn)
 }
@@ -35,7 +35,7 @@ pca_iris <- prcomp(iris[, 1:4], center = TRUE, retx = TRUE)
 iris_plot(pca_iris$x[, 1:2])
 
 # TSNE on iris
-tsne_iris <- embed_sim(iris[, 1:4], method = tsne())
+tsne_iris <- embed_prob(iris[, 1:4], method = tsne())
 # view the TSNE embedding
 iris_plot(tsne_iris$ym)
 }

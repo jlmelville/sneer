@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_update.R
 \name{linear_momentum}
 \alias{linear_momentum}
-\title{Linear momentum.}
+\title{Linear Momentum}
 \usage{
 linear_momentum(max_iter, init_momentum = 0, final_momentum = 0.9)
 }
@@ -32,11 +32,13 @@ make_opt(update = linear_momentum())
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimizer_update}} for details
-on the functions and values defined for this method.
+the sneer framework only. See \code{\link{optimization_update_interface}}
+for details on the functions and values defined for this method.
 
 Other sneer optimization update methods: \code{\link{constant_momentum}},
   \code{\link{nesterov_nsc_momentum}},
-  \code{\link{no_momentum}}, \code{\link{step_momentum}}
+  \code{\link{no_momentum}},
+  \code{\link{optimization_update}},
+  \code{\link{step_momentum}}
 }
 

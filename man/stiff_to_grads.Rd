@@ -2,7 +2,7 @@
 % Please edit documentation in R/embed.R
 \name{stiff_to_grads}
 \alias{stiff_to_grads}
-\title{Convert stiffness matrix to gradient matrix.}
+\title{Gradient Matrix from Stiffness Matrix}
 \usage{
 stiff_to_grads(ym, km)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_weight.R
 \name{exp_weight}
 \alias{exp_weight}
-\title{Exponential weight.}
+\title{Exponential Weight}
 \usage{
 exp_weight(d2m, beta = 1)
 }

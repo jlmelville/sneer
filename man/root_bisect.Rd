@@ -2,7 +2,7 @@
 % Please edit documentation in R/perplexity.R
 \name{root_bisect}
 \alias{root_bisect}
-\title{Find root of function by bisection.}
+\title{Find Root of Function by Bisection}
 \usage{
 root_bisect(fn, tol = 1e-05, max_iters = 50, x_lower, x_upper,
   x_init = (x_lower + x_upper)/2)

@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialize_inp.R
 \name{prow_to_pcond}
 \alias{prow_to_pcond}
-\title{Convert a row probability matrix to a conditional probability matrix.}
+\title{Conditional Probability Matrix from Row Probability Matrix}
 \usage{
 prow_to_pcond(prow)
 }

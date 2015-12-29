@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_step.R
 \name{jacobs}
 \alias{jacobs}
-\title{Jacobs step size method.}
+\title{Jacobs Step Size Method}
 \usage{
 jacobs(inc_mult = 1.1, dec_mult = 0.5, inc_fn = partial(`*`, inc_mult),
   dec_fn = partial(`*`, dec_mult), init_step_size = 1,
@@ -77,12 +77,13 @@ IEEE World Congress on Computational Intelligence.
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimizer_step_size}} for details
-on the functions and values defined for this method.
+the sneer framework only. See \code{\link{optimization_step_size_interface}}
+for details on the functions and values defined for this method.
 \code{\link{tsne_jacobs}} provides a wrapper around for this method to use
 the settings as given in the t-SNE paper.
 
 Other sneer optimization step size methods: \code{\link{bold_driver}},
+  \code{\link{optimization_step_size}},
   \code{\link{tsne_jacobs}}
 }
 

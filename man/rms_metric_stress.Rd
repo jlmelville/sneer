@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{rms_metric_stress}
 \alias{rms_metric_stress}
-\title{Root mean square deviation of the metric stress.}
+\title{STRESS RMSD}
 \usage{
 rms_metric_stress(dxm, dym)
 }

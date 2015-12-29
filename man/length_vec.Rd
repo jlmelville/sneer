@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{length_vec}
 \alias{length_vec}
-\title{Length of a vector (or matrix)}
+\title{Length of a Vector (or Matrix)}
 \usage{
 length_vec(x)
 }
@@ -13,6 +13,6 @@ length_vec(x)
 Length (2-norm) of the matrix.
 }
 \description{
-Length of a vector (or matrix)
+Length of a Vector (or Matrix)
 }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_grad.R
 \name{classical_gradient}
 \alias{classical_gradient}
-\title{Classical Gradient.}
+\title{Classical Gradient}
 \usage{
 classical_gradient()
 }
@@ -22,9 +22,10 @@ make_opt(gradient = classical_gradient())
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimizer_gradient}} for details
-on the functions and values defined for this method.
+the sneer framework only. See \code{\link{optimization_gradient_interface}}
+for details on the functions and values defined for this method.
 
-Other sneer optimization gradient methods: \code{\link{nesterov_gradient}}
+Other sneer optimization gradient methods: \code{\link{nesterov_gradient}},
+  \code{\link{optimization_gradient}}
 }
 

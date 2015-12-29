@@ -2,7 +2,7 @@
 % Please edit documentation in R/embed.R
 \name{coords_to_dist2}
 \alias{coords_to_dist2}
-\title{Creates a matrix of squared Euclidean distances from a coordinate matrix.}
+\title{Squared (Euclidean) Distance Matrix}
 \usage{
 coords_to_dist2(xm)
 }
@@ -13,7 +13,10 @@ coords_to_dist2(xm)
 Squared distance matrix.
 }
 \description{
-Similarity-preserving embedding techniques use the squared Euclidean distance
+Creates a matrix of squared Euclidean distances from a coordinate matrix.
+}
+\details{
+Probability-based embedding techniques use the squared Euclidean distance
 as input to their weighting functions.
 }
 

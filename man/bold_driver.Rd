@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_step.R
 \name{bold_driver}
 \alias{bold_driver}
-\title{Bold driver step size method.}
+\title{Bold Driver Step Size Method}
 \usage{
 bold_driver(inc_mult = 1.1, dec_mult = 0.5, inc_fn = partial(`*`,
   inc_mult), dec_fn = partial(`*`, dec_mult), init_step_size = 1,
@@ -50,10 +50,11 @@ make_opt(step_size = bold_driver())
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimizer_step_size}} for details
-on the functions and values defined for this method.
+the sneer framework only. See \code{\link{optimization_step_size_interface}}
+for details on the functions and values defined for this method.
 
 Other sneer optimization step size methods: \code{\link{jacobs}},
+  \code{\link{optimization_step_size}},
   \code{\link{tsne_jacobs}}
 }
 

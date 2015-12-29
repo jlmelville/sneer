@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualization.R
 \name{make_iris_plot}
 \alias{make_iris_plot}
-\title{Iris dataset plot factory function.}
+\title{Embedding Plot for Iris Dataset}
 \usage{
 make_iris_plot(num_label_chars = 1)
 }

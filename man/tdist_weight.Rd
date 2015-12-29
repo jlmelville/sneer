@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_weight.R
 \name{tdist_weight}
 \alias{tdist_weight}
-\title{Student-t distribution weighting.}
+\title{Student-t Distribution Weight}
 \usage{
 tdist_weight(d2m)
 }

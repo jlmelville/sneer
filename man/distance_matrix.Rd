@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{distance_matrix}
 \alias{distance_matrix}
-\title{Euclidean Distance matrix.}
+\title{Euclidean Distance Matrix}
 \usage{
 distance_matrix(xm, min_dist = .Machine$double.eps)
 }

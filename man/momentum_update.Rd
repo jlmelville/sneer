@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_update.R
 \name{momentum_update}
 \alias{momentum_update}
-\title{Solution update with momentum term.}
+\title{Update Solution With Momentum}
 \usage{
 momentum_update(opt, inp, out, method)
 }

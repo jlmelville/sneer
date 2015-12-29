@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{sammon_stress_cost}
 \alias{sammon_stress_cost}
-\title{Sammon stress.}
+\title{Sammon Stress Cost Function}
 \usage{
 sammon_stress_cost(inp, out, method)
 }

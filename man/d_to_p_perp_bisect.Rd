@@ -2,7 +2,7 @@
 % Please edit documentation in R/perplexity.R
 \name{d_to_p_perp_bisect}
 \alias{d_to_p_perp_bisect}
-\title{Convert distance matrix to row probability matrix.}
+\title{Find Row Probabilities by Perplexity Bisection Search}
 \usage{
 d_to_p_perp_bisect(dm, perplexity = 15, weight_fn, tol = 1e-05,
   max_iters = 50, verbose = TRUE)

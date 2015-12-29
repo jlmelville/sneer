@@ -2,7 +2,7 @@
 % Please edit documentation in R/perplexity.R
 \name{make_objective_fn}
 \alias{make_objective_fn}
-\title{Objective function for parameter search.}
+\title{Objective Function for Parameter Search}
 \usage{
 make_objective_fn(d2r, i, weight_fn, perplexity, h_base = exp(1))
 }

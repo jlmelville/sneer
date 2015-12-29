@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim.R
 \name{bold_nag_opt}
 \alias{bold_nag_opt}
-\title{Nesterov Accelerated Gradient optimizer with bold driver}
+\title{Nesterov Accelerated Gradient Optimizer with Bold Driver}
 \usage{
 bold_nag_opt(min_step_size = sqrt(.Machine$double.eps), init_step_size = 1,
   max_momentum = 1)
@@ -26,14 +26,15 @@ size.
 \examples{
 # Should be passed to the opt argument of an embedding function:
 \dontrun{
- embed_sim(opt = bold_nag_opt(), ...)
+ embed_prob(opt = bold_nag_opt(), ...)
 }
 }
 \seealso{
-\code{\link{embed_sim}} for how to use this function for configuring
-an embedding.
+\code{\link{embed_prob}} for how to use this function for configuring
+  an embedding.
 
 Other sneer optimization methods: \code{\link{make_opt}},
+  \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}
 }
 

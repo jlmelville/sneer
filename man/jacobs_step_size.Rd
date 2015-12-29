@@ -2,8 +2,7 @@
 % Please edit documentation in R/optim_step.R
 \name{jacobs_step_size}
 \alias{jacobs_step_size}
-\title{Calculate a new step size matrix based on the sign of the gradient versus
-that of the previous step.}
+\title{Jacobs Step Size Matrix Update}
 \usage{
 jacobs_step_size(gm, step_size, update, inc_fn, dec_fn)
 }

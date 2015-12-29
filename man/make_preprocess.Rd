@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocess.R
 \name{make_preprocess}
 \alias{make_preprocess}
-\title{Create preprocessing callback}
+\title{Preprocessing}
 \usage{
 make_preprocess(range_scale_matrix = FALSE, range_scale = FALSE, rmin = 0,
   rmax = 1, auto_scale = FALSE, whiten = FALSE, zwhiten = FALSE,
@@ -50,7 +50,7 @@ probabilities).
 }
 \details{
 Pass the result of this factory function to the preprocess argument of an
-embedding function, e.g. \code{embed_sim}. A variety of common preprocessing
+embedding function, e.g. \code{embed_prob}. A variety of common preprocessing
 options are available. The range scaling and auto scaling options are
 mutually exclusive, but can be combined with whitening if required. No
 preprocessing will be carried out if the input data is a distance matrix.
@@ -77,11 +77,11 @@ make_preprocess(range_scale_matrix = TRUE, zwhiten = TRUE, whiten_dims = 10)
 
 # Should be passed to the preprocess argument of an embedding function:
 \dontrun{
- embed_sim(preprocess = make_preprocess(range_scale = TRUE, rmin = -1), ...)
+ embed_prob(preprocess = make_preprocess(range_scale = TRUE, rmin = -1), ...)
 }
 }
 \seealso{
-\code{\link{embed_sim}} for how to use this function for configuring
+\code{\link{embed_prob}} for how to use this function for configuring
 an embedding.
 }
 

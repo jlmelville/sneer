@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{reltol}
 \alias{reltol}
-\title{Relative tolerance.}
+\title{Relative Tolerance}
 \usage{
 reltol(x, y)
 }
@@ -15,6 +15,6 @@ reltol(x, y)
 the relative tolerance between the two values.
 }
 \description{
-Relative tolerance.
+Relative Tolerance
 }
 

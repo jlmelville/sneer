@@ -6,7 +6,7 @@
 \alias{sneer-package}
 \title{sneer: Stochastic Neighbor Embedding Experiments in R.}
 \description{
-A package for exploring similarity-preserving embedding and related forms
+A package for exploring probability-based embedding and related forms
 of dimensionality reduction. Its main goal is to implement multiple
 embedding methods within a single framework so comparison between them is
 easier, without worrying about the effect of differences in preprocessing,
@@ -36,8 +36,8 @@ don't attempt to preserve the input distances but input probabilities, which
 are based on the distances by some non-linear weighting function.
 
 To carry out a distance-based embedding, use the \code{\link{embed_dist}}
-function. The entry point for similarity preserving embeddings is the
-function \code{\link{embed_sim}}. They have a similar signature, but
+function. The entry point for probability-based embeddings is the
+function \code{\link{embed_prob}}. They have a similar signature, but
 provide useful defaults.
 
 Apart from the description of the various parts of the embedding below, you
@@ -65,7 +65,8 @@ See \code{\link{make_preprocess}} for more details.
 Generates the input matrices used in the embedding. For SNE and related
 methods, a probability matrix is needed. There's really only one way of
 doing this, which involves specifying a target perplexity for row-wise
-probabilities. See \code{\link{make_init_inp}} for more details.
+probabilities. See \code{\link{make_init_inp}} and
+\code{\link{make_init_inp_dist}} for more details.
 }
 
 \section{Output Initialization}{
@@ -82,14 +83,15 @@ a computational cost that is entirely reasonable. See
 
 I take the view that the essentials of any embedding method (or at least the
 ones this package can deal with) is the definition of the gradient. This
-in turn depends on the cost function used. For similarity preserving methods
+in turn depends on the cost function used. For probability-based methods
 like SNE, the exact form of the gradient is also dependent on the weighting
 function that converts distances to probabilities, and how the probability
 is defined (e.g. joint versus conditional probabilities). The embedding
 method defines the functions needed to do this conversion. If the embedding
 can have a stiffness matrix defined for it it should be possible to
 implement it as a method in sneer, although it requires a little knowledge
-of the internals of the package.
+of the internals of the package. See \code{\link{embedding_methods}} for
+the list of available embedding methods.
 }
 
 \section{Optimization}{
@@ -110,7 +112,7 @@ also implement conjugate gradient within this framework, including backwards
 stepping Wolfe line search for step size selection, but you would also need
 a good guess for the trace of the Hessian, and NAG works well enough with
 the bold driver method for step size selection without all that.
-See \code{\link{make_opt}} for more details.
+See \code{\link{optimization_methods}} for more details.
 }
 
 \section{Tricks}{
@@ -125,17 +127,17 @@ currently implemented. See \code{\link{make_tricks}} for more details.
 Optional functions that will run on a regular schedule during the
 optimization. Used for keeping track of the progress of the optimization,
 and stopping early if necessary. Also, you can plot the current state of the
-embedding. See \code{?make_reporter} for more details.
+embedding. See \code{\link{make_reporter}} for more details.
 }
 
 \section{Synthetic Dataset}{
 
 There's a synthetic dataset in this package, called \code{s1k}. It consists
 of a 1000 points representing a fuzzy 9D simplex. It's intended to
-demonstrate the "crowding effect" and require the sort of similarity
-preserving embedding methods provided in this package (PCA does a horrible
-job of separated the 10 clusters in the data). See \code{\link{s1k}} for more
-details.
+demonstrate the "crowding effect" and require the sort of
+probability-based embedding methods provided in this package (PCA does a
+horrible job of separated the 10 clusters in the data). See \code{\link{s1k}}
+for more details.
 }
 \examples{
 \dontrun{
@@ -143,7 +145,7 @@ details.
 # and initialize from random. Use generic plot function, displaying the first
 # two characters of the "Species" factor for the points. Explicitly choose
 # t-SNE as the method.
-tsne_iris <- embed_sim(iris[, 1:4],
+tsne_iris <- embed_prob(iris[, 1:4],
                        method = tsne(),
                        opt = tsne_opt(),
                        init_inp = make_init_inp(perplexity = 25),
@@ -155,7 +157,7 @@ tsne_iris <- embed_sim(iris[, 1:4],
 # Do ASNE on the synthetic the s1k dataset (10 overlapping 9D Gaussian blobs),
 # Autoscale the input, use PCA to initialize the embedding, and use
 # Nesterov Accelerated Gradient to do the optimization.
-asne_s1k <- embed_sim(s1k[, 1:9],
+asne_s1k <- embed_prob(s1k[, 1:9],
                       method = asne(),
                       preprocess = make_preprocess(auto_scale = TRUE),
                       init_inp = make_init_inp(perplexity = 50),
@@ -166,7 +168,7 @@ asne_s1k <- embed_sim(s1k[, 1:9],
 
 # Same as the previous example but creating the NAG optimizer explicitly with
 # generic make_opt method
-asne_s1k <- embed_sim(s1k[, 1:9],
+asne_s1k <- embed_prob(s1k[, 1:9],
                       method = asne(),
                       preprocess = make_preprocess(auto_scale = TRUE),
                       init_inp = make_init_inp(perplexity = 50),

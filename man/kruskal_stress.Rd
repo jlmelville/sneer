@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{kruskal_stress}
 \alias{kruskal_stress}
-\title{Kruskal stress type-1 for metric embeddings.}
+\title{Kruskal Stress Type-1}
 \usage{
 kruskal_stress(dxm, dym, eps = .Machine$double.eps)
 }

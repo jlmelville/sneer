@@ -2,7 +2,7 @@
 % Please edit documentation in R/embed.R
 \name{embed}
 \alias{embed}
-\title{Generic embedding.}
+\title{Generic Embedding}
 \usage{
 embed(xm, init_inp, init_out, method, opt, max_iter = 1000, tricks = NULL,
   reporter = NULL, preprocess = NULL, export = NULL, after_embed = NULL)
@@ -10,37 +10,31 @@ embed(xm, init_inp, init_out, method, opt, max_iter = 1000, tricks = NULL,
 \arguments{
 \item{xm}{A matrix or data frame to embed.}
 
-\item{init_inp}{Input initialization callback. Create by assigning the
-result of \code{\link{make_init_inp}} or \code{\link{make_init_inp_dist}}.}
+\item{init_inp}{Input initialization callback. Set by assigning the result
+value of \code{\link{make_init_inp_dist}} or
+\code{\link{make_init_inp}}.}
 
-\item{init_out}{Output initialization callback. Create by assigning the
-result of \code{\link{make_init_out}}.}
+\item{init_out}{Output initialization callback. Set by assigning the result
+value of \code{\link{make_init_out}}.}
 
-\item{method}{Embedding method. Assign result of calling one of the following
-functions: \describe{
- \item{\code{\link{mmds}}}{Metric Multidimensional Scaling using the STRESS
- cost function.}
- \item{\code{\link{smmds}}}{Metric Multidimensional Scaling using the SSTRESS
- cost function.}
- \item{\code{\link{sammon_map}}}{Sammon Mapping.}
- \item{\code{\link{tsne}}}{t-Distributed Stochastic Neighbor Embedding.}
- \item{\code{\link{ssne}}}{Symmetric Stochastic Neighbor Embedding.}
- \item{\code{\link{asne}}}{Asymmetric Stochastic Neighbor Embedding.}
-}}
+\item{method}{Embedding method. Set by assigning the result value of one of
+the configuration functions listed in
+\code{\link{embedding_methods}}.}
 
-\item{opt}{Optimization method. Create by assigning the result of
-\code{\link{make_opt}}.}
+\item{opt}{Optimization method. Set by assigning the result of value of one
+of the configuration functions listed in
+\code{\link{optimization_methods}}.}
 
 \item{max_iter}{Maximum number of optimization steps to take.}
 
-\item{tricks}{Tricks callback. Create by assigning the result of
+\item{tricks}{Tricks callback. Set by assigning the result of
 \code{\link{make_tricks}}.}
 
-\item{reporter}{Report callback. Create by assigning the result of
+\item{reporter}{Reporter callback. Set by assigning the result value of
 \code{\link{make_reporter}}.}
 
-\item{preprocess}{Input data preprocess callback. Create by assigning the
-result of \code{\link{make_preprocess}}.}
+\item{preprocess}{Input data preprocess callback. Set by assigning the
+result value of \code{\link{make_preprocess}}.}
 
 \item{export}{Vector of names to export. Possible names are:
 \describe{
@@ -53,42 +47,48 @@ data is returned.}
 }
 \value{
 The output data. A list containing:
-\item{\code{ym}}{Embedded coordinates. This name can be changed by
-specifying \code{mat_name}.}
-\item{\code{inp}}{The input data, if "\code{inp}" is included in the
-\code{export} list parameter.}
-\item{\code{report}}{Most recent report, if "\code{report}" is included in
-the \code{export} list parameter.}
+  \item{\code{ym}}{Embedded coordinates. This name can be changed by
+    specifying \code{mat_name}.}
+  \item{\code{inp}}{The input data, if "\code{inp}" is included in the
+    \code{export} list parameter.}
+  \item{\code{report}}{Most recent report, if "\code{report}" is included in
+    the \code{export} list parameter.}
 Additional items may appear in the output list, depending on the embedding
 method and initialization methods. See the documentation of those functions
 for details.
 If the \code{inp} list is present, it contains:
-\item{\code{xm}}{The (potentially preprocessed) input coordinates if the
-input data was not a distance matrix.}
-\item{\code{dm}}{Input distance matrix.}
+  \item{\code{xm}}{The (potentially preprocessed) input coordinates if the
+    input data was not a distance matrix.}
+  \item{\code{dm}}{Input distance matrix.}
 If the \code{report} list is present, it contains:
-\item{\code{stop_early}}{If \code{TRUE}, the optimization stopped before
-\code{max_iters} was reached.}
-\item{\code{cost}}{Cost of the configuration at iteration \code{iter}.}
-\item{\code{costs}}{Matrix of all costs and the iterations at which
-the reports were made. Only present if \code{keep_costs} is set to
-\code{TRUE} when the \code{make_reporter} factory function is called.}
-\item{\code{reltol}}{Relative tolerance of the difference between present
-cost and the cost evaluted by the previous report.}
-\item{\code{norm}}{Normalized cost for the most recent iteration. Only
-present if \code{normalize_cost} is set to \code{TRUE} when the
-\code{make_reporter} factory function is called.}
-\item{\code{iter}}{The iteration at which the report is generated.}
+  \item{\code{stop_early}}{If \code{TRUE}, the optimization stopped before
+    \code{max_iters} was reached.}
+  \item{\code{cost}}{Cost of the configuration at iteration \code{iter}.}
+  \item{\code{costs}}{Matrix of all costs and the iterations at which
+    the reports were made. Only present if \code{keep_costs} is set to
+  \code{TRUE} when the \code{make_reporter} factory function is called.}
+  \item{\code{reltol}}{Relative tolerance of the difference between present
+    cost and the cost evaluted by the previous report.}
+  \item{\code{norm}}{Normalized cost for the most recent iteration. Only
+    present if \code{normalize_cost} is set to \code{TRUE} when the
+    \code{make_reporter} factory function is called.}
+  \item{\code{iter}}{The iteration at which the report is generated.}
 }
 \description{
-Carrying out an embedding of a dataset.
+Carry out an embedding of a dataset using any embedding method. The most
+generic embedding function, and conversely the one with the fewest helpful
+defaults.
 }
 \seealso{
-\code{\link{make_preprocess}} for configuring \code{preprocess},
-\code{\link{make_init_inp}} for configuring \code{init_inp},
-\code{\link{make_init_out}} for configuring \code{init_out},
-\code{\link{make_opt}} for configuring \code{opt},
-\code{\link{make_tricks}} for configuring \code{tricks},
-\code{\link{make_reporter}} for configuring \code{reporter}.
+\itemize{
+\item{\code{\link{embedding_methods}}} for configuring \code{method}
+\item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
+\item{\code{\link{make_init_inp}} and \code{\link{make_init_inp_dist}}} for
+  configuring \code{init_inp}
+\item{\code{\link{make_init_out}}} for configuring \code{init_out}
+\item{\code{\link{optimization_methods}}} for configuring \code{opt}
+\item{\code{\link{make_tricks}}} for configuring \code{tricks}
+\item{\code{\link{make_reporter}}} for configuring \code{reporter}
+}
 }
 

@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{metric_stress}
 \alias{metric_stress}
-\title{Metric stress, STRESS.}
+\title{Metric Stress (STRESS)}
 \usage{
 metric_stress(dxm, dym)
 }

@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_update.R
 \name{no_momentum}
 \alias{no_momentum}
-\title{An update schedule with no momentum.}
+\title{No Momentum Update}
 \usage{
 no_momentum()
 }
@@ -23,12 +23,13 @@ make_opt(update = no_momentum())
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimizer_update}} for details
-on the functions and values defined for this method.
+the sneer framework only. See \code{\link{optimization_update_interface}}
+for details on the functions and values defined for this method.
 
 Other sneer optimization update methods: \code{\link{constant_momentum}},
   \code{\link{linear_momentum}},
   \code{\link{nesterov_nsc_momentum}},
+  \code{\link{optimization_update}},
   \code{\link{step_momentum}}
 }
 

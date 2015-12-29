@@ -2,7 +2,7 @@
 % Please edit documentation in R/embed.R
 \name{gradient}
 \alias{gradient}
-\title{Calculate the gradient of the cost function for the current configuration.}
+\title{Gradient Calculation}
 \usage{
 gradient(inp, out, method, mat_name = "ym")
 }

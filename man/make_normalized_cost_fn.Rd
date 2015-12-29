@@ -2,7 +2,7 @@
 % Please edit documentation in R/cost.R
 \name{make_normalized_cost_fn}
 \alias{make_normalized_cost_fn}
-\title{Factory function to normalize a cost function.}
+\title{Create Cost Function Normalizer}
 \usage{
 make_normalized_cost_fn(cost_fn)
 }
@@ -19,17 +19,19 @@ Normalized cost function with the signature
 \code{norm_fn(inp, out)} and which return a scalar numeric cost value.
 }
 \description{
+A function to transform a cost function into a normalized cost function.
+}
+\details{
 The cost function can be any function where the more positive the value,
 the worse the solution is considered to be. The corresponding normalized
 version is that which scales the cost so that a "null" model would give a
 normalized cost of 1.0.
-}
-\details{
+
 The definition of a "null" model is one which is as good as can be if one
 didn't use any information from the data at all. For methods that attempt
 to preserve distances, this would be equivalent to making all the embedded
 distances the same, which can only be achieved by making them all zero. For
-similarity-preserving methods, the equivalent would be to make all the
+probability-based methods, the equivalent would be to make all the
 probabilities equal.
 
 It might also be possible to compare embeddings between different methods,

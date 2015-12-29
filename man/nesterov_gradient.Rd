@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_grad.R
 \name{nesterov_gradient}
 \alias{nesterov_gradient}
-\title{Nesterov Accelerated Gradient.}
+\title{Nesterov Accelerated Gradient}
 \usage{
 nesterov_gradient()
 }
@@ -29,9 +29,10 @@ JMLR: W&CP volume 28.
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimizer_gradient}} for details
-on the functions and values defined for this method.
+the sneer framework only. See \code{\link{optimization_gradient_interface}}
+for details on the functions and values defined for this method.
 
-Other sneer optimization gradient methods: \code{\link{classical_gradient}}
+Other sneer optimization gradient methods: \code{\link{classical_gradient}},
+  \code{\link{optimization_gradient}}
 }
 

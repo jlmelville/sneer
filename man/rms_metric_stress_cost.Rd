@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{rms_metric_stress_cost}
 \alias{rms_metric_stress_cost}
-\title{Root mean square deviation of the metric stress.}
+\title{STRESS RMSD Cost Function}
 \usage{
 rms_metric_stress_cost(inp, out, method)
 }

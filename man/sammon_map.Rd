@@ -2,7 +2,7 @@
 % Please edit documentation in R/mds.R
 \name{sammon_map}
 \alias{sammon_map}
-\title{Sammon Mapping.}
+\title{Sammon Mapping}
 \usage{
 sammon_map(mat_name = "ym", eps = .Machine$double.eps)
 }
@@ -58,9 +58,12 @@ Results should be comparable with those of a sneer embedding. The
 \code{stress} value is equivalent to the \code{\link{sammon_stress_cost}}
 function in sneer.
 
+Other sneer distance embedding methods: \code{\link{distance_embedding_methods}},
+  \code{\link{mmds}}, \code{\link{smmds}}
+
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{mmds}}, \code{\link{smmds}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tsne}}
+  \code{\link{embedding_methods}}, \code{\link{mmds}},
+  \code{\link{smmds}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tsne}}
 }
 

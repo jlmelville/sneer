@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualization.R
 \name{make_label}
 \alias{make_label}
-\title{Create a label function for 2D embedding plot.}
+\title{Labels for 2D Embedding Plot}
 \usage{
 make_label(num_label_chars = 1)
 }

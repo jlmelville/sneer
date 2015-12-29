@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim.R
 \name{validate_solution}
 \alias{validate_solution}
-\title{Validate proposed solution.}
+\title{Optimizer Solution Validation}
 \usage{
 validate_solution(opt, inp, out, proposed_out, method)
 }

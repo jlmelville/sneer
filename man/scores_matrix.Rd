@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialize_out.R
 \name{scores_matrix}
 \alias{scores_matrix}
-\title{Creates a matrix consisting of the PCA scores of the input.}
+\title{PCA Scores Matrix}
 \usage{
 scores_matrix(xm, ncol = min(nrow(xm), base::ncol(xm)), verbose = TRUE)
 }
@@ -21,7 +21,7 @@ A column matrix of the PCA scores. The number of rows of the matrix
 is the same as that of \code{xm}.
 }
 \description{
-Creates a matrix consisting of the PCA scores of the input.
+PCA Scores Matrix
 }
 \examples{
 \dontrun{

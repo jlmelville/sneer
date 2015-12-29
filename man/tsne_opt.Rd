@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim.R
 \name{tsne_opt}
 \alias{tsne_opt}
-\title{t-SNE optimizer.}
+\title{t-SNE Optimizer}
 \usage{
 tsne_opt()
 }
@@ -16,14 +16,15 @@ from the t-SNE paper.
 \examples{
 # Should be passed to the opt argument of an embedding function:
 \dontrun{
- embed_sim(opt = tsne_opt(), ...)
+ embed_prob(opt = tsne_opt(), ...)
 }
 }
 \seealso{
-\code{\link{embed_sim}} for how to use this function for configuring
+\code{\link{embed_prob}} for how to use this function for configuring
 an embedding.
 
 Other sneer optimization methods: \code{\link{bold_nag_opt}},
-  \code{\link{make_opt}}
+  \code{\link{make_opt}},
+  \code{\link{optimization_methods}}
 }
 

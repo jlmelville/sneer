@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{normalize}
 \alias{normalize}
-\title{Scale a vector (or matrix) to length 1.}
+\title{Scale a Vector (or Matrix) to Length 1}
 \usage{
 normalize(x)
 }
@@ -13,6 +13,6 @@ normalize(x)
 \code{x} with elements scaled such that its length equals 1.
 }
 \description{
-Scale a vector (or matrix) to length 1.
+Scale a Vector (or Matrix) to Length 1
 }
 

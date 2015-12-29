@@ -2,7 +2,7 @@
 % Please edit documentation in R/mds.R
 \name{smmds}
 \alias{smmds}
-\title{Metric Multi-dimensional scaling (MDS) using SSTRESS.}
+\title{Metric Multi-dimensional Scaling (MDS) using SSTRESS Cost Function.}
 \usage{
 smmds(mat_name = "ym", eps = .Machine$double.eps)
 }
@@ -37,9 +37,12 @@ This function minimizes an embedding using the SSTRESS loss function:
 \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
 }
 \seealso{
+Other sneer distance embedding methods: \code{\link{distance_embedding_methods}},
+  \code{\link{mmds}}, \code{\link{sammon_map}}
+
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{mmds}}, \code{\link{sammon_map}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tsne}}
+  \code{\link{embedding_methods}}, \code{\link{mmds}},
+  \code{\link{sammon_map}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tsne}}
 }
 

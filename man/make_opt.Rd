@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim.R
 \name{make_opt}
 \alias{make_opt}
-\title{Create optimizer.}
+\title{Optimizer}
 \usage{
 make_opt(gradient = classical_gradient(), direction = steepest_descent(),
   step_size = bold_driver(), update = no_momentum(),
@@ -10,43 +10,20 @@ make_opt(gradient = classical_gradient(), direction = steepest_descent(),
 }
 \arguments{
 \item{gradient}{Method to calculate the gradient at a solution
-position. Set by calling a configuration function:
-\describe{
- \item{\code{\link{classical_gradient}}}{Calculates the gradient at the position of
- the current solution. This is the default setting.}
- \item{\code{\link{nesterov_gradient}}}{Uses the Nesterov Accelerated Gradient
- method. A suitable \code{update} scheme should be used if this option is
- chosen, e.g. \code{nesterov_nsc_momentum}}.
-}}
+position. Set by calling one of the configuration functions listed in
+\code{\link{optimization_gradient}}.}
 
-\item{direction}{Method to calculate the direction to move. Set by calling a
-configuration function:
-\describe{
- \item{\code{\link{steepest_descent}}}{Move in the direction of steepest
- descent. This is the default setting and it's the only currently defined
- method, so that's easy.}
-}}
+\item{direction}{Method to calculate the direction to move. Set
+by calling one of the configuration functions listed in
+\code{\link{optimization_direction}}.}
 
 \item{step_size}{Method to calculate the step size of the direction. Set
-by calling a configuration function:
-\describe{
- \item{\code{\link{jacobs}}}{Jacobs method. Used in the t-SNE paper.}
- \item{\code{\link{bold_driver}}}{Bold driver.}
-}}
+by calling one of the configuration functions listed in
+\code{\link{optimization_step_size}}.}
 
 \item{update}{Method to combine a gradient descent with other terms (e.g.
-momentum) to produce the final update. Set by calling a configuration
-function:
-\describe{
- \item{\code{\link{step_momentum}}}{Step momentum schedule. Used in the
- t-SNE paper.}
- \item{\code{\link{linear_momentum}}}{Linear momentum schedule.}
- \item{\code{\link{nesterov_nsc_momentum}}}{Nesterov momentum for
- non-strongly convex problems. Use when the \code{gradient} method is
- \code{\link{nesterov_gradient}}.}
- \item{\code{\link{no_momentum}}}{Don't use a momentum term, optimization
- will only use gradient descent to update the solution. The default setting.}
-}}
+momentum) to produce the final update. Set by calling one of the
+configuration functions listed in \code{\link{optimization_update}}.}
 
 \item{normalize_grads}{If \code{TRUE} the gradient matrix is normalized to
 a length of one before step size calculation.}
@@ -114,16 +91,17 @@ make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
 
 # Should be passed to the opt argument of an embedding function:
 \dontrun{
- embed_sim(opt = make_opt(gradient = nesterov_gradient(),
+ embed_prob(opt = make_opt(gradient = nesterov_gradient(),
                           step_size = bold_driver(),
                           update = nesterov_nsc_momentum()), ...)
 }
 }
 \seealso{
-\code{\link{embed_sim}} for how to use this function for configuring
-an embedding.
+\code{\link{embed_prob}} for how to use this function for configuring
+  an embedding.
 
 Other sneer optimization methods: \code{\link{bold_nag_opt}},
+  \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}
 }
 

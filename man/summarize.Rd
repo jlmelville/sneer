@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{summarize}
 \alias{summarize}
-\title{Summary of distribution of data.}
+\title{Summarise Data Distribution}
 \usage{
 summarize(vals, msg = "")
 }
@@ -12,6 +12,6 @@ summarize(vals, msg = "")
 \item{msg}{Label to identify the data summary.}
 }
 \description{
-Summary of distribution of data.
+Summarise Data Distribution
 }
 

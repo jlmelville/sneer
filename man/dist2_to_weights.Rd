@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist_to_sim_stiff.R
 \name{dist2_to_weights}
 \alias{dist2_to_weights}
-\title{Generate a weights matrix from squared coordinates.}
+\title{Create Weight Matrix from Squared Distances}
 \usage{
 dist2_to_weights(d2m, weight_fn)
 }
@@ -17,7 +17,7 @@ Weights matrix. The diagonal (i.e. self-weight) is enforced to be
 zero.
 }
 \description{
-Weights are subsequently normalized to probabilities in similarity embedding.
-This function guarantees that the self-weight is 0.
+Weights are subsequently normalized to probabilities in probability-based
+embedding. This function guarantees that the self-weight is 0.
 }
 

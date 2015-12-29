@@ -2,7 +2,7 @@
 % Please edit documentation in R/perplexity.R
 \name{shannon_entropy_row}
 \alias{shannon_entropy_row}
-\title{Calculates the Shannon Entropy per row of a matrix.}
+\title{Shannon Entropy per Row of a Matrix}
 \usage{
 shannon_entropy_row(pm, base = 2)
 }

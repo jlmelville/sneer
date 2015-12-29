@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{sammon_stress}
 \alias{sammon_stress}
-\title{Sammon stress.}
+\title{Sammon Stress}
 \usage{
 sammon_stress(dxm, dym, eps = .Machine$double.eps)
 }

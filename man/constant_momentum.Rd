@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_update.R
 \name{constant_momentum}
 \alias{constant_momentum}
-\title{An update schedule with constant momentum.}
+\title{Constant Momentum}
 \usage{
 constant_momentum(momentum)
 }
@@ -27,11 +27,13 @@ make_opt(update = constant_momentum())
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimizer_update}} for details
-on the functions and values defined for this method.
+the sneer framework only. See \code{\link{optimization_update_interface}}
+for details on the functions and values defined for this method.
 
 Other sneer optimization update methods: \code{\link{linear_momentum}},
   \code{\link{nesterov_nsc_momentum}},
-  \code{\link{no_momentum}}, \code{\link{step_momentum}}
+  \code{\link{no_momentum}},
+  \code{\link{optimization_update}},
+  \code{\link{step_momentum}}
 }
 

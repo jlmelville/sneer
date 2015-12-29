@@ -24,10 +24,10 @@ the same solution as \code{out}.}
 }
 \value{
 A list containing
-\item{\code{opt}}{Updated optimizer.}
-\item{\code{inp}}{Input data.}
-\item{\code{out}}{Output data from the start of the iteration.}
-\item{\code{new_out}}{New output to be used in the next iteration.}
+  \item{\code{opt}}{Updated optimizer.}
+  \item{\code{inp}}{Input data.}
+  \item{\code{out}}{Output data from the start of the iteration.}
+  \item{\code{new_out}}{New output to be used in the next iteration.}
 }
 \description{
 A function for the optimizer to run after updating the solution on each

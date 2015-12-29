@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualization.R
 \name{make_qplot}
 \alias{make_qplot}
-\title{ggplot2 embedding viewer factory function}
+\title{Embedding Plot Using \code{ggplot2} Library}
 \usage{
 make_qplot(x, attr_name, mat_name = "ym")
 }
@@ -22,7 +22,6 @@ data will be plotted.
 \description{
 Creates a function which can be used to visualize embeddings from sneer
 output results for a particular dataset using ggplot2.
-#'
 }
 \note{
 Use of this function requires that the \code{ggplot2} package be

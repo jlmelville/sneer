@@ -2,7 +2,7 @@
 % Please edit documentation in R/report.R
 \name{make_reporter}
 \alias{make_reporter}
-\title{Create a reporter callback.}
+\title{Reporter}
 \usage{
 make_reporter(report_every = 100, min_cost = 0,
   reltol = sqrt(.Machine$double.eps), plot_fn = NULL,
@@ -111,14 +111,14 @@ make_reporter(extra_costs =
 
 # Should be passed to the reporter argument of an embedding function:
 \dontrun{
- embed_sim(reporter = make_reporter(report_every = 100,
+ embed_prob(reporter = make_reporter(report_every = 100,
                                     normalize_cost = TRUE,
                                     plot_fn = make_plot(iris, "Species")),
                                     ...)
 }
 }
 \seealso{
-\code{\link{embed_sim}} for how to use this function for configuring
+\code{\link{embed_prob}} for how to use this function for configuring
 an embedding, and \code{\link{make_plot}} for 2D plot generation.
 }
 

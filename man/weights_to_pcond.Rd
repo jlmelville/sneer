@@ -2,15 +2,15 @@
 % Please edit documentation in R/dist_to_sim_stiff.R
 \name{weights_to_pcond}
 \alias{weights_to_pcond}
-\title{Converts a weights matrix to a probability matrix.}
+\title{Create Conditional Probability Matrix from Weight Matrix}
 \usage{
 weights_to_pcond(wm)
 }
 \arguments{
-\item{wm}{a matrix of weighted distances.}
+\item{wm}{Matrix of weighted distances.}
 }
 \value{
-The probability matrix.
+Probability matrix.
 }
 \description{
 Used in SSNE and TSNE. The probability matrix is such that all elements are

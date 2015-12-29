@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_update.R
 \name{nesterov_nsc_momentum}
 \alias{nesterov_nsc_momentum}
-\title{Momentum schedule for non-strongly convex functions.}
+\title{Nesterov Momentum for Non-Strongly Convex Functions}
 \usage{
 nesterov_nsc_momentum(max_momentum = 1)
 }
@@ -36,11 +36,12 @@ JMLR: W&CP volume 28.
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimizer_update}} for details
-on the functions and values defined for this method.
+the sneer framework only. See \code{\link{optimization_update_interface}}
+for details on the functions and values defined for this method.
 
 Other sneer optimization update methods: \code{\link{constant_momentum}},
   \code{\link{linear_momentum}}, \code{\link{no_momentum}},
+  \code{\link{optimization_update}},
   \code{\link{step_momentum}}
 }
 

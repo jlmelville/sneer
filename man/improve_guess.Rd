@@ -2,7 +2,7 @@
 % Please edit documentation in R/perplexity.R
 \name{improve_guess}
 \alias{improve_guess}
-\title{Narrows bisection bracket range.}
+\title{Narrows Bisection Bracket Range}
 \usage{
 improve_guess(bracket, sgn)
 }
@@ -17,6 +17,6 @@ value, \code{mid}: the midpoint.}
 Updated \code{bracket} list.
 }
 \description{
-Narrows bisection bracket range.
+Narrows Bisection Bracket Range
 }
 

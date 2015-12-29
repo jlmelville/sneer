@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{metric_sstress}
 \alias{metric_sstress}
-\title{SSTRESS.}
+\title{Squared Distance Metric Stress Function (SSTRESS)}
 \usage{
 metric_sstress(dxm, dym)
 }

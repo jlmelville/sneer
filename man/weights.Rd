@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist_to_sim_stiff.R
 \name{weights}
 \alias{weights}
-\title{Create a weight matrix.}
+\title{Create Weight Matrix from Output Data}
 \usage{
 weights(out, method)
 }

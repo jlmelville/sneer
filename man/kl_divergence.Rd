@@ -2,8 +2,7 @@
 % Please edit documentation in R/cost.R
 \name{kl_divergence}
 \alias{kl_divergence}
-\title{Calculate the Kullback Leibler divergence between two matrices of
-probabilities.}
+\title{Kullback Leibler Divergence}
 \usage{
 kl_divergence(pm, qm, eps = .Machine$double.eps)
 }
@@ -18,6 +17,9 @@ kl_divergence(pm, qm, eps = .Machine$double.eps)
 KL divergence between \code{pm} and \code{qm}.
 }
 \description{
+A measure of embedding quality between input and output probability matrices.
+}
+\details{
 If the matrices represent row probabilities, then the returned divergence
 is the average over the divergence for each row.
 }

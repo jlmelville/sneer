@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialize_inp.R
 \name{symmetrize_matrix}
 \alias{symmetrize_matrix}
-\title{Create a symmetric matrix from a square matrix.}
+\title{Symmetric Matrix from Sqaure Matrix}
 \usage{
 symmetrize_matrix(pm)
 }

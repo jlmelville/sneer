@@ -2,7 +2,7 @@
 % Please edit documentation in R/embed.R
 \name{optimize_step}
 \alias{optimize_step}
-\title{One step of optimization.}
+\title{One Step of Optimization}
 \usage{
 optimize_step(opt, method, inp, out, iter)
 }
@@ -19,11 +19,11 @@ optimize_step(opt, method, inp, out, iter)
 }
 \value{
 List consisting of:
-\item{\code{opt}}{Updated optimizer.}
-\item{\code{inp}}{Updated input.}
-\item{\code{out}}{Updated output.}
+  \item{\code{opt}}{Updated optimizer.}
+  \item{\code{inp}}{Updated input.}
+  \item{\code{out}}{Updated output.}
 }
 \description{
-One step of optimization.
+One Step of Optimization
 }
 

@@ -2,8 +2,7 @@
 % Please edit documentation in R/perplexity.R
 \name{find_beta}
 \alias{find_beta}
-\title{Find the value of beta that produces a specific perplexity when a row of
-a distance matrix is converted to probabilities.}
+\title{Find Beta Parameter for One Row of Matrix}
 \usage{
 find_beta(d2mi, i, perplexity, beta_init = 1, weight_fn, tol = 1e-05,
   max_iters = 50)

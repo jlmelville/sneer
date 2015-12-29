@@ -2,15 +2,15 @@
 % Please edit documentation in R/dist_to_sim_stiff.R
 \name{weights_to_prow}
 \alias{weights_to_prow}
-\title{Converts a weight matrix to a row probability matrix.}
+\title{Create Row Probability Matrix from Weight Matrix}
 \usage{
 weights_to_prow(wm)
 }
 \arguments{
-\item{wm}{a matrix of weighted distances.}
+\item{wm}{Matrix of weighted distances.}
 }
 \value{
-a row probability matrix.
+Row probability matrix.
 }
 \description{
 Used in ASNE. The probability matrix is such that all elements are positive

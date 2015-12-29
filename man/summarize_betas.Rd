@@ -2,7 +2,7 @@
 % Please edit documentation in R/perplexity.R
 \name{summarize_betas}
 \alias{summarize_betas}
-\title{Logs parameter search information.}
+\title{Summarize Parameter Search}
 \usage{
 summarize_betas(betas)
 }

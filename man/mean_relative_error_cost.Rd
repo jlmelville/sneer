@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{mean_relative_error_cost}
 \alias{mean_relative_error_cost}
-\title{Mean Relative Error of an embedding.}
+\title{Mean Relative Error of Embedding Cost Function}
 \usage{
 mean_relative_error_cost(inp, out, method)
 }

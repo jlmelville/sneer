@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{normalized_stress}
 \alias{normalized_stress}
-\title{Normalized stress.}
+\title{Normalized STRESS}
 \usage{
 normalized_stress(dxm, dym, eps = .Machine$double.eps)
 }

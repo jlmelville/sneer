@@ -2,7 +2,7 @@
 % Please edit documentation in R/tricks.R
 \name{tsne_tricks}
 \alias{tsne_tricks}
-\title{Tricks from t-SNE paper.}
+\title{t-SNE Tricks}
 \usage{
 tsne_tricks(verbose = TRUE)
 }
@@ -14,17 +14,22 @@ embedding.}
 tricks callback parameterized to behave like the t-SNE paper.
 }
 \description{
-Tricks from t-SNE paper.
+Tricks configured according to the details in the t-SNE paper.
 }
 \examples{
 # Should be passed to the tricks argument of an embedding function:
 \dontrun{
- embed_sim(tricks = tsne_tricks(), ...)
+ embed_prob(tricks = tsne_tricks(), ...)
 }
+}
+\references{
+Laurens van der Maarten, Geoffrey Hinton.
+Visualizing Data using t-SNE.
+Journal of Machine Learning Research, 2008, 9, 2579-2605.
 }
 \seealso{
-\code{\link{embed_sim}} for how to use this function for configuring
-an embedding.
+\code{\link{embed_prob}} for how to use this function for
+configuring an embedding.
 
 Other sneer tricks: \code{\link{make_tricks}}
 }

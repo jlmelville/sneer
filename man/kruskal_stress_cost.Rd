@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{kruskal_stress_cost}
 \alias{kruskal_stress_cost}
-\title{Kruskal stress type-1 for metric embeddings.}
+\title{Kruskal Stress Type-1 Cost Function}
 \usage{
 kruskal_stress_cost(inp, out, method)
 }

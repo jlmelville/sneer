@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{metric_sstress_cost}
 \alias{metric_sstress_cost}
-\title{The SSTRESS cost function.}
+\title{Squared Distance STRESS Cost Function (SSTRESS)}
 \usage{
 metric_sstress_cost(inp, out, method)
 }

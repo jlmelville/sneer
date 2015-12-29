@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_weight.R
 \name{sqrt_exp_weight}
 \alias{sqrt_exp_weight}
-\title{Exponential weighting of the distances.}
+\title{Exponential Distance Weight}
 \usage{
 sqrt_exp_weight(d2m, beta = 1)
 }

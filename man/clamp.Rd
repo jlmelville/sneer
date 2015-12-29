@@ -2,7 +2,7 @@
 % Please edit documentation in R/util.R
 \name{clamp}
 \alias{clamp}
-\title{Clamp numerical values.}
+\title{Clamp Numerical Values}
 \usage{
 clamp(x, min_val = .Machine$double.eps, max_val = NULL)
 }

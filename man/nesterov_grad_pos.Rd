@@ -2,7 +2,7 @@
 % Please edit documentation in R/optim_grad.R
 \name{nesterov_grad_pos}
 \alias{nesterov_grad_pos}
-\title{Nesterov Accelerated Gradient calculation.}
+\title{Nesterov Accelerated Gradient Calculation}
 \usage{
 nesterov_grad_pos(opt, inp, out, method)
 }

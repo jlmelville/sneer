@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualization.R
 \name{make_embedding_qplot}
 \alias{make_embedding_qplot}
-\title{ggplot2 embedding viewer factory function}
+\title{Embedded Coordinates Plot Using \code{ggplot2} Library}
 \usage{
 make_embedding_qplot(x, attr_name)
 }

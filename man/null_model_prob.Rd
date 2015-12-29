@@ -2,8 +2,7 @@
 % Please edit documentation in R/cost.R
 \name{null_model_prob}
 \alias{null_model_prob}
-\title{For a given probability matrix, return the equivalent "null" model, i.e. one
-where all probabilities are equal.}
+\title{Null Model for Probability Matrices}
 \usage{
 null_model_prob(pm)
 }

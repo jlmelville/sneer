@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocess.R
 \name{varfilter}
 \alias{varfilter}
-\title{Filter low variance columns.}
+\title{Low Variance Column Filtering}
 \usage{
 varfilter(xm, minvar = 0)
 }

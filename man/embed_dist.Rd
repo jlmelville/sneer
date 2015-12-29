@@ -2,7 +2,7 @@
 % Please edit documentation in R/embed.R
 \name{embed_dist}
 \alias{embed_dist}
-\title{Distance-based embedding.}
+\title{Distance-Based Embedding.}
 \usage{
 embed_dist(xm, mat_name = "ym", preprocess = make_preprocess(verbose =
   verbose), init_inp = make_init_inp_dist(),
@@ -17,34 +17,29 @@ embed_dist(xm, mat_name = "ym", preprocess = make_preprocess(verbose =
 \item{mat_name}{Name of the matrix in the output data list that will contain
 the embedded coordinates.}
 
-\item{preprocess}{Input data preprocess callback. Create by assigning the
-result of \code{\link{make_preprocess}}.}
+\item{preprocess}{Input data preprocess callback. Set by assigning the
+result value of \code{\link{make_preprocess}}.}
 
-\item{init_inp}{Input initialization callback. Create by assigning the
-result of \code{\link{make_init_inp_dist}}.}
+\item{init_inp}{Input initialization callback. Set by assigning the result
+value of \code{\link{make_init_inp_dist}}.}
 
-\item{init_out}{Output initialization callback. Create by assigning the
-result of \code{\link{make_init_out}}.}
+\item{init_out}{Output initialization callback. Set by assigning the result
+value of \code{\link{make_init_out}}.}
 
-\item{method}{Embedding method. Set by calling a configuration
-function:
-\describe{
- \item{\code{\link{mmds}}}{Metric Multidimensional Scaling using the STRESS
- cost function.}
- \item{\code{\link{smmds}}}{Metric Multidimensional Scaling using the SSTRESS
- cost function.}
- \item{\code{\link{sammon_map}}}{Sammon Mapping.}
-}}
+\item{method}{Embedding method. Set by assigning the result value of one of
+the configuration functions listed in
+\code{\link{distance_embedding_methods}}.}
 
-\item{opt}{Optimization method. Create by assigning the result of
-\code{\link{make_opt}}.}
+\item{opt}{Optimization method. Set by assigning the result of value of one
+of the configuration functions listed in
+\code{\link{optimization_methods}}.}
 
 \item{max_iter}{Maximum number of optimization steps to take.}
 
-\item{tricks}{Tricks callback. Create by assigning the result of
+\item{tricks}{Tricks callback. Set by assigning the result of
 \code{\link{make_tricks}}.}
 
-\item{reporter}{Reporter callback. Create by assigning the result of
+\item{reporter}{Reporter callback. Set by assigning the result value of
 \code{\link{make_reporter}}.}
 
 \item{export}{Vector of names to export. Possible names are:
@@ -130,13 +125,17 @@ sammon_iris <- embed_dist(iris[, 1:4],
 }
 }
 \seealso{
-\code{\link{make_preprocess}} for configuring \code{preprocess},
-\code{\link{make_init_inp_dist}} for configuring \code{init_inp},
-\code{\link{make_init_out}} for configuring \code{init_out},
-\code{\link{make_opt}} for configuring \code{opt},
-\code{\link{make_tricks}} for configuring \code{tricks},
-\code{\link{make_reporter}} for configuring \code{reporter}.
+\itemize{
+\item{\code{\link{distance_embedding_methods}}} for configuring
+  \code{method}
+\item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
+\item{\code{\link{make_init_inp}}} for configuring \code{init_inp}
+\item{\code{\link{make_init_out}}} for configuring \code{init_out}
+\item{\code{\link{optimization_methods}}} for configuring \code{opt}
+\item{\code{\link{make_tricks}}} for configuring \code{tricks}
+\item{\code{\link{make_reporter}}} for configuring \code{reporter}
+}
 
-Other sneer embedding functions: \code{\link{embed_sim}}
+Other sneer embedding functions: \code{\link{embed_prob}}
 }
 

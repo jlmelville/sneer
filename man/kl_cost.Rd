@@ -2,7 +2,7 @@
 % Please edit documentation in R/cost.R
 \name{kl_cost}
 \alias{kl_cost}
-\title{Kullback Leibler divergence.}
+\title{Kullback Leibler Divergence Cost Function}
 \usage{
 kl_cost(inp, out, method)
 }
@@ -14,10 +14,10 @@ kl_cost(inp, out, method)
 \item{method}{Embedding method.}
 }
 \value{
-the KL divergence between \code{inp$pm} and \code{out$qm}.
+KL divergence between \code{inp$pm} and \code{out$qm}.
 }
 \description{
-Calculate the Kullback Leibler divergence from input and output data.
+A measure of embedding quality between input and output data.
 }
 \details{
 This cost function requires the following matrices to be defined:

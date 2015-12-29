@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{normalized_stress_cost}
 \alias{normalized_stress_cost}
-\title{Normalized stress.}
+\title{Normalized STRESS Cost Function}
 \usage{
 normalized_stress_cost(inp, out, method)
 }

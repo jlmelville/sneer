@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialize_inp.R
 \name{make_init_inp}
 \alias{make_init_inp}
-\title{Create an input initialization callback.}
+\title{Input Initialization for Probability Embedding}
 \usage{
 make_init_inp(perplexity = 30, input_weight_fn = exp_weight,
   keep_all_results = FALSE, verbose = TRUE)
@@ -64,12 +64,12 @@ make_init_inp(perplexity = 50, keep_all_result = TRUE)
 
 # Should be passed to the init_inp argument of an embedding function:
 \dontrun{
- embed_sim(init_inp = make_init_inp(perplexity = 30,
+ embed_prob(init_inp = make_init_inp(perplexity = 30,
                                     input_weight_fn = exp_weight), ...)
 }
 }
 \seealso{
-\code{\link{embed_sim}} for how to use this function for configuring
+\code{\link{embed_prob}} for how to use this function for configuring
 an embedding.
 }
 

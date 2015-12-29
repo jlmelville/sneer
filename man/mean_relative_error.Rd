@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_cost.R
 \name{mean_relative_error}
 \alias{mean_relative_error}
-\title{Mean Relative Error of an embedding.}
+\title{Mean Relative Error of Embedding}
 \usage{
 mean_relative_error(dxm, dym)
 }

@@ -2,9 +2,7 @@
 % Please edit documentation in R/preprocess.R
 \name{whiten}
 \alias{whiten}
-\title{Data whitening.
-Whitens the data so that the covariance matrix is the identity matrix
-(variances of the data are all one and the covariances are zero).}
+\title{Data Whitening}
 \usage{
 whiten(xm, scale = FALSE, zca = FALSE, ncomp = min(dim(xm)),
   epsilon = 1e-05, verbose = TRUE)
@@ -33,14 +31,17 @@ numerical instabilities with eigenvalues close to zero. Values of 1.e-5 to
 Whitened matrix.
 }
 \description{
+Whitens the data so that the covariance matrix is the identity matrix
+(variances of the data are all one and the covariances are zero).
+}
+\details{
 Whitening consists of performing PCA on the centered (and optionally
 scaled to unit standard deviation column) input data, optionally removing
 eigenvectors corresponding to the smallest eigenvectors, and then rotating
 the data to decorrelate it. Each component is additionally scaled by the
 square root of the corresponding eigenvalue so that the variances of the
 rotated solution are all equal to one.
-}
-\details{
+
 Because whitening transformations are not unique, a further transformation
 may be carried out on the PCA whitened solution to produce the Zero-Phase
 Component Analysis (ZCA) whitening, which uses the rotation that best

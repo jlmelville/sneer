@@ -2,7 +2,7 @@
 % Please edit documentation in R/embed.R
 \name{after_init}
 \alias{after_init}
-\title{Function called after initialization of input and output.}
+\title{Post Initialization}
 \usage{
 after_init(inp, out, method)
 }
@@ -15,12 +15,13 @@ after_init(inp, out, method)
 }
 \value{
 List consisting of:
-\item{\code{inp}}{Updated input data.}
-\item{\code{out}}{Updated output data.}
-\item{\code{method}}{Updated embedding method.}
+  \item{\code{inp}}{Updated input data.}
+  \item{\code{out}}{Updated output data.}
+  \item{\code{method}}{Updated embedding method.}
 }
 \description{
-Useful for doing data-dependent initialization of stiffness
-parameters, e.g. based on the parameterization of the input probabilities.
+Function called after input and output data have been initialized. Useful for
+doing data-dependent initialization of stiffness parameters, e.g. based on
+the parameterization of the input probabilities.
 }
 

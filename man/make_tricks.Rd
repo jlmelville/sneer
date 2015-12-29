@@ -2,7 +2,7 @@
 % Please edit documentation in R/tricks.R
 \name{make_tricks}
 \alias{make_tricks}
-\title{Create tricks callback.}
+\title{Tricks}
 \usage{
 make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
   exaggeration_off_iter = 50, verbose = TRUE)
@@ -45,14 +45,14 @@ make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
 
 # Should be passed to the tricks argument of an embedding function:
 \dontrun{
- embed_sim(tricks = make_tricks(early_exaggeration = TRUE,
+ embed_prob(tricks = make_tricks(early_exaggeration = TRUE,
                                 P_exaggeration = 4,
                                 exaggeration_off_iter = 50), ...)
 }
 }
 \seealso{
-\code{\link{embed_sim}} for how to use this function for configuring
-an embedding.
+\code{\link{embed_prob}} for how to use this function for
+configuring an embedding.
 
 Other sneer tricks: \code{\link{tsne_tricks}}
 }

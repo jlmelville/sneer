@@ -2,7 +2,7 @@
 % Please edit documentation in R/preprocess.R
 \name{range_scale_matrix}
 \alias{range_scale_matrix}
-\title{Range scales numeric matrix.}
+\title{Range Scale Matrix}
 \usage{
 range_scale_matrix(xm, rmin = 0, rmax = 1)
 }
