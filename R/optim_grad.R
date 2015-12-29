@@ -1,34 +1,3 @@
-#' Optimizer Gradient Methods
-#'
-#' Part of the optimizer that calculates the gradient at a position in the
-#' solution space.
-#'
-#' @section Interface:
-#' A gradient method is a list containing
-#' \describe{
-#'  \item{\code{calculate(opt, inp, out, method, iter)}}{Calculation function
-#'  with the following arguments:
-#'    \describe{
-#'      \item{\code{opt}}{Optimizer.}
-#'      \item{\code{inp}}{Input data.}
-#'      \item{\code{out}}{Output data.}
-#'      \item{\code{method}}{Embedding method.}
-#'      \item{\code{iter}}{Iteration number.}
-#'    }
-#'    The function should calculate the gradient and return a list containing:
-#'    \describe{
-#'      \item{\code{gm}}{Gradient matrix.}
-#'    }
-#'  }
-#' }
-#' @section Documentation:
-#' Add the tag:
-#' \preformatted{@family sneer optimization gradient methods}
-#' to the documentation section of any implementing function.
-#' @keywords internal
-#' @name optimization_gradient_interface
-NULL
-
 #' Optimization Gradient Methods
 #'
 #' The available gradient methods that can be used by the optimization routines
