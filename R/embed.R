@@ -177,7 +177,7 @@ embed_prob <- function(xm,
         reporter, preprocess, export, after_embed)
 }
 
-#' Distance Preserving Embedding.
+#' Distance-Based Embedding.
 #'
 #' Carry out an embedding of a dataset using a distance-based method
 #' (e.g. Sammon Mapping), with some useful default parameters.
@@ -315,8 +315,6 @@ embed_dist <- function(xm,
 #' defaults.
 #'
 #' @param xm A matrix or data frame to embed.
-#' @param mat_name Name of the matrix in the output data list that will contain
-#'   the embedded coordinates.
 #' @param preprocess Input data preprocess callback. Set by assigning the
 #'   result value of \code{\link{make_preprocess}}.
 #' @param init_inp Input initialization callback. Set by assigning the result

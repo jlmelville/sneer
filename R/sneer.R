@@ -65,7 +65,7 @@
 #' methods, a probability matrix is needed. There's really only one way of
 #' doing this, which involves specifying a target perplexity for row-wise
 #' probabilities. See \code{\link{make_init_inp}} and
-#' \code{\link{make_init_inp_dist} for more details.
+#' \code{\link{make_init_inp_dist}} for more details.
 #'
 #' @section Output Initialization:
 #' Generates the initial embedded coordinates. A random initialization from
