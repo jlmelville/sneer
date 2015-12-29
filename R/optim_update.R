@@ -1,4 +1,4 @@
-#' Optimizer update methods.
+#' Optimizer Update Method Interface
 #'
 #' Part of the optimizer that generates the update step.
 #'
@@ -89,12 +89,29 @@
 #'    }
 #'  }
 #' }
-#'
+#' @section Documentation:
+#' Add the tag:
+#' \preformatted{@family sneer optimization update methods}
+#' to the documentation section of any implementing function.
 #' @keywords internal
-#' @name optimizer_update
+#' @name optimization_update_interface
 NULL
 
-#' Step momentum.
+#' Optimization Update Methods
+#'
+#' The available update methods that can be used by the optimization routines
+#' in sneer.
+#'
+#' @examples
+#' make_opt(update = step_momentum(init_momentum = 0.4, final_momentum = 0.8))
+#' make_opt(update = no_momentum())
+#'
+#' @keywords internal
+#' @name optimization_update
+#' @family sneer optimization update methods
+NULL
+
+#' Step Momentum
 #'
 #' Factory function for creating an optimizer update method.
 #'
@@ -109,8 +126,8 @@ NULL
 #' @param verbose if \code{TRUE}, log info about the momentum.
 #' @return Step momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_update}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
 #' # update method:
@@ -146,7 +163,7 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
   )
 }
 
-#' Linear momentum.
+#' Linear Momentum
 #'
 #' Factory function for creating an optimizer update method.
 #'
@@ -160,8 +177,8 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
 #' @param final_momentum Momentum value after \code{switch_iter} iterations.
 #' @return Linear momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_update}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
 #' # update method:
@@ -194,7 +211,7 @@ linear_momentum <- function(max_iter, init_momentum = 0,
   )
 }
 
-#' Momentum schedule for non-strongly convex functions.
+#' Nesterov Momentum for Non-Strongly Convex Functions
 #'
 #' Factory function for creating an optimizer update method.
 #'
@@ -208,8 +225,8 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 #' @param max_momentum Maximum value the momentum may take.
 #' @return Nesterov momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_update}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
 #' # update method:
@@ -242,7 +259,7 @@ nesterov_nsc_momentum <- function(max_momentum = 1) {
   )
 }
 
-#' An update schedule with constant momentum.
+#' Constant Momentum
 #'
 #' Factory function for creating an optimizer update method.
 #'
@@ -253,8 +270,8 @@ nesterov_nsc_momentum <- function(max_momentum = 1) {
 #' @param momentum Momentum value to use.
 #' @return Constant momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_update}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
 #' # update method:
@@ -276,7 +293,7 @@ constant_momentum <- function(momentum) {
   )
 }
 
-#' An update schedule with no momentum.
+#' No Momentum Update
 #'
 #' Factory function for creating an optimizer update method.
 #'
@@ -285,8 +302,8 @@ constant_momentum <- function(momentum) {
 #'
 #' @return Zero-momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_update}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
 #' # update method:
@@ -297,7 +314,7 @@ no_momentum <- function() {
   constant_momentum(0)
 }
 
-#' Solution update with momentum term.
+#' Update Solution With Momentum
 #'
 #' Carries out a solution update using a momentum term in addition to the
 #' gradient update.

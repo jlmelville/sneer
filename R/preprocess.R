@@ -1,6 +1,6 @@
 # Preprocessing functions for the input data.
 
-#' Create preprocessing callback
+#' Preprocessing
 #'
 #' Creates a callback for use in the embedding routine. Preprocessing will be
 #' applied to the input coordinates (if provided) before embedding-specific
@@ -8,7 +8,7 @@
 #' probabilities).
 #'
 #' Pass the result of this factory function to the preprocess argument of an
-#' embedding function, e.g. \code{embed_sim}. A variety of common preprocessing
+#' embedding function, e.g. \code{embed_prob}. A variety of common preprocessing
 #' options are available. The range scaling and auto scaling options are
 #' mutually exclusive, but can be combined with whitening if required. No
 #' preprocessing will be carried out if the input data is a distance matrix.
@@ -34,7 +34,7 @@
 #' @return Function with signature \code{fn(xm)} where \code{xm} is the input
 #' coordinate matrix. Function returns the coordinate matrix after applying
 #' the specified preprocessing.
-#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
 #' an embedding.
 #' @examples
 #' # Scale the input data so the smallest element is 0, and the largest is 1.
@@ -58,7 +58,7 @@
 #'
 #' # Should be passed to the preprocess argument of an embedding function:
 #' \dontrun{
-#'  embed_sim(preprocess = make_preprocess(range_scale = TRUE, rmin = -1), ...)
+#'  embed_prob(preprocess = make_preprocess(range_scale = TRUE, rmin = -1), ...)
 #' }
 #' @export
 make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
@@ -142,7 +142,7 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
 }
 
 
-#' Range scales numeric matrix.
+#' Range Scale Matrix
 #'
 #' Elements are scaled so that they are within (\code{rmin}, \code{rmax}).
 #'
@@ -159,7 +159,7 @@ range_scale_matrix <- function(xm, rmin = 0, rmax = 1) {
   ((xm - xmin) * (rrange / xrange)) + rmin
 }
 
-#' Range scales columns of numeric matrix.
+#' Range Scale Matrix Columns
 #'
 #' Values are scaled so that for each column, values are within
 #' (\code{min}, \code{max}).
@@ -180,8 +180,8 @@ range_scale <- function(xm, rmin = 0, rmax = 1) {
   sweep(xm, 2, rmin, "+")
 }
 
-#' Data whitening.
-
+#' Data Whitening
+#'
 #' Whitens the data so that the covariance matrix is the identity matrix
 #' (variances of the data are all one and the covariances are zero).
 #'
@@ -241,7 +241,7 @@ whiten <- function(xm, scale = FALSE, zca = FALSE, ncomp = min(dim(xm)),
   xm %*% t(wm)
 }
 
-#' Filter low variance columns.
+#' Low Variance Column Filtering
 #'
 #' Removes columns from the data with variance lower than a threshold. Some
 #' techniques can't handle zero variance columns.

@@ -1,6 +1,19 @@
 # Optimization configuration.
 
-#' Create optimizer.
+#' Optimization Methods
+#'
+#' The available methods and wrappers that can be used to create optimization
+#' routines in sneer.
+#'
+#' @examples
+#' make_opt(step_size = bold_driver())
+#' make_opt(step_size = jacobs())
+#' @keywords internal
+#' @name optimization_methods
+#' @family sneer optimization methods
+NULL
+
+#' Optimizer
 #'
 #' Function to create an optimization method, used in an embedding function.
 #'
@@ -33,49 +46,26 @@
 #' momentum).
 #'
 #' @param gradient Method to calculate the gradient at a solution
-#' position. Set by calling a configuration function:
-#' \describe{
-#'  \item{\code{\link{classical_gradient}}}{Calculates the gradient at the position of
-#'  the current solution. This is the default setting.}
-#'  \item{\code{\link{nesterov_gradient}}}{Uses the Nesterov Accelerated Gradient
-#'  method. A suitable \code{update} scheme should be used if this option is
-#'  chosen, e.g. \code{nesterov_nsc_momentum}}.
-#' }
-#' @param direction Method to calculate the direction to move. Set by calling a
-#' configuration function:
-#' \describe{
-#'  \item{\code{\link{steepest_descent}}}{Move in the direction of steepest
-#'  descent. This is the default setting and it's the only currently defined
-#'  method, so that's easy.}
-#' }
+#'   position. Set by calling one of the configuration functions listed in
+#'   \code{\link{optimization_gradient}}.
+#' @param direction Method to calculate the direction to move. Set
+#'   by calling one of the configuration functions listed in
+#'   \code{\link{optimization_direction}}.
 #' @param step_size Method to calculate the step size of the direction. Set
-#' by calling a configuration function:
-#' \describe{
-#'  \item{\code{\link{jacobs}}}{Jacobs method. Used in the t-SNE paper.}
-#'  \item{\code{\link{bold_driver}}}{Bold driver.}
-#' }
+#'   by calling one of the configuration functions listed in
+#'   \code{\link{optimization_step_size}}.
 #' @param update Method to combine a gradient descent with other terms (e.g.
-#' momentum) to produce the final update. Set by calling a configuration
-#' function:
-#' \describe{
-#'  \item{\code{\link{step_momentum}}}{Step momentum schedule. Used in the
-#'  t-SNE paper.}
-#'  \item{\code{\link{linear_momentum}}}{Linear momentum schedule.}
-#'  \item{\code{\link{nesterov_nsc_momentum}}}{Nesterov momentum for
-#'  non-strongly convex problems. Use when the \code{gradient} method is
-#'  \code{\link{nesterov_gradient}}.}
-#'  \item{\code{\link{no_momentum}}}{Don't use a momentum term, optimization
-#'  will only use gradient descent to update the solution. The default setting.}
-#' }
+#'   momentum) to produce the final update. Set by calling one of the
+#'   configuration functions listed in \code{\link{optimization_update}}.
 #' @param normalize_grads If \code{TRUE} the gradient matrix is normalized to
-#' a length of one before step size calculation.
+#'   a length of one before step size calculation.
 #' @param mat_name Name of the matrix in the output list \code{out} which
-#' contains the embedded coordinates.
+#'   contains the embedded coordinates.
 #' @param recenter If \code{TRUE}, recenter the coordinates after each
-#' optimization step.
+#'   optimization step.
 #' @return Optimizer.
-#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
-#' an embedding.
+#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
+#'   an embedding.
 #' @examples
 #' # Steepest descent with Jacobs adaptive step size and step momentum, as
 #' # used in the t-SNE paper.
@@ -98,7 +88,7 @@
 #'
 #' # Should be passed to the opt argument of an embedding function:
 #' \dontrun{
-#'  embed_sim(opt = make_opt(gradient = nesterov_gradient(),
+#'  embed_prob(opt = make_opt(gradient = nesterov_gradient(),
 #'                           step_size = bold_driver(),
 #'                           update = nesterov_nsc_momentum()), ...)
 #' }
@@ -126,18 +116,18 @@ make_opt <- function(gradient = classical_gradient(),
   )
 }
 
-#' t-SNE optimizer.
+#' t-SNE Optimizer
 #'
 #' Convenience factory function which sets the optimizer parameters to that
 #' from the t-SNE paper.
 #'
 #' @return optimizer with parameters from the t-SNE paper.
-#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
 #' an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
 #' \dontrun{
-#'  embed_sim(opt = tsne_opt(), ...)
+#'  embed_prob(opt = tsne_opt(), ...)
 #' }
 #' @family sneer optimization methods
 #' @export
@@ -150,7 +140,7 @@ tsne_opt <- function() {
            mat_name = "ym")
 }
 
-#' Nesterov Accelerated Gradient optimizer with bold driver
+#' Nesterov Accelerated Gradient Optimizer with Bold Driver
 #'
 #' Convenience factory function which makes a very performant optimizer. Mixes
 #' the NAG descent method and momentum for non-strongly convex problems
@@ -160,12 +150,12 @@ tsne_opt <- function() {
 #' @param init_step_size Initial step size.
 #' @param max_momentum Maximum value the momentum may take.
 #' @return Optimizer with NAG parameters and bold driver step size.
-#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
-#' an embedding.
+#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
+#'   an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
 #' \dontrun{
-#'  embed_sim(opt = bold_nag_opt(), ...)
+#'  embed_prob(opt = bold_nag_opt(), ...)
 #' }
 #' @family sneer optimization methods
 #' @export
@@ -178,7 +168,7 @@ bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
            update = nesterov_nsc_momentum(max_momentum = max_momentum))
 }
 
-#' Optimizer initialization.
+#' Optimizer Initialization.
 #'
 #' The direction, step size and update components of the optimizer may all
 #' provide initialization methods to set their internal state before the first
@@ -204,7 +194,7 @@ initialize_optimizer <- function(opt, inp, out, method) {
   opt
 }
 
-#' Validate proposed solution.
+#' Optimizer Solution Validation
 #'
 #' Validation function of an optimization iteration.
 #'
@@ -285,16 +275,16 @@ validate_solution <- function(opt, inp, out, proposed_out, method) {
 #' @param inp Input data.
 #' @param out Output data from the start of the iteration.
 #' @param new_out Output data which will be the starting solution for the next
-#' iteration of optimization. If the validation stage failed, then this may be
-#' the same solution as \code{out}.
+#'   iteration of optimization. If the validation stage failed, then this may be
+#'   the same solution as \code{out}.
 #' @param ok \code{TRUE} if the current iteration passed validation,
-#' \code{FALSE} otherwise.
+#'   \code{FALSE} otherwise.
 #' @param iter Current iteration number.
 #' @return A list containing
-#' \item{\code{opt}}{Updated optimizer.}
-#' \item{\code{inp}}{Input data.}
-#' \item{\code{out}}{Output data from the start of the iteration.}
-#' \item{\code{new_out}}{New output to be used in the next iteration.}
+#'   \item{\code{opt}}{Updated optimizer.}
+#'   \item{\code{inp}}{Input data.}
+#'   \item{\code{out}}{Output data from the start of the iteration.}
+#'   \item{\code{new_out}}{New output to be used in the next iteration.}
 after_step <- function(opt, inp, out, new_out, ok, iter) {
   after_step <- remove_nulls(list(
     direction = opt$direction$after_step,

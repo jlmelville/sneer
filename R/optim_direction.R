@@ -1,4 +1,4 @@
-#' Optimizer direction methods.
+#' Optimizer Direction Method
 #'
 #' Part of the optimizer that finds the direction of descent.
 #'
@@ -89,12 +89,28 @@
 #'    }
 #'  }
 #' }
+#' @section Documentation:
+#' Add the tag:
+#' \preformatted{@family sneer optimization direction methods}
+#' to the documentation section of any implementing function.
 #' @keywords internal
-#' @name optimizer_direction
+#' @name optimization_direction_interface
 NULL
 
+#' Optimization Direction Methods
+#'
+#' The available direction methods that can be used by the optimization routines
+#' in sneer.
+#'
+#' @examples
+#' make_opt(direction = steepest_descent())
+#'
+#' @keywords internal
+#' @name optimization_direction
+#' @family sneer optimization direction methods
+NULL
 
-#' Steepest Descent direction.
+#' Steepest Descent Direction
 #'
 #' Factory function for creating an optimizer direction method.
 #'
@@ -102,8 +118,8 @@ NULL
 #' Uses the direction of steepest descent.
 #'
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_direction}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_direction_interface}}
+#' for details on the functions and values defined for this method.
 #'
 #' @return Steepest Descent direction method.
 #' @examples

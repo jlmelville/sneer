@@ -1,6 +1,21 @@
-# Functions defining the SNE-family of similarity embedding methods.
+# Functions defining the SNE-family of probability-based embedding methods.
 
-#' t-distributed Stochastic Neighbor Embedding.
+#' Probability-Based Embeddings
+#'
+#' The available embedding methods which work by reproducing probabilities
+#' based on the input distances, rather than the input distances directly.
+#'
+#' @examples
+#' \dontrun{
+#' embed_prob(method = tsne(), ...)
+#' embed_prob(method = asne(), ...)
+#' }
+#' @keywords internal
+#' @name probability_embedding_methods
+#' @family sneer probability embedding methods
+NULL
+
+#' t-Distributed Stochastic Neighbor Embedding
 #'
 #' Creates a list of functions that collectively implement t-SNE.
 #'
@@ -43,6 +58,7 @@
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
 #' @export
 #' @family sneer embedding methods
+#' @family sneer probability embedding methods
 tsne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(pm, qm, wm) {
     4 * (pm - qm) * wm
@@ -69,7 +85,7 @@ tsne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   )
 }
 
-#' Symmetric Stochastic Neighbor Embedding.
+#' Symmetric Stochastic Neighbor Embedding
 #'
 #' Creates a list of functions that collectively implement SSNE.
 #'
@@ -112,6 +128,7 @@ tsne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' Visualizing Data using t-SNE.
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
 #' @family sneer embedding methods
+#' @family sneer probability embedding methods
 #' @export
 ssne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(pm, qm) {
@@ -138,7 +155,7 @@ ssne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   )
 }
 
-#' Asymmetric Stochastic Neighbor Embedding.
+#' Asymmetric Stochastic Neighbor Embedding
 #'
 #' Creates a list of functions that collectively implement ASNE.
 #'
@@ -175,6 +192,7 @@ ssne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' In Advances in Neural Information Processing Systems, volume 15,
 #' pages 833-840, Cambridge, MA, USA, 2002. The MIT Press.
 #' @family sneer embedding methods
+#' @family sneer probability embedding methods
 #' @export
 asne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(pm, qm) {
@@ -202,7 +220,7 @@ asne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   )
 }
 
-#' t-distributed Asymmetric Stochastic Neighbor Embedding.
+#' t-distributed Asymmetric Stochastic Neighbor Embedding
 #'
 #' Creates a list of functions that collectively implement t-ASNE: a method that
 #' I just made up to illustrate how to explore different aspects of embedding
@@ -240,6 +258,7 @@ asne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @family sneer embedding methods
+#' @family sneer probability embedding methods
 #' @export
 tasne <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(pm, qm, wm) {

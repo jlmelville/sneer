@@ -1,6 +1,6 @@
 # Cost functions used in distance-based embeddings.
 
-#' Metric stress cost function, STRESS.
+#' Metric Stress Cost Function (STRESS)
 #'
 #' A measure of embedding quality between input and output data.
 #'
@@ -29,7 +29,7 @@ metric_stress_cost <- function(inp, out, method) {
 }
 attr(metric_stress_cost, "sneer_cost_type") <- "dist"
 
-#' Metric stress, STRESS.
+#' Metric Stress (STRESS)
 #'
 #' A measure of embedding quality between distance matrices.
 #'
@@ -49,7 +49,7 @@ metric_stress <- function(dxm, dym) {
 }
 
 
-#' The SSTRESS cost function.
+#' Squared Distance STRESS Cost Function (SSTRESS)
 #'
 #' A measure of embedding quality between input and output data.
 #'
@@ -80,7 +80,7 @@ metric_sstress_cost <- function(inp, out, method) {
 }
 attr(metric_sstress_cost, "sneer_cost_type") <- "dist"
 
-#' SSTRESS.
+#' Squared Distance Metric Stress Function (SSTRESS)
 #'
 #' A measure of embedding quality between distance matrices.
 #'
@@ -101,7 +101,7 @@ metric_sstress <- function(dxm, dym) {
   sum(upper_tri((dxm ^ 2 - dym ^ 2) ^ 2))
 }
 
-#' Root mean square deviation of the metric stress.
+#' STRESS RMSD Cost Function
 #'
 #' A measure of embedding quality between input and output data.
 #'
@@ -134,7 +134,7 @@ rms_metric_stress_cost <- function(inp, out, method) {
 }
 attr(rms_metric_stress_cost, "sneer_cost_type") <- "dist"
 
-#' Root mean square deviation of the metric stress.
+#' STRESS RMSD
 #'
 #' A measure of embedding quality between distance matrices.
 #'
@@ -158,7 +158,7 @@ rms_metric_stress <- function(dxm, dym) {
   sqrt(metric_stress(dxm, dym) / (0.5 * n * (n - 1)))
 }
 
-#' Normalized stress.
+#' Normalized STRESS Cost Function
 #'
 #' A measure of embedding quality between input and output data.
 #'
@@ -196,7 +196,7 @@ normalized_stress_cost <- function(inp, out, method) {
 }
 attr(normalized_stress_cost, "sneer_cost_type") <- "dist"
 
-#' Normalized stress.
+#' Normalized STRESS
 #'
 #' A measure of embedding quality between input and output distance matrices.
 #'
@@ -225,7 +225,7 @@ normalized_stress <- function(dxm, dym, eps = .Machine$double.eps) {
   metric_stress(dxm, dym) / sum(upper_tri((dxm + eps) ^ 2))
 }
 
-#' Kruskal stress type-1 for metric embeddings.
+#' Kruskal Stress Type-1 Cost Function
 #'
 #' A measure of embedding quality between input and output data.
 #'
@@ -256,7 +256,7 @@ kruskal_stress_cost <- function(inp, out, method) {
 }
 attr(kruskal_stress_cost, "sneer_cost_type") <- "dist"
 
-#' Kruskal stress type-1 for metric embeddings.
+#' Kruskal Stress Type-1
 #'
 #' A measure of embedding quality between input and output distance matrices.
 #'
@@ -277,7 +277,7 @@ kruskal_stress <- function(dxm, dym, eps = .Machine$double.eps) {
   sqrt(metric_stress(dxm, dym) / sum(upper_tri((dym + eps) ^ 2)))
 }
 
-#' Mean Relative Error of an embedding.
+#' Mean Relative Error of Embedding Cost Function
 #'
 #' A measure of embedding quality between input and output data.
 #'
@@ -309,7 +309,7 @@ mean_relative_error_cost <- function(inp, out, method) {
 }
 attr(mean_relative_error_cost, "sneer_cost_type") <- "dist"
 
-#' Mean Relative Error of an embedding.
+#' Mean Relative Error of Embedding
 #'
 #' A measure of embedding quality between input and output distance matrices.
 #'
@@ -331,7 +331,7 @@ mean_relative_error <- function(dxm, dym) {
   sum(upper_tri(abs((dxm - dym) / dxm))) / (0.5 * n * (n - 1))
 }
 
-#' Sammon stress.
+#' Sammon Stress Cost Function
 #'
 #' A measure of embedding quality between input and output distance data.
 #'
@@ -366,7 +366,7 @@ sammon_stress_cost <- function(inp, out, method) {
 }
 attr(sammon_stress_cost, "sneer_cost_type") <- "dist"
 
-#' Sammon stress.
+#' Sammon Stress
 #'
 #' A measure of embedding quality between input and output distance data.
 #'
@@ -392,7 +392,7 @@ sammon_stress <- function(dxm, dym, eps = .Machine$double.eps) {
   sum(upper_tri((dxm - dym) ^ 2 / (dxm + eps))) / sum(upper_tri(dxm + eps))
 }
 
-#' Null model for distance-based costs.
+#' Null Model for Distance Matrices
 #'
 #' Calculates a distance matrix that represents a "null" model, i.e. one
 #' where no information from the input distances has been used. In this case,

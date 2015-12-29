@@ -1,7 +1,7 @@
 # Perplexity Calculations. Used in creating the input probabilities in
-# similarity-based embedding.
+# probability-based embedding.
 
-#' Logs parameter search information.
+#' Summarize Parameter Search
 #'
 #' Provides summary of the distribution of the beta parameter used to
 #' generate input probabilities in SNE.
@@ -15,7 +15,7 @@ summarize_betas <- function(betas) {
   summarize(betas, "beta")
 }
 
-#' Convert distance matrix to row probability matrix.
+#' Find Row Probabilities by Perplexity Bisection Search
 #'
 #' For each row, finds the value of beta which generates the probability
 #' with the desired perplexity.
@@ -52,6 +52,8 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
   list(pm = pm, beta = beta)
 }
 
+#' Find Beta Parameter for One Row of Matrix
+#'
 #' Find the value of beta that produces a specific perplexity when a row of
 #' a distance matrix is converted to probabilities.
 #'
@@ -84,7 +86,7 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
        beta = result$x)
 }
 
-#' Find root of function by bisection.
+#' Find Root of Function by Bisection
 #'
 #  Bisection method to find root of f(x) = 0 given two values which bracket
 #' the root.
@@ -121,7 +123,7 @@ root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_lower,
   list(x = bounds$mid, y = value, best = result, iter = iter)
 }
 
-#' Narrows bisection bracket range.
+#' Narrows Bisection Bracket Range
 #'
 #' @param bracket List representing the bounds of the parameter search.
 #' Contains three elements: \code{lower}: lower value, \code{upper}: upper
@@ -149,7 +151,7 @@ improve_guess <- function(bracket, sgn) {
   bracket
 }
 
-#' Objective function for parameter search.
+#' Objective Function for Parameter Search
 #'
 #' Create callback that can be used as an objective function for perplexity
 #' parameter search.
@@ -187,7 +189,7 @@ make_objective_fn <- function(d2r, i, weight_fn, perplexity, h_base = exp(1)) {
   }
 }
 
-#' Calculates the Shannon Entropy per row of a matrix.
+#' Shannon Entropy per Row of a Matrix
 #'
 #' Each row of the matrix should consist of probabilities summing to 1.
 #'

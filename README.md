@@ -16,14 +16,14 @@ devtools::install_github("jlmelville/sneer")
 package?sneer
 
 # Embedding function documentation
-?embed_sim # t-SNE and similar methods
+?embed_prob # t-SNE and similar methods
 ?embed_dist # Sammon mapping and metric MDS
 ```
 
 ### Example
 ```
 # t-SNE on the iris using parameters from the t-SNE paper
-tsne_iris <- embed_sim(iris[, 1:4],
+tsne_iris <- embed_prob(iris[, 1:4],
                method = tsne(),
                opt = tsne_opt(),
                init_inp = make_init_inp(perplexity = 25),

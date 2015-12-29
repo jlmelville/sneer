@@ -23,7 +23,7 @@
 #'  to be perfectly reproduced in the two-dimensional output map.
 #'  \item traditional distance-preserving mapping methods (e.g. PCA, MDS,
 #'  Sammon mapping) shouldn't do a very good job, otherwise there's no point
-#'  using a similarity-preserving method.
+#'  using a probability-based method.
 #' }
 #' @docType data
 #'

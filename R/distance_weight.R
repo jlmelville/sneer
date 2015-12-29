@@ -1,8 +1,8 @@
 # Distance weighting functions. Used to weight distances before being converted
-# probabilities in similarity-based embedding. These functions work on the
+# probabilities in probability-based embedding. These functions work on the
 # squared distances.
 
-#' Exponential weight.
+#' Exponential Weight
 #'
 #' Applies exponential weighting to the squared distances.
 #'
@@ -20,7 +20,7 @@ exp_weight <- function(d2m, beta = 1) {
   exp(-beta * d2m)
 }
 
-#' Exponential weighting of the distances.
+#' Exponential Distance Weight
 #'
 #' Applies exponential weighting to the distances, rather than the square of
 #' the distances.
@@ -41,7 +41,7 @@ sqrt_exp_weight <- function(d2m, beta = 1) {
   exp(-beta * sqrt(d2m))
 }
 
-#' Student-t distribution weighting.
+#' Student-t Distribution Weight
 #'
 #' Applies weighting using the Student-t distribution with one degree of
 #' freedom.

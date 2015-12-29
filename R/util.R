@@ -1,6 +1,6 @@
 # Miscellaneous small functions.
 
-#' Partially apply a function.
+#' Partial Function Application
 #'
 #' @param f Function to partially apply.
 #' @param ... params of \code{f} to apply.
@@ -13,7 +13,7 @@ partial <- function(f, ...) {
   }
 }
 
-#' Clamp numerical values.
+#' Clamp Numerical Values
 #'
 #' Values are truncated so that they lie within (\code{min_val, max_val}). In
 #' embedding this is used to prevent individual probabilities values getting
@@ -31,7 +31,7 @@ clamp <- function(x, min_val = .Machine$double.eps, max_val = NULL) {
   x
 }
 
-#' Length of a vector (or matrix)
+#' Length of a Vector (or Matrix)
 #'
 #' @param x Matrix.
 #' @return Length (2-norm) of the matrix.
@@ -39,7 +39,7 @@ length_vec <- function(x) {
   sqrt(sum(x ^ 2))
 }
 
-#' Scale a vector (or matrix) to length 1.
+#' Scale a Vector (or Matrix) to Length 1
 #'
 #' @param x Matrix.
 #' @return \code{x} with elements scaled such that its length equals 1.
@@ -47,7 +47,7 @@ normalize <- function(x) {
   x / length_vec(x)
 }
 
-#' Relative tolerance.
+#' Relative Tolerance
 #'
 #' @param x real value.
 #' @param y real value.
@@ -56,7 +56,7 @@ reltol <- function(x, y) {
   abs(x - y) / min(abs(x), abs(y))
 }
 
-#' Summary of distribution of data.
+#' Summarise Data Distribution
 #'
 #' @param vals Array or matrix of data.
 #' @param msg Label to identify the data summary.
@@ -68,7 +68,7 @@ summarize <- function(vals, msg = "") {
                            collapse = ""))
 }
 
-#' Euclidean Distance matrix.
+#' Euclidean Distance Matrix
 #'
 #' Creates an Euclidean distance matrix with the type "\code{matrix}", rather
 #' than an  object of class "\code{dist}", which the \code{stats} function
@@ -87,7 +87,7 @@ distance_matrix <- function(xm, min_dist = .Machine$double.eps) {
   dm <- clamp(dm, min_dist)
 }
 
-#' Upper triangle of a matrix as a vector.
+#' Upper Triangle of a Matrix as a Vector
 #'
 #' Useful if you need to get all of the distances in a distance matrix, without
 #' including self-distances or double counting. However, all index information
@@ -99,7 +99,7 @@ upper_tri <- function(x) {
   x[upper.tri(x)]
 }
 
-#' Remove NULL members from a list.
+#' Remove NULL Members from a List
 #'
 #' @param l List.
 #' @return List with NULL members removed.

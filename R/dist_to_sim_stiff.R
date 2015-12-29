@@ -1,7 +1,7 @@
-# Functions to generate probabilities from coordinates, as used in similarity
-# based embedding methods.
+# Functions to generate probabilities from coordinates, as used in
+# probability-based embedding methods.
 
-#' Create a weight matrix.
+#' Create Weight Matrix from Output Data
 #'
 #' Creates a matrix of positive weights from the distance matrix of the
 #' embedded coordinates.
@@ -13,7 +13,7 @@ weights <- function(out, method) {
   coords_to_weights(out[[method$mat_name]], method$weight_fn)
 }
 
-#' Create a weight matrix.
+#' Create Weight Matrix from Coordinates Matrix
 #'
 #' @param ym Matrix of coordinates.
 #' @param weight_fn Function with signature \code{weight_fn(d2m)}
@@ -25,10 +25,10 @@ coords_to_weights <- function(ym, weight_fn) {
   dist2_to_weights(d2m, weight_fn)
 }
 
-#' Generate a weights matrix from squared coordinates.
+#' Create Weight Matrix from Squared Distances
 #'
-#' Weights are subsequently normalized to probabilities in similarity embedding.
-#' This function guarantees that the self-weight is 0.
+#' Weights are subsequently normalized to probabilities in probability-based
+#' embedding. This function guarantees that the self-weight is 0.
 #'
 #' @param d2m Matrix of squared distances.
 #' @param weight_fn Function with signature \code{weight_fn(d2m)} where
@@ -41,38 +41,38 @@ dist2_to_weights <- function(d2m, weight_fn) {
   wm
 }
 
-#' Converts a weight matrix to a row probability matrix.
+#' Create Row Probability Matrix from Weight Matrix
 #'
 #' Used in ASNE. The probability matrix is such that all elements are positive
 #' and each row sums to 1.
 #'
-#' @param wm a matrix of weighted distances.
-#' @return a row probability matrix.
+#' @param wm Matrix of weighted distances.
+#' @return Row probability matrix.
 weights_to_prow <- function(wm) {
   row_sums <- apply(wm, 1, sum)
   pm <- sweep(wm, 1, row_sums, "/")
   clamp(pm)
 }
 
-#' Converts a weights matrix to a probability matrix.
+#' Create Conditional Probability Matrix from Weight Matrix
 #'
 #' Used in SSNE and TSNE. The probability matrix is such that all elements are
 #' positive and sum to 1.
 #'
-#' @param wm a matrix of weighted distances.
-#' @return The probability matrix.
+#' @param wm Matrix of weighted distances.
+#' @return Probability matrix.
 weights_to_pcond <- function(wm) {
   qm <- wm / sum(wm)
   clamp(qm)
 }
 
-#' Convert a conditional probability matrix to a joint probability matrix.
+#' Create Joint Probability Matrix from Conditional Probability Matrix
 #'
 #' Used in SSNE and TSNE to convert the input conditional probabilties into a
 #' joint probability matrix.
 #'
-#' @param pm a conditional probability matrix or row stochastic matrix.
-#' @return a joint probability matrix, such that the elements sum to 1 and
+#' @param pm Conditional probability matrix or row stochastic matrix.
+#' @return a Joint probability matrix, such that the elements sum to 1 and
 #' \code{pm[i, j]} = \code{pm[j, i]}.
 pcond_to_pjoint <- function(pm) {
   weights_to_pcond(symmetrize_matrix(pm))

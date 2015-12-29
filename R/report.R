@@ -1,6 +1,6 @@
 # Functions to be run at a fixed frequency during the optimization.
 
-#' Create a reporter callback.
+#' Reporter
 #'
 #' Factory function which returns a function which will be invoked by the
 #' embedding algorithm at regular intervals during the optimization.
@@ -65,7 +65,7 @@
 #' from the previous report can be compared with that of the current report,
 #' allowing for relative convergence early stopping, and appending of costs
 #' if \code{keep_costs} is \code{TRUE}.
-#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
 #' an embedding, and \code{\link{make_plot}} for 2D plot generation.
 #' @examples
 #' # reporter calculation every 100 steps of optimization, log cost and also the
@@ -94,7 +94,7 @@
 #'
 #' # Should be passed to the reporter argument of an embedding function:
 #' \dontrun{
-#'  embed_sim(reporter = make_reporter(report_every = 100,
+#'  embed_prob(reporter = make_reporter(report_every = 100,
 #'                                     normalize_cost = TRUE,
 #'                                     plot_fn = make_plot(iris, "Species")),
 #'                                     ...)

@@ -1,8 +1,8 @@
 # Cost functions. Used by optimization routines to improve the embedding.
 
-#' Kullback Leibler divergence.
+#' Kullback Leibler Divergence Cost Function
 #'
-#' Calculate the Kullback Leibler divergence from input and output data.
+#' A measure of embedding quality between input and output data.
 #'
 #' This cost function requires the following matrices to be defined:
 #' \describe{
@@ -13,7 +13,7 @@
 #' @param inp Input data.
 #' @param out Output data.
 #' @param method Embedding method.
-#' @return the KL divergence between \code{inp$pm} and \code{out$qm}.
+#' @return KL divergence between \code{inp$pm} and \code{out$qm}.
 #' @family sneer cost functions
 #' @export
 kl_cost <- function(inp, out, method) {
@@ -21,8 +21,9 @@ kl_cost <- function(inp, out, method) {
 }
 attr(kl_cost, "sneer_cost_type") <- "prob"
 
-#' Calculate the Kullback Leibler divergence between two matrices of
-#' probabilities.
+#' Kullback Leibler Divergence
+#'
+#' A measure of embedding quality between input and output probability matrices.
 #'
 #' If the matrices represent row probabilities, then the returned divergence
 #' is the average over the divergence for each row.
@@ -35,7 +36,9 @@ kl_divergence <- function(pm, qm, eps = .Machine$double.eps) {
   sum(apply(pm * log((pm + eps) / (qm + eps)), 1, sum)) / sum(pm)
 }
 
-#' Factory function to normalize a cost function.
+#' Create Cost Function Normalizer
+#'
+#' A function to transform a cost function into a normalized cost function.
 #'
 #' The cost function can be any function where the more positive the value,
 #' the worse the solution is considered to be. The corresponding normalized
@@ -46,7 +49,7 @@ kl_divergence <- function(pm, qm, eps = .Machine$double.eps) {
 #' didn't use any information from the data at all. For methods that attempt
 #' to preserve distances, this would be equivalent to making all the embedded
 #' distances the same, which can only be achieved by making them all zero. For
-#' similarity-preserving methods, the equivalent would be to make all the
+#' probability-based methods, the equivalent would be to make all the
 #' probabilities equal.
 #'
 #' It might also be possible to compare embeddings between different methods,
@@ -82,6 +85,8 @@ make_normalized_cost_fn <- function(cost_fn) {
   }
 }
 
+#' Null Model for Probability Matrices
+#'
 #' For a given probability matrix, return the equivalent "null" model, i.e. one
 #' where all probabilities are equal.
 #'

@@ -1,4 +1,4 @@
-#' Optimizer gradient methods.
+#' Optimizer Gradient Methods
 #'
 #' Part of the optimizer that calculates the gradient at a position in the
 #' solution space.
@@ -21,19 +21,36 @@
 #'    }
 #'  }
 #' }
+#' @section Documentation:
+#' Add the tag:
+#' \preformatted{@family sneer optimization gradient methods}
+#' to the documentation section of any implementing function.
 #' @keywords internal
-#' @name optimizer_gradient
+#' @name optimization_gradient_interface
 NULL
 
-#' Classical Gradient.
+#' Optimization Gradient Methods
+#'
+#' The available gradient methods that can be used by the optimization routines
+#' in sneer.
+#'
+#' @examples
+#' make_opt(gradient = classical_gradient())
+#' make_opt(gradient = nesterov_gradient())
+#' @keywords internal
+#' @name optimization_gradient
+#' @family sneer optimization gradient methods
+NULL
+
+#' Classical Gradient
 #'
 #' Factory function for creating an optimizer gradient method.
 #'
 #' Calculates the gradient at the current location of the solution.
 #'
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_gradient}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_gradient_interface}}
+#' for details on the functions and values defined for this method.
 #'
 #' @return Classical gradient calculation method.
 #' @examples
@@ -49,7 +66,7 @@ classical_gradient <- function() {
 }
 
 
-#' Nesterov Accelerated Gradient.
+#' Nesterov Accelerated Gradient
 #'
 #' Factory function for creating an optimizer gradient method.
 #'
@@ -57,8 +74,8 @@ classical_gradient <- function() {
 #' method.
 #'
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_gradient}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_gradient_interface}}
+#' for details on the functions and values defined for this method.
 #'
 #' @return NAG method for gradient calculation.
 #' @examples
@@ -79,7 +96,7 @@ nesterov_gradient <- function() {
 }
 
 
-#' Gradient calculation at current solution position.
+#' Classical Gradient Calculation
 #'
 #' If the solution is currently at \code{out$ym}, this function calculates the
 #' gradient is calculated at this position. Contrast this with Nesterov
@@ -96,7 +113,7 @@ classical_grad_pos <- function(opt, inp, out, method) {
   gradient(inp, out, method, opt$mat_name)
 }
 
-#' Nesterov Accelerated Gradient calculation.
+#' Nesterov Accelerated Gradient Calculation
 #'
 #' This function calculates the gradient at a position determined by applying
 #' the momentum update to the current solution position.

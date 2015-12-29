@@ -2,82 +2,97 @@
 # functions to do with gradient calculation, optimization, updating and so on
 # that don't need to be overridden or changed.
 
-#' Similarity-based embedding.
+#' Embedding Methods
 #'
-#' Carry out an embedding of a dataset using a similarity-based method
+#' Links to all available embedding methods.
+#'
+#' @examples
+#' \dontrun{
+#' embed_prob(method = tsne())
+#' embed_dist(method = mmds())
+#' }
+#' @keywords internal
+#' @name embedding_methods
+#' @family sneer embedding methods
+NULL
+
+#' Probability-Based Embedding
+#'
+#' Carry out an embedding of a dataset using a probability-based method
 #' (e.g. t-SNE), with some useful default parameters.
 #'
 #' @param xm A matrix or data frame to embed.
 #' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
-#' @param preprocess Input data preprocess callback. Create by assigning the
-#' result of \code{\link{make_preprocess}}.
-#' @param init_inp Input initialization callback. Create by assigning the
-#' result of \code{\link{make_init_inp}}.
-#' @param init_out Output initialization callback. Create by assigning the
-#' result of \code{\link{make_init_out}}.
-#' @param method Embedding method. Set by calling a configuration
-#' function:
-#' \describe{
-#' \item{\code{\link{tsne}}}{t-Distributed Stochastic Neighbor Embedding.}
-#' \item{\code{\link{ssne}}}{Symmetric Stochastic Neighbor Embedding.}
-#' \item{\code{\link{asne}}}{Asymmetric Stochastic Neighbor Embedding.}
-#'}
-#' @param opt Optimization method. Create by assigning the result of
-#' \code{\link{make_opt}}.
+#'   the embedded coordinates.
+#' @param preprocess Input data preprocess callback. Set by assigning the
+#'   result value of \code{\link{make_preprocess}}.
+#' @param init_inp Input initialization callback. Set by assigning the result
+#'   value of \code{\link{make_init_inp}}.
+#' @param init_out Output initialization callback. Set by assigning the result
+#'   value of \code{\link{make_init_out}}.
+#' @param method Embedding method. Set by assigning the result value of one of
+#'   the configuration functions listed in
+#'   \code{\link{probability_embedding_methods}}.
+#' @param opt Optimization method. Set by assigning the result of value of one
+#'   of the configuration functions listed in
+#'   \code{\link{optimization_methods}}.
 #' @param max_iter Maximum number of optimization steps to take.
-#' @param tricks Tricks callback. Create by assigning the result of
-#'  \code{\link{make_tricks}}.
-#' @param reporter Reporter callback. Create by assigning the result of
-#' \code{\link{make_reporter}}.
+#' @param tricks Tricks callback. Set by assigning the result of
+#'   \code{\link{make_tricks}}.
+#' @param reporter Reporter callback. Set by assigning the result value of
+#'   \code{\link{make_reporter}}.
 #' @param export Vector of names to export. Possible names are:
-#' \describe{
-#'  \item{"\code{inp}"}{The input data.}
-#'  \item{"\code{report}"}{The result of the last report.}
-#' }
+#'   \describe{
+#'     \item{"\code{inp}"}{The input data.}
+#'     \item{"\code{report}"}{The result of the last report.}
+#'   }
 #' @param after_embed Callback to run on input and output data before output
-#' data is returned.
+#'   data is returned.
 #' @param verbose If \code{TRUE} display messages about the embedding progress.
 #' @return The output data. A list containing:
-#' \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#' specifying \code{mat_name}.}
-#' \item{\code{qm}}{Probability matrix generated from the weight matrix
-#' \code{wm}.}
-#' \item{\code{wm}}{Weight matrix generated from the distances between points
-#' in \code{ym}.}
-#' \item{\code{inp}}{The input data, if "\code{inp}" is included in the
-#' \code{export} list parameter.}
-#' \item{\code{report}}{Most recent report, if
-#' "\code{report}" is included in the \code{export} list parameter.}
+#'   \item{\code{ym}}{Embedded coordinates. This name can be changed by
+#'     specifying \code{mat_name}.}
+#'   \item{\code{qm}}{Probability matrix generated from the weight matrix
+#'     \code{wm}.}
+#'   \item{\code{wm}}{Weight matrix generated from the distances between points
+#'     in \code{ym}.}
+#'   \item{\code{inp}}{The input data, if "\code{inp}" is included in the
+#'     \code{export} list parameter.}
+#'   \item{\code{report}}{Most recent report, if
+#'     "\code{report}" is included in the \code{export} list parameter.}
 #' If the \code{inp} list is present, it contains:
-#' \item{\code{xm}}{The (potentially preprocessed) input coordinates if the
-#' input data was not a distance matrix.}
-#' \item{\code{dm}}{Input distance matrix.}
-#' \item{\code{pm}}{Input probabilities.}
-#' \item{\code{beta}}{Input weighting parameters. Only present if
-#' \code{make_init_inp} is called with \code{keep_all_results} set to
-#' \code{TRUE} in when creating the callback \code{init_inp}.}
+#'  \item{\code{xm}}{The (potentially preprocessed) input coordinates if the
+#'    input data was not a distance matrix.}
+#'  \item{\code{dm}}{Input distance matrix.}
+#'  \item{\code{pm}}{Input probabilities.}
+#'  \item{\code{beta}}{Input weighting parameters. Only present if
+#'     \code{make_init_inp} is called with \code{keep_all_results} set to
+#'     \code{TRUE} in when creating the callback \code{init_inp}.}
 #' If the \code{report} list is present, it contains:
-#' \item{\code{stop_early}}{If \code{TRUE}, the optimization stopped before
-#' \code{max_iters} was reached.}
-#' \item{\code{cost}}{Cost of the embedded configuration in the most recent
-#' iteration.}
-#' \item{\code{costs}}{Matrix of all report costs and the iterations at which
-#' they occurred. Only present if \code{keep_costs} is set to \code{TRUE}
-#' when the \code{make_reporter} factory function is called.}
-#' \item{\code{reltol}}{Relative tolerance of the difference between present
-#' cost and the cost from the previous report.}
-#' \item{\code{norm}}{Normalized cost for the most recent iteration. Only
-#' present if \code{normalize_cost} is set to \code{TRUE} when the
-#' \code{make_reporter} factory function is called.}
-#' \item{\code{iter}}{The iteration at which the report is generated.}
+#'   \item{\code{stop_early}}{If \code{TRUE}, the optimization stopped before
+#'     \code{max_iters} was reached.}
+#'   \item{\code{cost}}{Cost of the embedded configuration in the most recent
+#'     iteration.}
+#'   \item{\code{costs}}{Matrix of all report costs and the iterations at which
+#'     they occurred. Only present if \code{keep_costs} is set to \code{TRUE}
+#'     when the \code{make_reporter} factory function is called.}
+#'   \item{\code{reltol}}{Relative tolerance of the difference between present
+#'     cost and the cost from the previous report.}
+#'   \item{\code{norm}}{Normalized cost for the most recent iteration. Only
+#'     present if \code{normalize_cost} is set to \code{TRUE} when the
+#'     \code{make_reporter} factory function is called.}
+#'   \item{\code{iter}}{The iteration at which the report is generated.}
 #' @seealso
-#' \code{\link{make_preprocess}} for configuring \code{preprocess},
-#' \code{\link{make_init_inp}} for configuring \code{init_inp},
-#' \code{\link{make_init_out}} for configuring \code{init_out},
-#' \code{\link{make_opt}} for configuring \code{opt},
-#' \code{\link{make_tricks}} for configuring \code{tricks},
-#' \code{\link{make_reporter}} for configuring \code{reporter}.
+#' \itemize{
+#' \item{\code{\link{probability_embedding_methods}}} for configuring
+#'   \code{method}
+#' \item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
+#' \item{\code{\link{make_init_inp}}} for configuring \code{init_inp}
+#' \item{\code{\link{make_init_out}}} for configuring \code{init_out}
+#' \item{\code{\link{optimization_methods}}} for configuring \code{opt}
+#' \item{\code{\link{make_tricks}}} for configuring \code{tricks}
+#' \item{\code{\link{make_reporter}}} for configuring \code{reporter}
+#' }
 #'
 #' @examples
 #' \dontrun{
@@ -85,7 +100,7 @@
 #' # except initialize from PCA so output is repeatable.
 #' # plot 2D result during embedding with convenience function for iris plot.
 #' # Default method is tsne. Set perplexity to 25.
-#' tsne_iris <- embed_sim(iris[, 1:4], opt = tsne_opt(),
+#' tsne_iris <- embed_prob(iris[, 1:4], opt = tsne_opt(),
 #'                init_inp = make_init_inp(perplexity = 25),
 #'                tricks = tsne_tricks(),
 #'                reporter = make_reporter(plot_fn = make_iris_plot()))
@@ -94,7 +109,7 @@
 #' # and initialize from random. Use generic plot function, displaying the first
 #' # two characters of the "Species" factor for the points. Explicitly choose
 #' # t-SNE as the method.
-#' tsne_iris <- embed_sim(iris[, 1:4],
+#' tsne_iris <- embed_prob(iris[, 1:4],
 #'                method = tsne(),
 #'                opt = tsne_opt(),
 #'                init_inp = make_init_inp(perplexity = 25),
@@ -104,9 +119,9 @@
 #'                  plot_fn = make_plot(iris, "Species", make_label(2))))
 #'
 #' # Use the SSNE method, and preprocess input data by range scaling. t-SNE
-#' # tricks and optimization are reasonable defaults for other similarity
+#' # tricks and optimization are reasonable defaults for other probability-based
 #' # embeddings.
-#' ssne_iris <- embed_sim(iris[, 1:4],
+#' ssne_iris <- embed_prob(iris[, 1:4],
 #'                method = ssne(),
 #'                opt = tsne_opt(),
 #'                init_inp = make_init_inp(perplexity = 25),
@@ -122,7 +137,7 @@
 #' # with Nesterov Accelrated Gradient and bold driver step size
 #' # (highly recommended as an optimizer). Labels for s1k are one digit, so
 #' # can use simplified plot function.
-#' asne_s1k <- embed_sim(s1k[, 1:9], method = asne(),
+#' asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
 #'  preprocess = make_preprocess(auto_scale = TRUE),
 #'  init_inp = make_init_inp(perplexity = 50),
 #'  init_out = make_init_out(from_PCA = TRUE),
@@ -132,7 +147,7 @@
 #'
 #' # Same as above, but using convenience method to create optimizer with less
 #' # typing
-#' asne_s1k <- embed_sim(s1k[, 1:9], method = asne(),
+#' asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
 #'  preprocess = make_preprocess(auto_scale = TRUE),
 #'  init_inp = make_init_inp(perplexity = 50),
 #'  init_out = make_init_out(from_PCA = TRUE),
@@ -141,7 +156,7 @@
 #' }
 #' @family sneer embedding functions
 #' @export
-embed_sim <- function(xm,
+embed_prob <- function(xm,
                       mat_name = "ym",
                       preprocess = make_preprocess(verbose = verbose),
                       init_inp = make_init_inp(perplexity = 30,
@@ -162,43 +177,38 @@ embed_sim <- function(xm,
         reporter, preprocess, export, after_embed)
 }
 
-#' Distance-based embedding.
+#' Distance Preserving Embedding.
 #'
 #' Carry out an embedding of a dataset using a distance-based method
 #' (e.g. Sammon Mapping), with some useful default parameters.
 #'
 #' @param xm A matrix or data frame to embed.
 #' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
-#' @param preprocess Input data preprocess callback. Create by assigning the
-#' result of \code{\link{make_preprocess}}.
-#' @param init_inp Input initialization callback. Create by assigning the
-#' result of \code{\link{make_init_inp_dist}}.
-#' @param init_out Output initialization callback. Create by assigning the
-#' result of \code{\link{make_init_out}}.
-#' @param method Embedding method. Set by calling a configuration
-#' function:
-#' \describe{
-#'  \item{\code{\link{mmds}}}{Metric Multidimensional Scaling using the STRESS
-#'  cost function.}
-#'  \item{\code{\link{smmds}}}{Metric Multidimensional Scaling using the SSTRESS
-#'  cost function.}
-#'  \item{\code{\link{sammon_map}}}{Sammon Mapping.}
-#' }
-#' @param opt Optimization method. Create by assigning the result of
-#' \code{\link{make_opt}}.
+#'   the embedded coordinates.
+#' @param preprocess Input data preprocess callback. Set by assigning the
+#'   result value of \code{\link{make_preprocess}}.
+#' @param init_inp Input initialization callback. Set by assigning the result
+#'   value of \code{\link{make_init_inp_dist}}.
+#' @param init_out Output initialization callback. Set by assigning the result
+#'   value of \code{\link{make_init_out}}.
+#' @param method Embedding method. Set by assigning the result value of one of
+#'   the configuration functions listed in
+#'   \code{\link{distance_embedding_methods}}.
+#' @param opt Optimization method. Set by assigning the result of value of one
+#'   of the configuration functions listed in
+#'   \code{\link{optimization_methods}}.
 #' @param max_iter Maximum number of optimization steps to take.
-#' @param tricks Tricks callback. Create by assigning the result of
-#'  \code{\link{make_tricks}}.
-#' @param reporter Reporter callback. Create by assigning the result of
-#' \code{\link{make_reporter}}.
+#' @param tricks Tricks callback. Set by assigning the result of
+#'   \code{\link{make_tricks}}.
+#' @param reporter Reporter callback. Set by assigning the result value of
+#'   \code{\link{make_reporter}}.
 #' @param export Vector of names to export. Possible names are:
 #' \describe{
 #'  \item{\code{"inp"}}{The input data.}
 #'  \item{\code{"report"}}{The result of the last report.}
 #' }
 #' @param after_embed Callback to run on input and output data before output
-#' data is returned.
+#'   data is returned.
 #' @param verbose If \code{TRUE} display messages about the embedding progress.
 #' @return The output data. A list containing:
 #'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
@@ -231,12 +241,16 @@ embed_sim <- function(xm,
 #'  \code{make_reporter} factory function is called.}
 #'  \item{\code{iter}}{The iteration at which the report is generated.}
 #' @seealso
-#' \code{\link{make_preprocess}} for configuring \code{preprocess},
-#' \code{\link{make_init_inp_dist}} for configuring \code{init_inp},
-#' \code{\link{make_init_out}} for configuring \code{init_out},
-#' \code{\link{make_opt}} for configuring \code{opt},
-#' \code{\link{make_tricks}} for configuring \code{tricks},
-#' \code{\link{make_reporter}} for configuring \code{reporter}.
+#' \itemize{
+#' \item{\code{\link{distance_embedding_methods}}} for configuring
+#'   \code{method}
+#' \item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
+#' \item{\code{\link{make_init_inp}}} for configuring \code{init_inp}
+#' \item{\code{\link{make_init_out}}} for configuring \code{init_out}
+#' \item{\code{\link{optimization_methods}}} for configuring \code{opt}
+#' \item{\code{\link{make_tricks}}} for configuring \code{tricks}
+#' \item{\code{\link{make_reporter}}} for configuring \code{reporter}
+#' }
 #'
 #' @examples
 #' \dontrun{
@@ -294,76 +308,78 @@ embed_dist <- function(xm,
 }
 
 
-#' Generic embedding.
+#' Generic Embedding
 #'
-#' Carrying out an embedding of a dataset.
+#' Carry out an embedding of a dataset using any embedding method. The most
+#' generic embedding function, and conversely the one with the fewest helpful
+#' defaults.
 #'
 #' @param xm A matrix or data frame to embed.
-#' @param preprocess Input data preprocess callback. Create by assigning the
-#' result of \code{\link{make_preprocess}}.
-#' @param init_inp Input initialization callback. Create by assigning the
-#' result of \code{\link{make_init_inp}} or \code{\link{make_init_inp_dist}}.
-#' @param init_out Output initialization callback. Create by assigning the
-#' result of \code{\link{make_init_out}}.
-#' @param method Embedding method. Assign result of calling one of the following
-#' functions: \describe{
-#'  \item{\code{\link{mmds}}}{Metric Multidimensional Scaling using the STRESS
-#'  cost function.}
-#'  \item{\code{\link{smmds}}}{Metric Multidimensional Scaling using the SSTRESS
-#'  cost function.}
-#'  \item{\code{\link{sammon_map}}}{Sammon Mapping.}
-#'  \item{\code{\link{tsne}}}{t-Distributed Stochastic Neighbor Embedding.}
-#'  \item{\code{\link{ssne}}}{Symmetric Stochastic Neighbor Embedding.}
-#'  \item{\code{\link{asne}}}{Asymmetric Stochastic Neighbor Embedding.}
-#' }
-#' @param opt Optimization method. Create by assigning the result of
-#' \code{\link{make_opt}}.
+#' @param mat_name Name of the matrix in the output data list that will contain
+#'   the embedded coordinates.
+#' @param preprocess Input data preprocess callback. Set by assigning the
+#'   result value of \code{\link{make_preprocess}}.
+#' @param init_inp Input initialization callback. Set by assigning the result
+#'   value of \code{\link{make_init_inp_dist}} or
+#'   \code{\link{make_init_inp}}.
+#' @param init_out Output initialization callback. Set by assigning the result
+#'   value of \code{\link{make_init_out}}.
+#' @param method Embedding method. Set by assigning the result value of one of
+#'   the configuration functions listed in
+#'   \code{\link{embedding_methods}}.
+#' @param opt Optimization method. Set by assigning the result of value of one
+#'   of the configuration functions listed in
+#'   \code{\link{optimization_methods}}.
 #' @param max_iter Maximum number of optimization steps to take.
-#' @param tricks Tricks callback. Create by assigning the result of
-#'  \code{\link{make_tricks}}.
-#' @param reporter Report callback. Create by assigning the result of
-#' \code{\link{make_reporter}}.
+#' @param tricks Tricks callback. Set by assigning the result of
+#'   \code{\link{make_tricks}}.
+#' @param reporter Reporter callback. Set by assigning the result value of
+#'   \code{\link{make_reporter}}.
 #' @param export Vector of names to export. Possible names are:
 #' \describe{
 #'  \item{"\code{inp}"}{The input data.}
 #'  \item{"\code{report}"}{The most recent report.}
 #' }
 #' @param after_embed Callback to run on input and output data before output
-#' data is returned.
+#'   data is returned.
 #' @return The output data. A list containing:
-#' \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#' specifying \code{mat_name}.}
-#' \item{\code{inp}}{The input data, if "\code{inp}" is included in the
-#' \code{export} list parameter.}
-#' \item{\code{report}}{Most recent report, if "\code{report}" is included in
-#' the \code{export} list parameter.}
+#'   \item{\code{ym}}{Embedded coordinates. This name can be changed by
+#'     specifying \code{mat_name}.}
+#'   \item{\code{inp}}{The input data, if "\code{inp}" is included in the
+#'     \code{export} list parameter.}
+#'   \item{\code{report}}{Most recent report, if "\code{report}" is included in
+#'     the \code{export} list parameter.}
 #' Additional items may appear in the output list, depending on the embedding
 #' method and initialization methods. See the documentation of those functions
 #' for details.
 #' If the \code{inp} list is present, it contains:
-#' \item{\code{xm}}{The (potentially preprocessed) input coordinates if the
-#' input data was not a distance matrix.}
-#' \item{\code{dm}}{Input distance matrix.}
+#'   \item{\code{xm}}{The (potentially preprocessed) input coordinates if the
+#'     input data was not a distance matrix.}
+#'   \item{\code{dm}}{Input distance matrix.}
 #' If the \code{report} list is present, it contains:
-#' \item{\code{stop_early}}{If \code{TRUE}, the optimization stopped before
-#' \code{max_iters} was reached.}
-#' \item{\code{cost}}{Cost of the configuration at iteration \code{iter}.}
-#' \item{\code{costs}}{Matrix of all costs and the iterations at which
-#' the reports were made. Only present if \code{keep_costs} is set to
-#' \code{TRUE} when the \code{make_reporter} factory function is called.}
-#' \item{\code{reltol}}{Relative tolerance of the difference between present
-#' cost and the cost evaluted by the previous report.}
-#' \item{\code{norm}}{Normalized cost for the most recent iteration. Only
-#' present if \code{normalize_cost} is set to \code{TRUE} when the
-#' \code{make_reporter} factory function is called.}
-#' \item{\code{iter}}{The iteration at which the report is generated.}
+#'   \item{\code{stop_early}}{If \code{TRUE}, the optimization stopped before
+#'     \code{max_iters} was reached.}
+#'   \item{\code{cost}}{Cost of the configuration at iteration \code{iter}.}
+#'   \item{\code{costs}}{Matrix of all costs and the iterations at which
+#'     the reports were made. Only present if \code{keep_costs} is set to
+#'   \code{TRUE} when the \code{make_reporter} factory function is called.}
+#'   \item{\code{reltol}}{Relative tolerance of the difference between present
+#'     cost and the cost evaluted by the previous report.}
+#'   \item{\code{norm}}{Normalized cost for the most recent iteration. Only
+#'     present if \code{normalize_cost} is set to \code{TRUE} when the
+#'     \code{make_reporter} factory function is called.}
+#'   \item{\code{iter}}{The iteration at which the report is generated.}
 #' @seealso
-#' \code{\link{make_preprocess}} for configuring \code{preprocess},
-#' \code{\link{make_init_inp}} for configuring \code{init_inp},
-#' \code{\link{make_init_out}} for configuring \code{init_out},
-#' \code{\link{make_opt}} for configuring \code{opt},
-#' \code{\link{make_tricks}} for configuring \code{tricks},
-#' \code{\link{make_reporter}} for configuring \code{reporter}.
+#' \itemize{
+#' \item{\code{\link{embedding_methods}}} for configuring \code{method}
+#' \item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
+#' \item{\code{\link{make_init_inp}} and \code{\link{make_init_inp_dist}}} for
+#'   configuring \code{init_inp}
+#' \item{\code{\link{make_init_out}}} for configuring \code{init_out}
+#' \item{\code{\link{optimization_methods}}} for configuring \code{opt}
+#' \item{\code{\link{make_tricks}}} for configuring \code{tricks}
+#' \item{\code{\link{make_reporter}}} for configuring \code{reporter}
+#' }
 embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
                   tricks = NULL, reporter = NULL, preprocess = NULL,
                   export = NULL, after_embed = NULL) {
@@ -431,18 +447,19 @@ embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
   out
 }
 
-#' Function called after initialization of input and output.
+#' Post Initialization
 #'
-#' Useful for doing data-dependent initialization of stiffness
-#' parameters, e.g. based on the parameterization of the input probabilities.
+#' Function called after input and output data have been initialized. Useful for
+#' doing data-dependent initialization of stiffness parameters, e.g. based on
+#' the parameterization of the input probabilities.
 #'
 #' @param inp Input data.
 #' @param out Output data.
 #' @param method Embedding method.
 #' @return List consisting of:
-#' \item{\code{inp}}{Updated input data.}
-#' \item{\code{out}}{Updated output data.}
-#' \item{\code{method}}{Updated embedding method.}
+#'   \item{\code{inp}}{Updated input data.}
+#'   \item{\code{out}}{Updated output data.}
+#'   \item{\code{method}}{Updated embedding method.}
 after_init <- function(inp, out, method) {
   if (!is.null(method$after_init_fn)) {
     result <- method$after_init_fn(inp, out, method)
@@ -460,7 +477,7 @@ after_init <- function(inp, out, method) {
 }
 
 
-#' One step of optimization.
+#' One Step of Optimization
 #'
 #' @param opt Optimizer
 #' @param method Embedding method.
@@ -468,9 +485,9 @@ after_init <- function(inp, out, method) {
 #' @param out Output data.
 #' @param iter Iteration number.
 #' @return List consisting of:
-#' \item{\code{opt}}{Updated optimizer.}
-#' \item{\code{inp}}{Updated input.}
-#' \item{\code{out}}{Updated output.}
+#'   \item{\code{opt}}{Updated optimizer.}
+#'   \item{\code{inp}}{Updated input.}
+#'   \item{\code{out}}{Updated output.}
 optimize_step <- function(opt, method, inp, out, iter) {
   if (iter == 0) {
     opt <- opt$init(opt, inp, out, method)
@@ -527,7 +544,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
   list(opt = opt, inp = inp, out = new_out)
 }
 
-#' Update output data.
+#' Output Data Update
 #'
 #' This function updates the embedded coordinates in the output data, based
 #' on the update information in the Optimizer, as well as updating any
@@ -547,6 +564,8 @@ update_solution <- function(opt, inp, out, method) {
 }
 
 
+#' Gradient Calculation
+#'
 #' Calculate the gradient of the cost function for the current configuration.
 #'
 #' @param inp Input data.
@@ -563,6 +582,8 @@ gradient <- function(inp, out, method, mat_name = "ym") {
   list(km = km, gm = gm)
 }
 
+#' Gradient Matrix from Stiffness Matrix
+#'
 #' Convert stiffness matrix to gradient matrix.
 #'
 #' @param ym Embedded coordinates.
@@ -577,9 +598,11 @@ stiff_to_grads <- function(ym, km) {
   gm
 }
 
+#' Squared (Euclidean) Distance Matrix
+#'
 #' Creates a matrix of squared Euclidean distances from a coordinate matrix.
 #'
-#' Similarity-preserving embedding techniques use the squared Euclidean distance
+#' Probability-based embedding techniques use the squared Euclidean distance
 #' as input to their weighting functions.
 #'
 #' @param xm a matrix of coordinates

@@ -1,4 +1,4 @@
-#' Optimizer step size methods.
+#' Optimizer Step Size Methods
 #'
 #' Part of the optimizer that finds the step size of the gradient descent.
 #'
@@ -89,12 +89,28 @@
 #'    }
 #'  }
 #' }
-#'
+#' @section Documentation:
+#' Add the tag:
+#' \preformatted{@family sneer optimization step size methods}
+#' to the documentation section of any implementing function.
 #' @keywords internal
-#' @name optimizer_step_size
+#' @name optimization_step_size_interface
 NULL
 
-#' Bold driver step size method.
+#' Optimization Step Size Methods
+#'
+#' The available step size methods that can be used by the optimization routines
+#' in sneer.
+#'
+#' @examples
+#' make_opt(step_size = bold_driver())
+#' make_opt(step_size = jacobs())
+#' @keywords internal
+#' @name optimization_step_size
+#' @family sneer optimization step size methods
+NULL
+
+#' Bold Driver Step Size Method
 #'
 #' Factory function for creating an optimizer step size method.
 #'
@@ -120,8 +136,8 @@ NULL
 #' @param max_step_size Maximum step size.
 #' @return Bold driver step size method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_step_size}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_step_size_interface}}
+#' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
 #' # step size method:
@@ -176,7 +192,7 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
   )
 }
 
-#' Jacobs step size method.
+#' Jacobs Step Size Method
 #'
 #' Factory function for creating an optimizer step size method.
 #'
@@ -217,8 +233,8 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' @param max_step_size Maximum step size.
 #' @return Jacobs step size method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_step_size}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_step_size_interface}}
+#' for details on the functions and values defined for this method.
 #' \code{\link{tsne_jacobs}} provides a wrapper around for this method to use
 #' the settings as given in the t-SNE paper.
 #' @examples
@@ -274,14 +290,14 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
   )
 }
 
-#' Jacobs step size method using parameters from the t-SNE paper.
+#' Jacobs Step Size Method from t-SNE Paper
 #'
 #' Factory function for creating an optimizer step size method.
 #'
 #' @return A step size method suitable for use with t-SNE.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimizer_step_size}} for details
-#' on the functions and values defined for this method.
+#' the sneer framework only. See \code{\link{optimization_step_size_interface}}
+#' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
 #' # step size method:
@@ -302,10 +318,12 @@ tsne_jacobs <- function() {
          min_step_size = 0.1)
 }
 
+#' Jacobs Step Size Matrix Update
+#'
 #' Calculate a new step size matrix based on the sign of the gradient versus
 #' that of the previous step.
 #'
-#' @details For each direction, the sign of the gradient is compared with that
+#' For each direction, the sign of the gradient is compared with that
 #' of the update in the previous time step. If it's the same sign, increase the
 #' step size; if the sign has changed, then it's assumed that the minimum was
 #' missed and the current location brackets the minimum. In this case, the step

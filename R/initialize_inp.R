@@ -1,6 +1,6 @@
 # Functions for initializing the input data.
 
-#' Create an input initialization callback for distance-based methods.
+#' Input Initialization for Distance Embedding
 #'
 #' Factory function for input initialization callbacks. During input
 #' initialization, the high dimensional distances or coordinates will be used
@@ -33,7 +33,7 @@ make_init_inp_dist <- function() {
   }
 }
 
-#' Create an input initialization callback.
+#' Input Initialization for Probability Embedding
 #'
 #' Factory function for input initialization callbacks. During input
 #' initialization, the high dimensional distances or coordinates will be used
@@ -69,7 +69,7 @@ make_init_inp_dist <- function() {
 #' \item{\code{pm}}{Input probabilities.}
 #' \item{\code{beta}}{Input weighting parameters that produced the
 #' probabilities. Only provided if \code{keep_all_results} is \code{TRUE}.}
-#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
 #' an embedding.
 #' @examples
 #' # Set target perplexity of each probability distribution to 30
@@ -85,7 +85,7 @@ make_init_inp_dist <- function() {
 #'
 #' # Should be passed to the init_inp argument of an embedding function:
 #' \dontrun{
-#'  embed_sim(init_inp = make_init_inp(perplexity = 30,
+#'  embed_prob(init_inp = make_init_inp(perplexity = 30,
 #'                                     input_weight_fn = exp_weight), ...)
 #' }
 #' @export
@@ -119,7 +119,7 @@ make_init_inp <- function(perplexity = 30,
   }
 }
 
-#' Convert a row probability matrix to a conditional probability matrix.
+#' Conditional Probability Matrix from Row Probability Matrix
 #'
 #' Given a row probability matrix (elements of each row are non-negative and
 #' sum to one), this function scales each element by the sum of the matrix so
@@ -131,7 +131,7 @@ prow_to_pcond <- function(prow) {
   clamp(prow / sum(prow))
 }
 
-#' Convert a row probability matrix to a join probability matrix.
+#' Joint Probability Matrix from Row Probability Matrix
 #'
 #' Given a row probability matrix (elements of each row are non-negative and
 #' sum to one), this function scales each element by such that the elements of
@@ -144,7 +144,7 @@ prow_to_pjoint <- function(prow) {
   clamp(symmetrize_matrix(prow / sum(prow)))
 }
 
-#' Create a symmetric matrix from a square matrix.
+#' Symmetric Matrix from Sqaure Matrix
 #'
 #' The matrix is symmetrized by setting \code{pm[i, j]} and \code{pm[j, i]} to
 #' their average, i.e. \code{Pij} = \code{(Pij + Pji)/2} = \code{Pji}.

@@ -1,6 +1,20 @@
-# Distance-preserving embedding methods like metric MDS and Sammon Mapping.
+# Distance-based embedding methods like metric MDS and Sammon Mapping.
 
-#' Metric Multi-dimensional scaling (MDS) using the STRESS cost function.
+#' Distance-Based Embeddings
+#'
+#' The available embedding methods which work by reproducing input distances.
+#'
+#' @examples
+#' \dontrun{
+#' embed_dist(method = mmds(), ...)
+#' embed_dist(method = sammon_map(eps = 1e-4), ...)
+#' }
+#' @keywords internal
+#' @name distance_embedding_methods
+#' @family sneer distance embedding methods
+NULL
+
+#' Metric Multi-dimensional Scaling (MDS) Using STRESS Cost Function
 #'
 #' Creates a list of functions that collectively implement metric MDS.
 #'
@@ -71,6 +85,7 @@
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @family sneer embedding methods
+#' @family sneer distance embedding methods
 #' @export
 mmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
@@ -92,7 +107,7 @@ mmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
   )
 }
 
-#' Metric Multi-dimensional scaling (MDS) using SSTRESS.
+#' Metric Multi-dimensional Scaling (MDS) using SSTRESS Cost Function.
 #'
 #' Embedding method.
 #'
@@ -118,6 +133,7 @@ mmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @family sneer embedding methods
+#' @family sneer distance embedding methods
 #' @export
 smmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
@@ -138,7 +154,7 @@ smmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
   )
 }
 
-#' Sammon Mapping.
+#' Sammon Mapping
 #'
 #' Creates a list of functions that collectively implement Sammon Mapping.
 #'
@@ -183,6 +199,7 @@ smmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' \code{stress} value is equivalent to the \code{\link{sammon_stress_cost}}
 #' function in sneer.
 #' @family sneer embedding methods
+#' @family sneer distance embedding methods
 #' @export
 sammon_map <- function(mat_name = "ym", eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {

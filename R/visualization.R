@@ -1,7 +1,7 @@
 # Functions to help with visualizing embedding during the optimization
 # procedure.
 
-#' Create a plotting function.
+#' Embedding Plots
 #'
 #' Factory function for a plotting callback which can be used by the reporter
 #' function of an embedding to plot the current (two-dimensional) embedding.
@@ -30,7 +30,7 @@
 #'
 #' # Should be passed to the plot_fn argument of the reporter factory function:
 #' \dontrun{
-#'  embed_sim(reporter = make_reporter(report_every = 100,
+#'  embed_prob(reporter = make_reporter(report_every = 100,
 #'                                     normalize_cost = TRUE,
 #'                                     plot_fn = make_plot(iris, "Species")),
 #'                                      ...)
@@ -48,7 +48,7 @@ make_plot <- function(x, attr_name,
   }
 }
 
-#' Create embedding plot.
+#' Embedding Plot Using \code{graphics} Library
 #'
 #' Create a function which when invoked on a 2D matrix, plots the embedding
 #' with color-coded labels.
@@ -75,7 +75,7 @@ make_plot <- function(x, attr_name,
 #' iris_plot(pca_iris$x[, 1:2])
 #'
 #' # TSNE on iris
-#' tsne_iris <- embed_sim(iris[, 1:4], method = tsne())
+#' tsne_iris <- embed_prob(iris[, 1:4], method = tsne())
 #' # view the TSNE embedding
 #' iris_plot(tsne_iris$ym)
 #'}
@@ -95,7 +95,7 @@ make_embedding_plot <- function(x, attr_name, label_fn) {
   }
 }
 
-#' Create a label function for 2D embedding plot.
+#' Labels for 2D Embedding Plot
 #'
 #' Even quite short labels can create a crowded looking embedding plot.
 #' Use this function to only print the first few characters of each label.
@@ -109,7 +109,7 @@ make_label <- function(num_label_chars = 1) {
   partial(substr, start = 0, stop = num_label_chars)
 }
 
-#' Iris dataset plot factory function.
+#' Embedding Plot for Iris Dataset
 #'
 #' Creates a function which can be used to visualize embeddings of the iris
 #' dataset.
@@ -127,11 +127,11 @@ make_iris_plot <- function(num_label_chars = 1) {
   make_plot(iris, "Species", make_label(num_label_chars))
 }
 
-#' ggplot2 embedding viewer factory function
+#' Embedding Plot Using \code{ggplot2} Library
 #'
 #' Creates a function which can be used to visualize embeddings from sneer
 #' output results for a particular dataset using ggplot2.
-#'#'
+#'
 #' @note Use of this function requires that the \code{ggplot2} package be
 #' installed.
 #'
@@ -161,7 +161,7 @@ make_qplot <- function(x, attr_name, mat_name = "ym") {
   }
 }
 
-#' ggplot2 embedding viewer factory function
+#' Embedded Coordinates Plot Using \code{ggplot2} Library
 #'
 #' Creates a ggplot2 function for embeddings of a given dataset.
 #'

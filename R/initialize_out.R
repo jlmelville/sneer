@@ -1,6 +1,6 @@
 # Functions for initializing the output embedding.
 
-#' Create an output initialization callback.
+#' Output Initialization
 #'
 #' Factory function that creates a callback that used by the embedding routine.
 #' When invoked, it will initialize the output data.
@@ -36,7 +36,7 @@
 #' accumulate other auxiliary data associated with the embedded coordinates,
 #' e.g. distances, probabilities, divergences or other data required for
 #' stiffness calculations.
-#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
+#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
 #' an embedding.
 #' @examples
 #' # Initialize from PCA scores matrix (normally a decent starting point and
@@ -48,7 +48,7 @@
 #'
 #' # Should be passed to the init_out argument of an embedding function:
 #' \dontrun{
-#'  embed_sim(init_out = make_init_out(from_PCA = TRUE), ...)
+#'  embed_prob(init_out = make_init_out(from_PCA = TRUE), ...)
 #' }
 #' @export
 make_init_out <- function(k = 2, init_config = NULL, stdev = 1e-04,
@@ -105,7 +105,7 @@ make_init_out <- function(k = 2, init_config = NULL, stdev = 1e-04,
   }
 }
 
-#' Creates a matrix consisting of the PCA scores of the input.
+#' PCA Scores Matrix
 #'
 #' @param xm Matrix to carry out PCA on. No scaling is carried out.
 #' @param ncol The number of score columns to include in the output matrix.
@@ -141,6 +141,8 @@ scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
   sm$u %*% dm
 }
 
+#' Random Matrix
+#'
 #' Creates a matrix of normally distributed data with zero mean.
 #'
 #' @param nrow The number of rows of the matrix.

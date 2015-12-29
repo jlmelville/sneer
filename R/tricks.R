@@ -2,7 +2,7 @@
 # If you are fancy, you could call them "heuristics", but the t-SNE paper calls
 # their approach "tricks" and that's less characters to type.
 
-#' Create tricks callback.
+#' Tricks
 #'
 #' Creates a callback which the embedding routine will call before each
 #' optimization step.
@@ -27,8 +27,8 @@
 #'  \item{\code{method}}{Updated embedded method.}
 #'  \item{\code{opt}}{Updated optimizer.}
 #' }
-#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
-#' an embedding.
+#' @seealso \code{\link{embed_prob}} for how to use this function for
+#' configuring an embedding.
 #' @examples
 #' # Use early exaggeration as described in the t-SNE paper
 #' make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
@@ -36,7 +36,7 @@
 #'
 #' # Should be passed to the tricks argument of an embedding function:
 #' \dontrun{
-#'  embed_sim(tricks = make_tricks(early_exaggeration = TRUE,
+#'  embed_prob(tricks = make_tricks(early_exaggeration = TRUE,
 #'                                 P_exaggeration = 4,
 #'                                 exaggeration_off_iter = 50), ...)
 #' }
@@ -82,18 +82,24 @@ make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
   }
 }
 
-#' Tricks from t-SNE paper.
+#' t-SNE Tricks
+#'
+#' Tricks configured according to the details in the t-SNE paper.
 #'
 #' @param verbose If \code{TRUE} print message about tricks during the
 #' embedding.
 #' @return tricks callback parameterized to behave like the t-SNE paper.
-#' @seealso \code{\link{embed_sim}} for how to use this function for configuring
-#' an embedding.
+#' @seealso \code{\link{embed_prob}} for how to use this function for
+#' configuring an embedding.
 #' @examples
 #' # Should be passed to the tricks argument of an embedding function:
 #' \dontrun{
-#'  embed_sim(tricks = tsne_tricks(), ...)
+#'  embed_prob(tricks = tsne_tricks(), ...)
 #' }
+#' @references
+#' Laurens van der Maarten, Geoffrey Hinton.
+#' Visualizing Data using t-SNE.
+#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
 #' @family sneer tricks
 #' @export
 tsne_tricks <- function(verbose = TRUE) {
