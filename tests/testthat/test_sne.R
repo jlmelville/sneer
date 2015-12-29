@@ -1,7 +1,7 @@
 library(sneer)
 context("SNE")
 
-tsne_iris <- embed_sim(iris[, 1:4],
+tsne_iris <- embed_prob(iris[, 1:4],
                        method = tsne(),
                        init_inp = make_init_inp(perplexity = 50,
                                                 input_weight_fn =
@@ -15,7 +15,7 @@ tsne_iris <- embed_sim(iris[, 1:4],
                        verbose = FALSE)
 expect_equal(formatC(tsne_iris$report$norm), "0.0578")
 
-ssne_iris <- embed_sim(iris[, 1:4],
+ssne_iris <- embed_prob(iris[, 1:4],
                        method = ssne(),
                        init_inp = make_init_inp(perplexity = 50,
                                                 input_weight_fn =
@@ -30,7 +30,7 @@ ssne_iris <- embed_sim(iris[, 1:4],
                        opt = bold_nag_opt())
 expect_equal(formatC(ssne_iris$report$norm), "0.07265")
 
-asne_iris <- embed_sim(iris[, 1:4],
+asne_iris <- embed_prob(iris[, 1:4],
                        method = asne(),
                        init_inp = make_init_inp(perplexity = 50,
                                                 input_weight_fn =
@@ -45,7 +45,7 @@ asne_iris <- embed_sim(iris[, 1:4],
                        opt = bold_nag_opt(max_momentum = 0.85))
 expect_equal(formatC(asne_iris$report$norm), "0.08479")
 
-pca_iris <- embed_sim(iris[, 1:4],
+pca_iris <- embed_prob(iris[, 1:4],
                       method = tsne(),
                       init_inp = make_init_inp(perplexity = 25,
                                                input_weight_fn =
@@ -60,7 +60,7 @@ pca_iris <- embed_sim(iris[, 1:4],
 expect_equal(formatC(pca_iris$report$cost), "1.598")
 
 context("jacobs")
-tsne_iris_jacobs <- embed_sim(iris[, 1:4],
+tsne_iris_jacobs <- embed_prob(iris[, 1:4],
                               method = tsne(),
                               init_inp = make_init_inp(perplexity = 25,
                                                        input_weight_fn =
