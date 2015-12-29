@@ -119,9 +119,7 @@ make_opt <- function(gradient = classical_gradient(),
     step_size = step_size,
     update = update,
 
-    init = make_opt_init(direction_fn = direction$init,
-                         step_size_fn = step_size$init,
-                         update_fn = update$init),
+    init = initialize_optimizer,
 
     validate = validate_solution,
 
@@ -184,38 +182,30 @@ bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
            update = nesterov_nsc_momentum(max_momentum = max_momentum))
 }
 
-#' Create optimizer initialization.
+#' Optimizer initialization.
 #'
-#' Create callback to be invoked when the optimizer is initialized.
+#' The direction, step size and update components of the optimizer may all
+#' provide initialization methods to set their internal state before the first
+#' optimization iteration This function will run those initialization functions
+#' as part of the overall optimizer intialization step.
 #'
-#' The direction, step size and update methods of the optimizer may all provide
-#' initialization methods to set their internal state before the first
-#' optimization step. This function accumulates all the provided function into
-#' a single callback that the optimizer will invoke whenever it updates the
-#' solution.
-#'
-#' @param direction_fn Function provided by the direction method to be invoked
-#' during initialization.
-#' @param step_size_fn Function provided by the step size method to be invoked
-#' during initialization.
-#' @param update_fn Function provided by the update method to be invoked during
-#' initialization.
-#' @return Callback to be invoked by the optimizer during initialization.
-make_opt_init <- function(direction_fn = NULL,
-                      step_size_fn = NULL,
-                      update_fn = NULL) {
+#' @param opt Optimizer to initialize.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return a list containing:
+#' \item{\code{opt}}{Optimizer with its components initialized.}
+initialize_optimizer <- function(opt, inp, out, method) {
   init <- remove_nulls(list(
-    direction = direction_fn,
-    step_size = step_size_fn,
-    update = update_fn
+    direction = opt$direction$init,
+    step_size = opt$step_size$init,
+    update = opt$update$init
   ))
 
-  function(opt, inp, out, method) {
-    for (name in names(init)) {
-      opt <- init[[name]](opt, inp, out, method)
-    }
-    opt
+  for (name in names(init)) {
+    opt <- init[[name]](opt, inp, out, method)
   }
+  opt
 }
 
 #' Validate proposed solution.
