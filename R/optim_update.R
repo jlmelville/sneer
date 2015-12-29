@@ -242,6 +242,40 @@ nesterov_nsc_momentum <- function(max_momentum = 1) {
   )
 }
 
+#' An update schedule with constant momentum.
+#'
+#' Factory function for creating an optimizer update method.
+#'
+#' Create a callback for the optimizer to use with a constant momentum term.
+#' This may be useful in the final stages of an optimization for fine tuning
+#' a solution.
+#'
+#' @param momentum Momentum value to use.
+#' @return Constant momentum update method, to be used by the optimizer.
+#' @seealso The return value of this function is intended for internal use of
+#' the sneer framework only. See \code{\link{optimizer_update}} for details
+#' on the functions and values defined for this method.
+#' @examples
+#' # Use as part of the make_opt function for configuring an optimizer's
+#' # update method:
+#' make_opt(update = constant_momentum())
+#' @family sneer optimization update methods
+#' @export
+constant_momentum <- function(momentum) {
+  list(
+    init = function(opt, inp, out, method) {
+      opt$update$momentum <- momentum
+      opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
+                                 ncol(out[[opt$mat_name]]))
+      opt
+    },
+    calculate = function(opt, inp, out, method) {
+      opt$update$value <- momentum_update(opt, inp, out, method)
+      list(opt = opt)
+    }
+  )
+}
+
 #' An update schedule with no momentum.
 #'
 #' Factory function for creating an optimizer update method.
@@ -260,18 +294,7 @@ nesterov_nsc_momentum <- function(max_momentum = 1) {
 #' @family sneer optimization update methods
 #' @export
 no_momentum <- function() {
-  list(
-    init = function(opt, inp, out, method) {
-      opt$update$momentum <- 0
-      opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
-                                    ncol(out[[opt$mat_name]]))
-      opt
-    },
-    calculate = function(opt, inp, out, method) {
-      opt$update$value <- momentum_update(opt, inp, out, method)
-      list(opt = opt)
-    }
-  )
+  constant_momentum(0)
 }
 
 #' Solution update with momentum term.

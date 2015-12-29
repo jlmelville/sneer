@@ -39,7 +39,8 @@ The return value of this function is intended for internal use of
 the sneer framework only. See \code{\link{optimizer_update}} for details
 on the functions and values defined for this method.
 
-Other sneer optimization update methods: \code{\link{linear_momentum}},
-  \code{\link{no_momentum}}, \code{\link{step_momentum}}
+Other sneer optimization update methods: \code{\link{constant_momentum}},
+  \code{\link{linear_momentum}}, \code{\link{no_momentum}},
+  \code{\link{step_momentum}}
 }
 
