@@ -123,9 +123,7 @@ make_opt <- function(gradient = classical_gradient(),
                          step_size_fn = step_size$init,
                          update_fn = update$init),
 
-    validate = make_opt_validate(direction_fn = direction$validate,
-                                 step_size_fn = step_size$validate,
-                                 update_fn = update$validate),
+    validate = validate_solution,
 
     after_step = make_opt_after_step(direction_fn = direction$after_step,
                                      step_size_fn = step_size$after_step,
@@ -220,67 +218,74 @@ make_opt_init <- function(direction_fn = NULL,
   }
 }
 
-#' Create solution validation callback.
+#' Validate proposed solution.
 #'
-#' Makes a callback to be used by the optimizer to validate a solution.
+#' Validation function of an optimization iteration.
 #'
 #' The direction, step size or update part of the optimization step can "veto"
 #' a particular solution if it's not to their liking. For example, the bold
 #' driver step size method will flag an update as not ok if the cost increases.
 #' If the solution does not validate, then it will not be applied to the
 #' solution and the next iteration step takes place from the same position as
-#' the current iteration. Therefore it's important that the state of the
-#' optimizer also be changed if the validation has failed or the same failure
-#' will occur again. For example, in the case of the bold driver, a failed
-#' solution results in the step size being decreased.
+#' the current iteration.
 #'
-#' The callback, when invoked, will call the validation functions provided by
+#' When invoked, this function will call the validation functions provided by
 #' the different components of the optimizer. If any of them return \code{FALSE}
-#' the the validation callback will indicate the step failed.
+#' this function will also return \code{FALSE} (i.e. all parts of the optimizer
+#' must agree that the proposed solution is a good one). The optimizer will
+#' reject a solution which fails this validation function and start the next
+#' iteration with the same solution as it started the current iteration with.
+#' To avoid the optimizer getting permanently stuck, any part of the optimizer
+#' that can fail the validation should also update its internal state so that
+#' a different update will be attempted on the next iteration.
 #'
-#' @param direction_fn Validation function for the direction method.
-#' @param step_size_fn Validation function for the step size method.
-#' @param update_fn Validation function for the update method.
-#' @return A validation callback.
-make_opt_validate <- function(direction_fn = NULL,
-                              step_size_fn = NULL,
-                              update_fn = NULL) {
-
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data from the start of the iteration.
+#' @param proposed_out Proposed updated output for this iteration.
+#' @param method Embedding method.
+#' @return A list containing:
+#' \item{\code{opt}}{Optimizer.}
+#' \item{\code{inp}}{Input data.}
+#' \item{\code{out}}{Output data from the start of the iteration.}
+#' \item{\code{proposed_out}}{Proposed updated output for this iteration.}
+#' \item{\code{method}}{Embedding method.}
+#' \item{\code{ok}}{Logical value, \code{TRUE} if \code{proposed_out} passed
+#' validation, \code{FALSE} otherwise}
+validate_solution <- function(opt, inp, out, proposed_out, method) {
   validate <- remove_nulls(list(
-    direction = direction_fn,
-    step_size = step_size_fn,
-    update = update_fn
+    direction = opt$direction$validate,
+    step_size = opt$step_size$validate,
+    update = opt$update$validate
   ))
 
-  function(opt, inp, out, proposed_out, method) {
-    all_good <- TRUE
+  all_good <- TRUE
 
-    for (name in names(validate)) {
-      result <- validate[[name]](opt, inp, out, proposed_out, method)
-      if (!is.null(result$opt)) {
-        opt <- result$opt
-      }
-      if (!is.null(result$inp)) {
-        inp <- result$inp
-      }
-      if (!is.null(result$out)) {
-        out <- result$out
-      }
-      if (!is.null(result$proposed_out)) {
-        proposed_out <- result$proposed_out
-      }
-      if (!is.null(result$method)) {
-        method <- result$method
-      }
-      if (!is.null(result$ok)) {
-        if (!result$ok) {
-          all_good <- FALSE
-        }
+  for (name in names(validate)) {
+    result <- validate[[name]](opt, inp, out, proposed_out, method)
+    if (!is.null(result$opt)) {
+      opt <- result$opt
+    }
+    if (!is.null(result$inp)) {
+      inp <- result$inp
+    }
+    if (!is.null(result$out)) {
+      out <- result$out
+    }
+    if (!is.null(result$proposed_out)) {
+      proposed_out <- result$proposed_out
+    }
+    if (!is.null(result$method)) {
+      method <- result$method
+    }
+    if (!is.null(result$ok)) {
+      if (!result$ok) {
+        all_good <- FALSE
       }
     }
-    list(ok = all_good, opt = opt, inp = inp, out = out,
-         proposed_out = proposed_out, method = method)
   }
+  list(ok = all_good, opt = opt, inp = inp, out = out,
+       proposed_out = proposed_out, method = method)
 }
 
 #' Create callback to be invoked after the solution is updated.
