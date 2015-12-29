@@ -113,6 +113,7 @@ make_opt <- function(gradient = classical_gradient(),
   list(
     mat_name = mat_name,
     normalize_grads = normalize_grads,
+    recenter = recenter,
 
     gradient = gradient,
     direction = direction,
@@ -120,13 +121,8 @@ make_opt <- function(gradient = classical_gradient(),
     update = update,
 
     init = initialize_optimizer,
-
     validate = validate_solution,
-
-    after_step = make_opt_after_step(direction_fn = direction$after_step,
-                                     step_size_fn = step_size$after_step,
-                                     update_fn = update$after_step,
-                                     recenter = recenter)
+    after_step = after_step
   )
 }
 
@@ -278,60 +274,54 @@ validate_solution <- function(opt, inp, out, proposed_out, method) {
        proposed_out = proposed_out, method = method)
 }
 
-#' Create callback to be invoked after the solution is updated.
+#' Post Optimization Step
 #'
-#' The direction, step size and update methods of the optimizer may all have
-#' to update their internal state after the solution has been updated (e.g.
-#' updating step sizes or momentum terms according to a schedule). This function
-#' accumulates all the provided function into a single callback that the
-#' optimizer will invoke whenever it updates the solution.
+#' A function for the optimizer to run after updating the solution on each
+#' iteration. As part of this process it will run any \code{after_step}
+#' functions provided by the direction, step size and update methods of the
+#' optimizer.
 #'
-#' @param recenter If \code{TRUE}, translate the embedded coordinates so they
-#' are centered around the origin.
-#' @param direction_fn Function provided by the direction method to be invoked
-#' after the solution has been updated.
-#' @param step_size_fn Function provided by the step size method to be invoked
-#' after the solution has been updated.
-#' @param update_fn Function provided by the update method to be invoked after
-#' the solution has been updated.
-#' @return Callback to be invoked by the optimizer after the solution has been
-#' updated.
-make_opt_after_step <- function(recenter = TRUE,
-                            direction_fn = NULL,
-                            step_size_fn = NULL,
-                            update_fn = NULL) {
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data from the start of the iteration.
+#' @param new_out Output data which will be the starting solution for the next
+#' iteration of optimization. If the validation stage failed, then this may be
+#' the same solution as \code{out}.
+#' @param ok \code{TRUE} if the current iteration passed validation,
+#' \code{FALSE} otherwise.
+#' @param iter Current iteration number.
+#' @return A list containing
+#' \item{\code{opt}}{Updated optimizer.}
+#' \item{\code{inp}}{Input data.}
+#' \item{\code{out}}{Output data from the start of the iteration.}
+#' \item{\code{new_out}}{New output to be used in the next iteration.}
+after_step <- function(opt, inp, out, new_out, ok, iter) {
   after_step <- remove_nulls(list(
-    direction = direction_fn,
-    step_size = step_size_fn,
-    update = update_fn
+    direction = opt$direction$after_step,
+    step_size = opt$step_size$after_step,
+    update = opt$update$after_step
   ))
 
-  if (recenter) {
-    after_step$recenter <- function(opt, inp, out, new_out, ok, iter) {
-      vm <- new_out[[opt$mat_name]]
-      vm <- sweep(vm, 2, colMeans(vm))  # subtract colMeans from each column
-      new_out[[opt$mat_name]] <- vm
-
-      list(new_out = new_out)
+  for (name in names(after_step)) {
+    result <- after_step[[name]](opt, inp, out, new_out, ok, iter)
+    if (!is.null(result$opt)) {
+      opt <- result$opt
+    }
+    if (!is.null(result$inp)) {
+      inp <- result$inp
+    }
+    if (!is.null(result$out)) {
+      out <- result$out
+    }
+    if (!is.null(result$new_out)) {
+      new_out <- result$new_out
     }
   }
 
-  function(opt, inp, out, new_out, ok, iter) {
-    for (name in names(after_step)) {
-      result <- after_step[[name]](opt, inp, out, new_out, ok, iter)
-      if (!is.null(result$opt)) {
-        opt <- result$opt
-      }
-      if (!is.null(result$inp)) {
-        inp <- result$inp
-      }
-      if (!is.null(result$out)) {
-        out <- result$out
-      }
-      if (!is.null(result$new_out)) {
-        new_out <- result$new_out
-      }
-    }
-    list(opt = opt, inp = inp, out = out, new_out = new_out)
+  if (opt$recenter) {
+    new_out[[opt$mat_name]] <- scale(new_out[[opt$mat_name]], center = TRUE,
+                                     scale = FALSE)
   }
+
+  list(opt = opt, inp = inp, out = out, new_out = new_out)
 }
