@@ -11,6 +11,31 @@
 #' @family sneer optimization step size methods
 NULL
 
+#' Fixed Step Size
+#'
+#' Factory function for creating an optimizer step size method.
+#'
+#' This function creates a step size method where the step size is always
+#' a constant value.
+#' @param step_size Value of the step_size.
+#' @examples
+#' # Use as part of the make_opt function for configuring an optimizer's
+#' # step size method:
+#' make_opt(step_size = constant_step_size(0.1))
+#' @export
+#' @family sneer optimization step size methods
+constant_step_size <- function(step_size = 1) {
+  list(
+    init = function(opt, inp, out, method) {
+      opt$step_size$value = step_size
+      opt
+    },
+    calculate = function(opt, inp, out, method) {
+      list(opt = opt)
+    }
+  )
+}
+
 #' Bold Driver Step Size Method
 #'
 #' Factory function for creating an optimizer step size method.
@@ -60,6 +85,7 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
     init = function(opt, inp, out, method) {
       opt$step_size$old_cost <- method$cost_fn(inp, out, method)
       opt$step_size$value <- opt$step_size$init_step_size
+      opt$step_size$ok <- TRUE
       opt
     },
     calculate = function(opt, inp, out, method) {
@@ -70,11 +96,13 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
       ok <- cost < opt$step_size$old_cost
 
       opt$step_size$cost <- cost
+      opt$step_size$ok <- ok
+
       list(ok = ok, opt = opt)
     },
     after_step = function(opt, inp, out, new_out, ok, iter) {
       s_old <- opt$step_size$value
-      if (ok) {
+      if (opt$step_size$ok) { # only care about this component's validation
         s_new <- opt$step_size$inc_fn(opt$step_size$value)
       } else {
         s_new <- opt$step_size$dec_fn(opt$step_size$value)

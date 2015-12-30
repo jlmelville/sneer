@@ -32,7 +32,7 @@ the sneer framework only. See \code{\link{optimization_step_size_interface}}
 for details on the functions and values defined for this method.
 
 Other sneer optimization step size methods: \code{\link{bold_driver}},
-  \code{\link{jacobs}},
+  \code{\link{constant_step_size}}, \code{\link{jacobs}},
   \code{\link{optimization_step_size}}
 }
 

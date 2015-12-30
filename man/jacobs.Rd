@@ -83,6 +83,7 @@ for details on the functions and values defined for this method.
 the settings as given in the t-SNE paper.
 
 Other sneer optimization step size methods: \code{\link{bold_driver}},
+  \code{\link{constant_step_size}},
   \code{\link{optimization_step_size}},
   \code{\link{tsne_jacobs}}
 }

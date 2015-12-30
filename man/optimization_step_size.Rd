@@ -13,7 +13,8 @@ make_opt(step_size = jacobs())
 }
 \seealso{
 Other sneer optimization step size methods: \code{\link{bold_driver}},
-  \code{\link{jacobs}}, \code{\link{tsne_jacobs}}
+  \code{\link{constant_step_size}}, \code{\link{jacobs}},
+  \code{\link{tsne_jacobs}}
 }
 \keyword{internal}
 
