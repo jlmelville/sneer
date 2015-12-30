@@ -1,70 +1,73 @@
-# Miscellaneous data manipulations that may help optimize the embedding.
-# If you are fancy, you could call them "heuristics", but the t-SNE paper calls
-# their approach "tricks" and that's less characters to type.
+#' Tricks
+#'
+#' Miscellaneous data manipulations that may help optimize the embedding.
+#' If you are fancy, you could call them "heuristics", but the t-SNE paper
+#' calls their approach "tricks" and that's less characters to type, so we'll
+#' go with that too.
+#'
+#' @examples
+#' # pass one or more tricks to the make_tricks factory function:
+#' # no tricks
+#' make_tricks()
+#'
+#' # one trick
+#' make_tricks(early_exaggeration())
+#'
+#' # two tricks
+#' make_tricks(early_exaggeration(), late_momentum())
+#'
+#' \dontrun{
+#' # in turn, pass the result of make_tricks to an embedding routine
+#' embed_prob(make_tricks(early_exaggeration(), late_momentum()), ...)
+#' }
+#'
+#' @keywords internal
+#' @name tricks
+#' @family sneer tricks
+NULL
+
 
 #' Tricks
 #'
-#' Creates a callback which the embedding routine will call before each
-#' optimization step.
+#' A collection of heuristics to improve embeddings.
 #'
-#' @param early_exaggeration If \code{TRUE}, then apply early exaggeration.
-#' @param P_exaggeration The size of the exaggeration.
-#' @param exaggeration_off_iter Iteration step to turn exaggeration off.
-#' @param verbose If \code{TRUE} log messages about trick application.
-#' @return Tricks callback with the signature \code{tricks(inp, out, method,
-#' opt, iter)} where:
-#' \describe{
-#'  \item{\code{inp}}{Input data.}
-#'  \item{\code{out}}{Output data.}
-#'  \item{\code{method}}{Embedding method.}
-#'  \item{\code{opt}}{Optimizer.}
-#'  \item{\code{iter}}{Iteration number.}
-#' }
-#' and returns a list containing:
-#' \describe{
-#'  \item{\code{inp}}{Updated input data.}
-#'  \item{\code{out}}{Updated output data.}
-#'  \item{\code{method}}{Updated embedded method.}
-#'  \item{\code{opt}}{Updated optimizer.}
-#' }
-#' @seealso \code{\link{embed_prob}} for how to use this function for
-#' configuring an embedding.
+#' Creates a callback which the embedding routine will call before each
+#' optimization step. Represents a collection of miscellaneous tweaks that
+#' don't fit neatly into the rest of the framework, and as such can modify
+#' the state of any other component of the embedding routine: input data,
+#' output data, optimizer or embedding method.
+#'
+#' The input to this function can be zero, one or multiple independent tricks,
+#' each of which is created by their own factory function. As a result, the
+#' signature of this function is not informative. For information on the tricks
+#' available, see \code{\link{tricks}}.
+#'
+#' Some wrappers around this function which apply sets of tricks from the
+#' literature are available. See the links under the 'See Also' section.
+#'
+#' @param ... Zero or more \code{\link{tricks}}.
+#' @return Callback collecting all the supplied tricks, to be invoked by the
+#' embedding routine.
+#' @seealso The result value of this function should be passed to the
+#' \code{\link{tricks}} parameter of embedding routines like
+#' \code{\link{embed_prob}} and \code{\link{embed_dist}}.
 #' @examples
 #' # Use early exaggeration as described in the t-SNE paper
-#' make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
-#'             exaggeration_off_iter = 50)
+#' make_tricks(early_exaggeration(exaggeration = 4, off_iter = 50))
 #'
 #' # Should be passed to the tricks argument of an embedding function:
 #' \dontrun{
-#'  embed_prob(tricks = make_tricks(early_exaggeration = TRUE,
-#'                                 P_exaggeration = 4,
-#'                                 exaggeration_off_iter = 50), ...)
+#'  embed_prob(tricks = make_tricks(early_exaggeration(
+#'                                  exaggeration = 4, off_iter = 50), ...)
 #' }
-#' @family sneer tricks
+#' @family sneer trick collections
 #' @export
-make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
-                        exaggeration_off_iter = 50, verbose = TRUE) {
-  tricks <- list()
-  if (early_exaggeration) {
-    exaggeration_func <- function(inp, out, method, opt, iter) {
-      if (iter == 0) {
-        inp$pm <- inp$pm * P_exaggeration
-      }
-      if (iter == exaggeration_off_iter) {
-        if (verbose) {
-          message("Exaggeration off at iter: ", iter)
-        }
-        inp$pm <- inp$pm / P_exaggeration
-      }
-
-      list(inp = inp)
-    }
-    tricks$exaggeration <- exaggeration_func
-  }
+make_tricks <- function(...) {
+  tricks <- list(...)
 
   function(inp, out, method, opt, iter) {
-    for (name in names(tricks)) {
-      result <- tricks[[name]](inp, out, method, opt, iter)
+    for (i in seq_along(tricks)) {
+      result <- tricks[[i]](inp, out, method, opt, iter)
       if (!is.null(result$inp)) {
         inp <- result$inp
       }
@@ -81,6 +84,90 @@ make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
     list(inp = inp, out = out, method = method, opt = opt)
   }
 }
+
+#' Early Exaggeration
+#'
+#' A "trick" for improving the quality of the embedding.
+#'
+#' This trick is for use with probability-based embedding. It scales up the
+#' input probabilities for the first few iterations of the embedding to
+#' encourage close distances to form between very similar points.
+#'
+#' @param exaggeration Size of the exaggeration factor: input probabilities will
+#' be multiplied by this value.
+#' @param off_iter Iteration step at which the input probabilities are returned
+#' to their original values.
+#' @param verbose If \code{TRUE} report a message when exaggeration is turned
+#' off.
+#' @return Trick callback. Should be passed to \code{\link{make_tricks}} when
+#' configuring an embedding.
+#' @examples
+#' \dontrun{
+#' # exaggerate for the first 100 iterations
+#' embed_prob(make_tricks(early_exaggeration(off_iter = 100)), ...)
+#' }
+#' @family sneer tricks
+#' @export
+early_exaggeration <- function(exaggeration = 4, off_iter = 50,
+                               verbose = TRUE) {
+  function(inp, out, method, opt, iter) {
+    if (iter == 0) {
+      inp$pm <- inp$pm * exaggeration
+    }
+    if (iter == off_iter) {
+      if (verbose) {
+        message("Exaggeration off at iter: ", iter)
+      }
+      inp$pm <- inp$pm / exaggeration
+    }
+
+    list(inp = inp)
+  }
+}
+
+#' Early Exaggeration
+#'
+#' A "trick" for improving the quality of the embedding.
+#'
+#' Replaces the momentum scheme of an optimizer with a fixed value. This may
+#' be useful when using an optimizer with a very aggressive momentum schedule,
+#' such as Nesterov Accelerated Gradient method. Reducing the momentum for the
+#' final stage of the embedding may help the optimizer refine a solution.
+#'
+#' @param momentum Value of the fixed momentum to use.
+#' @param on_iter Iteration step at which to apply the new momentum value.
+#' @param verbose If \code{TRUE} report a message when the new momentum is
+#' applied.
+#' @return Trick callback. Should be passed to \code{\link{make_tricks}} when
+#' configuring an embedding.
+#' @examples
+#' \dontrun{
+#' # Apply new momentum after 800 iterations
+#' embed_prob(make_tricks(late_exaggeration(momentum = 0.5, on_iter = 800)),
+#'            ...)
+#' }
+#' @references
+#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
+#' On the importance of momentum and initialization in deep learning.
+#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
+#' JMLR: W&CP volume 28.
+#'
+#' @family sneer tricks
+#' @export
+late_momentum <- function(momentum = 0.9, on_iter = 900, verbose = TRUE) {
+  function(inp, out, method, opt, iter) {
+    if (iter == on_iter) {
+      if (verbose) {
+        message("Late momentum on at iter: ", iter)
+      }
+      opt$update <- constant_momentum(momentum)
+      opt <- opt$update$init(opt, inp, out, method)
+    }
+    list(opt = opt)
+  }
+}
+
+
 
 #' t-SNE Tricks
 #'
@@ -100,9 +187,9 @@ make_tricks <- function(early_exaggeration = TRUE, P_exaggeration = 4,
 #' Laurens van der Maarten, Geoffrey Hinton.
 #' Visualizing Data using t-SNE.
 #' Journal of Machine Learning Research, 2008, 9, 2579-2605.
-#' @family sneer tricks
+#' @family sneer trick collections
 #' @export
 tsne_tricks <- function(verbose = TRUE) {
-  make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
-              exaggeration_off_iter = 50, verbose = verbose)
+  make_tricks(early_exaggeration(exaggeration = 4, off_iter = 50,
+                                 verbose = verbose))
 }

@@ -4,56 +4,48 @@
 \alias{make_tricks}
 \title{Tricks}
 \usage{
-make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
-  exaggeration_off_iter = 50, verbose = TRUE)
+make_tricks(...)
 }
 \arguments{
-\item{early_exaggeration}{If \code{TRUE}, then apply early exaggeration.}
-
-\item{P_exaggeration}{The size of the exaggeration.}
-
-\item{exaggeration_off_iter}{Iteration step to turn exaggeration off.}
-
-\item{verbose}{If \code{TRUE} log messages about trick application.}
+\item{...}{Zero or more \code{\link{tricks}}.}
 }
 \value{
-Tricks callback with the signature \code{tricks(inp, out, method,
-opt, iter)} where:
-\describe{
- \item{\code{inp}}{Input data.}
- \item{\code{out}}{Output data.}
- \item{\code{method}}{Embedding method.}
- \item{\code{opt}}{Optimizer.}
- \item{\code{iter}}{Iteration number.}
-}
-and returns a list containing:
-\describe{
- \item{\code{inp}}{Updated input data.}
- \item{\code{out}}{Updated output data.}
- \item{\code{method}}{Updated embedded method.}
- \item{\code{opt}}{Updated optimizer.}
-}
+Callback collecting all the supplied tricks, to be invoked by the
+embedding routine.
 }
 \description{
+A collection of heuristics to improve embeddings.
+}
+\details{
 Creates a callback which the embedding routine will call before each
-optimization step.
+optimization step. Represents a collection of miscellaneous tweaks that
+don't fit neatly into the rest of the framework, and as such can modify
+the state of any other component of the embedding routine: input data,
+output data, optimizer or embedding method.
+
+The input to this function can be zero, one or multiple independent tricks,
+each of which is created by their own factory function. As a result, the
+signature of this function is not informative. For information on the tricks
+available, see \code{\link{tricks}}.
+
+Some wrappers around this function which apply sets of tricks from the
+literature are available. See the links under the 'See Also' section.
 }
 \examples{
 # Use early exaggeration as described in the t-SNE paper
-make_tricks(early_exaggeration = TRUE, P_exaggeration = 4,
-            exaggeration_off_iter = 50)
+make_tricks(early_exaggeration(exaggeration = 4, off_iter = 50))
 
 # Should be passed to the tricks argument of an embedding function:
 \dontrun{
- embed_prob(tricks = make_tricks(early_exaggeration = TRUE,
-                                P_exaggeration = 4,
-                                exaggeration_off_iter = 50), ...)
+ embed_prob(tricks = make_tricks(early_exaggeration(
+                                 exaggeration = 4, off_iter = 50), ...)
 }
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for
-configuring an embedding.
+The result value of this function should be passed to the
+\code{\link{tricks}} parameter of embedding routines like
+\code{\link{embed_prob}} and \code{\link{embed_dist}}.
 
-Other sneer tricks: \code{\link{tsne_tricks}}
+Other sneer trick collections: \code{\link{tsne_tricks}}
 }
 

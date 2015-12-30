@@ -37,8 +37,9 @@ NULL
 #'   of the configuration functions listed in
 #'   \code{\link{optimization_methods}}.
 #' @param max_iter Maximum number of optimization steps to take.
-#' @param tricks Tricks callback. Set by assigning the result of
-#'   \code{\link{make_tricks}}.
+#' @param tricks Optional collection of heuristics. Set by assigning the result
+#'  value of \code{\link{make_tricks}} or a related wrapper. See
+#'  \code{\link{tricks}} for the available tricks.
 #' @param reporter Reporter callback. Set by assigning the result value of
 #'   \code{\link{make_reporter}}.
 #' @param export Vector of names to export. Possible names are:
@@ -198,8 +199,9 @@ embed_prob <- function(xm,
 #'   of the configuration functions listed in
 #'   \code{\link{optimization_methods}}.
 #' @param max_iter Maximum number of optimization steps to take.
-#' @param tricks Tricks callback. Set by assigning the result of
-#'   \code{\link{make_tricks}}.
+#' @param tricks Optional collection of heuristics. Set by assigning the result
+#'  value of \code{\link{make_tricks}} or a related wrapper. See
+#'  \code{\link{tricks}} for the available tricks.
 #' @param reporter Reporter callback. Set by assigning the result value of
 #'   \code{\link{make_reporter}}.
 #' @param export Vector of names to export. Possible names are:
@@ -329,8 +331,9 @@ embed_dist <- function(xm,
 #'   of the configuration functions listed in
 #'   \code{\link{optimization_methods}}.
 #' @param max_iter Maximum number of optimization steps to take.
-#' @param tricks Tricks callback. Set by assigning the result of
-#'   \code{\link{make_tricks}}.
+#' @param tricks Optional collection of heuristics. Set by assigning the result
+#'  value of \code{\link{make_tricks}} or a related wrapper. See
+#'  \code{\link{tricks}} for the available tricks.
 #' @param reporter Reporter callback. Set by assigning the result value of
 #'   \code{\link{make_reporter}}.
 #' @param export Vector of names to export. Possible names are:

@@ -31,6 +31,6 @@ Journal of Machine Learning Research, 2008, 9, 2579-2605.
 \code{\link{embed_prob}} for how to use this function for
 configuring an embedding.
 
-Other sneer tricks: \code{\link{make_tricks}}
+Other sneer trick collections: \code{\link{make_tricks}}
 }
 

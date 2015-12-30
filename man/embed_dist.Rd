@@ -36,8 +36,9 @@ of the configuration functions listed in
 
 \item{max_iter}{Maximum number of optimization steps to take.}
 
-\item{tricks}{Tricks callback. Set by assigning the result of
-\code{\link{make_tricks}}.}
+\item{tricks}{Optional collection of heuristics. Set by assigning the result
+value of \code{\link{make_tricks}} or a related wrapper. See
+\code{\link{tricks}} for the available tricks.}
 
 \item{reporter}{Reporter callback. Set by assigning the result value of
 \code{\link{make_reporter}}.}
