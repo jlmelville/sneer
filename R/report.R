@@ -7,38 +7,41 @@
 #'
 #' @param report_every Number of steps between callback invocations.
 #' @param min_cost If the cost function used by the embedding falls below this
-#' value, the optimization process is halted.
+#'  value, the optimization process is halted.
 #' @param reltol If the relative tolerance of the cost function between
-#' consecutive reports falls below this value, the optimization process is
-#' halted.
+#'  consecutive reports falls below this value, the optimization process is
+#'  halted.
 #' @param plot_fn Function for plotting embedding. Signature should be
-#' \code{plot_fn(out)} where \code{out} is the output data list. Return value
-#' of this function is ignored.
+#'  \code{plot_fn(out)} where \code{out} is the output data list. Return value
+#'  of this function is ignored.
 #' @param normalize_cost If \code{TRUE}, the cost calculated by the cost
-#' function will be normalized and both values logged.
+#'  function will be normalized and both values logged.
 #' @param keep_costs If \code{TRUE}, all costs (including those specified in
-#' \code{extra_costs}) and the iteration number at
-#' which they were calculated will be stored on result list returned by the
-#' reporter callback.
-#' @param extra_costs List containing the names of cost functions to be reported,
-#' in addition to the cost associated with the embedding method, which will
-#' always be logged. Possible cost functions include:
-#' \describe{
-#'  \item{\code{"kl"}}{\code{\link{kl_cost}}.}
-#'  \item{\code{"kruskal_stress"}}{\code{\link{kruskal_stress_cost}}.}
-#'  \item{\code{"mean_relative_error"}}{\code{\link{mean_relative_error_cost}}.}
-#'  \item{\code{"metric_sstress"}}{\code{\link{metric_sstress_cost}}.}
-#'  \item{\code{"metric_stress"}}{\code{\link{metric_stress_cost}}.}
-#'  \item{\code{"normalized_stress"}}{\code{\link{normalized_stress_cost}}.}
-#'  \item{\code{"rms_metric_stress"}}{\code{\link{rms_metric_stress_cost}}.}
-#'  \item{\code{"sammon_stress"}}{\code{\link{sammon_stress_cost}}.}
-#' }
-#' Note that not all costs are compatible with all embedding methods, because
-#' they may require specific matrices or other values to be precalculated in the
-#' Input and Output data. See the help text for each cost function for details.
+#'  \code{extra_costs}) and the iteration number at
+#'  which they were calculated will be stored on result list returned by the
+#'  reporter callback.
+#' @param extra_costs List containing the names of cost functions to be
+#'  reported, in addition to the cost associated with the embedding method,
+#'  which will always be logged. Possible cost functions include:
+#'  \describe{
+#'    \item{\code{"kl"}}{\code{\link{kl_cost}}.}
+#'    \item{\code{"kruskal_stress"}}{\code{\link{kruskal_stress_cost}}.}
+#'    \item{\code{"mean_relative_error"}}{\code{\link{mean_relative_error_cost}}.}
+#'    \item{\code{"metric_sstress"}}{\code{\link{metric_sstress_cost}}.}
+#'    \item{\code{"metric_stress"}}{\code{\link{metric_stress_cost}}.}
+#'    \item{\code{"normalized_stress"}}{\code{\link{normalized_stress_cost}}.}
+#'    \item{\code{"rms_metric_stress"}}{\code{\link{rms_metric_stress_cost}}.}
+#'    \item{\code{"sammon_stress"}}{\code{\link{sammon_stress_cost}}.}
+#'  }
+#'  Note that not all costs are compatible with all embedding methods, because
+#'  they may require specific matrices or other values to be precalculated in
+#'  the Input and Output data. See the help text for each cost function for
+#'  details.
+#' @param opt_report If \code{TRUE}, summary of the state of the optimization
+#'  (e.g. step size, momentum, gradient length) will be reported.
 #' @param verbose If \code{TRUE}, report results such as cost values
-#' will be logged to screen. If set to false, you will have to export the
-#' report from the embedding routine to access any of the information.
+#'  will be logged to screen. If set to false, you will have to export the
+#'  report from the embedding routine to access any of the information.
 #' @return Reporter callback used by the embedding routine. The callback has the
 #' signature \code{reporter(iter, inp, out, method, report)} where:
 #'  \item{\code{iter}}{Iteration number.}
@@ -103,10 +106,11 @@
 make_reporter <- function(report_every = 100, min_cost = 0,
                           reltol = sqrt(.Machine$double.eps), plot_fn = NULL,
                           normalize_cost = TRUE, keep_costs = FALSE,
-                          extra_costs = NULL, verbose = TRUE) {
+                          extra_costs = NULL, opt_report = FALSE,
+                          verbose = TRUE) {
   reporter <- list()
 
-  reporter$cost_log <- function(iter, inp, out, method, result) {
+  reporter$cost_log <- function(iter, inp, out, method, opt, result) {
     cost <- method$cost_fn(inp, out, method)
     if (is.null(result$cost)) {
       result$cost <- .Machine$double.xmax
@@ -179,18 +183,32 @@ make_reporter <- function(report_every = 100, min_cost = 0,
   }
 
   if (!is.null(plot_fn)) {
-    reporter$plot_embedding <- function(iter, inp, out, method, result) {
+    reporter$plot_embedding <- function(iter, inp, out, method, opt, result) {
       plot_fn(out)
       result
     }
   }
 
-  function(iter, inp, out, method, report, force = FALSE) {
+  if (opt_report) {
+    reporter$opt_report <- function(iter, inp, out, method, opt, result) {
+      opt_data <- opt$report(opt)
+      opt_str <- ""
+      for (name in names(opt_data)) {
+        opt_str <- paste0(opt_str, name, ": ", formatC(opt_data[[name]]), " ")
+      }
+      if (nchar(opt_str) > 0) {
+        message(opt_str)
+      }
+      result
+    }
+  }
+
+  function(iter, inp, out, method, opt, report, force = FALSE) {
     report$stop_early <- FALSE
     if (iter %% report_every == 0 || force) {
       report$iter <- iter
       for (name in names(reporter)) {
-        report <- reporter[[name]](iter, inp, out, method, report)
+        report <- reporter[[name]](iter, inp, out, method, opt, report)
       }
     }
     report

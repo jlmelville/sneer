@@ -7,7 +7,7 @@
 make_reporter(report_every = 100, min_cost = 0,
   reltol = sqrt(.Machine$double.eps), plot_fn = NULL,
   normalize_cost = TRUE, keep_costs = FALSE, extra_costs = NULL,
-  verbose = TRUE)
+  opt_report = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{report_every}{Number of steps between callback invocations.}
@@ -31,22 +31,26 @@ function will be normalized and both values logged.}
 which they were calculated will be stored on result list returned by the
 reporter callback.}
 
-\item{extra_costs}{List containing the names of cost functions to be reported,
-in addition to the cost associated with the embedding method, which will
-always be logged. Possible cost functions include:
+\item{extra_costs}{List containing the names of cost functions to be
+reported, in addition to the cost associated with the embedding method,
+which will always be logged. Possible cost functions include:
 \describe{
- \item{\code{"kl"}}{\code{\link{kl_cost}}.}
- \item{\code{"kruskal_stress"}}{\code{\link{kruskal_stress_cost}}.}
- \item{\code{"mean_relative_error"}}{\code{\link{mean_relative_error_cost}}.}
- \item{\code{"metric_sstress"}}{\code{\link{metric_sstress_cost}}.}
- \item{\code{"metric_stress"}}{\code{\link{metric_stress_cost}}.}
- \item{\code{"normalized_stress"}}{\code{\link{normalized_stress_cost}}.}
- \item{\code{"rms_metric_stress"}}{\code{\link{rms_metric_stress_cost}}.}
- \item{\code{"sammon_stress"}}{\code{\link{sammon_stress_cost}}.}
+  \item{\code{"kl"}}{\code{\link{kl_cost}}.}
+  \item{\code{"kruskal_stress"}}{\code{\link{kruskal_stress_cost}}.}
+  \item{\code{"mean_relative_error"}}{\code{\link{mean_relative_error_cost}}.}
+  \item{\code{"metric_sstress"}}{\code{\link{metric_sstress_cost}}.}
+  \item{\code{"metric_stress"}}{\code{\link{metric_stress_cost}}.}
+  \item{\code{"normalized_stress"}}{\code{\link{normalized_stress_cost}}.}
+  \item{\code{"rms_metric_stress"}}{\code{\link{rms_metric_stress_cost}}.}
+  \item{\code{"sammon_stress"}}{\code{\link{sammon_stress_cost}}.}
 }
 Note that not all costs are compatible with all embedding methods, because
-they may require specific matrices or other values to be precalculated in the
-Input and Output data. See the help text for each cost function for details.}
+they may require specific matrices or other values to be precalculated in
+the Input and Output data. See the help text for each cost function for
+details.}
+
+\item{opt_report}{If \code{TRUE}, summary of the state of the optimization
+(e.g. step size, momentum, gradient length) will be reported.}
 
 \item{verbose}{If \code{TRUE}, report results such as cost values
 will be logged to screen. If set to false, you will have to export the

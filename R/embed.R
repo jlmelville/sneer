@@ -415,7 +415,7 @@ embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
     }
 
     if (!is.null(reporter)) {
-      report <- reporter(iter, inp, out, method, report)
+      report <- reporter(iter, inp, out, method, opt, report)
       if (report$stop_early) {
         break
       }
@@ -437,7 +437,7 @@ embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
   if ((is.null(report$iter) || report$iter != iter - 1) &&
       !report$stop_early && "report" %in% export) {
     if (!is.null(reporter)) {
-      report <- reporter(iter, inp, out, method, report, force = TRUE)
+      report <- reporter(iter, inp, out, method, opt, report, force = TRUE)
     }
   }
 

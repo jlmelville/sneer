@@ -112,7 +112,9 @@ make_opt <- function(gradient = classical_gradient(),
 
     init = initialize_optimizer,
     validate = validate_solution,
-    after_step = after_step
+    after_step = after_step,
+
+    report = opt_report
   )
 }
 
@@ -351,4 +353,33 @@ after_step <- function(opt, inp, out, new_out, ok, iter) {
   }
 
   list(opt = opt, inp = inp, out = out, new_out = new_out)
+}
+
+#' Optimizer Diagnostics
+#'
+#' Simple diagnostics of the state of the optimization.
+#'
+#' @param opt Optimizer to report on.
+#' @return a list containing (very) brief numeric summary of parts of the
+#' optimizer:
+#' \item{\code{grad_length}}{Length of the gradient.}
+#' \item{\code{step_size}}{Value of the step size (or length of the step size
+#'  vector).}
+#' \item{\code{momentum}}{Momentum (if any).}
+opt_report <- function(opt) {
+  result <- list()
+  if (!is.null(opt$gm)) {
+    result$grad_length <- length_vec(opt$gm)
+  }
+  if (class(opt$step_size$value) == "matrix") {
+    result$step_size <- length_vec(opt$step_size$value)
+  }
+  else {
+    result$step_size <- opt$step_size$value
+  }
+  if (!is.null(opt$update$momentum)) {
+    result$momentum <- opt$update$momentum
+  }
+
+  result
 }

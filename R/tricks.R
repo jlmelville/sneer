@@ -157,17 +157,17 @@ early_exaggeration <- function(exaggeration = 4, off_iter = 50,
 late_momentum <- function(momentum = 0.9, on_iter = 900, verbose = TRUE) {
   function(inp, out, method, opt, iter) {
     if (iter == on_iter) {
-      if (verbose) {
-        message("Late momentum on at iter: ", iter)
+      if (!is.null(opt$update$momentum) && opt$update$momentum > momentum) {
+        if (verbose) {
+          message("Late momentum on at iter: ", iter)
+        }
+        opt$update <- constant_momentum(momentum)
+        opt <- opt$update$init(opt, inp, out, method)
       }
-      opt$update <- constant_momentum(momentum)
-      opt <- opt$update$init(opt, inp, out, method)
     }
     list(opt = opt)
   }
 }
-
-
 
 #' t-SNE Tricks
 #'
