@@ -2,7 +2,7 @@
 % Please edit documentation in R/tricks.R
 \name{late_momentum}
 \alias{late_momentum}
-\title{Early Exaggeration}
+\title{Late Momentum}
 \usage{
 late_momentum(momentum = 0.9, on_iter = 900, verbose = TRUE)
 }

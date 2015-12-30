@@ -125,7 +125,7 @@ early_exaggeration <- function(exaggeration = 4, off_iter = 50,
   }
 }
 
-#' Early Exaggeration
+#' Late Momentum
 #'
 #' A "trick" for improving the quality of the embedding.
 #'
