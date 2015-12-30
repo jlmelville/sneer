@@ -118,12 +118,14 @@ make_opt <- function(gradient = classical_gradient(),
 
 #' t-SNE Optimizer
 #'
-#' Convenience factory function which sets the optimizer parameters to that
-#' from the t-SNE paper.
+#' Optimizer factory function.
+#'
+#' Wrapper around \code{\link{make_opt}} which sets the optimizer parameters to
+#' that from the t-SNE paper.
 #'
 #' @return optimizer with parameters from the t-SNE paper.
-#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
-#' an embedding.
+#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#'  this function for configuring an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
 #' \dontrun{
@@ -142,16 +144,25 @@ tsne_opt <- function() {
 
 #' Nesterov Accelerated Gradient Optimizer with Bold Driver
 #'
-#' Convenience factory function which makes a very performant optimizer. Mixes
-#' the NAG descent method and momentum for non-strongly convex problems
-#' formulated by Sutkever et al., along with the bold driver method for step
-#' size.
+#' Optimizer factory function.
+#'
+#' Wrapper around \code{\link{make_opt}} which makes a very performant
+#' optimizer. Mixes the NAG descent method and momentum for non-strongly convex
+#' problems formulated by Sutkever et al., along with the bold driver method
+#' for step size.
+#'
+#' @note This optimizer is prone to converge prematurely in the face of sudden
+#' changes to the solution landscape, such as can happen when certain
+#' \code{\link{tricks}} are applied. In these cases, substantially increasing
+#' the \code{min_step_size} parameter so that the bold driver doesn't reduce
+#' the step size is highly recommended.
+#'
 #' @param min_step_size Minimum step size allowed.
 #' @param init_step_size Initial step size.
 #' @param max_momentum Maximum value the momentum may take.
 #' @return Optimizer with NAG parameters and bold driver step size.
-#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
-#'   an embedding.
+#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#'  this function for configuring an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
 #' \dontrun{
@@ -166,6 +177,32 @@ bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
            step_size = bold_driver(min_step_size = min_step_size,
                                    init_step_size = init_step_size),
            update = nesterov_nsc_momentum(max_momentum = max_momentum))
+}
+
+#' Steepest Descent Optimizer with No Momentum
+#'
+#' Optimizer factory function.
+#'
+#' Wrapper around \code{\link{make_opt}} that creates a simple (some might say
+#' boring) optimizer that only does steepest descent, without any momentum
+#' term. The gradient is normalized to length 1 and the bold driver step
+#' size method is used to adaptively select the step size.
+#'
+#' @return Pure gradient (steepest) descent optimizer.
+#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#'  this function for configuring an embedding.
+#' @examples
+#' # Should be passed to the opt argument of an embedding function:
+#' \dontrun{
+#'  embed_prob(opt = gradient_descent(), ...)
+#' }
+#' @family sneer optimization methods
+#' @export
+gradient_descent <- function() {
+  make_opt(gradient = classical_gradient(), direction = steepest_descent(),
+           step_size = bold_driver(min_step_size = 0.01),
+           update = no_momentum(),
+           normalize_grads = TRUE)
 }
 
 #' Optimizer Initialization.

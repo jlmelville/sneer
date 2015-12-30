@@ -18,10 +18,20 @@ bold_nag_opt(min_step_size = sqrt(.Machine$double.eps), init_step_size = 1,
 Optimizer with NAG parameters and bold driver step size.
 }
 \description{
-Convenience factory function which makes a very performant optimizer. Mixes
-the NAG descent method and momentum for non-strongly convex problems
-formulated by Sutkever et al., along with the bold driver method for step
-size.
+Optimizer factory function.
+}
+\details{
+Wrapper around \code{\link{make_opt}} which makes a very performant
+optimizer. Mixes the NAG descent method and momentum for non-strongly convex
+problems formulated by Sutkever et al., along with the bold driver method
+for step size.
+}
+\note{
+This optimizer is prone to converge prematurely in the face of sudden
+changes to the solution landscape, such as can happen when certain
+\code{\link{tricks}} are applied. In these cases, substantially increasing
+the \code{min_step_size} parameter so that the bold driver doesn't reduce
+the step size is highly recommended.
 }
 \examples{
 # Should be passed to the opt argument of an embedding function:
@@ -30,10 +40,11 @@ size.
 }
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for configuring
-  an embedding.
+\code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+ this function for configuring an embedding.
 
-Other sneer optimization methods: \code{\link{make_opt}},
+Other sneer optimization methods: \code{\link{gradient_descent}},
+  \code{\link{make_opt}},
   \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}
 }

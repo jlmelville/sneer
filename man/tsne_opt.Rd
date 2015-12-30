@@ -10,8 +10,11 @@ tsne_opt()
 optimizer with parameters from the t-SNE paper.
 }
 \description{
-Convenience factory function which sets the optimizer parameters to that
-from the t-SNE paper.
+Optimizer factory function.
+}
+\details{
+Wrapper around \code{\link{make_opt}} which sets the optimizer parameters to
+that from the t-SNE paper.
 }
 \examples{
 # Should be passed to the opt argument of an embedding function:
@@ -20,11 +23,11 @@ from the t-SNE paper.
 }
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for configuring
-an embedding.
+\code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+ this function for configuring an embedding.
 
 Other sneer optimization methods: \code{\link{bold_nag_opt}},
-  \code{\link{make_opt}},
+  \code{\link{gradient_descent}}, \code{\link{make_opt}},
   \code{\link{optimization_methods}}
 }
 

@@ -101,6 +101,7 @@ make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
   an embedding.
 
 Other sneer optimization methods: \code{\link{bold_nag_opt}},
+  \code{\link{gradient_descent}},
   \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}
 }
