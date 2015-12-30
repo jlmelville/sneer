@@ -432,9 +432,9 @@ embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
   # If we're exporting the report, force an update on the report if it wasn't
   # triggered on the final iteration
   if ((is.null(report$iter) || report$iter != iter - 1) &&
-      "report" %in% export) {
+      !report$stop_early && "report" %in% export) {
     if (!is.null(reporter)) {
-      report <- reporter(iter - 1, inp, out, method, report, force = TRUE)
+      report <- reporter(iter, inp, out, method, report, force = TRUE)
     }
   }
 
