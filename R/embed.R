@@ -159,7 +159,7 @@ NULL
 #' @export
 embed_prob <- function(xm,
                       mat_name = "ym",
-                      method = tsne(),
+                      method = tsne(mat_name = mat_name),
                       preprocess = make_preprocess(verbose = verbose),
                       init_inp = make_init_inp(perplexity = 30,
                                                input_weight_fn = exp_weight,
@@ -292,7 +292,7 @@ embed_prob <- function(xm,
 #' @export
 embed_dist <- function(xm,
                        mat_name = "ym",
-                       method = mmds(),
+                       method = mmds(mat_name = mat_name),
                        preprocess = make_preprocess(verbose = verbose),
                        init_inp = make_init_inp_dist(),
                        init_out = make_init_out(from_PCA = TRUE,
