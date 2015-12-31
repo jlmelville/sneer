@@ -4,19 +4,23 @@
 \alias{embed_prob}
 \title{Probability-Based Embedding}
 \usage{
-embed_prob(xm, mat_name = "ym", preprocess = make_preprocess(verbose =
-  verbose), init_inp = make_init_inp(perplexity = 30, input_weight_fn =
-  exp_weight, verbose = verbose), init_out = make_init_out(from_PCA = TRUE,
-  mat_name = mat_name, verbose = verbose), method = tsne(),
-  opt = make_opt(mat_name = mat_name), max_iter = 1000, tricks = NULL,
-  reporter = make_reporter(verbose = verbose), export = NULL,
-  after_embed = NULL, verbose = TRUE)
+embed_prob(xm, mat_name = "ym", method = tsne(),
+  preprocess = make_preprocess(verbose = verbose),
+  init_inp = make_init_inp(perplexity = 30, input_weight_fn = exp_weight,
+  verbose = verbose), init_out = make_init_out(from_PCA = TRUE, mat_name =
+  mat_name, verbose = verbose), opt = make_opt(mat_name = mat_name),
+  max_iter = 1000, tricks = NULL, reporter = make_reporter(verbose =
+  verbose), export = NULL, after_embed = NULL, verbose = TRUE)
 }
 \arguments{
 \item{xm}{A matrix or data frame to embed.}
 
 \item{mat_name}{Name of the matrix in the output data list that will contain
 the embedded coordinates.}
+
+\item{method}{Embedding method. Set by assigning the result value of one of
+the configuration functions listed in
+\code{\link{probability_embedding_methods}}.}
 
 \item{preprocess}{Input data preprocess callback. Set by assigning the
 result value of \code{\link{make_preprocess}}.}
@@ -26,10 +30,6 @@ value of \code{\link{make_init_inp}}.}
 
 \item{init_out}{Output initialization callback. Set by assigning the result
 value of \code{\link{make_init_out}}.}
-
-\item{method}{Embedding method. Set by assigning the result value of one of
-the configuration functions listed in
-\code{\link{probability_embedding_methods}}.}
 
 \item{opt}{Optimization method. Set by assigning the result of value of one
 of the configuration functions listed in

@@ -22,6 +22,9 @@ NULL
 #' (e.g. t-SNE), with some useful default parameters.
 #'
 #' @param xm A matrix or data frame to embed.
+#' @param method Embedding method. Set by assigning the result value of one of
+#'   the configuration functions listed in
+#'   \code{\link{probability_embedding_methods}}.
 #' @param mat_name Name of the matrix in the output data list that will contain
 #'   the embedded coordinates.
 #' @param preprocess Input data preprocess callback. Set by assigning the
@@ -30,9 +33,6 @@ NULL
 #'   value of \code{\link{make_init_inp}}.
 #' @param init_out Output initialization callback. Set by assigning the result
 #'   value of \code{\link{make_init_out}}.
-#' @param method Embedding method. Set by assigning the result value of one of
-#'   the configuration functions listed in
-#'   \code{\link{probability_embedding_methods}}.
 #' @param opt Optimization method. Set by assigning the result of value of one
 #'   of the configuration functions listed in
 #'   \code{\link{optimization_methods}}.
@@ -159,6 +159,7 @@ NULL
 #' @export
 embed_prob <- function(xm,
                       mat_name = "ym",
+                      method = tsne(),
                       preprocess = make_preprocess(verbose = verbose),
                       init_inp = make_init_inp(perplexity = 30,
                                                input_weight_fn = exp_weight,
@@ -166,7 +167,6 @@ embed_prob <- function(xm,
                       init_out = make_init_out(from_PCA = TRUE,
                                                mat_name = mat_name,
                                                verbose = verbose),
-                      method = tsne(),
                       opt = make_opt(mat_name = mat_name),
                       max_iter = 1000,
                       tricks = NULL,
@@ -174,7 +174,7 @@ embed_prob <- function(xm,
                       export = NULL,
                       after_embed = NULL,
                       verbose = TRUE) {
-  embed(xm, init_inp, init_out, method, opt, max_iter, tricks,
+  embed(xm, method, init_inp, init_out, opt, max_iter, tricks,
         reporter, preprocess, export, after_embed)
 }
 
@@ -186,15 +186,15 @@ embed_prob <- function(xm,
 #' @param xm A matrix or data frame to embed.
 #' @param mat_name Name of the matrix in the output data list that will contain
 #'   the embedded coordinates.
+#' @param method Embedding method. Set by assigning the result value of one of
+#'   the configuration functions listed in
+#'   \code{\link{distance_embedding_methods}}.
 #' @param preprocess Input data preprocess callback. Set by assigning the
 #'   result value of \code{\link{make_preprocess}}.
 #' @param init_inp Input initialization callback. Set by assigning the result
 #'   value of \code{\link{make_init_inp_dist}}.
 #' @param init_out Output initialization callback. Set by assigning the result
 #'   value of \code{\link{make_init_out}}.
-#' @param method Embedding method. Set by assigning the result value of one of
-#'   the configuration functions listed in
-#'   \code{\link{distance_embedding_methods}}.
 #' @param opt Optimization method. Set by assigning the result of value of one
 #'   of the configuration functions listed in
 #'   \code{\link{optimization_methods}}.
@@ -292,12 +292,12 @@ embed_prob <- function(xm,
 #' @export
 embed_dist <- function(xm,
                        mat_name = "ym",
+                       method = mmds(),
                        preprocess = make_preprocess(verbose = verbose),
                        init_inp = make_init_inp_dist(),
                        init_out = make_init_out(from_PCA = TRUE,
                                                 mat_name = mat_name,
                                                 verbose = verbose),
-                       method = mmds(),
                        opt = make_opt(mat_name = mat_name),
                        max_iter = 1000,
                        tricks = NULL,
@@ -305,7 +305,7 @@ embed_dist <- function(xm,
                        export = NULL,
                        after_embed = NULL,
                        verbose = TRUE) {
-  embed(xm, init_inp, init_out, method, opt, max_iter, tricks,
+  embed(xm, method, init_inp, init_out, opt, max_iter, tricks,
         reporter, preprocess, export, after_embed)
 }
 
@@ -317,6 +317,9 @@ embed_dist <- function(xm,
 #' defaults.
 #'
 #' @param xm A matrix or data frame to embed.
+#' @param method Embedding method. Set by assigning the result value of one of
+#'   the configuration functions listed in
+#'   \code{\link{embedding_methods}}.
 #' @param preprocess Input data preprocess callback. Set by assigning the
 #'   result value of \code{\link{make_preprocess}}.
 #' @param init_inp Input initialization callback. Set by assigning the result
@@ -324,9 +327,6 @@ embed_dist <- function(xm,
 #'   \code{\link{make_init_inp}}.
 #' @param init_out Output initialization callback. Set by assigning the result
 #'   value of \code{\link{make_init_out}}.
-#' @param method Embedding method. Set by assigning the result value of one of
-#'   the configuration functions listed in
-#'   \code{\link{embedding_methods}}.
 #' @param opt Optimization method. Set by assigning the result of value of one
 #'   of the configuration functions listed in
 #'   \code{\link{optimization_methods}}.
@@ -381,7 +381,7 @@ embed_dist <- function(xm,
 #' \item{\code{\link{make_tricks}}} for configuring \code{tricks}
 #' \item{\code{\link{make_reporter}}} for configuring \code{reporter}
 #' }
-embed <- function(xm, init_inp, init_out, method, opt, max_iter = 1000,
+embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
                   tricks = NULL, reporter = NULL, preprocess = NULL,
                   export = NULL, after_embed = NULL) {
   if (!is.null(preprocess)) {

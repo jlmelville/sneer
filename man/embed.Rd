@@ -4,11 +4,15 @@
 \alias{embed}
 \title{Generic Embedding}
 \usage{
-embed(xm, init_inp, init_out, method, opt, max_iter = 1000, tricks = NULL,
+embed(xm, method, init_inp, init_out, opt, max_iter = 1000, tricks = NULL,
   reporter = NULL, preprocess = NULL, export = NULL, after_embed = NULL)
 }
 \arguments{
 \item{xm}{A matrix or data frame to embed.}
+
+\item{method}{Embedding method. Set by assigning the result value of one of
+the configuration functions listed in
+\code{\link{embedding_methods}}.}
 
 \item{init_inp}{Input initialization callback. Set by assigning the result
 value of \code{\link{make_init_inp_dist}} or
@@ -16,10 +20,6 @@ value of \code{\link{make_init_inp_dist}} or
 
 \item{init_out}{Output initialization callback. Set by assigning the result
 value of \code{\link{make_init_out}}.}
-
-\item{method}{Embedding method. Set by assigning the result value of one of
-the configuration functions listed in
-\code{\link{embedding_methods}}.}
 
 \item{opt}{Optimization method. Set by assigning the result of value of one
 of the configuration functions listed in
