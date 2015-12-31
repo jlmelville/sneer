@@ -26,7 +26,7 @@ package?sneer
 tsne_iris <- embed_prob(iris[, 1:4],
                method = tsne(),
                opt = tsne_opt(),
-               init_inp = make_init_inp(perplexity = 25),
+               init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
                init_out = make_init_out(stdev = 1e-4),
                tricks = tsne_tricks(),
                reporter = make_reporter(

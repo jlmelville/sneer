@@ -134,38 +134,37 @@
 #' # two characters of the "Species" factor for the points. Explicitly choose
 #' # t-SNE as the method.
 #' tsne_iris <- embed_prob(iris[, 1:4],
-#'                        method = tsne(),
-#'                        opt = tsne_opt(),
-#'                        init_inp = make_init_inp(perplexity = 25),
-#'                        init_out = make_init_out(stdev = 1e-4),
-#'                        tricks = tsne_tricks(),
-#'                        reporter = make_reporter(plot_fn = make_plot(
-#'                          iris, "Species", make_label(2))))
+#'                method = tsne(),
+#'                opt = tsne_opt(),
+#'                init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
+#'                init_out = make_init_out(stdev = 1e-4),
+#'                tricks = tsne_tricks(),
+#'                reporter = make_reporter(
+#'                  plot_fn = make_plot(iris, "Species", make_label(2))))
 #'
 #' # Do ASNE on the synthetic the s1k dataset (10 overlapping 9D Gaussian blobs),
 #' # Autoscale the input, use PCA to initialize the embedding, and use
 #' # Nesterov Accelerated Gradient to do the optimization.
 #' asne_s1k <- embed_prob(s1k[, 1:9],
-#'                       method = asne(),
-#'                       preprocess = make_preprocess(auto_scale = TRUE),
-#'                       init_inp = make_init_inp(perplexity = 50),
-#'                       init_out = make_init_out(from_PCA = TRUE),
-#'                       opt = bold_nag_opt(),
-#'                       reporter = make_reporter(
-#'                        plot_fn = make_plot(s1k, "Label")))
+#'                method = asne(),
+#'                preprocess = make_preprocess(auto_scale = TRUE),
+#'                init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
+#'                init_out = make_init_out(from_PCA = TRUE),
+#'                opt = bold_nag_opt(),
+#'                reporter = make_reporter(
+#'                plot_fn = make_plot(s1k, "Label")))
 #'
 #' # Same as the previous example but creating the NAG optimizer explicitly with
 #' # generic make_opt method
 #' asne_s1k <- embed_prob(s1k[, 1:9],
-#'                       method = asne(),
-#'                       preprocess = make_preprocess(auto_scale = TRUE),
-#'                       init_inp = make_init_inp(perplexity = 50),
-#'                       init_out = make_init_out(from_PCA = TRUE),
-#'                       opt = make_opt(gradient = nesterov_gradient(),
-#'                                      step_size = bold_driver(),
-#'                                      update = nesterov_nsc_momentum()),
-#'                       reporter = make_reporter(
-#'                        plot_fn = make_plot(s1k, "Label")))
+#'                 method = asne(),
+#'                 preprocess = make_preprocess(auto_scale = TRUE),
+#'                 init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
+#'                 init_out = make_init_out(from_PCA = TRUE),
+#'                 opt = make_opt(gradient = nesterov_gradient(),
+#'                                step_size = bold_driver(),
+#'                                update = nesterov_nsc_momentum()),
+#'                 reporter = make_reporter(plot_fn = make_plot(s1k, "Label")))
 #'
 #' # Do metric MDS on the iris data set
 #' # In addition to the STRESS loss function also report the Kruskal Stress
