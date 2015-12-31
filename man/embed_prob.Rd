@@ -102,7 +102,7 @@ Carry out an embedding of a dataset using a probability-based method
 # plot 2D result during embedding with convenience function for iris plot.
 # Default method is tsne. Set perplexity to 25.
 tsne_iris <- embed_prob(iris[, 1:4], opt = tsne_opt(),
-               init_inp = make_init_inp(perplexity = 25),
+               init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
                tricks = tsne_tricks(),
                reporter = make_reporter(plot_fn = make_iris_plot()))
 
@@ -113,7 +113,7 @@ tsne_iris <- embed_prob(iris[, 1:4], opt = tsne_opt(),
 tsne_iris <- embed_prob(iris[, 1:4],
                method = tsne(),
                opt = tsne_opt(),
-               init_inp = make_init_inp(perplexity = 25),
+               init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
                init_out = make_init_out(stdev = 1e-4),
                tricks = tsne_tricks(),
                reporter = make_reporter(
@@ -125,7 +125,7 @@ tsne_iris <- embed_prob(iris[, 1:4],
 ssne_iris <- embed_prob(iris[, 1:4],
                method = ssne(),
                opt = tsne_opt(),
-               init_inp = make_init_inp(perplexity = 25),
+               init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
                preprocess = make_preprocess(range_scale_matrix = TRUE),
                init_out = make_init_out(stdev = 1e-4),
                tricks = tsne_tricks(),
@@ -140,7 +140,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
 # can use simplified plot function.
 asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
  preprocess = make_preprocess(auto_scale = TRUE),
- init_inp = make_init_inp(perplexity = 50),
+ init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
  init_out = make_init_out(from_PCA = TRUE),
  opt = make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
   update = nesterov_nsc_momentum()),
@@ -150,7 +150,7 @@ asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
 # typing
 asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
  preprocess = make_preprocess(auto_scale = TRUE),
- init_inp = make_init_inp(perplexity = 50),
+ init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
  init_out = make_init_out(from_PCA = TRUE),
  opt = bold_nag_opt(),
  reporter = make_reporter(plot_fn = make_plot(s1k, "Label")))
