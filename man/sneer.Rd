@@ -62,11 +62,12 @@ See \code{\link{make_preprocess}} for more details.
 
 \section{Input Initialization}{
 
-Generates the input matrices used in the embedding. For SNE and related
-methods, a probability matrix is needed. There's really only one way of
-doing this, which involves specifying a target perplexity for row-wise
-probabilities. See \code{\link{make_init_inp}} and
-\code{\link{make_init_inp_dist}} for more details.
+Generates the input matrices used in the embedding. Distance-based methods
+need a distance matrix, if the input data wasn't already in this form.
+For SNE and other probability-based methods, a probability matrix is also
+needed. There's really only one way of doing this in the literature, which
+involves specifying  a target perplexity for row-wise probabilities.
+See \code{\link{make_init_inp}} for more details.
 }
 
 \section{Output Initialization}{

@@ -4,9 +4,9 @@
 \alias{embed_dist}
 \title{Distance-Based Embedding.}
 \usage{
-embed_dist(xm, mat_name = "ym", method = mmds(),
+embed_dist(xm, mat_name = "ym", method = mmds(mat_name = mat_name),
   preprocess = make_preprocess(verbose = verbose),
-  init_inp = make_init_inp_dist(), init_out = make_init_out(from_PCA = TRUE,
+  init_inp = make_init_inp(), init_out = make_init_out(from_PCA = TRUE,
   mat_name = mat_name, verbose = verbose), opt = make_opt(mat_name =
   mat_name), max_iter = 1000, tricks = NULL,
   reporter = make_reporter(verbose = verbose), export = NULL,
@@ -26,7 +26,7 @@ the configuration functions listed in
 result value of \code{\link{make_preprocess}}.}
 
 \item{init_inp}{Input initialization callback. Set by assigning the result
-value of \code{\link{make_init_inp_dist}}.}
+value of \code{\link{make_init_inp}}.}
 
 \item{init_out}{Output initialization callback. Set by assigning the result
 value of \code{\link{make_init_out}}.}

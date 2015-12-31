@@ -161,9 +161,10 @@ embed_prob <- function(xm,
                       mat_name = "ym",
                       method = tsne(mat_name = mat_name),
                       preprocess = make_preprocess(verbose = verbose),
-                      init_inp = make_init_inp(perplexity = 30,
-                                               input_weight_fn = exp_weight,
-                                               verbose = verbose),
+                      init_inp = make_init_inp(
+                          prob_perp_bisect(perplexity = 30,
+                                           input_weight_fn = exp_weight,
+                                           verbose = verbose)),
                       init_out = make_init_out(from_PCA = TRUE,
                                                mat_name = mat_name,
                                                verbose = verbose),
@@ -192,7 +193,7 @@ embed_prob <- function(xm,
 #' @param preprocess Input data preprocess callback. Set by assigning the
 #'   result value of \code{\link{make_preprocess}}.
 #' @param init_inp Input initialization callback. Set by assigning the result
-#'   value of \code{\link{make_init_inp_dist}}.
+#'   value of \code{\link{make_init_inp}}.
 #' @param init_out Output initialization callback. Set by assigning the result
 #'   value of \code{\link{make_init_out}}.
 #' @param opt Optimization method. Set by assigning the result of value of one
@@ -294,7 +295,7 @@ embed_dist <- function(xm,
                        mat_name = "ym",
                        method = mmds(mat_name = mat_name),
                        preprocess = make_preprocess(verbose = verbose),
-                       init_inp = make_init_inp_dist(),
+                       init_inp = make_init_inp(),
                        init_out = make_init_out(from_PCA = TRUE,
                                                 mat_name = mat_name,
                                                 verbose = verbose),
@@ -323,8 +324,7 @@ embed_dist <- function(xm,
 #' @param preprocess Input data preprocess callback. Set by assigning the
 #'   result value of \code{\link{make_preprocess}}.
 #' @param init_inp Input initialization callback. Set by assigning the result
-#'   value of \code{\link{make_init_inp_dist}} or
-#'   \code{\link{make_init_inp}}.
+#'   value of \code{\link{make_init_inp}}.
 #' @param init_out Output initialization callback. Set by assigning the result
 #'   value of \code{\link{make_init_out}}.
 #' @param opt Optimization method. Set by assigning the result of value of one
@@ -374,8 +374,7 @@ embed_dist <- function(xm,
 #' \itemize{
 #' \item{\code{\link{embedding_methods}}} for configuring \code{method}
 #' \item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
-#' \item{\code{\link{make_init_inp}} and \code{\link{make_init_inp_dist}}} for
-#'   configuring \code{init_inp}
+#' \item{\code{\link{make_init_inp}}} for configuring \code{init_inp}
 #' \item{\code{\link{make_init_out}}} for configuring \code{init_out}
 #' \item{\code{\link{optimization_methods}}} for configuring \code{opt}
 #' \item{\code{\link{make_tricks}}} for configuring \code{tricks}

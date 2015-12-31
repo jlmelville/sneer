@@ -2,74 +2,47 @@
 % Please edit documentation in R/initialize_inp.R
 \name{make_init_inp}
 \alias{make_init_inp}
-\title{Input Initialization for Probability Embedding}
+\title{Input Initialization}
 \usage{
-make_init_inp(perplexity = 30, input_weight_fn = exp_weight,
-  keep_all_results = FALSE, verbose = TRUE)
+make_init_inp(...)
 }
 \arguments{
-\item{perplexity}{Target perplexity value for the probability distributions.}
-
-\item{input_weight_fn}{Weighting function for distances. It should have the
-signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix of
-squared distances and \code{beta} is a real-valued scalar parameter which
-will be varied as part of the search to produce the desired
-\code{perplexity}. The function should return a matrix of weights
-corresponding to the transformed squared distances passed in as arguments.}
-
-\item{keep_all_results}{If \code{true} then the list returned by the callback
-will also contain a vector of \code{beta} parameters that generated the
-probability matrix. Otherwise, only the probability matrix is returned.}
-
-\item{verbose}{If \code{TRUE} display messages about progress of
-initialization.}
+\item{...}{Zero or more \code{\link{input_initializers}}.}
 }
 \value{
-A callback function with signature \code{fn(xm)} where \code{xm}
-is the input coordinates or a distance matrix. This function will return
-a list containing:
-\item{\code{xm}}{Input coordinates if these were provided.}
-\item{\code{dm}}{Input distances.}
-\item{\code{pm}}{Input probabilities.}
-\item{\code{beta}}{Input weighting parameters that produced the
-probabilities. Only provided if \code{keep_all_results} is \code{TRUE}.}
+An input initializer to be used by an embedding routine. The input
+  data is not of direct interest in most embeddings, but may be useful for
+  diagnostic purposes. If exported from an embedding, it will be as a list
+  called \code{inp} on the embedding result, and itself contains:
+  \item{\code{xm}}{Input coordinates if these were provided.}
+  \item{\code{dm}}{Input distances.}
+  If other initializers were provided as arguments to this method, they may
+  provide extra data - see the documentation of their functions for details.
 }
 \description{
-Factory function for input initialization callbacks. During input
-initialization, the high dimensional distances or coordinates will be used
-to generate the matrices necessary for the embedding, e.g. input distances
-and probabilities.
+Factory function for input initialization.
 }
 \details{
-The callback that is returned generates an input probability according
-to the method described in the TSNE paper: for each point in the input
-data, a probability distribution is generated with respect to all the
-other points such that the perplexity of the distribution is a user-defined
-value. This probability is suitable for use in the ASNE method. For SSNE
-and TSNE a further processing stage is required to create a joint probability
-over all pairs of points. This can be done in the \code{after_init} callback
-available to the embedding methods.
+This function is responsible for creating a method to initialize the input
+data for embedding. It generates a distance matrix if the input data was
+in the form of coordinates. Additionally, if any
+\code{\link{input_initializers}} are passed as parameters to this function,
+these will be invoked in order they were passed.
 }
 \examples{
-# Set target perplexity of each probability distribution to 30
-make_init_inp(perplexity = 30)
-
-# Set target perplexity of each probability distribution to 30 but use
-# a different weighting function.
-make_init_inp(perplexity = 30, input_weight_fn = sqrt_exp_weight)
-
-# Perplexity of 50, and keep the values of the exponential parameter for
-# later processing or reporting.
-make_init_inp(perplexity = 50, keep_all_result = TRUE)
-
 # Should be passed to the init_inp argument of an embedding function:
 \dontrun{
- embed_prob(init_inp = make_init_inp(perplexity = 30,
-                                    input_weight_fn = exp_weight), ...)
+ # distance-based embedding don't need extra input initialization
+ embed_dist(init_inp = make_init_inp(), method = mds())
+
+ # probability-based embeddings must also initialize input probabilities
+ embed_prob(init_inp = make_init_inp(prob_perp_bisect()), method = tsne())
 }
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for configuring
-an embedding.
+\code{\link{embed_dist}} and \code{\link{embed_prob}}
+  for how to use this function to configure an embedding and to export input
+  data. Also see the documentation for the specific members of the
+  \code{\link{input_initializers}} that can be passed to this function.
 }
 

@@ -15,8 +15,7 @@ the configuration functions listed in
 \code{\link{embedding_methods}}.}
 
 \item{init_inp}{Input initialization callback. Set by assigning the result
-value of \code{\link{make_init_inp_dist}} or
-\code{\link{make_init_inp}}.}
+value of \code{\link{make_init_inp}}.}
 
 \item{init_out}{Output initialization callback. Set by assigning the result
 value of \code{\link{make_init_out}}.}
@@ -84,8 +83,7 @@ defaults.
 \itemize{
 \item{\code{\link{embedding_methods}}} for configuring \code{method}
 \item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
-\item{\code{\link{make_init_inp}} and \code{\link{make_init_inp_dist}}} for
-  configuring \code{init_inp}
+\item{\code{\link{make_init_inp}}} for configuring \code{init_inp}
 \item{\code{\link{make_init_out}}} for configuring \code{init_out}
 \item{\code{\link{optimization_methods}}} for configuring \code{opt}
 \item{\code{\link{make_tricks}}} for configuring \code{tricks}

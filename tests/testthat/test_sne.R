@@ -3,10 +3,11 @@ context("SNE")
 
 tsne_iris <- embed_prob(iris[, 1:4],
                        method = tsne(),
-                       init_inp = make_init_inp(perplexity = 50,
-                                                input_weight_fn =
-                                                  sqrt_exp_weight,
-                                                verbose = FALSE),
+                       init_inp = make_init_inp(
+                         prob_perp_bisect(
+                           perplexity = 50,
+                           input_weight_fn = sqrt_exp_weight,
+                           verbose = FALSE)),
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 200,
@@ -17,10 +18,11 @@ expect_equal(formatC(tsne_iris$report$norm), "0.0578")
 
 ssne_iris <- embed_prob(iris[, 1:4],
                        method = ssne(),
-                       init_inp = make_init_inp(perplexity = 50,
-                                                input_weight_fn =
-                                                  sqrt_exp_weight,
-                                                verbose = FALSE),
+                       init_inp = make_init_inp(
+                         prob_perp_bisect(
+                          perplexity = 50,
+                          input_weight_fn = sqrt_exp_weight,
+                          verbose = FALSE)),
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 60,
@@ -32,10 +34,11 @@ expect_equal(formatC(ssne_iris$report$norm), "0.07265")
 
 asne_iris <- embed_prob(iris[, 1:4],
                        method = asne(),
-                       init_inp = make_init_inp(perplexity = 50,
-                                                input_weight_fn =
-                                                  sqrt_exp_weight,
-                                                verbose = FALSE),
+                       init_inp = make_init_inp(
+                         prob_perp_bisect(
+                           perplexity = 50,
+                           input_weight_fn = sqrt_exp_weight,
+                           verbose = FALSE)),
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 70,
@@ -47,10 +50,11 @@ expect_equal(formatC(asne_iris$report$norm), "0.08479")
 
 pca_iris <- embed_prob(iris[, 1:4],
                       method = tsne(),
-                      init_inp = make_init_inp(perplexity = 25,
-                                               input_weight_fn =
-                                                 sqrt_exp_weight,
-                                               verbose = FALSE),
+                      init_inp = make_init_inp(
+                        prob_perp_bisect(
+                          perplexity = 25,
+                          input_weight_fn = sqrt_exp_weight,
+                          verbose = FALSE)),
                       preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                    verbose = FALSE),
                       max_iter = 0, verbose = FALSE,
@@ -62,10 +66,11 @@ expect_equal(formatC(pca_iris$report$cost), "1.598")
 context("jacobs")
 tsne_iris_jacobs <- embed_prob(iris[, 1:4],
                               method = tsne(),
-                              init_inp = make_init_inp(perplexity = 25,
-                                                       input_weight_fn =
-                                                         sqrt_exp_weight,
-                                                       verbose = FALSE),
+                              init_inp = make_init_inp(
+                                prob_perp_bisect(
+                                  perplexity = 25,
+                                  input_weight_fn = sqrt_exp_weight,
+                                  verbose = FALSE)),
                               preprocess = make_preprocess(
                                 range_scale_matrix = TRUE,
                                 verbose = FALSE),

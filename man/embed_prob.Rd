@@ -4,13 +4,14 @@
 \alias{embed_prob}
 \title{Probability-Based Embedding}
 \usage{
-embed_prob(xm, mat_name = "ym", method = tsne(),
+embed_prob(xm, mat_name = "ym", method = tsne(mat_name = mat_name),
   preprocess = make_preprocess(verbose = verbose),
-  init_inp = make_init_inp(perplexity = 30, input_weight_fn = exp_weight,
-  verbose = verbose), init_out = make_init_out(from_PCA = TRUE, mat_name =
-  mat_name, verbose = verbose), opt = make_opt(mat_name = mat_name),
-  max_iter = 1000, tricks = NULL, reporter = make_reporter(verbose =
-  verbose), export = NULL, after_embed = NULL, verbose = TRUE)
+  init_inp = make_init_inp(prob_perp_bisect(perplexity = 30, input_weight_fn =
+  exp_weight, verbose = verbose)), init_out = make_init_out(from_PCA = TRUE,
+  mat_name = mat_name, verbose = verbose), opt = make_opt(mat_name =
+  mat_name), max_iter = 1000, tricks = NULL,
+  reporter = make_reporter(verbose = verbose), export = NULL,
+  after_embed = NULL, verbose = TRUE)
 }
 \arguments{
 \item{xm}{A matrix or data frame to embed.}

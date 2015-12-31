@@ -2,7 +2,7 @@
 % Please edit documentation in R/initialize_inp.R
 \name{symmetrize_matrix}
 \alias{symmetrize_matrix}
-\title{Symmetric Matrix from Sqaure Matrix}
+\title{Symmetric Matrix from Square Matrix}
 \usage{
 symmetrize_matrix(pm)
 }
@@ -17,7 +17,7 @@ The matrix is symmetrized by setting \code{pm[i, j]} and \code{pm[j, i]} to
 their average, i.e. \code{Pij} = \code{(Pij + Pji)/2} = \code{Pji}.
 }
 \details{
-In SSNE and TSNE, this is used as part of the process of converting the row
+In SSNE and t-SNE, this is used as part of the process of converting the row
 stochastic matrix of conditional input probabilities to a joint probability
 matrix.
 }
