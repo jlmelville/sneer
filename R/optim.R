@@ -355,6 +355,93 @@ after_step <- function(opt, inp, out, new_out, ok, iter) {
   list(opt = opt, inp = inp, out = out, new_out = new_out)
 }
 
+#' One Step of Optimization
+#'
+#' @param opt Optimizer
+#' @param method Embedding method.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param iter Iteration number.
+#' @return List consisting of:
+#'   \item{\code{opt}}{Updated optimizer.}
+#'   \item{\code{inp}}{Updated input.}
+#'   \item{\code{out}}{Updated output.}
+optimize_step <- function(opt, method, inp, out, iter) {
+  if (iter == 0) {
+    opt <- opt$init(opt, inp, out, method)
+  }
+
+  grad_result <- opt$gradient$calculate(opt, inp, out, method)
+
+  if (any(is.nan(grad_result$gm))) {
+    stop("NaN in grad. descent at iter ", iter)
+  }
+  opt$gm <- grad_result$gm
+
+  if (opt$normalize_grads) {
+    opt$gm <- normalize(opt$gm)
+  }
+
+  direction_result <- opt$direction$calculate(opt, inp, out, method, iter)
+  opt <- direction_result$opt
+
+  step_size_result <- opt$step_size$calculate(opt, inp, out, method)
+  opt <- step_size_result$opt
+
+  update_result <- opt$update$calculate(opt, inp, out, method)
+  opt <- update_result$opt
+
+  proposed_out <- update_solution(opt, inp, out, method)
+
+  # intercept whether we want to accept the new solution e.g. bold driver
+  ok <- TRUE
+  if (!is.null(opt$validate)) {
+    validation_result <- opt$validate(opt, inp, out, proposed_out, method)
+    opt <- validation_result$opt
+    inp <- validation_result$inp
+    out <- validation_result$out
+    proposed_out <- validation_result$proposed_out
+    method <- validation_result$method
+    ok <- validation_result$ok
+  }
+
+  if (ok) {
+    new_out <- proposed_out
+  } else {
+    new_out <- out
+  }
+
+  if (!is.null(opt$after_step)) {
+    after_step_result <- opt$after_step(opt, inp, out, new_out, ok, iter)
+    opt <- after_step_result$opt
+    inp <- after_step_result$inp
+    out <- after_step_result$out
+    new_out <- after_step_result$new_out
+  }
+
+  list(opt = opt, inp = inp, out = new_out)
+}
+
+#' Output Data Update
+#'
+#' This function updates the embedded coordinates in the output data, based
+#' on the update information in the Optimizer, as well as updating any
+#' auxiliary output data that is dependent on the coordinates (e.g. distances
+#' and probabilities)
+#'
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Updated \code{out}.
+update_solution <- function(opt, inp, out, method) {
+  new_out <- out
+  new_solution <- new_out[[opt$mat_name]] + opt$update$value
+  new_out[[opt$mat_name]] <- new_solution
+  method$update_out_fn(inp, new_out, method)
+}
+
+
 #' Optimizer Diagnostics
 #'
 #' Simple diagnostics of the state of the optimization.

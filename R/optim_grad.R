@@ -108,3 +108,37 @@ nesterov_grad_pos <- function(opt, inp, out, method) {
 
   gradient(inp, new_out, method, opt$mat_name)
 }
+
+#' Gradient Calculation
+#'
+#' Calculate the gradient of the cost function for the current configuration.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @param mat_name Name of the matrix in the output data list that contains the
+#' embedded coordinates.
+#' @return List containing:
+#' \item{\code{km}}{Stiffness matrix.}
+#' \item{\code{gm}}{Gradient matrix.}
+gradient <- function(inp, out, method, mat_name = "ym") {
+  km <- method$stiffness_fn(method, inp, out)
+  gm <- stiff_to_grads(out[[mat_name]], km)
+  list(km = km, gm = gm)
+}
+
+#' Gradient Matrix from Stiffness Matrix
+#'
+#' Convert stiffness matrix to gradient matrix.
+#'
+#' @param ym Embedded coordinates.
+#' @param km Stiffness matrix.
+#' @return Gradient matrix.
+stiff_to_grads <- function(ym, km) {
+  gm <- matrix(0, nrow(ym), ncol(ym))
+  for (i in 1:nrow(ym)) {
+    disp <- sweep(-ym, 2, -ym[i, ]) #  matrix of y_ik - y_jk
+    gm[i, ] <- apply(disp * km[, i], 2, sum) # row is sum_j (km_ji * disp)
+  }
+  gm
+}
