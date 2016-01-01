@@ -4,19 +4,14 @@
 \alias{embed_dist}
 \title{Distance-Based Embedding.}
 \usage{
-embed_dist(xm, mat_name = "ym", method = mmds(mat_name = mat_name),
-  preprocess = make_preprocess(verbose = verbose),
-  init_inp = make_init_inp(), init_out = make_init_out(from_PCA = TRUE,
-  mat_name = mat_name, verbose = verbose), opt = make_opt(mat_name =
-  mat_name), max_iter = 1000, tricks = NULL,
-  reporter = make_reporter(verbose = verbose), export = NULL,
-  after_embed = NULL, verbose = TRUE)
+embed_dist(xm, method = mmds(), preprocess = make_preprocess(verbose =
+  verbose), init_inp = make_init_inp(), init_out = make_init_out(from_PCA =
+  TRUE, verbose = verbose), opt = make_opt(), max_iter = 1000,
+  tricks = NULL, reporter = make_reporter(verbose = verbose),
+  export = NULL, after_embed = NULL, verbose = TRUE)
 }
 \arguments{
 \item{xm}{A matrix or data frame to embed.}
-
-\item{mat_name}{Name of the matrix in the output data list that will contain
-the embedded coordinates.}
 
 \item{method}{Embedding method. Set by assigning the result value of one of
 the configuration functions listed in
@@ -57,8 +52,7 @@ data is returned.}
 }
 \value{
 The output data. A list containing:
- \item{\code{ym}}{Embedded coordinates. This name can be changed by
- specifying \code{mat_name}.}
+ \item{\code{ym}}{Embedded coordinates.}
  \item{\code{dm}}{Distance matrix generated from the embedded coordinates.
  \code{wm}.}
  \item{\code{inp}}{The input data, if "\code{inp}" is included in the

@@ -4,12 +4,9 @@
 \alias{smmds}
 \title{Metric Multi-dimensional Scaling (MDS) using SSTRESS Cost Function.}
 \usage{
-smmds(mat_name = "ym", eps = .Machine$double.eps)
+smmds(eps = .Machine$double.eps)
 }
 \arguments{
-\item{mat_name}{Name of the matrix in the output data list that will contain
-the embedded coordinates.}
-
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
 }
@@ -20,8 +17,6 @@ a list containing:
  \item{\code{stiffness_fn}}{Stiffness function for \code{cost_fn}.}
  \item{\code{update_out_fn}}{Function to calculate and store any needed
  data after a coordinate update.}
- \item{\code{mat_name}}{Name of the matrix in the output data list that will
- contain the embedded coordinates.}
  \item{\code{eps}}{Small floating point value used to prevent numerical
  problems, e.g. in gradients and cost functions.}
 }

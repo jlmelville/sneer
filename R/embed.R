@@ -25,8 +25,6 @@ NULL
 #' @param method Embedding method. Set by assigning the result value of one of
 #'   the configuration functions listed in
 #'   \code{\link{probability_embedding_methods}}.
-#' @param mat_name Name of the matrix in the output data list that will contain
-#'   the embedded coordinates.
 #' @param preprocess Input data preprocess callback. Set by assigning the
 #'   result value of \code{\link{make_preprocess}}.
 #' @param init_inp Input initialization callback. Set by assigning the result
@@ -51,8 +49,7 @@ NULL
 #'   data is returned.
 #' @param verbose If \code{TRUE} display messages about the embedding progress.
 #' @return The output data. A list containing:
-#'   \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#'     specifying \code{mat_name}.}
+#'   \item{\code{ym}}{Embedded coordinates.}
 #'   \item{\code{qm}}{Probability matrix generated from the weight matrix
 #'     \code{wm}.}
 #'   \item{\code{wm}}{Weight matrix generated from the distances between points
@@ -158,17 +155,15 @@ NULL
 #' @family sneer embedding functions
 #' @export
 embed_prob <- function(xm,
-                      mat_name = "ym",
-                      method = tsne(mat_name = mat_name),
+                      method = tsne(),
                       preprocess = make_preprocess(verbose = verbose),
                       init_inp = make_init_inp(
                           prob_perp_bisect(perplexity = 30,
                                            input_weight_fn = exp_weight,
                                            verbose = verbose)),
                       init_out = make_init_out(from_PCA = TRUE,
-                                               mat_name = mat_name,
                                                verbose = verbose),
-                      opt = make_opt(mat_name = mat_name),
+                      opt = make_opt(),
                       max_iter = 1000,
                       tricks = NULL,
                       reporter = make_reporter(verbose = verbose),
@@ -185,8 +180,6 @@ embed_prob <- function(xm,
 #' (e.g. Sammon Mapping), with some useful default parameters.
 #'
 #' @param xm A matrix or data frame to embed.
-#' @param mat_name Name of the matrix in the output data list that will contain
-#'   the embedded coordinates.
 #' @param method Embedding method. Set by assigning the result value of one of
 #'   the configuration functions listed in
 #'   \code{\link{distance_embedding_methods}}.
@@ -214,8 +207,7 @@ embed_prob <- function(xm,
 #'   data is returned.
 #' @param verbose If \code{TRUE} display messages about the embedding progress.
 #' @return The output data. A list containing:
-#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#'  specifying \code{mat_name}.}
+#'  \item{\code{ym}}{Embedded coordinates.}
 #'  \item{\code{dm}}{Distance matrix generated from the embedded coordinates.
 #'  \code{wm}.}
 #'  \item{\code{inp}}{The input data, if "\code{inp}" is included in the
@@ -292,14 +284,12 @@ embed_prob <- function(xm,
 #' @family sneer embedding functions
 #' @export
 embed_dist <- function(xm,
-                       mat_name = "ym",
-                       method = mmds(mat_name = mat_name),
+                       method = mmds(),
                        preprocess = make_preprocess(verbose = verbose),
                        init_inp = make_init_inp(),
                        init_out = make_init_out(from_PCA = TRUE,
-                                                mat_name = mat_name,
                                                 verbose = verbose),
-                       opt = make_opt(mat_name = mat_name),
+                       opt = make_opt(),
                        max_iter = 1000,
                        tricks = NULL,
                        reporter = make_reporter(verbose = verbose),
@@ -344,8 +334,7 @@ embed_dist <- function(xm,
 #' @param after_embed Callback to run on input and output data before output
 #'   data is returned.
 #' @return The output data. A list containing:
-#'   \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#'     specifying \code{mat_name}.}
+#'   \item{\code{ym}}{Embedded coordinates.}
 #'   \item{\code{inp}}{The input data, if "\code{inp}" is included in the
 #'     \code{export} list parameter.}
 #'   \item{\code{report}}{Most recent report, if "\code{report}" is included in

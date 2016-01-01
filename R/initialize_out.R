@@ -20,18 +20,13 @@
 #' @param from_input_name Name of a matrix in the input data list \code{inp}
 #' which contains suitable initialization data. Must be a matrix with the same
 #' dimensions as the desired output coordinates.
-#' @param mat_name Name of the matrix on the output list to contain the
-#' initialized coordinates. Ensure that if you change this from the default that
-#' other callbacks that need this information (e.g. optimization routines,
-#' plotting function in reporter callbacks) are also passed the same value.
 #' @param verbose If \code{TRUE} information about the initialization will be
 #' logged to screen.
 #' @return Callback to be used by the embedding routine to initialize
 #' the output data. The callback has the signature \code{init_out(inp)} where
 #' \code{inp} is the initialized input data list. The return value of the
 #' callback is the initialized output data, a list containing:
-#' \item{\code{ym}}{A matrix containing the initialized output coordinates. The
-#'  name of the matrix can be changed by setting the \code{mat_name} parameter.}
+#' \item{\code{ym}}{A matrix containing the initialized output coordinates.}
 #' Depending on the type of embedding carried out, the \code{out} list will
 #' accumulate other auxiliary data associated with the embedded coordinates,
 #' e.g. distances, probabilities, divergences or other data required for
@@ -53,7 +48,7 @@
 #' @export
 make_init_out <- function(k = 2, init_config = NULL, stdev = 1e-04,
                           from_PCA = FALSE, from_input_name = NULL,
-                          mat_name = "ym", verbose = TRUE) {
+                          verbose = TRUE) {
   init_out <- list()
 
   if (!is.null(init_config) && is.matrix(init_config)) {
@@ -62,7 +57,7 @@ make_init_out <- function(k = 2, init_config = NULL, stdev = 1e-04,
       if (nrow(init_config) != n | ncol(init_config) != k) {
         stop("init_config does not match necessary configuration for ym")
       }
-      out[[mat_name]] <- init_config
+      out$ym <- init_config
       out
     }
   } else if (from_PCA) {
@@ -70,7 +65,7 @@ make_init_out <- function(k = 2, init_config = NULL, stdev = 1e-04,
       if (is.null(inp$xm)) {
         stop("PCA initialization is only possible with input coordinates")
       }
-      out[[mat_name]] <- scores_matrix(inp$xm, ncol = k, verbose = verbose)
+      out$ym <- scores_matrix(inp$xm, ncol = k, verbose = verbose)
       out
     }
   } else if (!is.null(from_input_name)) {
@@ -82,15 +77,15 @@ make_init_out <- function(k = 2, init_config = NULL, stdev = 1e-04,
              " for ym")
       }
       if (verbose) {
-        message("Initializing out$", mat_name, " from inp$", from_input_name)
+        message("Initializing out$ym from inp$", from_input_name)
       }
-      out[[mat_name]] <- inp[[from_input_name]]
+      out$ym <- inp[[from_input_name]]
       out
     }
   } else {
     init_out$from_random <- function(inp, out) {
       n <- nrow(inp$dm)
-      out[[mat_name]] <- random_matrix(n, ncol = k, sd = stdev)
+      out$ym <- random_matrix(n, ncol = k, sd = stdev)
       out
     }
   }

@@ -64,13 +64,10 @@ NULL
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
-#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#'  specifying \code{mat_name}.}
+#'  \item{\code{ym}}{Embedded coordinates.}
 #'  \item{\code{dm}}{Distance matrix generated from \code{ym}.}
 #' }
 #'
-#' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return a list containing:
@@ -80,14 +77,12 @@ NULL
 #'  \item{\code{stiffness_fn}}{Stiffness function for \code{cost_fn}.}
 #'  \item{\code{update_out_fn}}{Function to calculate and store any needed
 #'  data after a coordinate update.}
-#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
-#'  contain the embedded coordinates.}
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @family sneer embedding methods
 #' @family sneer distance embedding methods
 #' @export
-mmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
+mmds <- function(eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
     dym <- dym + eps
     -2 * (dxm - dym) / (dym + eps)
@@ -99,10 +94,9 @@ mmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
       f(inp$dm, out$dm, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
-      out$dm <- distance_matrix(out[[method$mat_name]])
+      out$dm <- distance_matrix(out$ym)
       out
     },
-    mat_name = mat_name,
     eps = eps
   )
 }
@@ -118,8 +112,6 @@ mmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
 #' \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
 #'
-#' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return a list containing:
@@ -128,14 +120,12 @@ mmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #'  \item{\code{stiffness_fn}}{Stiffness function for \code{cost_fn}.}
 #'  \item{\code{update_out_fn}}{Function to calculate and store any needed
 #'  data after a coordinate update.}
-#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
-#'  contain the embedded coordinates.}
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @family sneer embedding methods
 #' @family sneer distance embedding methods
 #' @export
-smmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
+smmds <- function(eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
     (-4 * dxm * (dxm ^ 2 - dym ^ 2)) / (dym + eps)
   }
@@ -146,10 +136,9 @@ smmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
       f(inp$dm, out$dm, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
-      out$dm <- distance_matrix(out[[method$mat_name]])
+      out$dm <- distance_matrix(out$ym)
       out
     },
-    mat_name = mat_name,
     eps = eps
   )
 }
@@ -175,13 +164,10 @@ smmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
-#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#'  specifying \code{mat_name}.}
+#'  \item{\code{ym}}{Embedded coordinates.}
 #'  \item{\code{dm}}{Distance matrix generated from \code{ym}.}
 #' }
 #'
-#' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return a list containing:
@@ -190,8 +176,6 @@ smmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #'  Sammon's stress, we ignore the constant denominator.}
 #'  \item{\code{update_out_fn}}{Function to calculate and store any needed
 #'  data after a coordinate update.}
-#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
-#'  contain the embedded coordinates.}
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @seealso \code{\link[MASS]{sammon}}, which also carries out Sammon mapping.
@@ -201,7 +185,7 @@ smmds <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' @family sneer embedding methods
 #' @family sneer distance embedding methods
 #' @export
-sammon_map <- function(mat_name = "ym", eps = .Machine$double.eps) {
+sammon_map <- function(eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
     dxm <- dxm + eps
     dym <- dym + eps
@@ -214,10 +198,9 @@ sammon_map <- function(mat_name = "ym", eps = .Machine$double.eps) {
       f(inp$dm, out$dm, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
-      out$dm <- distance_matrix(out[[method$mat_name]])
+      out$dm <- distance_matrix(out$ym)
       out
     },
-    mat_name = mat_name,
     eps = eps
   )
 }

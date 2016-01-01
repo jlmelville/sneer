@@ -4,12 +4,9 @@
 \alias{sammon_map}
 \title{Sammon Mapping}
 \usage{
-sammon_map(mat_name = "ym", eps = .Machine$double.eps)
+sammon_map(eps = .Machine$double.eps)
 }
 \arguments{
-\item{mat_name}{Name of the matrix in the output data list that will contain
-the embedded coordinates.}
-
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
 }
@@ -20,8 +17,6 @@ a list containing:
  Sammon's stress, we ignore the constant denominator.}
  \item{\code{update_out_fn}}{Function to calculate and store any needed
  data after a coordinate update.}
- \item{\code{mat_name}}{Name of the matrix in the output data list that will
- contain the embedded coordinates.}
  \item{\code{eps}}{Small floating point value used to prevent numerical
  problems, e.g. in gradients and cost functions.}
 }
@@ -47,8 +42,7 @@ or the gradient, but is included in the calculation of the cost function.
 
 If used in an embedding, the output data list will contain:
 \describe{
- \item{\code{ym}}{Embedded coordinates. This name can be changed by
- specifying \code{mat_name}.}
+ \item{\code{ym}}{Embedded coordinates.}
  \item{\code{dm}}{Distance matrix generated from \code{ym}.}
 }
 }

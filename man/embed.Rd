@@ -47,8 +47,7 @@ data is returned.}
 }
 \value{
 The output data. A list containing:
-  \item{\code{ym}}{Embedded coordinates. This name can be changed by
-    specifying \code{mat_name}.}
+  \item{\code{ym}}{Embedded coordinates.}
   \item{\code{inp}}{The input data, if "\code{inp}" is included in the
     \code{export} list parameter.}
   \item{\code{report}}{Most recent report, if "\code{report}" is included in

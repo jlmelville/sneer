@@ -4,12 +4,9 @@
 \alias{ssne}
 \title{Symmetric Stochastic Neighbor Embedding}
 \usage{
-ssne(mat_name = "ym", eps = .Machine$double.eps)
+ssne(eps = .Machine$double.eps)
 }
 \arguments{
-\item{mat_name}{Name of the matrix in the output data list that will contain
-the embedded coordinates.}
-
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
 }
@@ -27,8 +24,6 @@ a list containing:
  invoke after input and output initialization callbacks. For this method,
  the input probability matrix must be converted from a row probability
  matrix to a joint probability matrix.}
- \item{\code{mat_name}}{Name of the matrix in the output data list that will
- contain the embedded coordinates.}
  \item{\code{eps}}{Small floating point value used to prevent numerical
  problems, e.g. in gradients and cost functions.}
 }
@@ -39,8 +34,7 @@ Creates a list of functions that collectively implement SSNE.
 
 If used in an embedding, the output data list will contain:
 \describe{
- \item{\code{ym}}{Embedded coordinates. This name can be changed by
- specifying \code{mat_name}.}
+ \item{\code{ym}}{Embedded coordinates.}
  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
 }
 }

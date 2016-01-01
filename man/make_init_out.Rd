@@ -5,8 +5,7 @@
 \title{Output Initialization}
 \usage{
 make_init_out(k = 2, init_config = NULL, stdev = 1e-04,
-  from_PCA = FALSE, from_input_name = NULL, mat_name = "ym",
-  verbose = TRUE)
+  from_PCA = FALSE, from_input_name = NULL, verbose = TRUE)
 }
 \arguments{
 \item{k}{Number of output dimensions. For 2D visualization this is always 2.}
@@ -29,11 +28,6 @@ and not a distance matrix.}
 which contains suitable initialization data. Must be a matrix with the same
 dimensions as the desired output coordinates.}
 
-\item{mat_name}{Name of the matrix on the output list to contain the
-initialized coordinates. Ensure that if you change this from the default that
-other callbacks that need this information (e.g. optimization routines,
-plotting function in reporter callbacks) are also passed the same value.}
-
 \item{verbose}{If \code{TRUE} information about the initialization will be
 logged to screen.}
 }
@@ -42,8 +36,7 @@ Callback to be used by the embedding routine to initialize
 the output data. The callback has the signature \code{init_out(inp)} where
 \code{inp} is the initialized input data list. The return value of the
 callback is the initialized output data, a list containing:
-\item{\code{ym}}{A matrix containing the initialized output coordinates. The
- name of the matrix can be changed by setting the \code{mat_name} parameter.}
+\item{\code{ym}}{A matrix containing the initialized output coordinates.}
 Depending on the type of embedding carried out, the \code{out} list will
 accumulate other auxiliary data associated with the embedded coordinates,
 e.g. distances, probabilities, divergences or other data required for

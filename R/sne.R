@@ -22,16 +22,13 @@ NULL
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
-#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#'  specifying \code{mat_name}.}
+#'  \item{\code{ym}}{Embedded coordinates.}
 #'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
 #'  \code{wm}.}
 #'  \item{\code{wm}}{Weight matrix generated from the distances between points
 #'  in \code{ym}.}
 #' }
 #'
-#' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return a list containing:
@@ -48,8 +45,6 @@ NULL
 #'  invoke after input and output initialization callbacks. For this method,
 #'  the input probability matrix must be converted from a row probability
 #'  matrix to a joint probability matrix.}
-#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
-#'  contain the embedded coordinates.}
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @references
@@ -59,7 +54,7 @@ NULL
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-tsne <- function(mat_name = "ym", eps = .Machine$double.eps) {
+tsne <- function(eps = .Machine$double.eps) {
   f <- function(pm, qm, wm) {
     4 * (pm - qm) * wm
   }
@@ -80,7 +75,6 @@ tsne <- function(mat_name = "ym", eps = .Machine$double.eps) {
       inp$pm <- prow_to_pjoint(inp$pm)
       list(inp = inp)
     },
-    mat_name = mat_name,
     eps = eps
   )
 }
@@ -92,13 +86,10 @@ tsne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
-#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#'  specifying \code{mat_name}.}
+#'  \item{\code{ym}}{Embedded coordinates.}
 #'  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
 #' }
 #'
-#' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return a list containing:
@@ -114,8 +105,6 @@ tsne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #'  invoke after input and output initialization callbacks. For this method,
 #'  the input probability matrix must be converted from a row probability
 #'  matrix to a joint probability matrix.}
-#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
-#'  contain the embedded coordinates.}
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @references
@@ -130,7 +119,7 @@ tsne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
 #' @export
-ssne <- function(mat_name = "ym", eps = .Machine$double.eps) {
+ssne <- function(eps = .Machine$double.eps) {
   f <- function(pm, qm) {
     4 * (pm - qm)
   }
@@ -150,7 +139,6 @@ ssne <- function(mat_name = "ym", eps = .Machine$double.eps) {
       inp$pm <- prow_to_pjoint(inp$pm)
       list(inp = inp)
     },
-    mat_name = mat_name,
     eps = .Machine$double.eps
   )
 }
@@ -162,13 +150,10 @@ ssne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
-#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#'  specifying \code{mat_name}.}
+#'  \item{\code{ym}}{Embedded coordinates.}
 #'  \item{\code{qm}}{Row probability matrix based on embedded coordinates.}
 #' }
 #'
-#' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return a list containing:
@@ -182,8 +167,6 @@ ssne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #'  data after a coordinate update.}
 #'  \item{\code{after_init_fn}}{Method-specific initialization function to
 #'  invoke after input and output initialization callbacks.}
-#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
-#'  contain the embedded coordinates.}
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @references
@@ -194,7 +177,7 @@ ssne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
 #' @export
-asne <- function(mat_name = "ym", eps = .Machine$double.eps) {
+asne <- function(eps = .Machine$double.eps) {
   f <- function(pm, qm) {
     km <- 2 * (pm - qm)
     km + t(km)
@@ -215,7 +198,6 @@ asne <- function(mat_name = "ym", eps = .Machine$double.eps) {
       inp$pm <- clamp(inp$pm)
       list(inp = inp)
     },
-    mat_name = mat_name,
     eps = eps
   )
 }
@@ -230,16 +212,13 @@ asne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
-#'  \item{\code{ym}}{Embedded coordinates. This name can be changed by
-#'  specifying \code{mat_name}.}
+#'  \item{\code{ym}}{Embedded coordinates.}
 #'  \item{\code{qm}}{Row probability matrix based on the weight matrix
 #'  \code{wm}.}
 #'  \item{\code{wm}}{Weight matrix generated from the distances between points
 #'  in \code{ym}.}
 #' }
 #'
-#' @param mat_name Name of the matrix in the output data list that will contain
-#' the embedded coordinates.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return a list containing:
@@ -253,14 +232,12 @@ asne <- function(mat_name = "ym", eps = .Machine$double.eps) {
 #'  data after a coordinate update.}
 #'  \item{\code{after_init_fn}}{Method-specific initialization function to
 #'  invoke after input and output initialization callbacks.}
-#'  \item{\code{mat_name}}{Name of the matrix in the output data list that will
-#'  contain the embedded coordinates.}
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
 #' @export
-tasne <- function(mat_name = "ym", eps = .Machine$double.eps) {
+tasne <- function(eps = .Machine$double.eps) {
   f <- function(pm, qm, wm) {
     km <- 2 * (pm - qm) * wm
     km + t(km)
@@ -282,7 +259,6 @@ tasne <- function(mat_name = "ym", eps = .Machine$double.eps) {
       inp$pm <- clamp(inp$pm)
       list(inp = inp)
     },
-    mat_name = mat_name,
     eps = eps
   )
 }

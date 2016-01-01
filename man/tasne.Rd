@@ -4,12 +4,9 @@
 \alias{tasne}
 \title{t-distributed Asymmetric Stochastic Neighbor Embedding}
 \usage{
-tasne(mat_name = "ym", eps = .Machine$double.eps)
+tasne(eps = .Machine$double.eps)
 }
 \arguments{
-\item{mat_name}{Name of the matrix in the output data list that will contain
-the embedded coordinates.}
-
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
 }
@@ -25,8 +22,6 @@ a list containing:
  data after a coordinate update.}
  \item{\code{after_init_fn}}{Method-specific initialization function to
  invoke after input and output initialization callbacks.}
- \item{\code{mat_name}}{Name of the matrix in the output data list that will
- contain the embedded coordinates.}
  \item{\code{eps}}{Small floating point value used to prevent numerical
  problems, e.g. in gradients and cost functions.}
 }
@@ -40,8 +35,7 @@ for probability generation uses the point-wise distribution of ASNE.
 
 If used in an embedding, the output data list will contain:
 \describe{
- \item{\code{ym}}{Embedded coordinates. This name can be changed by
- specifying \code{mat_name}.}
+ \item{\code{ym}}{Embedded coordinates.}
  \item{\code{qm}}{Row probability matrix based on the weight matrix
  \code{wm}.}
  \item{\code{wm}}{Weight matrix generated from the distances between points

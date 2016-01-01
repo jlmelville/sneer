@@ -10,7 +10,7 @@
 #' @param method Embedding method.
 #' @return Weight matrix for the embedded coordinates in \code{out}.
 weights <- function(out, method) {
-  coords_to_weights(out[[method$mat_name]], method$weight_fn)
+  coords_to_weights(out$ym, method$weight_fn)
 }
 
 #' Create Weight Matrix from Coordinates Matrix

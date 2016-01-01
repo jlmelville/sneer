@@ -4,12 +4,9 @@
 \alias{mmds}
 \title{Metric Multi-dimensional Scaling (MDS) Using STRESS Cost Function}
 \usage{
-mmds(mat_name = "ym", eps = .Machine$double.eps)
+mmds(eps = .Machine$double.eps)
 }
 \arguments{
-\item{mat_name}{Name of the matrix in the output data list that will contain
-the embedded coordinates.}
-
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
 }
@@ -21,8 +18,6 @@ a list containing:
  \item{\code{stiffness_fn}}{Stiffness function for \code{cost_fn}.}
  \item{\code{update_out_fn}}{Function to calculate and store any needed
  data after a coordinate update.}
- \item{\code{mat_name}}{Name of the matrix in the output data list that will
- contain the embedded coordinates.}
  \item{\code{eps}}{Small floating point value used to prevent numerical
  problems, e.g. in gradients and cost functions.}
 }
@@ -49,8 +44,7 @@ calculated, which may not be apparent without examining the source code.
 
 If used in an embedding, the output data list will contain:
 \describe{
- \item{\code{ym}}{Embedded coordinates. This name can be changed by
- specifying \code{mat_name}.}
+ \item{\code{ym}}{Embedded coordinates.}
  \item{\code{dm}}{Distance matrix generated from \code{ym}.}
 }
 }
