@@ -2,7 +2,7 @@
 % Please edit documentation in R/sne.R
 \name{tsne}
 \alias{tsne}
-\title{t-Distributed Stochastic Neighbor Embedding}
+\title{t-Distributed Stochastic Neighbor Embedding (t-SNE).}
 \usage{
 tsne(eps = .Machine$double.eps)
 }
@@ -29,7 +29,7 @@ a list containing:
  problems, e.g. in gradients and cost functions.}
 }
 \description{
-Creates a list of functions that collectively implement t-SNE.
+A probability-based embedding method.
 }
 \section{Output Data}{
 

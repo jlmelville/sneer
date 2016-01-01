@@ -16,7 +16,7 @@ NULL
 
 #' Metric Multi-dimensional Scaling (MDS) Using STRESS Cost Function
 #'
-#' Creates a list of functions that collectively implement metric MDS.
+#' A distance-based embedding method.
 #'
 #' This function minimizes an embedding using \code{\link{metric_stress_cost}}
 #' as the cost function:
@@ -103,7 +103,7 @@ mmds <- function(eps = .Machine$double.eps) {
 
 #' Metric Multi-dimensional Scaling (MDS) using SSTRESS Cost Function.
 #'
-#' Embedding method.
+#' A distance-based embedding method.
 #'
 #' This function minimizes an embedding using the SSTRESS loss function:
 #'
@@ -145,7 +145,7 @@ smmds <- function(eps = .Machine$double.eps) {
 
 #' Sammon Mapping
 #'
-#' Creates a list of functions that collectively implement Sammon Mapping.
+#' A distance-based embedding method.
 #'
 #' This function minimizes an embedding using a quadratic loss function on
 #' the difference between the input distances and the output distances:

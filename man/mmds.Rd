@@ -22,7 +22,7 @@ a list containing:
  problems, e.g. in gradients and cost functions.}
 }
 \description{
-Creates a list of functions that collectively implement metric MDS.
+A distance-based embedding method.
 }
 \details{
 This function minimizes an embedding using \code{\link{metric_stress_cost}}

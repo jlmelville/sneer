@@ -2,7 +2,7 @@
 % Please edit documentation in R/sne.R
 \name{ssne}
 \alias{ssne}
-\title{Symmetric Stochastic Neighbor Embedding}
+\title{Symmetric Stochastic Neighbor Embedding (SSNE)}
 \usage{
 ssne(eps = .Machine$double.eps)
 }
@@ -28,7 +28,7 @@ a list containing:
  problems, e.g. in gradients and cost functions.}
 }
 \description{
-Creates a list of functions that collectively implement SSNE.
+A probability-based embedding method.
 }
 \section{Output Data}{
 

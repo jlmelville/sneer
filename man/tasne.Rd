@@ -2,7 +2,7 @@
 % Please edit documentation in R/sne.R
 \name{tasne}
 \alias{tasne}
-\title{t-distributed Asymmetric Stochastic Neighbor Embedding}
+\title{t-distributed Asymmetric Stochastic Neighbor Embedding (t-ASNE)}
 \usage{
 tasne(eps = .Machine$double.eps)
 }
@@ -26,6 +26,9 @@ a list containing:
  problems, e.g. in gradients and cost functions.}
 }
 \description{
+A probability-based embedding method.
+}
+\details{
 Creates a list of functions that collectively implement t-ASNE: a method that
 I just made up to illustrate how to explore different aspects of embedding
 within sneer: this uses the t-distributed distance weighting of t-SNE, but

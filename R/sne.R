@@ -15,9 +15,9 @@
 #' @family sneer probability embedding methods
 NULL
 
-#' t-Distributed Stochastic Neighbor Embedding
+#' t-Distributed Stochastic Neighbor Embedding (t-SNE).
 #'
-#' Creates a list of functions that collectively implement t-SNE.
+#' A probability-based embedding method.
 #'
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
@@ -79,9 +79,9 @@ tsne <- function(eps = .Machine$double.eps) {
   )
 }
 
-#' Symmetric Stochastic Neighbor Embedding
+#' Symmetric Stochastic Neighbor Embedding (SSNE)
 #'
-#' Creates a list of functions that collectively implement SSNE.
+#' A probability-based embedding method.
 #'
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
@@ -142,9 +142,9 @@ ssne <- function(eps = .Machine$double.eps) {
   )
 }
 
-#' Asymmetric Stochastic Neighbor Embedding
+#' Asymmetric Stochastic Neighbor Embedding (ASNE)
 #'
-#' Creates a list of functions that collectively implement ASNE.
+#' A probability-based embedding method.
 #'
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
@@ -200,7 +200,9 @@ asne <- function(eps = .Machine$double.eps) {
   )
 }
 
-#' t-distributed Asymmetric Stochastic Neighbor Embedding
+#' t-distributed Asymmetric Stochastic Neighbor Embedding (t-ASNE)
+#'
+#' A probability-based embedding method.
 #'
 #' Creates a list of functions that collectively implement t-ASNE: a method that
 #' I just made up to illustrate how to explore different aspects of embedding

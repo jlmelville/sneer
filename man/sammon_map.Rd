@@ -21,7 +21,7 @@ a list containing:
  problems, e.g. in gradients and cost functions.}
 }
 \description{
-Creates a list of functions that collectively implement Sammon Mapping.
+A distance-based embedding method.
 }
 \details{
 This function minimizes an embedding using a quadratic loss function on

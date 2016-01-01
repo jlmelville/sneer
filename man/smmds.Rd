@@ -21,7 +21,7 @@ a list containing:
  problems, e.g. in gradients and cost functions.}
 }
 \description{
-Embedding method.
+A distance-based embedding method.
 }
 \details{
 This function minimizes an embedding using the SSTRESS loss function:

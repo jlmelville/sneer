@@ -2,7 +2,7 @@
 % Please edit documentation in R/sne.R
 \name{asne}
 \alias{asne}
-\title{Asymmetric Stochastic Neighbor Embedding}
+\title{Asymmetric Stochastic Neighbor Embedding (ASNE)}
 \usage{
 asne(eps = .Machine$double.eps)
 }
@@ -26,7 +26,7 @@ a list containing:
  problems, e.g. in gradients and cost functions.}
 }
 \description{
-Creates a list of functions that collectively implement ASNE.
+A probability-based embedding method.
 }
 \section{Output Data}{
 
