@@ -104,7 +104,7 @@ Carry out an embedding of a dataset using a probability-based method
 tsne_iris <- embed_prob(iris[, 1:4], opt = tsne_opt(),
                init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
                tricks = tsne_tricks(),
-               reporter = make_reporter(plot_fn = make_iris_plot()))
+               reporter = make_reporter(plot = make_iris_plot()))
 
 # Do t-SNE on the iris dataset with the same options as the t-SNE paper
 # and initialize from random. Use generic plot function, displaying the first
@@ -117,7 +117,7 @@ tsne_iris <- embed_prob(iris[, 1:4],
                init_out = make_init_out(stdev = 1e-4),
                tricks = tsne_tricks(),
                reporter = make_reporter(
-                 plot_fn = make_plot(iris, "Species", make_label(2))))
+                 plot = make_plot(iris, "Species", make_label(2))))
 
 # Use the SSNE method, and preprocess input data by range scaling. t-SNE
 # tricks and optimization are reasonable defaults for other probability-based
@@ -130,7 +130,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
                init_out = make_init_out(stdev = 1e-4),
                tricks = tsne_tricks(),
                reporter = make_reporter(
-                 plot_fn = make_plot(iris, "Species", make_label(2))))
+                 plot = make_plot(iris, "Species", make_label(2))))
 
 # ASNE method on the s1k dataset (10 overlapping 9D Gaussian blobs),
 # Set perplexity for input initialization to 50, initialize with PCA scores,
@@ -144,7 +144,7 @@ asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
  init_out = make_init_out(from_PCA = TRUE),
  opt = make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
   update = nesterov_nsc_momentum()),
-  reporter = make_reporter(plot_fn = make_plot(s1k, "Label")))
+  reporter = make_reporter(plot = make_plot(s1k, "Label")))
 
 # Same as above, but using convenience method to create optimizer with less
 # typing
@@ -153,7 +153,7 @@ asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
  init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
  init_out = make_init_out(from_PCA = TRUE),
  opt = bold_nag_opt(),
- reporter = make_reporter(plot_fn = make_plot(s1k, "Label")))
+ reporter = make_reporter(plot = make_plot(s1k, "Label")))
 }
 }
 \seealso{

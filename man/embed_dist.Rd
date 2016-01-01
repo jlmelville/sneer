@@ -105,7 +105,7 @@ mds_iris <- embed_dist(iris[, 1:4],
                        reporter = make_reporter(
                          extra_costs = c("kruskal_stress",
                                          "mean_relative_error")),
-                                         plot_fn = make_iris_plot())
+                                         plot = make_iris_plot())
 
 # Sammon map the autoscaled iris data set, which turns out to be a
 # surprisingly tough assignment. Increase epsilon substantially to 1e-4 to
@@ -122,7 +122,7 @@ sammon_iris <- embed_dist(iris[, 1:4],
                           reporter = make_reporter(normalize_cost = FALSE,
                                        extra_costs = c("normalized_stress",
                                                        "kruskal_stress"),
-                                       plot_fn = make_plot(iris, "Species",
+                                       plot = make_plot(iris, "Species",
                                                            make_label())))
 }
 }

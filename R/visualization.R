@@ -32,7 +32,7 @@
 #' \dontrun{
 #'  embed_prob(reporter = make_reporter(report_every = 100,
 #'                                     normalize_cost = TRUE,
-#'                                     plot_fn = make_plot(iris, "Species")),
+#'                                     plot = make_plot(iris, "Species")),
 #'                                      ...)
 #' }
 #' @family sneer plot functions

@@ -140,7 +140,7 @@
 #'                init_out = make_init_out(stdev = 1e-4),
 #'                tricks = tsne_tricks(),
 #'                reporter = make_reporter(
-#'                  plot_fn = make_plot(iris, "Species", make_label(2))))
+#'                  plot = make_plot(iris, "Species", make_label(2))))
 #'
 #' # Do ASNE on the synthetic the s1k dataset (10 overlapping 9D Gaussian blobs),
 #' # Autoscale the input, use PCA to initialize the embedding, and use
@@ -152,7 +152,7 @@
 #'                init_out = make_init_out(from_PCA = TRUE),
 #'                opt = bold_nag_opt(),
 #'                reporter = make_reporter(
-#'                plot_fn = make_plot(s1k, "Label")))
+#'                plot = make_plot(s1k, "Label")))
 #'
 #' # Same as the previous example but creating the NAG optimizer explicitly with
 #' # generic make_opt method
@@ -164,7 +164,7 @@
 #'                 opt = make_opt(gradient = nesterov_gradient(),
 #'                                step_size = bold_driver(),
 #'                                update = nesterov_nsc_momentum()),
-#'                 reporter = make_reporter(plot_fn = make_plot(s1k, "Label")))
+#'                 reporter = make_reporter(plot = make_plot(s1k, "Label")))
 #'
 #' # Do metric MDS on the iris data set
 #' # In addition to the STRESS loss function also report the Kruskal Stress
@@ -178,7 +178,7 @@
 #'                        reporter = make_reporter(
 #'                          extra_costs = c("kruskal_stress",
 #'                                          "mean_relative_error")),
-#'                                          plot_fn = make_iris_plot())
+#'                                          plot = make_iris_plot())
 #'
 #' # Sammon map the iris data set, which turns out to be a surprisingly tough
 #' # assignment. Increase epsilon substantially to 1e-4 to avoid the gradient
@@ -194,7 +194,7 @@
 #'                           reporter = make_reporter(normalize_cost = FALSE,
 #'                                        extra_costs = c("normalized_stress",
 #'                                                        "kruskal_stress"),
-#'                                        plot_fn = make_iris_plot()))
+#'                                        plot = make_iris_plot()))
 #' }
 #' @references
 #'

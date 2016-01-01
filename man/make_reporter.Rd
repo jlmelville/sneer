@@ -5,9 +5,9 @@
 \title{Reporter}
 \usage{
 make_reporter(report_every = 100, min_cost = 0,
-  reltol = sqrt(.Machine$double.eps), plot_fn = NULL,
-  normalize_cost = TRUE, keep_costs = FALSE, extra_costs = NULL,
-  opt_report = FALSE, verbose = TRUE)
+  reltol = sqrt(.Machine$double.eps), plot = NULL, normalize_cost = TRUE,
+  keep_costs = FALSE, extra_costs = NULL, opt_report = FALSE,
+  verbose = TRUE)
 }
 \arguments{
 \item{report_every}{Number of steps between callback invocations.}
@@ -19,8 +19,8 @@ value, the optimization process is halted.}
 consecutive reports falls below this value, the optimization process is
 halted.}
 
-\item{plot_fn}{Function for plotting embedding. Signature should be
-\code{plot_fn(out)} where \code{out} is the output data list. Return value
+\item{plot}{Function for plotting embedding. Signature should be
+\code{plot(out)} where \code{out} is the output data list. Return value
 of this function is ignored.}
 
 \item{normalize_cost}{If \code{TRUE}, the cost calculated by the cost
@@ -98,12 +98,12 @@ make_reporter(report_every = 100, reltol = 0.001)
 
 # For s1k dataset, plot 2D embedding at every reporter, with "Label" factor
 # to identify each point on the plot
-make_reporter(report_every = 100, plot_fn = make_plot(s1k, "Label"))
+make_reporter(report_every = 100, plot = make_plot(s1k, "Label"))
 
 # For iris dataset, plot 2D embedding at every reporter, with first two
 # characters of the "Species" factor to identify each point on the plot
 make_reporter(report_every = 100,
-              plot_fn = make_plot(iris, "Species", make_label(2)))
+              plot = make_plot(iris, "Species", make_label(2)))
 
 # Keep all costs calculated during reporters, can be exported from the
 # embedding routine and plotted or otherwise used.
@@ -117,7 +117,7 @@ make_reporter(extra_costs =
 \dontrun{
  embed_prob(reporter = make_reporter(report_every = 100,
                                     normalize_cost = TRUE,
-                                    plot_fn = make_plot(iris, "Species")),
+                                    plot = make_plot(iris, "Species")),
                                     ...)
 }
 }
