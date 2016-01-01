@@ -147,7 +147,7 @@ asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
  preprocess = make_preprocess(auto_scale = TRUE),
  init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
  init_out = make_init_out(from_PCA = TRUE),
- opt = bold_nag_opt(),
+ opt = bold_nagger(),
  reporter = make_reporter(plot = make_plot(s1k, "Label")))
 }
 }

@@ -35,7 +35,7 @@ pca_iris <- prcomp(iris[, 1:4], center = TRUE, retx = TRUE)
 iris_plot(pca_iris$x[, 1:2])
 
 # TSNE on iris
-tsne_iris <- embed_prob(iris[, 1:4], method = tsne())
+tsne_iris <- embed_prob(iris[, 1:4])
 # view the TSNE embedding
 iris_plot(tsne_iris$ym)
 }

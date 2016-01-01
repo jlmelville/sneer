@@ -26,7 +26,7 @@ that from the t-SNE paper.
 \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
  this function for configuring an embedding.
 
-Other sneer optimization methods: \code{\link{bold_nag_opt}},
+Other sneer optimization methods: \code{\link{bold_nagger}},
   \code{\link{gradient_descent}}, \code{\link{make_opt}},
   \code{\link{optimization_methods}}
 }

@@ -29,8 +29,7 @@ installed.
 }
 \examples{
 \dontrun{
-mds_iris <- embed_dist(iris[, 1:4], method = mmds(eps = 1e-4),
-                       opt = bold_nag_opt(), max_iter = 40)
+mds_iris <- embed_dist(iris[, 1:4])
 iris_view <- make_qplot(iris, "Species")
 iris_view(mds_iris)
 }

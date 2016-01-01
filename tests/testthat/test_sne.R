@@ -29,7 +29,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
                        verbose = FALSE,
-                       opt = bold_nag_opt())
+                       opt = bold_nagger())
 expect_equal(formatC(ssne_iris$report$norm), "0.07265")
 
 asne_iris <- embed_prob(iris[, 1:4],
@@ -45,7 +45,7 @@ asne_iris <- embed_prob(iris[, 1:4],
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
                        verbose = FALSE,
-                       opt = bold_nag_opt(max_momentum = 0.85))
+                       opt = bold_nagger(max_momentum = 0.85))
 expect_equal(formatC(asne_iris$report$norm), "0.08479")
 
 pca_iris <- embed_prob(iris[, 1:4],

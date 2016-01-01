@@ -168,11 +168,11 @@ tsne_opt <- function() {
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
 #' \dontrun{
-#'  embed_prob(opt = bold_nag_opt(), ...)
+#'  embed_prob(opt = bold_nagger(), ...)
 #' }
 #' @family sneer optimization methods
 #' @export
-bold_nag_opt <- function(min_step_size = sqrt(.Machine$double.eps),
+bold_nagger <- function(min_step_size = sqrt(.Machine$double.eps),
                          init_step_size = 1,
                          max_momentum = 1) {
   make_opt(gradient = nesterov_gradient(),

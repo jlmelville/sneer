@@ -75,7 +75,7 @@ make_plot <- function(x, attr_name,
 #' iris_plot(pca_iris$x[, 1:2])
 #'
 #' # TSNE on iris
-#' tsne_iris <- embed_prob(iris[, 1:4], method = tsne())
+#' tsne_iris <- embed_prob(iris[, 1:4])
 #' # view the TSNE embedding
 #' iris_plot(tsne_iris$ym)
 #'}
@@ -144,8 +144,7 @@ make_iris_plot <- function(num_label_chars = 1) {
 #' data will be plotted.
 #' @examples
 #' \dontrun{
-#' mds_iris <- embed_dist(iris[, 1:4], method = mmds(eps = 1e-4),
-#'                        opt = bold_nag_opt(), max_iter = 40)
+#' mds_iris <- embed_dist(iris[, 1:4])
 #' iris_view <- make_qplot(iris, "Species")
 #' iris_view(mds_iris)
 #' }
@@ -178,7 +177,7 @@ make_qplot <- function(x, attr_name, mat_name = "ym") {
 #' # make two different embeddings of the iris dataset
 #' prcomp_iris <- prcomp(iris[, 1:4], center = TRUE, retx = TRUE)
 #' mds_iris <- embed_dist(iris[, 1:4], method = mmds(eps = 1e-4),
-#'                        opt = bold_nag_opt(), init_out = make_init_out(
+#'                        opt = bold_nagger(), init_out = make_init_out(
 #'                          init_config = prcomp_iris$x[, 1:2]),
 #'                        max_iter = 40)
 #' iris_view <- make_embedding_qplot(iris, "Species")
