@@ -18,13 +18,13 @@ Factory function for creating an optimizer step size method.
 make_opt(step_size = tsne_jacobs())
 }
 \references{
-Laurens van der Maarten, Geoffrey Hinton.
-Visualizing Data using t-SNE.
-Journal of Machine Learning Research, 2008, 9, 2579-2605.
+Van der Maaten, L., & Hinton, G. (2008).
+Visualizing data using t-SNE.
+\emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 
-R. A. Jacobs.
+Jacobs, R. A. (1988).
 Increased rates of convergence through learning rate adaptation.
-Neural Networks, 1:295-307, 1988.
+\emph{Neural networks}, \emph{1}(4), 295-307.
 }
 \seealso{
 The return value of this function is intended for internal use of

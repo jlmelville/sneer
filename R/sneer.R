@@ -199,30 +199,30 @@
 #' @references
 #'
 #' MDS
-#' Jan de Leeuw, Patrick Mair (2009).
+#' De Leeuw, J., & Mair, P. (2009).
 #' Multidimensional Scaling Using Majorization: SMACOF in R.
-#' Journal of Statistical Software, 31(3), 1-30.
+#' \emph{Journal of Statistical Software}, 31(3), 1-30.
 #' URL http://www.jstatsoft.org/v31/i03/.
 #'
-#' Ingwer Borg, Patrick J. F. Groenen
-#' Modern Multidimensional Scaling: Theory and Applications
-#' Springer Science & Business Media, Aug 4, 2005
+#' Borg, I., & Groenen, P. J. (2005).
+#' \emph{Modern multidimensional scaling: Theory and applications.}
+#' Springer Science & Business Media.
 #'
 #' Sammon Mapping
-#' Sammon, J. W. (1969)
-#' A non-linear mapping for data structure analysis.
-#' IEEE Trans. Comput., C-18 401-409.
+#' Sammon, J. W. (1969).
+#' A nonlinear mapping for data structure analysis.
+#' \emph{IEEE Transactions on computers}, (5), 401-409.
 #'
 #' t-SNE, SNE and ASNE:
-#' Laurens van der Maarten, Geoffrey Hinton.
-#' Visualizing Data using t-SNE.
-#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#' Van der Maaten, L., & Hinton, G. (2008).
+#' Visualizing data using t-SNE.
+#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 #'
 #' Nesterov Accelerated Gradient:
-#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
-#' On the importance of momentum and initialization in deep learning.
-#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
-#' JMLR: W&CP volume 28.
+#' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
+#' On the importance of initialization and momentum in deep learning.
+#' In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
+#' (pp. 1139-1147).
 #'
 #' @docType package
 #' @name sneer

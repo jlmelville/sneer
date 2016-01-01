@@ -52,10 +52,10 @@ classical_gradient <- function() {
 #' # gradient method:
 #' make_opt(gradient = nesterov_gradient())
 #' @references
-#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
-#' On the importance of momentum and initialization in deep learning.
-#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
-#' JMLR: W&CP volume 28.
+#' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
+#' On the importance of initialization and momentum in deep learning.
+#' In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
+#' (pp. 1139-1147).
 #' @family sneer optimization gradient methods
 #' @export
 nesterov_gradient <- function() {
@@ -95,10 +95,10 @@ classical_grad_pos <- function(opt, inp, out, method) {
 #'  \item{\code{km}}{Stiffness matrix.}
 #'  \item{\code{gm}}{Gradient matrix.}
 #' @references
-#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
-#' On the importance of momentum and initialization in deep learning.
-#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
-#' JMLR: W&CP volume 28.
+#' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
+#' On the importance of initialization and momentum in deep learning.
+#' In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
+#' (pp. 1139-1147).
 nesterov_grad_pos <- function(opt, inp, out, method) {
   prev_update <- opt$update$value
   mu <- opt$update$momentum

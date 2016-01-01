@@ -23,9 +23,9 @@ Tricks configured according to the details in the t-SNE paper.
 }
 }
 \references{
-Laurens van der Maarten, Geoffrey Hinton.
-Visualizing Data using t-SNE.
-Journal of Machine Learning Research, 2008, 9, 2579-2605.
+Van der Maaten, L., & Hinton, G. (2008).
+Visualizing data using t-SNE.
+\emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 }
 \seealso{
 \code{\link{embed_prob}} for how to use this function for

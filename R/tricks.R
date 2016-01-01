@@ -147,10 +147,10 @@ early_exaggeration <- function(exaggeration = 4, off_iter = 50,
 #'            ...)
 #' }
 #' @references
-#' Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
-#' On the importance of momentum and initialization in deep learning.
-#' 30th International Conference on Machine Learning, Atlanta, USA, 2013.
-#' JMLR: W&CP volume 28.
+#' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
+#' On the importance of initialization and momentum in deep learning.
+#' In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
+#' (pp. 1139-1147).
 #'
 #' @family sneer tricks
 #' @export
@@ -184,9 +184,9 @@ late_momentum <- function(momentum = 0.9, on_iter = 900, verbose = TRUE) {
 #'  embed_prob(tricks = tsne_tricks(), ...)
 #' }
 #' @references
-#' Laurens van der Maarten, Geoffrey Hinton.
-#' Visualizing Data using t-SNE.
-#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#' Van der Maaten, L., & Hinton, G. (2008).
+#' Visualizing data using t-SNE.
+#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 #' @family sneer trick collections
 #' @export
 tsne_tricks <- function(verbose = TRUE) {

@@ -64,16 +64,16 @@ There are two differences from the method as originally described by Jacobs:
 make_opt(step_size = jacobs())
 }
 \references{
-R. A. Jacobs.
+Jacobs, R. A. (1988).
 Increased rates of convergence through learning rate adaptation.
-Neural Networks, 1:295-307, 1988.
+\emph{Neural networks}, \emph{1}(4), 295-307.
 
-J. A. Janet, S. M. Scoggins, S. M. Schultz, W. E. Snyder, M. W. White,
-J. C. Sutton III
-Shocking: an approach to stabilize backprop training with greedy adaptive
-learning rates
-1998 IEEE International Joint Conference on Neural Networks Proceedings.
-IEEE World Congress on Computational Intelligence.
+Janet, J. A., Scoggins, S. M., Schultz, S. M., Snyder, W. E., White, M. W.,
+& Sutton, J. C. (1998, May).
+Shocking: An approach to stabilize backprop training with greedy adaptive
+learning rates.
+In \emph{1998 IEEE International Joint Conference on Neural Networks Proceedings.}
+(Vol. 3, pp. 2218-2223). IEEE.
 }
 \seealso{
 The return value of this function is intended for internal use of

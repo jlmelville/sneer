@@ -39,14 +39,13 @@ If used in an embedding, the output data list will contain:
 }
 }
 \references{
-J.A. Cook, I. Sutskever, A. Mnih, and G.E. Hinton.
+Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
 Visualizing similarity data with a mixture of maps.
-In Proceedings of the 11th International Conference on Artificial
-Intelligence and Statistics, volume 2, pages 67-74, 2007.
+In \emph{International Conference on Artificial Intelligence and Statistics} (pp. 67-74).
 
-Laurens van der Maarten, Geoffrey Hinton.
-Visualizing Data using t-SNE.
-Journal of Machine Learning Research, 2008, 9, 2579-2605.
+Van der Maaten, L., & Hinton, G. (2008).
+Visualizing data using t-SNE.
+\emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 }
 \seealso{
 Other sneer embedding methods: \code{\link{asne}},

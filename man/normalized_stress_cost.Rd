@@ -40,9 +40,9 @@ This cost function requires the following matrices to be defined:
 }
 }
 \references{
-Ingwer Borg, Patrick J. F. Groenen
-Modern Multidimensional Scaling: Theory and Applications
-Springer Science & Business Media, Aug 4, 2005
+Borg, I., & Groenen, P. J. (2005).
+\emph{Modern multidimensional scaling: Theory and applications.}
+Springer Science & Business Media.
 }
 \seealso{
 Other sneer cost functions: \code{\link{kl_cost}},

@@ -37,10 +37,9 @@ If used in an embedding, the output data list will contain:
 }
 }
 \references{
-G.E. Hinton and S.T. Roweis.
-Stochastic Neighbor Embedding.
-In Advances in Neural Information Processing Systems, volume 15,
-pages 833-840, Cambridge, MA, USA, 2002. The MIT Press.
+Hinton, G. E., & Roweis, S. T. (2002).
+Stochastic neighbor embedding.
+In \emph{Advances in neural information processing systems} (pp. 833-840).
 }
 \seealso{
 Other sneer embedding methods: \code{\link{embedding_methods}},

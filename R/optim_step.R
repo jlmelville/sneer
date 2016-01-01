@@ -171,16 +171,16 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' # step size method:
 #' make_opt(step_size = jacobs())
 #' @references
-#' R. A. Jacobs.
+#' Jacobs, R. A. (1988).
 #' Increased rates of convergence through learning rate adaptation.
-#' Neural Networks, 1:295-307, 1988.
+#' \emph{Neural networks}, \emph{1}(4), 295-307.
 #'
-#' J. A. Janet, S. M. Scoggins, S. M. Schultz, W. E. Snyder, M. W. White,
-#' J. C. Sutton III
-#' Shocking: an approach to stabilize backprop training with greedy adaptive
-#' learning rates
-#' 1998 IEEE International Joint Conference on Neural Networks Proceedings.
-#' IEEE World Congress on Computational Intelligence.
+#' Janet, J. A., Scoggins, S. M., Schultz, S. M., Snyder, W. E., White, M. W.,
+#' & Sutton, J. C. (1998, May).
+#' Shocking: An approach to stabilize backprop training with greedy adaptive
+#' learning rates.
+#' In \emph{1998 IEEE International Joint Conference on Neural Networks Proceedings.}
+#' (Vol. 3, pp. 2218-2223). IEEE.
 #' @family sneer optimization step size methods
 #' @export
 jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
@@ -232,13 +232,13 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' # step size method:
 #' make_opt(step_size = tsne_jacobs())
 #' @references
-#' Laurens van der Maarten, Geoffrey Hinton.
-#' Visualizing Data using t-SNE.
-#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#' Van der Maaten, L., & Hinton, G. (2008).
+#' Visualizing data using t-SNE.
+#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 #'
-#' R. A. Jacobs.
+#' Jacobs, R. A. (1988).
 #' Increased rates of convergence through learning rate adaptation.
-#' Neural Networks, 1:295-307, 1988.
+#' \emph{Neural networks}, \emph{1}(4), 295-307.
 #'
 #' @export
 #' @family sneer optimization step size methods

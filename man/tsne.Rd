@@ -43,9 +43,9 @@ If used in an embedding, the output data list will contain:
 }
 }
 \references{
-Laurens van der Maarten, Geoffrey Hinton.
-Visualizing Data using t-SNE.
-Journal of Machine Learning Research, 2008, 9, 2579-2605.
+Van der Maaten, L., & Hinton, G. (2008).
+Visualizing data using t-SNE.
+\emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 }
 \seealso{
 Other sneer embedding methods: \code{\link{asne}},

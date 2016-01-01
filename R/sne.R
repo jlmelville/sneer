@@ -48,9 +48,9 @@ NULL
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @references
-#' Laurens van der Maarten, Geoffrey Hinton.
-#' Visualizing Data using t-SNE.
-#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#' Van der Maaten, L., & Hinton, G. (2008).
+#' Visualizing data using t-SNE.
+#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
@@ -108,14 +108,13 @@ tsne <- function(eps = .Machine$double.eps) {
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @references
-#' J.A. Cook, I. Sutskever, A. Mnih, and G.E. Hinton.
+#' Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
 #' Visualizing similarity data with a mixture of maps.
-#' In Proceedings of the 11th International Conference on Artificial
-#' Intelligence and Statistics, volume 2, pages 67-74, 2007.
+#' In \emph{International Conference on Artificial Intelligence and Statistics} (pp. 67-74).
 #'
-#' Laurens van der Maarten, Geoffrey Hinton.
-#' Visualizing Data using t-SNE.
-#' Journal of Machine Learning Research, 2008, 9, 2579-2605.
+#' Van der Maaten, L., & Hinton, G. (2008).
+#' Visualizing data using t-SNE.
+#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
 #' @export
@@ -170,10 +169,9 @@ ssne <- function(eps = .Machine$double.eps) {
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @references
-#' G.E. Hinton and S.T. Roweis.
-#' Stochastic Neighbor Embedding.
-#' In Advances in Neural Information Processing Systems, volume 15,
-#' pages 833-840, Cambridge, MA, USA, 2002. The MIT Press.
+#' Hinton, G. E., & Roweis, S. T. (2002).
+#' Stochastic neighbor embedding.
+#' In \emph{Advances in neural information processing systems} (pp. 833-840).
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
 #' @export

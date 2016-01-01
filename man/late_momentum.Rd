@@ -35,10 +35,10 @@ embed_prob(make_tricks(late_exaggeration(momentum = 0.5, on_iter = 800)),
 }
 }
 \references{
-Sutskever, I., Martens, J., Dahl, G. and Hinton, G. E.
-On the importance of momentum and initialization in deep learning.
-30th International Conference on Machine Learning, Atlanta, USA, 2013.
-JMLR: W&CP volume 28.
+Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
+On the importance of initialization and momentum in deep learning.
+In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
+(pp. 1139-1147).
 }
 \seealso{
 Other sneer tricks: \code{\link{early_exaggeration}},

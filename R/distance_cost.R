@@ -188,9 +188,9 @@ rms_metric_stress <- function(dxm, dym) {
 #' @family sneer cost functions
 #' @export
 #' @references
-#' Ingwer Borg, Patrick J. F. Groenen
-#' Modern Multidimensional Scaling: Theory and Applications
-#' Springer Science & Business Media, Aug 4, 2005
+#' Borg, I., & Groenen, P. J. (2005).
+#' \emph{Modern multidimensional scaling: Theory and applications.}
+#' Springer Science & Business Media.
 normalized_stress_cost <- function(inp, out, method) {
   normalized_stress(inp$dm, out$dm, method$eps)
 }
@@ -217,9 +217,9 @@ attr(normalized_stress_cost, "sneer_cost_type") <- "dist"
 #' @param eps Small floating point value to avoid numerical problems.
 #' @return Normalized stress.
 #' @references
-#' Ingwer Borg, Patrick J. F. Groenen
-#' Modern Multidimensional Scaling: Theory and Applications
-#' Springer Science & Business Media, Aug 4, 2005
+#' Borg, I., & Groenen, P. J. (2005).
+#' \emph{Modern multidimensional scaling: Theory and applications.}
+#' Springer Science & Business Media.
 #' @export
 normalized_stress <- function(dxm, dym, eps = .Machine$double.eps) {
   metric_stress(dxm, dym) / sum(upper_tri((dxm + eps) ^ 2))

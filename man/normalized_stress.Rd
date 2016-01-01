@@ -33,8 +33,8 @@ proportion of the sum of squares of the input distances unaccounted for by
 the output distances. Borg and Groenen defined this in their book on MDS.
 }
 \references{
-Ingwer Borg, Patrick J. F. Groenen
-Modern Multidimensional Scaling: Theory and Applications
-Springer Science & Business Media, Aug 4, 2005
+Borg, I., & Groenen, P. J. (2005).
+\emph{Modern multidimensional scaling: Theory and applications.}
+Springer Science & Business Media.
 }
 
