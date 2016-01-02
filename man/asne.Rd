@@ -11,22 +11,33 @@ asne(eps = .Machine$double.eps)
 e.g. in gradients and cost functions.}
 }
 \value{
-a list containing:
- \item{\code{cost_fn}}{Cost function for the embedding: the Kullback-Leibler
- divergence between the input and output probabilities.}
- \item{\code{weight_fn}}{Weight function for mapping squared distances in the
- embedded coordinates to weights, which are in turn converted to
- probabilities: ASNE uses the exponential function.}
- \item{\code{stiffness_fn}}{Stiffness function.}
- \item{\code{update_out_fn}}{Function to calculate and store any needed
- data after a coordinate update.}
- \item{\code{after_init_fn}}{Method-specific initialization function to
- invoke after input and output initialization callbacks.}
- \item{\code{eps}}{Small floating point value used to prevent numerical
- problems, e.g. in gradients and cost functions.}
+An embedding method for use by an embedding function.
 }
 \description{
 A probability-based embedding method.
+}
+\details{
+The original SNE method, this uses exponential weighting for both the input
+and output probabilities. Unlike \code{\link{ssne}} and \code{\link{tsne}},
+the probabilities are defined with respect to points, not pairs: an element
+Pij from the NxN probability matrix P should be thought of as a conditional
+probabilty, pj|i, the probability that point j would be chosen as a close
+neighbor of point i. The probability matrix used in ASNE:
+
+\itemize{
+ \item{represents one N row-wise probability distributions, where N is the
+ number of points in the data set, i.e. the row sums of the matrix are all
+  one.}
+ \item{is asymmetric, i.e. there is no requirement that
+ \code{p[i, j] == p[j, i]}.}
+}
+
+
+
+In ASNE, a probability matrix is actually a collection
+of N separate probability conditional probability distributions, where row
+i contains the conditional probabilities that point j would be selected as
+a neighbor of point i.
 }
 \section{Output Data}{
 
@@ -36,18 +47,29 @@ If used in an embedding, the output data list will contain:
  \item{\code{qm}}{Row probability matrix based on embedded coordinates.}
 }
 }
+\examples{
+\dontrun{
+embed_prob(method = asne(), ...)
+}
+}
 \references{
 Hinton, G. E., & Roweis, S. T. (2002).
 Stochastic neighbor embedding.
 In \emph{Advances in neural information processing systems} (pp. 833-840).
 }
 \seealso{
-Other sneer embedding methods: \code{\link{embedding_methods}},
-  \code{\link{mmds}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tsne}}
+ASNE uses the \code{\link{exp_weight}} similarity function.
+The return value of this function should be used with the
+\code{\link{embed_prob}} embedding function.
 
-Other sneer probability embedding methods: \code{\link{probability_embedding_methods}},
+Other sneer embedding methods: \code{\link{embedding_methods}},
+  \code{\link{hssne}}, \code{\link{mmds}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tsne}}
+
+Other sneer probability embedding methods: \code{\link{hssne}},
+  \code{\link{probability_embedding_methods}},
   \code{\link{ssne}}, \code{\link{tasne}},
   \code{\link{tsne}}
 }

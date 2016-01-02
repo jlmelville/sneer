@@ -14,9 +14,10 @@ embed_dist(method = mmds())
 }
 \seealso{
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{mmds}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tsne}}
+  \code{\link{hssne}}, \code{\link{mmds}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tsne}}
 }
 \keyword{internal}
 

@@ -11,19 +11,7 @@ tasne(eps = .Machine$double.eps)
 e.g. in gradients and cost functions.}
 }
 \value{
-a list containing:
- \item{\code{cost_fn}}{Cost function for the embedding: the Kullback-Leibler
- divergence between the input and output probabilities.}
- \item{\code{weight_fn}}{Weight function for mapping squared distances in the
- embedded coordinates to weights, which are in turn converted to
- probabilities: t-ASNE uses the exponential function.}
- \item{\code{stiffness_fn}}{Stiffness function.}
- \item{\code{update_out_fn}}{Function to calculate and store any needed
- data after a coordinate update.}
- \item{\code{after_init_fn}}{Method-specific initialization function to
- invoke after input and output initialization callbacks.}
- \item{\code{eps}}{Small floating point value used to prevent numerical
- problems, e.g. in gradients and cost functions.}
+An embedding method for use by an embedding function.
 }
 \description{
 A probability-based embedding method.
@@ -45,13 +33,24 @@ If used in an embedding, the output data list will contain:
  in \code{ym}.}
 }
 }
+\examples{
+\dontrun{
+embed_prob(method = tasne(), ...)
+}
+}
 \seealso{
+t-ASNE uses the \code{\link{exp_weight}} similarity function.
+The return value of this function should be used with the
+\code{\link{embed_prob}} embedding function.
+
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{mmds}},
-  \code{\link{sammon_map}}, \code{\link{smmds}},
-  \code{\link{ssne}}, \code{\link{tsne}}
+  \code{\link{embedding_methods}}, \code{\link{hssne}},
+  \code{\link{mmds}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{ssne}},
+  \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
+  \code{\link{hssne}},
   \code{\link{probability_embedding_methods}},
   \code{\link{ssne}}, \code{\link{tsne}}
 }

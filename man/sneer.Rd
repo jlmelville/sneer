@@ -24,6 +24,7 @@ Currently, the following techniques are implemented:
  \item{t-Distributed Stochastic Neighbor Embedding (t-SNE)}
  \item{Asymmetric SNE (ASNE, what was originally just called SNE)}
  \item{Symmetic SNE (SSNE)}
+ \item{Heavy-tailed Symmetric Stochastic Neighbour Embedding (HSSNE)}
 }
 
 The first two methods are traditional non-linear mapping techniques that

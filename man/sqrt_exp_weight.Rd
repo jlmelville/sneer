@@ -2,32 +2,36 @@
 % Please edit documentation in R/distance_weight.R
 \name{sqrt_exp_weight}
 \alias{sqrt_exp_weight}
-\title{Exponential Distance Weight}
+\title{Exponential (Distance) Weighted Similarity}
 \usage{
 sqrt_exp_weight(d2m, beta = 1)
 }
 \arguments{
 \item{d2m}{Matrix of squared distances.}
 
-\item{beta}{Exponential parameter.}
+\item{beta}{Exponential precision.}
 }
 \value{
 Weight matrix.
 }
 \description{
-Applies exponential weighting to the distances, rather than the square of
-the distances.
+A similarity function for probability-based embedding.
 }
 \details{
-Included so results can be compared with other implementations
-of TSNE, although you'd normally use the squared distances. The weight
-matrix, \eqn{W} is generated from the squared distances matrix,
-\eqn{D2} by:
+Applies exponential weighting to the distances, rather than the square of
+the distances. Included so results can be compared with the implementation
+of t-SNE in the
+\href{https://cran.r-project.org/web/packages/tsne/index.html}{R tsne}
+package.
 
-\deqn{W = e^{-\beta \sqrt{D2}}}{W = exp(-beta * sqrt(D2))}
+The weight matrix, \eqn{W} is generated from the squared distances matrix,
+\eqn{D^2}{D2} by:
+
+\deqn{W = e^{-\beta \sqrt{D^2}}}{W = exp(-beta * sqrt(D2))}
 }
 \seealso{
 Other sneer weight functions: \code{\link{exp_weight}},
+  \code{\link{heavy_tail_weight}},
   \code{\link{tdist_weight}}
 }
 
