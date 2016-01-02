@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_weight.R
 \name{tdist_weight}
 \alias{tdist_weight}
-\title{Student-t Distribution Weight}
+\title{Student-t Distribution Similarity}
 \usage{
 tdist_weight(d2m)
 }
@@ -13,17 +13,20 @@ tdist_weight(d2m)
 Weight matrix.
 }
 \description{
-Applies weighting using the Student-t distribution with one degree of
-freedom.
+A similarity function for probability-based embedding.
 }
 \details{
+Applies weighting using the Student-t distribution with one degree of
+freedom. Used in t-SNE.
+
 Compared to the exponential weighting this has a much heavier tail.
 The weight matrix, \eqn{W} is generated from the squared distances matrix,
-\eqn{D2} by:
-\deqn{W = \frac{1}{(1 + D2)}}{W = 1/(1 + D2)}
+\eqn{D^2}{D2} by:
+\deqn{W = \frac{1}{(1 + D^2)}}{W = 1/(1 + D2)}
 }
 \seealso{
 Other sneer weight functions: \code{\link{exp_weight}},
+  \code{\link{heavy_tail_weight}},
   \code{\link{sqrt_exp_weight}}
 }
 

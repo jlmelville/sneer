@@ -15,8 +15,8 @@ embed_prob(method = asne(), ...)
 }
 \seealso{
 Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tsne}}
+  \code{\link{hssne}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tsne}}
 }
 \keyword{internal}
 

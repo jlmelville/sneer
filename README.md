@@ -30,7 +30,7 @@ tsne_iris <- embed_prob(iris[, 1:4],
                init_out = make_init_out(stdev = 1e-4),
                tricks = tsne_tricks(),
                reporter = make_reporter(
-                 plot_fn = make_plot(iris, "Species", make_label(2))))
+                 plot = make_plot(iris, "Species", make_label(2))))
 ```
 There are more examples in the documentation.
 
@@ -58,6 +58,7 @@ packages right now. But currently it offers:
 
 * Embedding with t-SNE and its variants ASNE and SSNE.
 * Sammon mapping and metric Multidimensional Scaling.
+* Heavy-Tailed Symmetric SNE (HSSNE).
 * Nesterov Accelerated Gradient method for optimization.
 * The usual t-SNE Steepest descent with momentum and Jacobs adaptive step size
 if NAG is too racy for you.
@@ -73,7 +74,7 @@ the "crowding problem".
 ### Roadmap
 Some new algorithms coming soon:
 
-* Heavy-Tailed Symmetric SNE (HSSNE).
+
 * Neighbor Retrieval Visualizer (NeRV).
 * Jensen-Shannon Embedding (JSE).
 * Numerical scores for qualitatively evaluating the embedding.

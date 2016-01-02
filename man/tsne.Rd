@@ -11,25 +11,15 @@ tsne(eps = .Machine$double.eps)
 e.g. in gradients and cost functions.}
 }
 \value{
-a list containing:
- \item{\code{cost_fn}}{Cost function for the embedding: the Kullback-Leibler
- divergence between the input and output probabilities.}
- \item{\code{weight_fn}}{Weight function for mapping squared distances in the
- embedded coordinates to weights, which are in turn converted to
- probabilities: t-SNE uses the Student t-distribution with one degree of
- freedom.}
- \item{\code{stiffness_fn}}{Stiffness function.}
- \item{\code{update_out_fn}}{Function to calculate and store any needed
- data after a coordinate update.}
- \item{\code{after_init_fn}}{Method-specific initialization function to
- invoke after input and output initialization callbacks. For this method,
- the input probability matrix must be converted from a row probability
- matrix to a joint probability matrix.}
- \item{\code{eps}}{Small floating point value used to prevent numerical
- problems, e.g. in gradients and cost functions.}
+An embedding method for use by an embedding function.
 }
 \description{
 A probability-based embedding method.
+}
+\details{
+t-SNE is a variant of \code{\link{ssne}} where the similarity function used
+to generate output probabilities is the Student t-Distribution with one
+degree of freedom.
 }
 \section{Output Data}{
 
@@ -42,18 +32,29 @@ If used in an embedding, the output data list will contain:
  in \code{ym}.}
 }
 }
+\examples{
+\dontrun{
+embed_prob(method = tsne(), ...)
+}
+}
 \references{
 Van der Maaten, L., & Hinton, G. (2008).
 Visualizing data using t-SNE.
 \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 }
 \seealso{
+t-SNE uses the \code{\link{tdist_weight}} similarity function.
+The return value of this function should be used with the
+\code{\link{embed_prob}} embedding function.
+
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{mmds}},
-  \code{\link{sammon_map}}, \code{\link{smmds}},
-  \code{\link{ssne}}, \code{\link{tasne}}
+  \code{\link{embedding_methods}}, \code{\link{hssne}},
+  \code{\link{mmds}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{ssne}},
+  \code{\link{tasne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
+  \code{\link{hssne}},
   \code{\link{probability_embedding_methods}},
   \code{\link{ssne}}, \code{\link{tasne}}
 }

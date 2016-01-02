@@ -36,8 +36,9 @@ Other sneer distance embedding methods: \code{\link{distance_embedding_methods}}
   \code{\link{mmds}}, \code{\link{sammon_map}}
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{mmds}},
-  \code{\link{sammon_map}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tsne}}
+  \code{\link{embedding_methods}}, \code{\link{hssne}},
+  \code{\link{mmds}}, \code{\link{sammon_map}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tsne}}
 }
 

@@ -81,7 +81,7 @@ Other sneer distance embedding methods: \code{\link{distance_embedding_methods}}
   \code{\link{sammon_map}}, \code{\link{smmds}}
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}},
+  \code{\link{embedding_methods}}, \code{\link{hssne}},
   \code{\link{sammon_map}}, \code{\link{smmds}},
   \code{\link{ssne}}, \code{\link{tasne}},
   \code{\link{tsne}}

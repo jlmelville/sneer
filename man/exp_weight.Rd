@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_weight.R
 \name{exp_weight}
 \alias{exp_weight}
-\title{Exponential Weight}
+\title{Exponential Weighted Similarity}
 \usage{
 exp_weight(d2m, beta = 1)
 }
@@ -15,16 +15,16 @@ exp_weight(d2m, beta = 1)
 Weight matrix.
 }
 \description{
-Applies exponential weighting to the squared distances.
+A similarity function for probability-based embedding.
 }
 \details{
 The weight matrix, \eqn{W} is generated from the squared distances matrix,
-\eqn{D2} by:
+\eqn{D^2}{D2} by:
 
-\deqn{W = e^{-\beta D2}}{exp(-beta * D2)}
+\deqn{W = e^{-\beta D^2}}{exp(-beta * D2)}
 }
 \seealso{
-Other sneer weight functions: \code{\link{sqrt_exp_weight}},
-  \code{\link{tdist_weight}}
+Other sneer weight functions: \code{\link{heavy_tail_weight}},
+  \code{\link{sqrt_exp_weight}}, \code{\link{tdist_weight}}
 }
 
