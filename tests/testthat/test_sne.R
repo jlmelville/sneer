@@ -4,7 +4,7 @@ context("SNE")
 tsne_iris <- embed_prob(iris[, 1:4],
                        method = tsne(verbose = FALSE),
                        init_inp = make_init_inp(
-                         prob_perp_bisect(
+                         inp_from_perp(
                            perplexity = 50,
                            input_weight_fn = sqrt_exp_weight,
                            verbose = FALSE)),
@@ -19,7 +19,7 @@ expect_equal(formatC(tsne_iris$report$norm), "0.0578")
 ssne_iris <- embed_prob(iris[, 1:4],
                        method = ssne(verbose = FALSE),
                        init_inp = make_init_inp(
-                         prob_perp_bisect(
+                         inp_from_perp(
                           perplexity = 50,
                           input_weight_fn = sqrt_exp_weight,
                           verbose = FALSE)),
@@ -35,7 +35,7 @@ expect_equal(formatC(ssne_iris$report$norm), "0.07265")
 asne_iris <- embed_prob(iris[, 1:4],
                        method = asne(verbose = FALSE),
                        init_inp = make_init_inp(
-                         prob_perp_bisect(
+                         inp_from_perp(
                            perplexity = 50,
                            input_weight_fn = sqrt_exp_weight,
                            verbose = FALSE)),
@@ -51,7 +51,7 @@ expect_equal(formatC(asne_iris$report$norm), "0.08479")
 pca_iris <- embed_prob(iris[, 1:4],
                       method = tsne(verbose = FALSE),
                       init_inp = make_init_inp(
-                        prob_perp_bisect(
+                        inp_from_perp(
                           perplexity = 25,
                           input_weight_fn = sqrt_exp_weight,
                           verbose = FALSE)),
@@ -67,7 +67,7 @@ context("Jacobs")
 tsne_iris_jacobs <- embed_prob(iris[, 1:4],
                               method = tsne(verbose = FALSE),
                               init_inp = make_init_inp(
-                                prob_perp_bisect(
+                                inp_from_perp(
                                   perplexity = 25,
                                   input_weight_fn = sqrt_exp_weight,
                                   verbose = FALSE)),

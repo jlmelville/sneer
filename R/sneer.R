@@ -137,7 +137,7 @@
 #' tsne_iris <- embed_prob(iris[, 1:4],
 #'                method = tsne(),
 #'                opt = tsne_opt(),
-#'                init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
+#'                init_inp = make_init_inp(inp_from_perp(perplexity = 25)),
 #'                init_out = out_from_rnorm(sd = 1e-4),
 #'                tricks = tsne_tricks(),
 #'                reporter = make_reporter(
@@ -149,7 +149,7 @@
 #' asne_s1k <- embed_prob(s1k[, 1:9],
 #'                method = asne(),
 #'                preprocess = make_preprocess(auto_scale = TRUE),
-#'                init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
+#'                init_inp = make_init_inp(inp_from_perp(perplexity = 50)),
 #'                init_out = out_from_PCA(),
 #'                opt = bold_nagger(),
 #'                reporter = make_reporter(
@@ -160,7 +160,7 @@
 #' asne_s1k <- embed_prob(s1k[, 1:9],
 #'                 method = asne(),
 #'                 preprocess = make_preprocess(auto_scale = TRUE),
-#'                 init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
+#'                 init_inp = make_init_inp(inp_from_perp(perplexity = 50)),
 #'                init_out = out_from_PCA(),
 #'                 opt = make_opt(gradient = nesterov_gradient(),
 #'                                step_size = bold_driver(),

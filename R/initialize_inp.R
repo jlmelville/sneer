@@ -30,7 +30,7 @@
 #'  embed_dist(init_inp = make_init_inp(), method = mds())
 #'
 #'  # probability-based embeddings must also initialize input probabilities
-#'  embed_prob(init_inp = make_init_inp(prob_perp_bisect()), method = tsne())
+#'  embed_prob(init_inp = make_init_inp(inp_from_perp()), method = tsne())
 #' }
 #' @export
 make_init_inp <- function(...) {
@@ -58,12 +58,12 @@ make_init_inp <- function(...) {
 #' @examples
 #' # initializer that uses bisection search to create input probability
 #' # distribution with a perplexity of 50 - pass to make_init_inp:
-#' make_init_inp(prob_perp_bisect(perplexity = 50))
+#' make_init_inp(inp_from_perp(perplexity = 50))
 #'
 #' \dontrun{
 #' # in turn, pass the result of make_init_inp to an embedding routine
 #' embed_prob(method = tsne(),
-#'            init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)))
+#'            init_inp = make_init_inp(inp_from_perp(perplexity = 50)))
 #' }
 #' @keywords internal
 #' @name input_initializers
@@ -108,22 +108,22 @@ NULL
 #' of an embedding.
 #' @examples
 #' # Set target perplexity of each probability distribution to 30
-#' prob_perp_bisect(perplexity = 30)
+#' inp_from_perp(perplexity = 30)
 #'
 #' # Set target perplexity of each probability distribution to 30 but use
 #' # a different weighting function.
-#' prob_perp_bisect(perplexity = 30, input_weight_fn = sqrt_exp_weight)
+#' inp_from_perp(perplexity = 30, input_weight_fn = sqrt_exp_weight)
 #'
 #' # Perplexity of 50, and keep the values of the exponential parameter for
 #' # later processing or reporting.
-#' prob_perp_bisect(perplexity = 50, keep_all_results = TRUE)
+#' inp_from_perp(perplexity = 50, keep_all_results = TRUE)
 #'
 #' # Should be passed to the init_inp argument of an embedding function:
-#' init_inp = make_init_inp(prob_perp_bisect(perplexity = 30,
+#' init_inp = make_init_inp(inp_from_perp(perplexity = 30,
 #'                                          input_weight_fn = exp_weight))
 #' @family sneer input initializers
 #' @export
-prob_perp_bisect <- function(perplexity = 30,
+inp_from_perp <- function(perplexity = 30,
                              input_weight_fn = exp_weight,
                              keep_all_results = FALSE,
                              verbose = TRUE) {

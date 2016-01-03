@@ -35,7 +35,7 @@ are invoked in order they were passed.
  embed_dist(init_inp = make_init_inp(), method = mds())
 
  # probability-based embeddings must also initialize input probabilities
- embed_prob(init_inp = make_init_inp(prob_perp_bisect()), method = tsne())
+ embed_prob(init_inp = make_init_inp(inp_from_perp()), method = tsne())
 }
 }
 \seealso{

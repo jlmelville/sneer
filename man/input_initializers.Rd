@@ -12,19 +12,19 @@ matrix from the input distances.
 \examples{
 # initializer that uses bisection search to create input probability
 # distribution with a perplexity of 50 - pass to make_init_inp:
-make_init_inp(prob_perp_bisect(perplexity = 50))
+make_init_inp(inp_from_perp(perplexity = 50))
 
 \dontrun{
 # in turn, pass the result of make_init_inp to an embedding routine
 embed_prob(method = tsne(),
-           init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)))
+           init_inp = make_init_inp(inp_from_perp(perplexity = 50)))
 }
 }
 \seealso{
 Input initializers should be passed to the
 \code{\link{make_init_inp}} function.
 
-Other sneer input initializers: \code{\link{prob_perp_bisect}}
+Other sneer input initializers: \code{\link{inp_from_perp}}
 }
 \keyword{internal}
 
