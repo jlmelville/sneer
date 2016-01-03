@@ -378,6 +378,13 @@ embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
     }
   }
 
+  if (!is.null(report$cost)) {
+    out$cost <- report$cost
+  }
+  else {
+    out$cost <- method$cost_fn(inp, out, method)
+  }
+
   for (obj_name in export) {
     out[[obj_name]] <- get(obj_name)
   }
