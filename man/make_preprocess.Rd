@@ -6,7 +6,7 @@
 \usage{
 make_preprocess(range_scale_matrix = FALSE, range_scale = FALSE, rmin = 0,
   rmax = 1, auto_scale = FALSE, whiten = FALSE, zwhiten = FALSE,
-  whiten_dims = 30, preprocess_fn = NULL, verbose = TRUE)
+  whiten_dims = 30, scale_distances = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{range_scale_matrix}{If \code{TRUE}, input coordinates will be scaled
@@ -31,29 +31,30 @@ ZCA transform.}
 \item{whiten_dims}{Number of components to use in the whitening preprocess.
 Only use if \code{whiten} or \code{zwhiten} is \code{TRUE}.}
 
-\item{preprocess_fn}{Custom preprocessing function to be applied. Should have
-the signature \code{xm} where \code{xm} is the input coordinate matrix, and
-returns the processed coordinate matrix.}
+\item{scale_distances}{If \code{TRUE}, the distance matrix will be scaled
+such that the mean distance is 1.}
 
 \item{verbose}{If \code{TRUE}, log information about preprocessing.}
 }
 \value{
-Function with signature \code{fn(xm)} where \code{xm} is the input
-coordinate matrix. Function returns the coordinate matrix after applying
-the specified preprocessing.
+A preprocessor for use by the embedding routine.
 }
 \description{
-Creates a callback for use in the embedding routine. Preprocessing will be
-applied to the input coordinates (if provided) before embedding-specific
-input initialization occurs (e.g. calculation of distances and
-probabilities).
+Creates a callback for use in the embedding routine. The resulting
+preprocessor will apply the specified transformations to the input data,
+and, if necessary, convert the input to a distance matrix.
 }
 \details{
 Pass the result of this factory function to the preprocess argument of an
-embedding function, e.g. \code{embed_prob}. A variety of common preprocessing
-options are available. The range scaling and auto scaling options are
-mutually exclusive, but can be combined with whitening if required. No
-preprocessing will be carried out if the input data is a distance matrix.
+embedding function, e.g. \code{embed_prob}. Note that most of the options
+are applicable only if the input data is in the form of coordinates. In that
+case, the distance matrix will also be generated as part of the
+preprocessing after any coordinate-specific processing has occurred.
+Then, any distance matrix-specific preprocessing will be applied.
+
+A variety of common preprocessing options are available. The range scaling
+and auto scaling options are mutually exclusive, but can be combined with
+whitening if required.
 }
 \examples{
 # Scale the input data so the smallest element is 0, and the largest is 1.
@@ -81,7 +82,7 @@ make_preprocess(range_scale_matrix = TRUE, zwhiten = TRUE, whiten_dims = 10)
 }
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for configuring
-an embedding.
+\code{\link{embed_prob}} for how to use this function for
+  configuring an embedding.
 }
 

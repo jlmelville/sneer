@@ -2,40 +2,41 @@
 
 #' Preprocessing
 #'
-#' Creates a callback for use in the embedding routine. Preprocessing will be
-#' applied to the input coordinates (if provided) before embedding-specific
-#' input initialization occurs (e.g. calculation of distances and
-#' probabilities).
+#' Creates a callback for use in the embedding routine. The resulting
+#' preprocessor will apply the specified transformations to the input data,
+#' and, if necessary, convert the input to a distance matrix.
 #'
 #' Pass the result of this factory function to the preprocess argument of an
-#' embedding function, e.g. \code{embed_prob}. A variety of common preprocessing
-#' options are available. The range scaling and auto scaling options are
-#' mutually exclusive, but can be combined with whitening if required. No
-#' preprocessing will be carried out if the input data is a distance matrix.
+#' embedding function, e.g. \code{embed_prob}. Note that most of the options
+#' are applicable only if the input data is in the form of coordinates. In that
+#' case, the distance matrix will also be generated as part of the
+#' preprocessing after any coordinate-specific processing has occurred.
+#' Then, any distance matrix-specific preprocessing will be applied.
+#'
+#' A variety of common preprocessing options are available. The range scaling
+#' and auto scaling options are mutually exclusive, but can be combined with
+#' whitening if required.
 #'
 #' @param range_scale_matrix If \code{TRUE}, input coordinates will be scaled
 #' so that elements are between (\code{rmin}, \code{rmax}).
 #' @param range_scale If \code{TRUE}, input coordinates will be scaled
 #' @param rmin Minimum value if using \code{range_scale_matrix} and
-#' \code{range_scale}.
+#'   \code{range_scale}.
 #' @param rmax Maximum value if using \code{range_scale_matrix} and
-#' \code{range_scale}.
+#'   \code{range_scale}.
 #' @param auto_scale If \code{TRUE}, input coordinates will be centered and
-#' scaled so that each column has a mean of 0 and a standard deviation of 1.
+#'   scaled so that each column has a mean of 0 and a standard deviation of 1.
 #' @param whiten If \code{TRUE}, input coordinates will be whitened.
 #' @param zwhiten If \code{TRUE}, input coordinates will be whitened using the
-#' ZCA transform.
+#'   ZCA transform.
 #' @param whiten_dims Number of components to use in the whitening preprocess.
-#' Only use if \code{whiten} or \code{zwhiten} is \code{TRUE}.
-#' @param preprocess_fn Custom preprocessing function to be applied. Should have
-#' the signature \code{xm} where \code{xm} is the input coordinate matrix, and
-#' returns the processed coordinate matrix.
+#'   Only use if \code{whiten} or \code{zwhiten} is \code{TRUE}.
+#' @param scale_distances If \code{TRUE}, the distance matrix will be scaled
+#' such that the mean distance is 1.
 #' @param verbose If \code{TRUE}, log information about preprocessing.
-#' @return Function with signature \code{fn(xm)} where \code{xm} is the input
-#' coordinate matrix. Function returns the coordinate matrix after applying
-#' the specified preprocessing.
-#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
-#' an embedding.
+#' @return A preprocessor for use by the embedding routine.
+#' @seealso \code{\link{embed_prob}} for how to use this function for
+#'   configuring an embedding.
 #' @examples
 #' # Scale the input data so the smallest element is 0, and the largest is 1.
 #' make_preprocess(range_scale_matrix = TRUE)
@@ -64,7 +65,8 @@
 make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
                             rmin = 0, rmax = 1, auto_scale = FALSE,
                             whiten = FALSE, zwhiten = FALSE, whiten_dims = 30,
-                            preprocess_fn = NULL, verbose = TRUE) {
+                            scale_distances = FALSE,
+                            verbose = TRUE) {
   preprocess <- list()
 
   preprocess$filter_zero_var_cols <- function(xm) {
@@ -72,7 +74,7 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
     xm <- varfilter(xm)
     new_ncols <- ncol(xm)
     if (verbose) {
-      message("Removed ", old_ncols - new_ncols, " columns, ",
+      message("Filtered ", old_ncols - new_ncols, " columns, ",
               new_ncols, " remaining")
     }
     xm
@@ -125,8 +127,11 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
     }
   }
 
-  if (!is.null(preprocess_fn)) {
-    preprocess$preprocess_fn <- preprocess_fn
+  preprocess_dm <- list()
+  if (scale_distances) {
+    preprocess_dm$scale_distances <- function(dm) {
+      dm <- scale_distances(dm)
+    }
   }
 
   function(xm) {
@@ -136,8 +141,22 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
         xm <- preprocess[[name]](xm)
       }
     }
+
+    if (class(xm) == "dist") {
+      dm <- as.matrix(xm)
+    } else {
+      dm <- distance_matrix(xm)
+    }
+    for (name in names(preprocess_dm)) {
+      dm <- preprocess_dm[[name]](dm)
+    }
+
     flush.console()
-    xm
+    result <- list(dm = dm)
+    if (class(xm) != "dist") {
+      result$xm <- xm
+    }
+    result
   }
 }
 
@@ -253,4 +272,28 @@ whiten <- function(xm, scale = FALSE, zca = FALSE, ncomp = min(dim(xm)),
 varfilter <- function(xm, minvar = 0.0) {
   vars <- apply(xm, 2, var)
   xm[, vars > minvar, drop = FALSE]
+}
+
+#' Input Distance Scaling
+#'
+#' Preprocess function for distance matrix.
+#'
+#' Scales the input distances so that the mean distance is 1. This preprocessing
+#' step is recommended as part of the \code{\link{nerv}} embedding method.
+#'
+#' @param dm Distance matrix
+#' @param verbose If \code{TRUE}, information about the scaled distances will be
+#' logged.
+#' @return Scaled distance matrix.
+#'
+#' @references
+#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+#' Information retrieval perspective to nonlinear dimensionality reduction for
+#' data visualization.
+scale_distances <- function(dm, verbose = TRUE) {
+  dm <- dm / mean(upper_tri(dm))
+  if (verbose) {
+    summarize(upper_tri(dm), "Scaled Dist")
+  }
+  dm
 }

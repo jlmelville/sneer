@@ -5,10 +5,9 @@
 #' Factory function for input initialization.
 #'
 #' This function is responsible for creating a method to initialize the input
-#' data for embedding. It generates a distance matrix if the input data was
-#' in the form of coordinates. Additionally, if any
-#' \code{\link{input_initializers}} are passed as parameters to this function,
-#' these will be invoked in order they were passed.
+#' data for embedding. Any
+#' \code{\link{input_initializers}} are passed as parameters to this function
+#' are invoked in order they were passed.
 #'
 #' @param ... Zero or more \code{\link{input_initializers}}.
 #' @return An input initializer to be used by an embedding routine. The input
@@ -37,16 +36,7 @@
 make_init_inp <- function(...) {
   init_inp <- list(...)
 
-  function(xm) {
-    inp <- list()
-
-    if (class(xm) == "dist") {
-      inp$dm <- as.matrix(xm)
-    } else {
-      inp$xm <- as.matrix(xm)
-      inp$dm <- distance_matrix(inp$xm)
-    }
-
+  function(inp) {
     for (i in seq_along(init_inp)) {
       inp <- init_inp[[i]](inp)
     }
@@ -194,42 +184,4 @@ prow_to_pjoint <- function(prow) {
 #' @return Symmetrized matrix such that \code{pm[i, j]} = \code{pm[j, i]}
 symmetrize_matrix <- function(pm) {
   0.5 * (pm + t(pm))
-}
-
-#' Input Distance Scaling
-#'
-#' An initialization method for creating input probabilities.
-#'
-#' This initialization method scales the input distances so that the average
-#' distance is 1. Therefore, if applying other input initializers that use
-#' the distances (e.g. to calculate probabilities), this initializer should
-#' appear before them in the \code{\link{make_init_inp}} parameter list.
-#'
-#' @param verbose If \code{TRUE}, information about the scaled distances will be
-#' logged.
-#' @return Input initialization method for use by \code{\link{make_init_inp}}.
-#' @seealso \code{\link{make_init_inp}} for how to use this function as part
-#' of an embedding.
-#' @examples
-#' # Should be passed to the init_inp argument of an embedding function:
-#' init_inp = make_init_inp(scale_input_distances())
-#'
-#' # Should appear before other use of the input distances
-#' init_inp = make_init_inp(scale_input_distances(),
-#'                          prob_perp_bisect(perplexity = 30,
-#'                                          input_weight_fn = exp_weight))
-#' @references
-#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
-#' Information retrieval perspective to nonlinear dimensionality reduction for
-#' data visualization.
-#' @family sneer input initializers
-#' @export
-scale_input_distances <- function(verbose = TRUE) {
-  function(inp) {
-    inp$dm <- inp$dm / mean(upper_tri(inp$dm))
-    if (verbose) {
-      summarize(upper_tri(inp$dm), "Scaled inp$dm")
-    }
-    inp
-  }
 }

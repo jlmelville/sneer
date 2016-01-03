@@ -5,7 +5,8 @@
 \title{Generic Embedding}
 \usage{
 embed(xm, method, init_inp, init_out, opt, max_iter = 1000, tricks = NULL,
-  reporter = NULL, preprocess = NULL, export = NULL, after_embed = NULL)
+  reporter = NULL, preprocess = make_preprocess(), export = NULL,
+  after_embed = NULL)
 }
 \arguments{
 \item{xm}{A matrix or data frame to embed.}

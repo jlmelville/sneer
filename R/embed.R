@@ -368,12 +368,11 @@ embed_dist <- function(xm,
 #' \item{\code{\link{make_reporter}}} for configuring \code{reporter}
 #' }
 embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
-                  tricks = NULL, reporter = NULL, preprocess = NULL,
+                  tricks = NULL, reporter = NULL,
+                  preprocess = make_preprocess(),
                   export = NULL, after_embed = NULL) {
-  if (!is.null(preprocess)) {
-    xm <- preprocess(xm)
-  }
-  inp <- init_inp(xm)
+  inp <- preprocess(xm)
+  inp <- init_inp(inp)
   out <- init_out(inp)
 
   # do late initialization that relies on input or output initialization

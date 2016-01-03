@@ -24,10 +24,9 @@ Factory function for input initialization.
 }
 \details{
 This function is responsible for creating a method to initialize the input
-data for embedding. It generates a distance matrix if the input data was
-in the form of coordinates. Additionally, if any
-\code{\link{input_initializers}} are passed as parameters to this function,
-these will be invoked in order they were passed.
+data for embedding. Any
+\code{\link{input_initializers}} are passed as parameters to this function
+are invoked in order they were passed.
 }
 \examples{
 # Should be passed to the init_inp argument of an embedding function:

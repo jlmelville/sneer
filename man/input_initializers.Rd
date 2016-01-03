@@ -24,8 +24,7 @@ embed_prob(method = tsne(),
 Input initializers should be passed to the
 \code{\link{make_init_inp}} function.
 
-Other sneer input initializers: \code{\link{prob_perp_bisect}},
-  \code{\link{scale_input_distances}}
+Other sneer input initializers: \code{\link{prob_perp_bisect}}
 }
 \keyword{internal}
 
