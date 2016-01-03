@@ -27,7 +27,7 @@ NULL
 constant_step_size <- function(step_size = 1) {
   list(
     init = function(opt, inp, out, method) {
-      opt$step_size$value = step_size
+      opt$step_size$value <- step_size
       opt
     },
     calculate = function(opt, inp, out, method) {
@@ -102,7 +102,8 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
     },
     after_step = function(opt, inp, out, new_out, ok, iter) {
       s_old <- opt$step_size$value
-      if (opt$step_size$ok) { # only care about this component's validation
+      # only care about this component's validation
+      if (opt$step_size$ok) {
         s_new <- opt$step_size$inc_fn(opt$step_size$value)
       } else {
         s_new <- opt$step_size$dec_fn(opt$step_size$value)

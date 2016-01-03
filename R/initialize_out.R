@@ -259,4 +259,3 @@ random_matrix_norm <- function(nrow, ncol = 2, sd = 1.0e-4) {
 random_matrix_unif <- function(nrow, ncol = 2, min = 0, max = 1) {
   matrix(runif(n = ncol * nrow, min = min, max = max), nrow = nrow)
 }
-

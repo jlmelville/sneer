@@ -68,7 +68,7 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       if (verbose) {
-        summarize(inp$pm, 'Pj')
+        summarize(inp$pm, "Pj")
       }
       list(inp = inp)
     },
@@ -138,7 +138,7 @@ ssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       if (verbose) {
-        summarize(inp$pm, 'Pj')
+        summarize(inp$pm, "Pj")
       }
       list(inp = inp)
     },
@@ -357,7 +357,7 @@ hssne <- function(eps = .Machine$double.eps, alpha = 1.5e-08,
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       if (verbose) {
-        summarize(inp$pm, 'Pj')
+        summarize(inp$pm, "Pj")
       }
       list(inp = inp)
     },

@@ -177,7 +177,7 @@ tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       if (verbose) {
-        summarize(inp$pm, 'Pj')
+        summarize(inp$pm, "Pj")
       }
       list(inp = inp)
     },
@@ -267,7 +267,7 @@ snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       if (verbose) {
-        summarize(inp$pm, 'Pj')
+        summarize(inp$pm, "Pj")
       }
       list(inp = inp)
     },
@@ -367,7 +367,7 @@ hsnerv <- function(lambda = 0.5, alpha = 1.5e-8, beta = 1,
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
       if (verbose) {
-        summarize(inp$pm, 'Pj')
+        summarize(inp$pm, "Pj")
       }
       list(inp = inp)
     },
