@@ -4,7 +4,7 @@ context("HSSNE")
 # HSSNE with alpha approaching zero should be equivalent to SSNE
 ssne_iris <-
   embed_prob(iris[, 1:4], method = ssne(verbose = FALSE), max_iter = 50,
-             init_inp = make_init_inp(inp_from_perp(verbose = FALSE)),
+             init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
@@ -14,7 +14,7 @@ ssne_iris <-
 hssne_iris_alpha0 <-
   embed_prob(iris[, 1:4], method = hssne(alpha = 1.5e-8, verbose = FALSE),
              max_iter = 50,
-             init_inp = make_init_inp(inp_from_perp(verbose = FALSE)),
+             init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
@@ -27,7 +27,7 @@ expect_equal(mapply(formatC, ssne_iris$report$costs),
 # HSSNE with alpha = 1 should be equivalent to t-SNE
 tsne_iris <-
   embed_prob(iris[, 1:4], method = tsne(verbose = FALSE), max_iter = 50,
-             init_inp = make_init_inp(inp_from_perp(verbose = FALSE)),
+             init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
@@ -37,7 +37,7 @@ tsne_iris <-
 hssne_iris_alpha1 <-
   embed_prob(iris[, 1:4], method = hssne(alpha = 1, verbose = FALSE),
              max_iter = 50,
-             init_inp = make_init_inp(inp_from_perp(verbose = FALSE)),
+             init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
