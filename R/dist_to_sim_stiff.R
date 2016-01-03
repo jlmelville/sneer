@@ -51,6 +51,7 @@ dist2_to_weights <- function(d2m, weight_fn) {
 weights_to_prow <- function(wm) {
   row_sums <- apply(wm, 1, sum)
   pm <- sweep(wm, 1, row_sums, "/")
+  pm[is.nan(pm)] <- 1 / ncol(pm)
   clamp(pm)
 }
 
