@@ -28,8 +28,8 @@ installed.
 # make two different embeddings of the iris dataset
 prcomp_iris <- prcomp(iris[, 1:4], center = TRUE, retx = TRUE)
 mds_iris <- embed_dist(iris[, 1:4], method = mmds(eps = 1e-4),
-                       opt = bold_nagger(), init_out = make_init_out(
-                         init_config = prcomp_iris$x[, 1:2]),
+                       opt = bold_nagger(),
+                       init_out = out_from_matrix(prcomp_iris$x[, 1:2]),
                        max_iter = 40)
 iris_view <- make_embedding_qplot(iris, "Species")
 iris_view(prcomp_iris$x)

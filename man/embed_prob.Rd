@@ -7,10 +7,9 @@
 embed_prob(xm, method = tsne(), preprocess = make_preprocess(verbose =
   verbose), init_inp = make_init_inp(prob_perp_bisect(perplexity = 30,
   input_weight_fn = exp_weight, verbose = verbose)),
-  init_out = make_init_out(from_PCA = TRUE, verbose = verbose),
-  opt = make_opt(), max_iter = 1000, tricks = NULL,
-  reporter = make_reporter(verbose = verbose), export = NULL,
-  after_embed = NULL, verbose = TRUE)
+  init_out = out_from_PCA(verbose = verbose), opt = make_opt(),
+  max_iter = 1000, tricks = NULL, reporter = make_reporter(verbose =
+  verbose), export = NULL, after_embed = NULL, verbose = TRUE)
 }
 \arguments{
 \item{xm}{A matrix or data frame to embed.}
@@ -26,7 +25,7 @@ result value of \code{\link{make_preprocess}}.}
 value of \code{\link{make_init_inp}}.}
 
 \item{init_out}{Output initialization callback. Set by assigning the result
-value of \code{\link{make_init_out}}.}
+value of calling one of the available \code{\link{output_initializers}}.}
 
 \item{opt}{Optimization method. Set by assigning the result of value of one
 of the configuration functions listed in
@@ -102,27 +101,27 @@ tsne_iris <- embed_prob(iris[, 1:4], opt = tsne_opt(),
                reporter = make_reporter(plot = make_iris_plot()))
 
 # Do t-SNE on the iris dataset with the same options as the t-SNE paper
-# and initialize from random. Use generic plot function, displaying the first
-# two characters of the "Species" factor for the points. Explicitly choose
-# t-SNE as the method.
+# and initialize from a random normal distribution. Use generic plot
+# function, displaying the first two characters of the "Species" factor for
+# the points. Explicitly choose t-SNE as the method.
 tsne_iris <- embed_prob(iris[, 1:4],
                method = tsne(),
                opt = tsne_opt(),
                init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
-               init_out = make_init_out(stdev = 1e-4),
+               init_out = out_from_rnorm(sd = 1e-4),
                tricks = tsne_tricks(),
                reporter = make_reporter(
                  plot = make_plot(iris, "Species", make_label(2))))
 
 # Use the SSNE method, and preprocess input data by range scaling. t-SNE
 # tricks and optimization are reasonable defaults for other probability-based
-# embeddings.
+# embeddings. Initialize from a uniform distribution.
 ssne_iris <- embed_prob(iris[, 1:4],
                method = ssne(),
                opt = tsne_opt(),
                init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
                preprocess = make_preprocess(range_scale_matrix = TRUE),
-               init_out = make_init_out(stdev = 1e-4),
+               init_out = out_from_runif(),
                tricks = tsne_tricks(),
                reporter = make_reporter(
                  plot = make_plot(iris, "Species", make_label(2))))
@@ -136,7 +135,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
 asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
  preprocess = make_preprocess(auto_scale = TRUE),
  init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
- init_out = make_init_out(from_PCA = TRUE),
+ init_out = out_from_PCA(),
  opt = make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
   update = nesterov_nsc_momentum()),
   reporter = make_reporter(plot = make_plot(s1k, "Label")))
@@ -146,7 +145,7 @@ asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
 asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
  preprocess = make_preprocess(auto_scale = TRUE),
  init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
- init_out = make_init_out(from_PCA = TRUE),
+ init_out = out_from_PCA(),
  opt = bold_nagger(),
  reporter = make_reporter(plot = make_plot(s1k, "Label")))
 }
@@ -157,7 +156,7 @@ asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
   \code{method}
 \item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
 \item{\code{\link{make_init_inp}}} for configuring \code{init_inp}
-\item{\code{\link{make_init_out}}} for configuring \code{init_out}
+\item{\code{\link{output_initializers}}} for configuring \code{init_out}
 \item{\code{\link{optimization_methods}}} for configuring \code{opt}
 \item{\code{\link{make_tricks}}} for configuring \code{tricks}
 \item{\code{\link{make_reporter}}} for configuring \code{reporter}

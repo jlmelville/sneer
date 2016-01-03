@@ -1,100 +1,183 @@
 # Functions for initializing the output embedding.
 
-#' Output Initialization
+#' Output Initializers
 #'
-#' Factory function that creates a callback that used by the embedding routine.
-#' When invoked, it will initialize the output data.
+#' These methods deal with initializing the output coordinates of an embedding.
+#' They have names that begin with 'out_from' to indicate that they are only
+#' used to initialize the output data, not the input data.
+#'
+#' @seealso
+#' The return value of the initializers should be assigned to the
+#' \code{init_out} parameter of an embedding function such as
+#' \code{\link{embed_dist}} and \code{\link{embed_prob}}.
+#'
+#' @examples
+#'
+#' \dontrun{
+#' # pass to the init_out parameter of an embedding function
+#'
+#' # initialize from PCA
+#' embed_dist(init_out = out_from_PCA(), ...)
+#'
+#' # initialize from small random differences
+#' embed_prob(init_out = out_from_rnorm(sd = 1e-4), ...)
+#' }
+#' @keywords internal
+#' @name output_initializers
+#' @family sneer output initializers
+NULL
+
+
+#' Initialize Output Coordinates from PCA
+#'
+#' Output initialization function.
+#'
+#' The first \code{k} scores of the PCA of the input coordinates are used to
+#' initialize the \code{k} dimensions of the embedded coordinates. Input
+#' coordinates are centered but not scaled before the PCA is carried out.
+#' This initialization can only be used if the input  data is in the form of
+#' coordinates, not a distance matrix.
 #'
 #' @param k Number of output dimensions. For 2D visualization this is always 2.
-#' @param init_config Input data to initialize the coordinates from. Must
-#' be a matrix with the same dimensions as the desired output coordinates.
-#' @param stdev The standard deviation of the gaussian used to generate the
-#' output coordinates. Used only if \code{from_PCA} is \code{FALSE},
-#' \code{init_config} is \code{NULL} and \code{from_input_name} is
-#' \code{NULL}.
-#' @param from_PCA If \code{TRUE}, then the first \code{k} scores of the PCA
-#' of the input coordinates are used to initialize the embedded coordinates.
-#' Input coordinates are centered but not scaled before the PCA is carried out.
-#' This option can only be used if the input data is in the form of coordinates,
-#' and not a distance matrix.
-#' @param from_input_name Name of a matrix in the input data list \code{inp}
-#' which contains suitable initialization data. Must be a matrix with the same
-#' dimensions as the desired output coordinates.
-#' @param verbose If \code{TRUE} information about the initialization will be
-#' logged to screen.
-#' @return Callback to be used by the embedding routine to initialize
-#' the output data. The callback has the signature \code{init_out(inp)} where
-#' \code{inp} is the initialized input data list. The return value of the
-#' callback is the initialized output data, a list containing:
-#' \item{\code{ym}}{A matrix containing the initialized output coordinates.}
-#' Depending on the type of embedding carried out, the \code{out} list will
-#' accumulate other auxiliary data associated with the embedded coordinates,
-#' e.g. distances, probabilities, divergences or other data required for
-#' stiffness calculations.
-#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
-#' an embedding.
+#' @param verbose If \code{TRUE}, log information about the initialization.
+#' @return Output initializer.
+#' @export
+#' @family sneer output intializers
+#' @seealso \code{\link{embed_dist}} and \code{\link{embed_prob}}
+#'   for how to use this function to configure an embedding.
 #' @examples
-#' # Initialize from PCA scores matrix (normally a decent starting point and
-#' # reproducible)
-#' make_init_out(from_PCA = TRUE)
+#' \dontrun{
+#' # Should be passed to the init_out argument of an embedding function:
+#' embed_dist(init_out = out_from_PCA(), ...)
+#' }
+out_from_PCA <- function(k = 2, verbose = TRUE) {
+  init_out(function(inp, out) {
+    if (is.null(inp$xm)) {
+      stop("PCA initialization is only possible with input coordinates")
+    }
+    out$ym <- scores_matrix(inp$xm, ncol = k, verbose = verbose)
+    out
+  })
+}
+
+#' Initialize Output Coordinates from Matrix
 #'
-#' # Initialize from random small distances (used in t-SNE paper)
-#' make_init_out(stdev = 1e-4)
+#' Output initialization function.
+#'
+#' Creates output data and initialize coordinates from the specified matrix.
+#'
+#' @param k Number of output dimensions. For 2D visualization this is always 2.
+#' @param init_config Configuration to initialize the coordinates from. Must
+#' be a matrix with the same dimensions as the desired output coordinates.
+#' @param verbose If \code{TRUE}, log information about the initialization.
+#' @return Output initializer.
+#' @export
+#' @family sneer output intializers
+#' @seealso \code{\link{embed_dist}} and \code{\link{embed_prob}}
+#'   for how to use this function to configure an embedding.
+#'
+#' @examples
+#' \dontrun{
+#' # create a scores matrix using R PCA
+#' pca_scores <- prcomp(iris[, 1:4], center = TRUE, retx = TRUE)$x[, 1:2]
 #'
 #' # Should be passed to the init_out argument of an embedding function:
-#' \dontrun{
-#'  embed_prob(init_out = make_init_out(from_PCA = TRUE), ...)
+#' embed_dist(init_out = out_from_matrix(pca_scores), ...)
 #' }
+out_from_matrix <- function(init_config, k = 2, verbose = TRUE) {
+  init_out(function(inp, out) {
+    n <- nrow(inp$dm)
+    if (nrow(init_config) != n | ncol(init_config) != k) {
+      stop("init_config does not match necessary configuration for ym")
+    }
+    if (verbose) {
+      message("Initializing from matrix")
+    }
+    out$ym <- init_config
+    out
+  })
+}
+
+#' Initialize Output Coordinates from Normal Distribution
+#'
+#' Output initialization function.
+#'
+#' Creates output data and initializes embedding coordinates from a normal
+#' distribution centered at zero.
+#'
+#' @param k Number of output dimensions. For 2D visualization this is always 2.
+#' @param sd The standard deviation of the distribution.
+#' @param verbose If \code{TRUE}, log information about the initialization.
+#' @return Output initializer.
 #' @export
-make_init_out <- function(k = 2, init_config = NULL, stdev = 1e-04,
-                          from_PCA = FALSE, from_input_name = NULL,
-                          verbose = TRUE) {
-  init_out <- list()
+#' @family sneer output intializers
+#' @seealso \code{\link{embed_dist}} and \code{\link{embed_prob}}
+#'   for how to use this function to configure an embedding.
+#'
+#' @examples
+#' \dontrun{
+#' # Should be passed to the init_out argument of an embedding function:
+#'  embed_dist(init_out = out_from_rnorm(sd = 1e-4), ...)
+#' }
+out_from_rnorm <- function(k = 2, sd = 1e-4, verbose = TRUE) {
+  init_out(function(inp, out){
+    n <- nrow(inp$dm)
+    message("Initializing from normal distribution with sd = ",
+            formatC(sd))
+    out$ym <- random_matrix_norm(n, ncol = k, sd = sd)
+    out
+  })
+}
 
-  if (!is.null(init_config) && is.matrix(init_config)) {
-    init_out$from_data <- function(inp, out) {
-      n <- nrow(inp$dm)
-      if (nrow(init_config) != n | ncol(init_config) != k) {
-        stop("init_config does not match necessary configuration for ym")
-      }
-      out$ym <- init_config
-      out
-    }
-  } else if (from_PCA) {
-    init_out$from_PCA <- function(inp, out) {
-      if (is.null(inp$xm)) {
-        stop("PCA initialization is only possible with input coordinates")
-      }
-      out$ym <- scores_matrix(inp$xm, ncol = k, verbose = verbose)
-      out
-    }
-  } else if (!is.null(from_input_name)) {
-    init_out$from_input <- function(inp, out) {
-      n <- nrow(inp$dm)
-      init_config <- inp[[from_input_name]]
-      if (nrow(init_config) != n | ncol(init_config) != k) {
-        stop("inp$", from_input_name, " does not match necessary configuration",
-             " for ym")
-      }
-      if (verbose) {
-        message("Initializing out$ym from inp$", from_input_name)
-      }
-      out$ym <- inp[[from_input_name]]
-      out
-    }
-  } else {
-    init_out$from_random <- function(inp, out) {
-      n <- nrow(inp$dm)
-      out$ym <- random_matrix(n, ncol = k, sd = stdev)
-      out
-    }
-  }
+#' Initialize Output Coordinates from Uniform Distribution
+#'
+#' Output initialization function.
+#'
+#' Creates output data and initializes embedding coordinates from a random
+#' uniform distribution. This is the initialization method suggested for use
+#' by the authors of the \code{\link{nerv}} method.
+#'
+#' @param k Number of output dimensions. For 2D visualization this is always 2.
+#' @param min Lower limit of the distribution.
+#' @param max Upper limit of the distribution.
+#' @param verbose If \code{TRUE}, log information about the initialization.
+#' @return Output initializer.
+#' @export
+#' @references
+#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+#' Information retrieval perspective to nonlinear dimensionality reduction for
+#' data visualization.
+#' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+#' @family sneer output intializers
+#' @seealso \code{\link{embed_dist}} and \code{\link{embed_prob}}
+#'   for how to use this function to configure an embedding.
+#'
+#' @examples
+#' \dontrun{
+#' # Should be passed to the init_out argument of an embedding function:
+#'  embed_dist(init_out = out_from_runif(min = -10, max = 10), ...)
+#' }
+out_from_runif <- function(k = 2, min = 0, max = 1, verbose = TRUE) {
+  init_out(function(inp, out){
+    n <- nrow(inp$dm)
+    message("Initializing from uniform distribution between ", formatC(min),
+            ", ", formatC(max))
+    out$ym <- random_matrix_unif(n, ncol = k, min = min, max = max)
+    out
+  })
+}
 
+#' Output Initializer Wrapper
+#'
+#' Wrapper function to creates the input data list and runs the specific
+#' initializer function provided as a parameter.
+#'
+#' @param initializer Initializer function.
+#' @return Input data.
+init_out <- function(initializer) {
   function(inp) {
     out <- list()
-    for (name in names(init_out)) {
-      out <- init_out[[name]](inp, out)
-    }
+    out <- initializer(inp, out)
     flush.console()
     out
   }
@@ -136,22 +219,44 @@ scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
   sm$u %*% dm
 }
 
-#' Random Matrix
+#' Random Matrix (Normal Distribution)
 #'
 #' Creates a matrix of normally distributed data with zero mean.
 #'
-#' @param nrow The number of rows of the matrix.
-#' @param ncol The number of columns of the matrix.
-#' @param sd The standard deviation of the distribution.
+#' @param nrow Number of rows of the matrix.
+#' @param ncol Number of columns of the matrix.
+#' @param sd Standard deviation of the distribution.
 #' @return Random matrix with \code{nrow} rows and \code{ncol} columns.
 #'
 #' @examples
 #' \dontrun{
 #' # matrix with 5 rows, 3 columns and standard deviation of 0.1
-#' xm <- random_matrix(5, 3, 0.1)
+#' xm <- random_matrix_norm(5, 3, 0.1)
 #' # matrix with 100 rows
-#' xm <- random_matrix(100)
+#' xm <- random_matrix_norm(100)
 #' }
-random_matrix <- function(nrow, ncol = 2, sd = 1.0e-4) {
+random_matrix_norm <- function(nrow, ncol = 2, sd = 1.0e-4) {
   matrix(rnorm(ncol * nrow, mean = 0, sd = sd), nrow = nrow)
 }
+
+#' Random Matrix (Uniform Distribution)
+#'
+#' Creates a matrix of uniformly distributed data.
+#'
+#' @param nrow Number of rows of the matrix.
+#' @param ncol Number of columns of the matrix.
+#' @param min Lower limit of the distribution.
+#' @param max Upper limit of the distribution.
+#' @return Random matrix with \code{nrow} rows and \code{ncol} columns.
+#'
+#' @examples
+#' \dontrun{
+#' # matrix with 5 rows, 3 columns distribution between -10 and 10
+#' xm <- random_matrix_unif(nrow = 5, ncol = 3, min = -10, max = 10)
+#' # 2D matrix with 100 rows and default range of 0 to 1
+#' xm <- random_matrix_unif(100)
+#' }
+random_matrix_unif <- function(nrow, ncol = 2, min = 0, max = 1) {
+  matrix(runif(n = ncol * nrow, min = min, max = max), nrow = nrow)
+}
+

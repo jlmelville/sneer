@@ -5,10 +5,10 @@
 \title{Distance-Based Embedding.}
 \usage{
 embed_dist(xm, method = mmds(), preprocess = make_preprocess(verbose =
-  verbose), init_inp = make_init_inp(), init_out = make_init_out(from_PCA =
-  TRUE, verbose = verbose), opt = make_opt(), max_iter = 1000,
-  tricks = NULL, reporter = make_reporter(verbose = verbose),
-  export = NULL, after_embed = NULL, verbose = TRUE)
+  verbose), init_inp = make_init_inp(), init_out = out_from_PCA(verbose =
+  verbose), opt = make_opt(), max_iter = 1000, tricks = NULL,
+  reporter = make_reporter(verbose = verbose), export = NULL,
+  after_embed = NULL, verbose = TRUE)
 }
 \arguments{
 \item{xm}{A matrix or data frame to embed.}
@@ -24,7 +24,7 @@ result value of \code{\link{make_preprocess}}.}
 value of \code{\link{make_init_inp}}.}
 
 \item{init_out}{Output initialization callback. Set by assigning the result
-value of \code{\link{make_init_out}}.}
+value of calling one of the available \code{\link{output_initializers}}.}
 
 \item{opt}{Optimization method. Set by assigning the result of value of one
 of the configuration functions listed in
@@ -112,7 +112,7 @@ sammon_iris <- embed_dist(iris[, 1:4],
                           method = sammon_map(eps = 1e-4),
                           opt = bold_nagger(),
                           preprocess = make_preprocess(auto_scale = TRUE),
-                          init_out = make_init_out(stdev = 1e-4),
+                          init_out = out_from_rnorm(sd = 1e-4),
                           reporter = make_reporter(normalize_cost = FALSE,
                                        extra_costs = c("normalized_stress",
                                                        "kruskal_stress"),
@@ -126,7 +126,7 @@ sammon_iris <- embed_dist(iris[, 1:4],
   \code{method}
 \item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
 \item{\code{\link{make_init_inp}}} for configuring \code{init_inp}
-\item{\code{\link{make_init_out}}} for configuring \code{init_out}
+\item{\code{\link{output_initializers}}} for configuring \code{init_out}
 \item{\code{\link{optimization_methods}}} for configuring \code{opt}
 \item{\code{\link{make_tricks}}} for configuring \code{tricks}
 \item{\code{\link{make_reporter}}} for configuring \code{reporter}

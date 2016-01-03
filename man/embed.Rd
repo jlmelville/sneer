@@ -18,7 +18,7 @@ the configuration functions listed in
 value of \code{\link{make_init_inp}}.}
 
 \item{init_out}{Output initialization callback. Set by assigning the result
-value of \code{\link{make_init_out}}.}
+value of calling one of the available \code{\link{output_initializers}}.}
 
 \item{opt}{Optimization method. Set by assigning the result of value of one
 of the configuration functions listed in
@@ -83,7 +83,7 @@ defaults.
 \item{\code{\link{embedding_methods}}} for configuring \code{method}
 \item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
 \item{\code{\link{make_init_inp}}} for configuring \code{init_inp}
-\item{\code{\link{make_init_out}}} for configuring \code{init_out}
+\item{\code{\link{output_initializers}}} for configuring \code{init_out}
 \item{\code{\link{optimization_methods}}} for configuring \code{opt}
 \item{\code{\link{make_tricks}}} for configuring \code{tricks}
 \item{\code{\link{make_reporter}}} for configuring \code{reporter}

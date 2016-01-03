@@ -21,20 +21,20 @@ Currently, the following techniques are implemented:
 \itemize{
  \item{Metric MDS using the STRESS and SSTRESS functions}
  \item{Sammon Mapping}
- \item{t-Distributed Stochastic Neighbor Embedding (t-SNE)}
- \item{Asymmetric SNE (ASNE, what was originally just called SNE)}
- \item{Symmetic SNE (SSNE)}
+ \item{Stochastic Neighbor Embedding and variants (ASNE, SSNE and TSNE)}
  \item{Heavy-tailed Symmetric Stochastic Neighbour Embedding (HSSNE)}
+ \item{Neigbor Retrieval Visualizer (NeRV)}
 }
 
-The first two methods are traditional non-linear mapping techniques that
-attempt to reproduce the input distances in the output space. These are older
-techniques that only work well when the input dimension is not too large.
-They're useful as benchmarks for testing more advanced methods, though.
+Metric MDS and Sammon mapping are traditional non-linear mapping techniques
+that attempt to reproduce the input distances in the output space. These are
+older techniques that only work well when the input dimension is not too
+large. They're useful as benchmarks for testing more advanced methods, though.
 
 The SNE family of algorithms are focussed on preserving similarity: they
 don't attempt to preserve the input distances but input probabilities, which
-are based on the distances by some non-linear weighting function.
+are based on the distances by some non-linear weighting function. HSSNE
+and NeRV further generalize these algorithms.
 
 To carry out a distance-based embedding, use the \code{\link{embed_dist}}
 function. The entry point for probability-based embeddings is the
@@ -78,7 +78,7 @@ a gaussian distribution with a very small standard deviation (e.g. 1e-4) is
 very popular. But that makes comparing different results difficult. Using
 PCA to generate a two-component scores matrix gives repeatable results with
 a computational cost that is entirely reasonable. See
-\code{\link{make_init_out}} for more details.
+\code{\link{output_initializers}} for more details.
 }
 
 \section{Embedding Method}{
@@ -151,7 +151,7 @@ tsne_iris <- embed_prob(iris[, 1:4],
                method = tsne(),
                opt = tsne_opt(),
                init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
-               init_out = make_init_out(stdev = 1e-4),
+               init_out = out_from_rnorm(sd = 1e-4),
                tricks = tsne_tricks(),
                reporter = make_reporter(
                  plot = make_plot(iris, "Species", make_label(2))))
@@ -163,7 +163,7 @@ asne_s1k <- embed_prob(s1k[, 1:9],
                method = asne(),
                preprocess = make_preprocess(auto_scale = TRUE),
                init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
-               init_out = make_init_out(from_PCA = TRUE),
+               init_out = out_from_PCA(),
                opt = bold_nagger(),
                reporter = make_reporter(
                plot = make_plot(s1k, "Label")))
@@ -174,7 +174,7 @@ asne_s1k <- embed_prob(s1k[, 1:9],
                 method = asne(),
                 preprocess = make_preprocess(auto_scale = TRUE),
                 init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
-                init_out = make_init_out(from_PCA = TRUE),
+               init_out = out_from_PCA(),
                 opt = make_opt(gradient = nesterov_gradient(),
                                step_size = bold_driver(),
                                update = nesterov_nsc_momentum()),
@@ -201,14 +201,12 @@ mds_iris <- embed_dist(iris[, 1:4],
 # mapping cost function is already normalized, so tell the make_reporter
 # function not to report an automatically normalized version in the logging
 # output.
-sammon_iris <- embed_dist(iris[, 1:4],
-                          method = sammon_map(eps = 1e-4),
-                          opt = bold_nagger(),
-                          init_out = make_init_out(stdev = 1e-4),
-                          reporter = make_reporter(normalize_cost = FALSE,
-                                       extra_costs = c("normalized_stress",
-                                                       "kruskal_stress"),
-                                       plot = make_iris_plot()))
+sammon_iris <-
+ embed_dist(iris[, 1:4], method = sammon_map(eps = 1e-4),
+            opt = bold_nagger(), init_out = out_from_PCA(),
+            reporter = make_reporter(normalize_cost = FALSE,
+              extra_costs = c("normalized_stress", "kruskal_stress"),
+              plot = make_iris_plot()))
 }
 }
 \references{

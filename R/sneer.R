@@ -75,7 +75,7 @@
 #' very popular. But that makes comparing different results difficult. Using
 #' PCA to generate a two-component scores matrix gives repeatable results with
 #' a computational cost that is entirely reasonable. See
-#' \code{\link{make_init_out}} for more details.
+#' \code{\link{output_initializers}} for more details.
 #'
 #' @section Embedding Method:
 #' I take the view that the essentials of any embedding method (or at least the
@@ -138,7 +138,7 @@
 #'                method = tsne(),
 #'                opt = tsne_opt(),
 #'                init_inp = make_init_inp(prob_perp_bisect(perplexity = 25)),
-#'                init_out = make_init_out(stdev = 1e-4),
+#'                init_out = out_from_rnorm(sd = 1e-4),
 #'                tricks = tsne_tricks(),
 #'                reporter = make_reporter(
 #'                  plot = make_plot(iris, "Species", make_label(2))))
@@ -150,7 +150,7 @@
 #'                method = asne(),
 #'                preprocess = make_preprocess(auto_scale = TRUE),
 #'                init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
-#'                init_out = make_init_out(from_PCA = TRUE),
+#'                init_out = out_from_PCA(),
 #'                opt = bold_nagger(),
 #'                reporter = make_reporter(
 #'                plot = make_plot(s1k, "Label")))
@@ -161,7 +161,7 @@
 #'                 method = asne(),
 #'                 preprocess = make_preprocess(auto_scale = TRUE),
 #'                 init_inp = make_init_inp(prob_perp_bisect(perplexity = 50)),
-#'                 init_out = make_init_out(from_PCA = TRUE),
+#'                init_out = out_from_PCA(),
 #'                 opt = make_opt(gradient = nesterov_gradient(),
 #'                                step_size = bold_driver(),
 #'                                update = nesterov_nsc_momentum()),
@@ -188,14 +188,12 @@
 #' # mapping cost function is already normalized, so tell the make_reporter
 #' # function not to report an automatically normalized version in the logging
 #' # output.
-#' sammon_iris <- embed_dist(iris[, 1:4],
-#'                           method = sammon_map(eps = 1e-4),
-#'                           opt = bold_nagger(),
-#'                           init_out = make_init_out(stdev = 1e-4),
-#'                           reporter = make_reporter(normalize_cost = FALSE,
-#'                                        extra_costs = c("normalized_stress",
-#'                                                        "kruskal_stress"),
-#'                                        plot = make_iris_plot()))
+#' sammon_iris <-
+#'  embed_dist(iris[, 1:4], method = sammon_map(eps = 1e-4),
+#'             opt = bold_nagger(), init_out = out_from_PCA(),
+#'             reporter = make_reporter(normalize_cost = FALSE,
+#'               extra_costs = c("normalized_stress", "kruskal_stress"),
+#'               plot = make_iris_plot()))
 #' }
 #' @references
 #'
