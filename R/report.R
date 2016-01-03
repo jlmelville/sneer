@@ -199,6 +199,11 @@ make_reporter <- function(report_every = 100, min_cost = 0,
       if (nchar(opt_str) > 0) {
         message(opt_str)
       }
+      for (name in names(out)) {
+        if (class(out[[name]]) == "matrix") {
+          summarize(out[[name]], name)
+        }
+      }
       result
     }
   }
