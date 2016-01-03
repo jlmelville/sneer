@@ -2,7 +2,7 @@ library(sneer)
 context("SNE")
 
 tsne_iris <- embed_prob(iris[, 1:4],
-                       method = tsne(),
+                       method = tsne(verbose = FALSE),
                        init_inp = make_init_inp(
                          prob_perp_bisect(
                            perplexity = 50,
@@ -17,7 +17,7 @@ tsne_iris <- embed_prob(iris[, 1:4],
 expect_equal(formatC(tsne_iris$report$norm), "0.0578")
 
 ssne_iris <- embed_prob(iris[, 1:4],
-                       method = ssne(),
+                       method = ssne(verbose = FALSE),
                        init_inp = make_init_inp(
                          prob_perp_bisect(
                           perplexity = 50,
@@ -33,7 +33,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
 expect_equal(formatC(ssne_iris$report$norm), "0.07265")
 
 asne_iris <- embed_prob(iris[, 1:4],
-                       method = asne(),
+                       method = asne(verbose = FALSE),
                        init_inp = make_init_inp(
                          prob_perp_bisect(
                            perplexity = 50,
@@ -49,7 +49,7 @@ asne_iris <- embed_prob(iris[, 1:4],
 expect_equal(formatC(asne_iris$report$norm), "0.08479")
 
 pca_iris <- embed_prob(iris[, 1:4],
-                      method = tsne(),
+                      method = tsne(verbose = FALSE),
                       init_inp = make_init_inp(
                         prob_perp_bisect(
                           perplexity = 25,
@@ -63,9 +63,9 @@ pca_iris <- embed_prob(iris[, 1:4],
                       export = c("report"))
 expect_equal(formatC(pca_iris$report$cost), "1.598")
 
-context("jacobs")
+context("Jacobs")
 tsne_iris_jacobs <- embed_prob(iris[, 1:4],
-                              method = tsne(),
+                              method = tsne(verbose = FALSE),
                               init_inp = make_init_inp(
                                 prob_perp_bisect(
                                   perplexity = 25,

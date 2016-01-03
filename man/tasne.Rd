@@ -4,11 +4,13 @@
 \alias{tasne}
 \title{t-distributed Asymmetric Stochastic Neighbor Embedding (t-ASNE)}
 \usage{
-tasne(eps = .Machine$double.eps)
+tasne(eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.
@@ -21,6 +23,16 @@ Creates a list of functions that collectively implement t-ASNE: a method that
 I just made up to illustrate how to explore different aspects of embedding
 within sneer: this uses the t-distributed distance weighting of t-SNE, but
 for probability generation uses the point-wise distribution of ASNE.
+
+The probability matrix used in ASNE:
+
+\itemize{
+ \item{represents one N row-wise probability distributions, where N is the
+ number of points in the data set, i.e. the row sums of the matrix are all
+  one.}
+ \item{is asymmetric, i.e. there is no requirement that
+ \code{p[i, j] == p[j, i]}.}
+}
 }
 \section{Output Data}{
 
@@ -39,19 +51,24 @@ embed_prob(method = tasne(), ...)
 }
 }
 \seealso{
-t-ASNE uses the \code{\link{exp_weight}} similarity function.
-The return value of this function should be used with the
-\code{\link{embed_prob}} embedding function.
+t-ASNE uses the \code{\link{kl_cost}} cost function and the
+  \code{\link{exp_weight}} similarity function. The return value of this
+  function should be used with the \code{\link{embed_prob}} embedding
+  function.
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{hssne}},
-  \code{\link{mmds}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{ssne}},
+  \code{\link{embedding_methods}}, \code{\link{hsnerv}},
+  \code{\link{hssne}}, \code{\link{mmds}},
+  \code{\link{nerv}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{snerv}},
+  \code{\link{ssne}}, \code{\link{tnerv}},
   \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{hssne}},
+  \code{\link{hsnerv}}, \code{\link{hssne}},
+  \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{ssne}}, \code{\link{tsne}}
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tnerv}}, \code{\link{tsne}}
 }
 

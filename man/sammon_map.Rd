@@ -56,9 +56,11 @@ Other sneer distance embedding methods: \code{\link{distance_embedding_methods}}
   \code{\link{mmds}}, \code{\link{smmds}}
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{hssne}},
-  \code{\link{mmds}}, \code{\link{smmds}},
-  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{embedding_methods}}, \code{\link{hsnerv}},
+  \code{\link{hssne}}, \code{\link{mmds}},
+  \code{\link{nerv}}, \code{\link{smmds}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
   \code{\link{tsne}}
 }
 

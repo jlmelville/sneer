@@ -232,6 +232,12 @@ Van der Maaten, L., & Hinton, G. (2008).
 Visualizing data using t-SNE.
 \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 
+NeRV
+Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+Information retrieval perspective to nonlinear dimensionality reduction for
+data visualization.
+\emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+
 Nesterov Accelerated Gradient:
 Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
 On the importance of initialization and momentum in deep learning.

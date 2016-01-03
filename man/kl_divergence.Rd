@@ -20,6 +20,13 @@ KL divergence between \code{pm} and \code{qm}.
 A measure of embedding quality between input and output probability matrices.
 }
 \details{
+The Kullback Leibler Divergence between two discrete probabilities P and Q
+is:
+
+\deqn{D_{KL}(P||Q) = \sum_{i}P(i)\log\frac{P(i)}{Q(i)}}{D_KL(P||Q) = sum(Pi*log(Pi/Qi))}
+
+The base of the log determines the units of the divergence.
+
 If the matrices represent row probabilities, then the returned divergence
 is the average over the divergence for each row.
 }

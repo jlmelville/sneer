@@ -24,20 +24,20 @@
 #' \itemize{
 #'  \item{Metric MDS using the STRESS and SSTRESS functions}
 #'  \item{Sammon Mapping}
-#'  \item{t-Distributed Stochastic Neighbor Embedding (t-SNE)}
-#'  \item{Asymmetric SNE (ASNE, what was originally just called SNE)}
-#'  \item{Symmetic SNE (SSNE)}
+#'  \item{Stochastic Neighbor Embedding and variants (ASNE, SSNE and TSNE)}
 #'  \item{Heavy-tailed Symmetric Stochastic Neighbour Embedding (HSSNE)}
+#'  \item{Neigbor Retrieval Visualizer (NeRV)}
 #' }
 #'
-#' The first two methods are traditional non-linear mapping techniques that
-#' attempt to reproduce the input distances in the output space. These are older
-#' techniques that only work well when the input dimension is not too large.
-#' They're useful as benchmarks for testing more advanced methods, though.
+#' Metric MDS and Sammon mapping are traditional non-linear mapping techniques
+#' that attempt to reproduce the input distances in the output space. These are
+#' older techniques that only work well when the input dimension is not too
+#' large. They're useful as benchmarks for testing more advanced methods, though.
 #'
 #' The SNE family of algorithms are focussed on preserving similarity: they
 #' don't attempt to preserve the input distances but input probabilities, which
-#' are based on the distances by some non-linear weighting function.
+#' are based on the distances by some non-linear weighting function. HSSNE
+#' and NeRV further generalize these algorithms.
 #'
 #' To carry out a distance-based embedding, use the \code{\link{embed_dist}}
 #' function. The entry point for probability-based embeddings is the
@@ -218,6 +218,12 @@
 #' Van der Maaten, L., & Hinton, G. (2008).
 #' Visualizing data using t-SNE.
 #' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
+#'
+#' NeRV
+#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+#' Information retrieval perspective to nonlinear dimensionality reduction for
+#' data visualization.
+#' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
 #'
 #' Nesterov Accelerated Gradient:
 #' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).

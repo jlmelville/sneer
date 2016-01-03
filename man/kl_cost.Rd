@@ -20,6 +20,25 @@ KL divergence between \code{inp$pm} and \code{out$qm}.
 A measure of embedding quality between input and output data.
 }
 \details{
+This cost function evaluates the embedding quality by calculating the KL
+divergence between the input probabilities and the output probabilities.
+More specifically, it considers the input probabilities to be the reference
+probabilities. See the note below for more details and whether you should
+care about the distinction.
+}
+\note{
+The KL divergence is asymmetric, so that D_KL(P||Q) != D_KL(Q||P).
+With this cost function, the input probability distribution is considered the
+"reference" probability, and a more precise way to describe this cost
+function is that it measures the divergence of the output probabilities
+\emph{from} from the input probabilities.
+
+For t-SNE and related embedding methods, only this type of KL divergence is
+calculated. However other methods (e.g. NeRV) also consider the "reverse"
+divergence, i.e. using the output probabilities as reference probabilities.
+Equivalently, this could be defined as the KL divergence of the input
+probabilities \emph{from} the output probabilities.
+
 This cost function requires the following matrices to be defined:
 \describe{
  \item{\code{inp$pm}}{Input probabilities.}
@@ -27,11 +46,17 @@ This cost function requires the following matrices to be defined:
 }
 }
 \seealso{
+To use \code{out$qm} as the reference probability and calculate the
+  divergence of \code{inp$pm} from \code{out$qm}, see
+  \code{\link{reverse_kl_cost}}.
+
 Other sneer cost functions: \code{\link{kruskal_stress_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},
+  \code{\link{nerv_cost}},
   \code{\link{normalized_stress_cost}},
+  \code{\link{reverse_kl_cost}},
   \code{\link{rms_metric_stress_cost}},
   \code{\link{sammon_stress_cost}}
 }

@@ -4,7 +4,8 @@
 \alias{hssne}
 \title{Heavy-Tailed Symmetric Stochastic Neighbor Embedding (HSSNE)}
 \usage{
-hssne(eps = .Machine$double.eps, alpha = 1.5e-08, beta = 1)
+hssne(eps = .Machine$double.eps, alpha = 1.5e-08, beta = 1,
+  verbose = TRUE)
 }
 \arguments{
 \item{eps}{Small floating point value used to prevent numerical problems,
@@ -17,6 +18,8 @@ behaves like t-SNE.}
 \item{beta}{The precision of the function. Becomes equivalent to the
 precision in the Gaussian distribution of distances as \code{alpha}
 approaches zero.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.
@@ -39,6 +42,15 @@ of functions with even heavier tails.
 Additionally, HSSNE allows control over \eqn{\beta}{beta}, the degree of
 precision (inverse of the spread) of the function. Normally, this set to one
 for the output distances in t-SNE and related methods.
+
+The probability matrix used in HSSNE:
+
+\itemize{
+ \item{represents one probability distribution, i.e. the grand sum of the
+ matrix is one.}
+ \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+ probabilities are joint probabilities.}
+}
 }
 \section{Output Data}{
 
@@ -67,14 +79,18 @@ The return value of this function should be used with the
 \code{\link{embed_prob}} embedding function.
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{mmds}},
+  \code{\link{embedding_methods}}, \code{\link{hsnerv}},
+  \code{\link{mmds}}, \code{\link{nerv}},
   \code{\link{sammon_map}}, \code{\link{smmds}},
-  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
   \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
+  \code{\link{hsnerv}}, \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
   \code{\link{tsne}}
 }
 

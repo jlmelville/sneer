@@ -81,9 +81,11 @@ Other sneer distance embedding methods: \code{\link{distance_embedding_methods}}
   \code{\link{sammon_map}}, \code{\link{smmds}}
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{hssne}},
+  \code{\link{embedding_methods}}, \code{\link{hsnerv}},
+  \code{\link{hssne}}, \code{\link{nerv}},
   \code{\link{sammon_map}}, \code{\link{smmds}},
-  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
   \code{\link{tsne}}
 }
 

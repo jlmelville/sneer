@@ -4,11 +4,13 @@
 \alias{asne}
 \title{Asymmetric Stochastic Neighbor Embedding (ASNE)}
 \usage{
-asne(eps = .Machine$double.eps)
+asne(eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.
@@ -31,13 +33,6 @@ neighbor of point i. The probability matrix used in ASNE:
  \item{is asymmetric, i.e. there is no requirement that
  \code{p[i, j] == p[j, i]}.}
 }
-
-
-
-In ASNE, a probability matrix is actually a collection
-of N separate probability conditional probability distributions, where row
-i contains the conditional probabilities that point j would be selected as
-a neighbor of point i.
 }
 \section{Output Data}{
 
@@ -58,19 +53,24 @@ Stochastic neighbor embedding.
 In \emph{Advances in neural information processing systems} (pp. 833-840).
 }
 \seealso{
-ASNE uses the \code{\link{exp_weight}} similarity function.
-The return value of this function should be used with the
-\code{\link{embed_prob}} embedding function.
+ASNE uses the \code{\link{kl_cost}} cost function and the
+  \code{\link{exp_weight}} similarity function. The return value of this
+  function should be used with the \code{\link{embed_prob}} embedding
+  function.
 
 Other sneer embedding methods: \code{\link{embedding_methods}},
-  \code{\link{hssne}}, \code{\link{mmds}},
+  \code{\link{hsnerv}}, \code{\link{hssne}},
+  \code{\link{mmds}}, \code{\link{nerv}},
   \code{\link{sammon_map}}, \code{\link{smmds}},
-  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
   \code{\link{tsne}}
 
-Other sneer probability embedding methods: \code{\link{hssne}},
+Other sneer probability embedding methods: \code{\link{hsnerv}},
+  \code{\link{hssne}}, \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
   \code{\link{tsne}}
 }
 

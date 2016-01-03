@@ -50,6 +50,7 @@ Other sneer cost functions: \code{\link{kl_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},
+  \code{\link{nerv_cost}}, \code{\link{reverse_kl_cost}},
   \code{\link{rms_metric_stress_cost}},
   \code{\link{sammon_stress_cost}}
 }

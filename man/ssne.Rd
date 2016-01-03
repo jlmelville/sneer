@@ -4,11 +4,13 @@
 \alias{ssne}
 \title{Symmetric Stochastic Neighbor Embedding (SSNE)}
 \usage{
-ssne(eps = .Machine$double.eps)
+ssne(eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.
@@ -53,19 +55,24 @@ Visualizing data using t-SNE.
 \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 }
 \seealso{
-SSNE uses the \code{\link{exp_weight}} similarity function.
-The return value of this function should be used with the
-\code{\link{embed_prob}} embedding function.
+SSNE uses the \code{\link{kl_cost}} cost function and the
+  \code{\link{exp_weight}} similarity function. The return value of this
+  function should be used with the \code{\link{embed_prob}} embedding
+  function.
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{hssne}},
-  \code{\link{mmds}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{tasne}},
+  \code{\link{embedding_methods}}, \code{\link{hsnerv}},
+  \code{\link{hssne}}, \code{\link{mmds}},
+  \code{\link{nerv}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{snerv}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
   \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{hssne}},
+  \code{\link{hsnerv}}, \code{\link{hssne}},
+  \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{tasne}}, \code{\link{tsne}}
+  \code{\link{snerv}}, \code{\link{tasne}},
+  \code{\link{tnerv}}, \code{\link{tsne}}
 }
 

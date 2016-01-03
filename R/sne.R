@@ -35,14 +35,16 @@ NULL
 #'
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @references
 #' Van der Maaten, L., & Hinton, G. (2008).
 #' Visualizing data using t-SNE.
 #' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
-#' @seealso t-SNE uses the \code{\link{tdist_weight}} similarity function.
-#' The return value of this function should be used with the
-#' \code{\link{embed_prob}} embedding function.
+#' @seealso t-SNE uses the \code{\link{kl_cost}} cost function and the
+#'   \code{\link{tdist_weight}} similarity function. The return value of this
+#'   function should be used with the \code{\link{embed_prob}} embedding
+#'   function.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
@@ -50,16 +52,12 @@ NULL
 #' \dontrun{
 #' embed_prob(method = tsne(), ...)
 #' }
-tsne <- function(eps = .Machine$double.eps) {
-  f <- function(pm, qm, wm) {
-    4 * (pm - qm) * wm
-  }
-
+tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   list(
     cost_fn = kl_cost,
     weight_fn = tdist_weight,
     stiffness_fn = function(method, inp, out) {
-      f(inp$pm, out$qm, out$wm)
+      tsne_stiffness(inp$pm, out$qm, out$wm)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
@@ -69,6 +67,9 @@ tsne <- function(eps = .Machine$double.eps) {
     },
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
+      if (verbose) {
+        summarize(inp$pm, 'Pj')
+      }
       list(inp = inp)
     },
     eps = eps
@@ -101,6 +102,7 @@ tsne <- function(eps = .Machine$double.eps) {
 #'
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @references
 #' Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
@@ -110,9 +112,10 @@ tsne <- function(eps = .Machine$double.eps) {
 #' Van der Maaten, L., & Hinton, G. (2008).
 #' Visualizing data using t-SNE.
 #' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
-#' @seealso SSNE uses the \code{\link{exp_weight}} similarity function.
-#' The return value of this function should be used with the
-#' \code{\link{embed_prob}} embedding function.
+#' @seealso SSNE uses the \code{\link{kl_cost}} cost function and the
+#'   \code{\link{exp_weight}} similarity function. The return value of this
+#'   function should be used with the \code{\link{embed_prob}} embedding
+#'   function.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
@@ -120,16 +123,12 @@ tsne <- function(eps = .Machine$double.eps) {
 #' \dontrun{
 #' embed_prob(method = ssne(), ...)
 #' }
-ssne <- function(eps = .Machine$double.eps) {
-  f <- function(pm, qm) {
-    4 * (pm - qm)
-  }
-
+ssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   list(
     cost_fn = kl_cost,
     weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
-      f(inp$pm, out$qm)
+      ssne_stiffness(inp$pm, out$qm)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
@@ -138,6 +137,9 @@ ssne <- function(eps = .Machine$double.eps) {
     },
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
+      if (verbose) {
+        summarize(inp$pm, 'Pj')
+      }
       list(inp = inp)
     },
     eps = .Machine$double.eps
@@ -163,13 +165,6 @@ ssne <- function(eps = .Machine$double.eps) {
 #'  \code{p[i, j] == p[j, i]}.}
 #' }
 #'
-#'
-#'
-#' In ASNE, a probability matrix is actually a collection
-#' of N separate probability conditional probability distributions, where row
-#' i contains the conditional probabilities that point j would be selected as
-#' a neighbor of point i.
-#'
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
@@ -179,14 +174,16 @@ ssne <- function(eps = .Machine$double.eps) {
 #'
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @references
 #' Hinton, G. E., & Roweis, S. T. (2002).
 #' Stochastic neighbor embedding.
 #' In \emph{Advances in neural information processing systems} (pp. 833-840).
-#' @seealso ASNE uses the \code{\link{exp_weight}} similarity function.
-#' The return value of this function should be used with the
-#' \code{\link{embed_prob}} embedding function.
+#' @seealso ASNE uses the \code{\link{kl_cost}} cost function and the
+#'   \code{\link{exp_weight}} similarity function. The return value of this
+#'   function should be used with the \code{\link{embed_prob}} embedding
+#'   function.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
@@ -194,17 +191,12 @@ ssne <- function(eps = .Machine$double.eps) {
 #' \dontrun{
 #' embed_prob(method = asne(), ...)
 #' }
-asne <- function(eps = .Machine$double.eps) {
-  f <- function(pm, qm) {
-    km <- 2 * (pm - qm)
-    km + t(km)
-  }
-
+asne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   list(
     cost_fn = kl_cost,
     weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
-      f(inp$pm, out$qm)
+      asne_stiffness(inp$pm, out$qm)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
@@ -228,6 +220,16 @@ asne <- function(eps = .Machine$double.eps) {
 #' within sneer: this uses the t-distributed distance weighting of t-SNE, but
 #' for probability generation uses the point-wise distribution of ASNE.
 #'
+#' The probability matrix used in ASNE:
+#'
+#' \itemize{
+#'  \item{represents one N row-wise probability distributions, where N is the
+#'  number of points in the data set, i.e. the row sums of the matrix are all
+#'   one.}
+#'  \item{is asymmetric, i.e. there is no requirement that
+#'  \code{p[i, j] == p[j, i]}.}
+#' }
+#'
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
@@ -240,10 +242,12 @@ asne <- function(eps = .Machine$double.eps) {
 #'
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso t-ASNE uses the \code{\link{exp_weight}} similarity function.
-#' The return value of this function should be used with the
-#' \code{\link{embed_prob}} embedding function.
+#' @seealso t-ASNE uses the \code{\link{kl_cost}} cost function and the
+#'   \code{\link{exp_weight}} similarity function. The return value of this
+#'   function should be used with the \code{\link{embed_prob}} embedding
+#'   function.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
@@ -251,17 +255,12 @@ asne <- function(eps = .Machine$double.eps) {
 #' \dontrun{
 #' embed_prob(method = tasne(), ...)
 #' }
-tasne <- function(eps = .Machine$double.eps) {
-  f <- function(pm, qm, wm) {
-    km <- 2 * (pm - qm) * wm
-    km + t(km)
-  }
-
+tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   list(
     cost_fn = kl_cost,
     weight_fn = tdist_weight,
     stiffness_fn = function(method, inp, out) {
-      f(inp$pm, out$qm, out$wm)
+      tasne_stiffness(inp$pm, out$qm, out$wm)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
@@ -296,6 +295,15 @@ tasne <- function(eps = .Machine$double.eps) {
 #' precision (inverse of the spread) of the function. Normally, this set to one
 #' for the output distances in t-SNE and related methods.
 #'
+#' The probability matrix used in HSSNE:
+#'
+#' \itemize{
+#'  \item{represents one probability distribution, i.e. the grand sum of the
+#'  matrix is one.}
+#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+#'  probabilities are joint probabilities.}
+#' }
+#'
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
@@ -314,6 +322,7 @@ tasne <- function(eps = .Machine$double.eps) {
 #' approaches zero.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @references
 #' Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
@@ -330,19 +339,14 @@ tasne <- function(eps = .Machine$double.eps) {
 #' embed_prob(method = hssne(), ...)
 #' }
 hssne <- function(eps = .Machine$double.eps, alpha = 1.5e-08,
-                  beta = 1) {
-  f <- function(pm, qm, wm, alpha, beta) {
-    km <- (pm - qm) * (wm ^ alpha)
-    2 * beta * (km + t(km))
-  }
-
+                  beta = 1, verbose = TRUE) {
   list(
     cost_fn = kl_cost,
     weight_fn =  function(D2) {
       heavy_tail_weight(D2, beta, alpha)
     },
     stiffness_fn = function(method, inp, out) {
-      f(inp$pm, out$qm, out$wm, alpha, beta)
+      hssne_stiffness(inp$pm, out$qm, out$wm, alpha, beta)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
@@ -352,6 +356,9 @@ hssne <- function(eps = .Machine$double.eps, alpha = 1.5e-08,
     },
     after_init_fn = function(inp, out, method) {
       inp$pm <- prow_to_pjoint(inp$pm)
+      if (verbose) {
+        summarize(inp$pm, 'Pj')
+      }
       list(inp = inp)
     },
     eps = eps

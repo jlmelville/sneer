@@ -3,7 +3,7 @@ context("HSSNE")
 
 # HSSNE with alpha approaching zero should be equivalent to SSNE
 ssne_iris <-
-  embed_prob(iris[, 1:4], method = ssne(), max_iter = 50,
+  embed_prob(iris[, 1:4], method = ssne(verbose = FALSE), max_iter = 50,
              init_inp = make_init_inp(prob_perp_bisect(verbose = FALSE)),
              init_out = make_init_out(from_PCA = TRUE, verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
@@ -12,7 +12,8 @@ ssne_iris <-
              export = c("report"), verbose = FALSE, opt = bold_nagger())
 
 hssne_iris_alpha0 <-
-  embed_prob(iris[, 1:4], method = hssne(alpha = 1.5e-8), max_iter = 50,
+  embed_prob(iris[, 1:4], method = hssne(alpha = 1.5e-8, verbose = FALSE),
+             max_iter = 50,
              init_inp = make_init_inp(prob_perp_bisect(verbose = FALSE)),
              init_out = make_init_out(from_PCA = TRUE, verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
@@ -25,7 +26,7 @@ expect_equal(mapply(formatC, ssne_iris$report$costs),
 
 # HSSNE with alpha = 1 should be equivalent to t-SNE
 tsne_iris <-
-  embed_prob(iris[, 1:4], method = tsne(), max_iter = 50,
+  embed_prob(iris[, 1:4], method = tsne(verbose = FALSE), max_iter = 50,
              init_inp = make_init_inp(prob_perp_bisect(verbose = FALSE)),
              init_out = make_init_out(from_PCA = TRUE, verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
@@ -34,7 +35,8 @@ tsne_iris <-
              export = c("report"), verbose = FALSE, opt = bold_nagger())
 
 hssne_iris_alpha1 <-
-  embed_prob(iris[, 1:4], method = hssne(alpha = 1), max_iter = 50,
+  embed_prob(iris[, 1:4], method = hssne(alpha = 1, verbose = FALSE),
+             max_iter = 50,
              init_inp = make_init_inp(prob_perp_bisect(verbose = FALSE)),
              init_out = make_init_out(from_PCA = TRUE, verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
