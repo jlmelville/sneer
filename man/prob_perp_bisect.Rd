@@ -69,6 +69,7 @@ init_inp = make_init_inp(prob_perp_bisect(perplexity = 30,
 \code{\link{make_init_inp}} for how to use this function as part
 of an embedding.
 
-Other sneer input initializers: \code{\link{input_initializers}}
+Other sneer input initializers: \code{\link{input_initializers}},
+  \code{\link{scale_input_distances}}
 }
 

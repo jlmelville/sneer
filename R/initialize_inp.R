@@ -195,3 +195,41 @@ prow_to_pjoint <- function(prow) {
 symmetrize_matrix <- function(pm) {
   0.5 * (pm + t(pm))
 }
+
+#' Input Distance Scaling
+#'
+#' An initialization method for creating input probabilities.
+#'
+#' This initialization method scales the input distances so that the average
+#' distance is 1. Therefore, if applying other input initializers that use
+#' the distances (e.g. to calculate probabilities), this initializer should
+#' appear before them in the \code{\link{make_init_inp}} parameter list.
+#'
+#' @param verbose If \code{TRUE}, information about the scaled distances will be
+#' logged.
+#' @return Input initialization method for use by \code{\link{make_init_inp}}.
+#' @seealso \code{\link{make_init_inp}} for how to use this function as part
+#' of an embedding.
+#' @examples
+#' # Should be passed to the init_inp argument of an embedding function:
+#' init_inp = make_init_inp(scale_input_distances())
+#'
+#' # Should appear before other use of the input distances
+#' init_inp = make_init_inp(scale_input_distances(),
+#'                          prob_perp_bisect(perplexity = 30,
+#'                                          input_weight_fn = exp_weight))
+#' @references
+#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+#' Information retrieval perspective to nonlinear dimensionality reduction for
+#' data visualization.
+#' @family sneer input initializers
+#' @export
+scale_input_distances <- function(verbose = TRUE) {
+  function(inp) {
+    inp$dm <- inp$dm / mean(upper_tri(inp$dm))
+    if (verbose) {
+      summarize(upper_tri(inp$dm), "Scaled inp$dm")
+    }
+    inp
+  }
+}
