@@ -11,8 +11,35 @@
 #'
 #' @param betas Vector of parameters
 summarize_betas <- function(betas) {
-  summarize(1 / sqrt(2 * betas), "sigma")
+  summarize(prec_to_bandwidth(betas), "sigma")
   summarize(betas, "beta")
+}
+
+#' Convert Precisions to Sigma (Bandwidths)
+#'
+#' Gaussian-type functions have a parameter associated with them
+#' that is either thought of as a "precision", i.e. how "tight" the distribution
+#' is, or its counterpart, the bandwidth, which measure how spread-out the
+#' distribution is. For gaussian functions, a direct comparison can be made
+#' with the standard deviation of the function. Exact definitions of the
+#' parameters differ in different discussions. In sneer, the gaussian function
+#' is defined as:
+#'
+#' \deqn{e(-\beta D^2)}{exp(-beta * D^2)}
+#'
+#' where \eqn{\beta}{beta} is the precision, or alternatively:
+#'
+#' \deqn{e^{-\frac{D^2}{2\sigma^2}}}{exp[-(D ^ 2)/(2 * sigma ^ 2)]}
+#'
+#' so that \eqn{\sigma = \frac{1}{\sqrt{2\beta}}}{sigma = 1/sqrt(2*beta)}
+#'
+#' This function performs the conversion of the parameter between precision and
+#' bandwidth.
+#'
+#' @param prec Precision (beta).
+#' @return Bandwidth (sigma).
+prec_to_bandwidth <- function(prec) {
+  1 / sqrt(2 * prec)
 }
 
 #' Find Row Probabilities by Perplexity Bisection Search
