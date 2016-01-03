@@ -19,7 +19,7 @@ have the following signature: \code{function(d2m, beta)}}
 
 \item{max_iters}{Maximum number of iterations to carry out the search.}
 
-\item{verbose}{If TRUE, logs information about the beta values.}
+\item{verbose}{If \code{TRUE}, logs information about the beta values.}
 }
 \value{
 List with the following members:
