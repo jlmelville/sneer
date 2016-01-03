@@ -26,7 +26,7 @@ summarize_betas <- function(betas) {
 #' have the following signature: \code{function(d2m, beta)}
 #' @param tol Convergence tolerance for perplexity.
 #' @param max_iters Maximum number of iterations to carry out the search.
-#' @param verbose If TRUE, logs information about the beta values.
+#' @param verbose If \code{TRUE}, logs information about the beta values.
 #' @return List with the following members:
 #'  \item{\code{pm}}{Row probability matrix. Each row is a probability
 #'  distribution with a perplexity within \code{tol} of \code{perplexity}.}
@@ -48,6 +48,7 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
 
   if (verbose) {
     summarize_betas(beta)
+    summarize(pm, "P")
   }
   list(pm = pm, beta = beta)
 }
