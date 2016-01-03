@@ -378,6 +378,11 @@ optimize_step <- function(opt, method, inp, out, iter) {
   }
   opt$gm <- grad_result$gm
 
+  # Save stiffness matrix if available for later reporting if requested
+  if (!is.null(grad_result$km)) {
+    opt$km <- grad_result$km
+  }
+
   if (opt$normalize_grads) {
     opt$gm <- normalize(opt$gm)
   }
@@ -457,7 +462,16 @@ opt_report <- function(opt) {
   result <- list()
   if (!is.null(opt$gm)) {
     result$grad_length <- length_vec(opt$gm)
+    result$grad_min <- min(opt$gm)
+    result$grad_max <- max(opt$gm)
   }
+
+  if (!is.null(opt$gm)) {
+    result$stiff_length <- length_vec(opt$km)
+    result$stiff_min <- min(opt$km)
+    result$stiff_max <- max(opt$km)
+  }
+
   if (class(opt$step_size$value) == "matrix") {
     result$step_size <- length_vec(opt$step_size$value)
   }
