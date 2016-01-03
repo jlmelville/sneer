@@ -10,19 +10,18 @@ probability-based embedding methods require the construction of a probability
 matrix from the input distances.
 }
 \examples{
-# initializer that uses bisection search to create input probability
-# distribution with a perplexity of 50 - pass to make_init_inp:
-make_init_inp(inp_from_perp(perplexity = 50))
 
 \dontrun{
-# in turn, pass the result of make_init_inp to an embedding routine
-embed_prob(method = tsne(),
-           init_inp = make_init_inp(inp_from_perp(perplexity = 50)))
+# initializer that uses bisection search to create input probability
+# distribution with a perplexity of 50
+# pass result to init_inp parameter of an embedding function
+embed_prob(method = tsne(), init_inp = inp_from_perp(perplexity = 50), ...)
 }
 }
 \seealso{
 Input initializers should be passed to the
-\code{\link{make_init_inp}} function.
+\code{init_inp} parameter of embedding functions such as
+\code{\link{embed_prob}} or \code{\link{embed_dist}}.
 
 Other sneer input initializers: \code{\link{inp_from_perp}}
 }

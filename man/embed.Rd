@@ -15,11 +15,11 @@ embed(xm, method, init_inp, init_out, opt, max_iter = 1000, tricks = NULL,
 the configuration functions listed in
 \code{\link{embedding_methods}}.}
 
-\item{init_inp}{Input initialization callback. Set by assigning the result
-value of \code{\link{make_init_inp}}.}
+\item{init_inp}{Input initializer. Set by assigning the result value of
+calling one of the available \code{\link{input_initializers}}.}
 
-\item{init_out}{Output initialization callback. Set by assigning the result
-value of calling one of the available \code{\link{output_initializers}}.}
+\item{init_out}{Output initializer. Set by assigning the result value of
+calling one of the available \code{\link{output_initializers}}.}
 
 \item{opt}{Optimization method. Set by assigning the result of value of one
 of the configuration functions listed in
@@ -37,10 +37,16 @@ value of \code{\link{make_tricks}} or a related wrapper. See
 \item{preprocess}{Input data preprocess callback. Set by assigning the
 result value of \code{\link{make_preprocess}}.}
 
-\item{export}{Vector of names to export. Possible names are:
+\item{export}{Vector of names, specifying data in addition to of the output
+data to export provide in the return value. Possible names are:
 \describe{
- \item{"\code{inp}"}{The input data.}
- \item{"\code{report}"}{The most recent report.}
+  \item{"\code{inp}"}{The input data, based on the argument passed to
+    \code{init_inp}. See the help text for the specific
+    \code{\link{input_initializers}} for details.}
+  \item{"\code{report}"}{The result of the last report. See the help
+    text for \code{\link{make_reporter}} for details.}
+  \item{"\code{opt}"}{The optimizer. See the help text for the optimizer
+  passed to \code{opt} for details.}
 }}
 
 \item{after_embed}{Callback to run on input and output data before output
@@ -49,30 +55,10 @@ data is returned.}
 \value{
 The output data. A list containing:
   \item{\code{ym}}{Embedded coordinates.}
-  \item{\code{inp}}{The input data, if "\code{inp}" is included in the
-    \code{export} list parameter.}
-  \item{\code{report}}{Most recent report, if "\code{report}" is included in
-    the \code{export} list parameter.}
-Additional items may appear in the output list, depending on the embedding
-method and initialization methods. See the documentation of those functions
-for details.
-If the \code{inp} list is present, it contains:
-  \item{\code{xm}}{The (potentially preprocessed) input coordinates if the
-    input data was not a distance matrix.}
-  \item{\code{dm}}{Input distance matrix.}
-If the \code{report} list is present, it contains:
-  \item{\code{stop_early}}{If \code{TRUE}, the optimization stopped before
-    \code{max_iters} was reached.}
-  \item{\code{cost}}{Cost of the configuration at iteration \code{iter}.}
-  \item{\code{costs}}{Matrix of all costs and the iterations at which
-    the reports were made. Only present if \code{keep_costs} is set to
-  \code{TRUE} when the \code{make_reporter} factory function is called.}
-  \item{\code{reltol}}{Relative tolerance of the difference between present
-    cost and the cost evaluted by the previous report.}
-  \item{\code{norm}}{Normalized cost for the most recent iteration. Only
-    present if \code{normalize_cost} is set to \code{TRUE} when the
-    \code{make_reporter} factory function is called.}
-  \item{\code{iter}}{The iteration at which the report is generated.}
+  \item{\code{cost}}{The cost value associated with \code{ym}.}
+  If the parameter \code{export} was used, additional elements will be
+  present. See the help text for the \code{export} parameter for more
+  details.
 }
 \description{
 Carry out an embedding of a dataset using any embedding method. The most
@@ -83,7 +69,7 @@ defaults.
 \itemize{
 \item{\code{\link{embedding_methods}}} for configuring \code{method}
 \item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
-\item{\code{\link{make_init_inp}}} for configuring \code{init_inp}
+\item{\code{\link{input_initializers}}} for configuring \code{init_inp}
 \item{\code{\link{output_initializers}}} for configuring \code{init_out}
 \item{\code{\link{optimization_methods}}} for configuring \code{opt}
 \item{\code{\link{make_tricks}}} for configuring \code{tricks}
