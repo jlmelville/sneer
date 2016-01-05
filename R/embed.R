@@ -323,7 +323,7 @@ embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
                   export = NULL, after_embed = NULL) {
   inp <- preprocess(xm)
   if (!is.null(init_inp)) {
-    inp <- init_inp(inp)
+    inp <- init_inp(inp, method)
   }
   out <- init_out(inp)
 

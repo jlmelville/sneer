@@ -80,10 +80,7 @@ nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
       out$rev_kl <- reverse_kl_cost(inp, out, method)
       out
     },
-    after_init_fn = function(inp, out, method) {
-      inp$pm <- clamp(inp$pm)
-      list(inp = inp)
-    },
+    prob_type = "row",
     eps = eps,
     lambda = lambda
   )
@@ -174,13 +171,7 @@ tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
       out$wm <- wm
       out
     },
-    after_init_fn = function(inp, out, method) {
-      inp$pm <- prow_to_pjoint(inp$pm)
-      if (verbose) {
-        summarize(inp$pm, "Pj")
-      }
-      list(inp = inp)
-    },
+    prob_type = "joint",
     eps = eps,
     lambda = lambda
   )
@@ -264,13 +255,7 @@ snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
       out$wm <- wm
       out
     },
-    after_init_fn = function(inp, out, method) {
-      inp$pm <- prow_to_pjoint(inp$pm)
-      if (verbose) {
-        summarize(inp$pm, "Pj")
-      }
-      list(inp = inp)
-    },
+    prob_type = "joint",
     eps = eps,
     lambda = lambda
   )
@@ -364,13 +349,7 @@ hsnerv <- function(lambda = 0.5, alpha = 1.5e-8, beta = 1,
       out$wm <- wm
       out
     },
-    after_init_fn = function(inp, out, method) {
-      inp$pm <- prow_to_pjoint(inp$pm)
-      if (verbose) {
-        summarize(inp$pm, "Pj")
-      }
-      list(inp = inp)
-    },
+    prob_type = "joint",
     eps = eps,
     lambda = lambda
   )

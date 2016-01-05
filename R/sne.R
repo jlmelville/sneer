@@ -65,13 +65,7 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
       out$wm <- wm
       out
     },
-    after_init_fn = function(inp, out, method) {
-      inp$pm <- prow_to_pjoint(inp$pm)
-      if (verbose) {
-        summarize(inp$pm, "Pj")
-      }
-      list(inp = inp)
-    },
+    prob_type = "joint",
     eps = eps
   )
 }
@@ -135,13 +129,7 @@ ssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
       out$qm <- weights_to_pcond(wm)
       out
     },
-    after_init_fn = function(inp, out, method) {
-      inp$pm <- prow_to_pjoint(inp$pm)
-      if (verbose) {
-        summarize(inp$pm, "Pj")
-      }
-      list(inp = inp)
-    },
+    prob_type = "joint",
     eps = .Machine$double.eps
   )
 }
@@ -203,10 +191,7 @@ asne <- function(eps = .Machine$double.eps, verbose = TRUE) {
       out$qm <- weights_to_prow(wm)
       out
     },
-    after_init_fn = function(inp, out, method) {
-      inp$pm <- clamp(inp$pm)
-      list(inp = inp)
-    },
+    prob_type = "row",
     eps = eps
   )
 }
@@ -268,10 +253,7 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
       out$wm <- wm
       out
     },
-    after_init_fn = function(inp, out, method) {
-      inp$pm <- clamp(inp$pm)
-      list(inp = inp)
-    },
+    prob_type = "row",
     eps = eps
   )
 }
@@ -354,13 +336,7 @@ hssne <- function(eps = .Machine$double.eps, alpha = 1.5e-08,
       out$wm <- wm
       out
     },
-    after_init_fn = function(inp, out, method) {
-      inp$pm <- prow_to_pjoint(inp$pm)
-      if (verbose) {
-        summarize(inp$pm, "Pj")
-      }
-      list(inp = inp)
-    },
+    prob_type = "joint",
     eps = eps
   )
 }

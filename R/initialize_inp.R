@@ -91,61 +91,41 @@ inp_from_perp <- function(perplexity = 30,
                              input_weight_fn = exp_weight,
                              keep_all_results = FALSE,
                              verbose = TRUE) {
+  inp_prob(
+    function(inp) {
+      d_to_p_result <- d_to_p_perp_bisect(inp$dm, perplexity = perplexity,
+                                          weight_fn = input_weight_fn,
+                                          verbose = verbose)
 
-  function(inp) {
-    d_to_p_result <- d_to_p_perp_bisect(inp$dm, perplexity = perplexity,
-                                        weight_fn = input_weight_fn,
-                                        verbose = verbose)
-
-    if (keep_all_results) {
-      for (name in names(d_to_p_result)) {
-        inp[[name]] <- d_to_p_result[[name]]
+      if (keep_all_results) {
+        for (name in names(d_to_p_result)) {
+          inp[[name]] <- d_to_p_result[[name]]
+        }
       }
+      else {
+        inp$pm <- d_to_p_result$pm
+      }
+      flush.console()
+      inp
     }
-    else {
-      inp$pm <- d_to_p_result$pm
-    }
-    flush.console()
+  )
+}
+
+#' Wrap Input Probability Initializer
+#'
+#' This function takes an input initializer which creates a probability, and
+#' wraps it so that the correct handling of the probability matrix can be
+#' carried out when it is invoked.
+#'
+#' @param input_initializer Input initializer which creates a probabilty.
+#' @return Wrapped initializer with the correct signature for use by an
+#'  embedding function.
+#' @seealso \code{\link{probability_matrices}} describe the type of probability
+#'   matrix used by sneer.
+inp_prob <- function(input_initializer) {
+  function(inp, method) {
+    inp <- input_initializer(inp)
+    inp$pm <- handle_prob(inp$pm, method)
     inp
   }
-}
-
-#' Conditional Probability Matrix from Row Probability Matrix
-#'
-#' Given a row probability matrix (elements of each row are non-negative and
-#' sum to one), this function scales each element by the sum of the matrix so
-#' that the elements of the entire matrix sum to one.
-#'
-#' @param prow Row probability matrix.
-#' @return Conditional probability matrix.
-prow_to_pcond <- function(prow) {
-  clamp(prow / sum(prow))
-}
-
-#' Joint Probability Matrix from Row Probability Matrix
-#'
-#' Given a row probability matrix (elements of each row are non-negative and
-#' sum to one), this function scales each element by such that the elements of
-#' the entire matrix sum to one, and that the matrix is symmetric, i.e.
-#' \code{p[i, j] = p[j, i]}.
-#'
-#' @param prow Row probability matrix.
-#' @return Joint probability matrix.
-prow_to_pjoint <- function(prow) {
-  clamp(symmetrize_matrix(prow / sum(prow)))
-}
-
-#' Symmetric Matrix from Square Matrix
-#'
-#' The matrix is symmetrized by setting \code{pm[i, j]} and \code{pm[j, i]} to
-#' their average, i.e. \code{Pij} = \code{(Pij + Pji)/2} = \code{Pji}.
-#'
-#' In SSNE and t-SNE, this is used as part of the process of converting the row
-#' stochastic matrix of conditional input probabilities to a joint probability
-#' matrix.
-#'
-#' @param pm Square matrix to symmetrize.
-#' @return Symmetrized matrix such that \code{pm[i, j]} = \code{pm[j, i]}
-symmetrize_matrix <- function(pm) {
-  0.5 * (pm + t(pm))
 }

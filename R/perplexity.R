@@ -73,6 +73,7 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
     beta[i] <- result$beta
   }
 
+  attr(pm, 'type') <- "row"
   if (verbose) {
     summarize_betas(beta)
     summarize(pm, "P")
