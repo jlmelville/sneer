@@ -114,7 +114,8 @@ make_opt <- function(gradient = classical_gradient(),
     validate = validate_solution,
     after_step = after_step,
 
-    report = opt_report
+    report = opt_report,
+    dirty = FALSE
   )
 }
 
@@ -423,6 +424,10 @@ optimize_step <- function(opt, method, inp, out, iter) {
     out <- after_step_result$out
     new_out <- after_step_result$new_out
   }
+
+  # mark cache data as valid as we exit (tricks can make it dirty before next
+  # step)
+  opt$dirty <- FALSE
 
   list(opt = opt, inp = inp, out = new_out)
 }

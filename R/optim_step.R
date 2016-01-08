@@ -93,8 +93,15 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
     },
     validate = function(opt, inp, out, proposed_out, method) {
       cost <- method$cost_fn(inp, proposed_out, method)
-      ok <- cost < opt$step_size$old_cost
-
+      # if a trick changed the input data since last iteration, can't use
+      # cached cost
+      if (opt$dirty) {
+        old_cost <- method$cost_fn(inp, out, method)
+      }
+      else {
+        old_cost <- opt$step_size$old_cost
+      }
+      ok <- cost < old_cost
       opt$step_size$cost <- cost
       opt$step_size$ok <- ok
 
