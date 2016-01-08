@@ -19,6 +19,7 @@
 exp_weight <- function(d2m, beta = 1) {
   exp(-beta * d2m)
 }
+attr(exp_weight, "type") <- "symm"
 
 #' Exponential (Distance) Weighted Similarity
 #'
@@ -43,6 +44,7 @@ exp_weight <- function(d2m, beta = 1) {
 sqrt_exp_weight <- function(d2m, beta = 1) {
   exp(-beta * sqrt(d2m))
 }
+attr(sqrt_exp_weight, "type") <- "symm"
 
 #' Student-t Distribution Similarity
 #'
@@ -63,6 +65,8 @@ sqrt_exp_weight <- function(d2m, beta = 1) {
 tdist_weight <- function(d2m) {
   1 / (1 + d2m)
 }
+attr(tdist_weight, "type") <- "symm"
+
 
 #' Heavy-Tailed Similarity
 #'
@@ -111,3 +115,4 @@ tdist_weight <- function(d2m) {
 heavy_tail_weight <- function(d2m, beta = 1, alpha = 1.5e-8) {
   ((alpha * beta * d2m) + 1) ^ (-1 / alpha)
 }
+attr(heavy_tail_weight, "type") <- "symm"

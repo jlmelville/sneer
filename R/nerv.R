@@ -158,9 +158,7 @@ nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
   list(
     cost_fn = nerv_cost,
-    weight_fn =  function(D2) {
-      tdist_weight(D2)
-    },
+    weight_fn = tdist_weight,
     stiffness_fn = function(method, inp, out) {
       tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, lambda, eps)
     },
@@ -242,9 +240,7 @@ tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
 snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
   list(
     cost_fn = nerv_cost,
-    weight_fn =  function(D2) {
-      exp_weight(D2)
-    },
+    weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
       snerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, lambda, eps)
     },
@@ -333,11 +329,15 @@ snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
 #' }
 hsnerv <- function(lambda = 0.5, alpha = 1.5e-8, beta = 1,
                    eps = .Machine$double.eps, verbose = TRUE) {
+  weight_fn <- function(D2) {
+    heavy_tail_weight(D2, beta, alpha)
+  }
+  attr(weight_fn, "type") <- attr(heavy_tail_weight, "type")
+
+
   list(
     cost_fn = nerv_cost,
-    weight_fn =  function(D2) {
-      heavy_tail_weight(D2, beta, alpha)
-    },
+    weight_fn = weight_fn,
     stiffness_fn = function(method, inp, out) {
       hsnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, lambda, alpha, beta,
                        eps)
@@ -354,7 +354,6 @@ hsnerv <- function(lambda = 0.5, alpha = 1.5e-8, beta = 1,
     lambda = lambda
   )
 }
-
 
 #' Neighbor Retrieval Visualizer (NeRV) Cost Function
 #'

@@ -61,7 +61,8 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
-      out$qm <- weights_to_pcond(wm)
+      out$qm <- weights_to_probs(wm, method)
+
       out$wm <- wm
       out
     },
@@ -126,7 +127,7 @@ ssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
-      out$qm <- weights_to_pcond(wm)
+      out$qm <- weights_to_probs(wm, method)
       out
     },
     prob_type = "joint",
@@ -188,7 +189,7 @@ asne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
-      out$qm <- weights_to_prow(wm)
+      out$qm <- weights_to_probs(wm, method)
       out
     },
     prob_type = "row",
@@ -249,7 +250,7 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
-      out$qm <- weights_to_prow(wm)
+      out$qm <- weights_to_probs(wm, method)
       out$wm <- wm
       out
     },
@@ -322,17 +323,19 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' }
 hssne <- function(eps = .Machine$double.eps, alpha = 1.5e-08,
                   beta = 1, verbose = TRUE) {
+  weight_fn <- function(D2) {
+    heavy_tail_weight(D2, beta, alpha)
+  }
+  attr(weight_fn, "type") <- attr(heavy_tail_weight, "type")
   list(
     cost_fn = kl_cost,
-    weight_fn =  function(D2) {
-      heavy_tail_weight(D2, beta, alpha)
-    },
+    weight_fn = weight_fn,
     stiffness_fn = function(method, inp, out) {
       hssne_stiffness(inp$pm, out$qm, out$wm, alpha, beta)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
-      out$qm <- weights_to_pcond(wm)
+      out$qm <- weights_to_probs(wm, method)
       out$wm <- wm
       out
     },
@@ -340,3 +343,4 @@ hssne <- function(eps = .Machine$double.eps, alpha = 1.5e-08,
     eps = eps
   )
 }
+

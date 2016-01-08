@@ -213,6 +213,7 @@ make_objective_fn <- function(d2r, i, weight_fn, perplexity, h_base = exp(1)) {
   function(beta) {
     wr <- weight_fn_param(beta)
     pr <- weights_to_prow(wr)
+    pr <- clamp(pr)
     h <- shannon_entropy_row(pr, h_base)
     list(value = h - h_target, pr = pr, h = h)
   }

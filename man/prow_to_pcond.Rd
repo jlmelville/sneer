@@ -2,7 +2,7 @@
 % Please edit documentation in R/dist_to_sim_stiff.R
 \name{prow_to_pcond}
 \alias{prow_to_pcond}
-\title{Conditional Probability Matrix from Row Probability Matrix}
+\title{Convert Row Probability Matrix to a Conditional Probability Matrix}
 \usage{
 prow_to_pcond(prow)
 }

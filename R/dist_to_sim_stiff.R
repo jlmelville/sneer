@@ -139,9 +139,52 @@ coords_to_weights <- function(ym, weight_fn) {
 #' @return Weights matrix. The diagonal (i.e. self-weight) is enforced to be
 #' zero.
 dist2_to_weights <- function(d2m, weight_fn) {
+  if (is.null(attr(weight_fn, "type"))) {
+    stop("weight_fn must have type attribute")
+  }
   wm <- weight_fn(d2m)
   diag(wm) <- 0  # set self-weights to 0
+  attr(wm, "type") <- attr(weight_fn, "type")
   wm
+}
+
+
+#' Weight Matrix to Probability Matrix Conversion
+#'
+#' Given a weight matrix and an embedding method, this function creates a
+#' probability matrix.
+#'
+#' @param wm Probability Matrix. Must have a "type" attribute with one of the
+#'   following values:
+#'   \describe{
+#'   \item{"symm"}{A symmetric matrix.}
+#'   \item{"asymm"}{An asymmetric matrix.}
+#'   }
+#' @param method Embedding method.
+#' @return Probability matrix with a type suitable for the embedding
+#'   \code{method}.
+weights_to_probs <- function(wm, method) {
+  prob_type <- method$prob_type
+  if (prob_type == "joint") {
+    weight_type <- attr(wm, "type")
+    if (is.null(weight_type)) {
+      stop("W matrix must have type attribute defined")
+    }
+    prob_fn_name <- paste0(weight_type, "_weights_to_p", prob_type)
+  }
+  else {
+    prob_fn_name <- paste0("weights_to_p", prob_type)
+  }
+
+  prob_fn <- get(prob_fn_name)
+  if (is.null(prob_fn)) {
+    stop("No ", prob_fn_name, " function defined for weight to probability ",
+         "matrix conversion")
+  }
+  pm <- get(prob_fn_name)(wm)
+  attr(pm, "type") <- prob_type
+
+  clamp(pm)
 }
 
 #' Create Row Probability Matrix from Weight Matrix
@@ -155,22 +198,51 @@ weights_to_prow <- function(wm) {
   row_sums <- apply(wm, 1, sum)
   pm <- sweep(wm, 1, row_sums, "/")
   pm[is.nan(pm)] <- 1 / ncol(pm)
-  clamp(pm)
+  pm
 }
 
 #' Create Conditional Probability Matrix from Weight Matrix
 #'
-#' Used in SSNE and TSNE. The probability matrix is such that all elements are
-#' positive and sum to 1.
+#' A weight to probability function.
 #'
-#' @param wm Matrix of weighted distances.
-#' @return Probability matrix.
+#' Creates a conditional probability matrix: the grand sum of the elements are
+#' one, but does not have to be symmetric. The weight matrix can be symmetric
+#' or asymmetric.
+#'
+#' @param wm Matrix of weighted distances. Asymmetric or symmetric.
+#' @return Conditional probability matrix.
 weights_to_pcond <- function(wm) {
-  qm <- wm / sum(wm)
-  clamp(qm)
+  wm / sum(wm)
 }
 
-#' Conditional Probability Matrix from Row Probability Matrix
+#' Create Joint Probability Matrix from Symmetric Weight Matrix
+#'
+#' A weight to probability function.
+#'
+#' Creates a joint probability matrix: the grand sum of the elements are
+#' one, and the matrix is symmetric. The weight matrix must be symmetric. Used
+#' in SSNE and t-SNE to generate the output probabilities.
+#'
+#' @param wm Symmetric matrix of weighted distances.
+#' @return Joint probability matrix.
+symm_weights_to_pjoint <- weights_to_pcond
+
+#' Create Joint Probability Matrix from Asymmetric Weight Matrix
+#'
+#' A weight to probability function.
+#'
+#' Creates a joint probability matrix: the grand sum of the elements are
+#' one, and the matrix is symmetric. The weight matrix should be asymmetric.
+#' A symmetric matrix is also a valid input, but it's more  efficient to use
+#' \code{symm_weights_to_pjoint}.
+#'
+#' @param wm Asymmetric matrix of weighted distances.
+#' @return Joint probability matrix.
+asymm_weights_to_pjoint <- function(wm) {
+  symmetrize_matrix(weights_to_pcond(wm))
+}
+
+#' Convert Row Probability Matrix to a Conditional Probability Matrix
 #'
 #' Given a row probability matrix (elements of each row are non-negative and
 #' sum to one), this function scales each element by the sum of the matrix so

@@ -7,13 +7,17 @@
 weights_to_pcond(wm)
 }
 \arguments{
-\item{wm}{Matrix of weighted distances.}
+\item{wm}{Matrix of weighted distances. Asymmetric or symmetric.}
 }
 \value{
-Probability matrix.
+Conditional probability matrix.
 }
 \description{
-Used in SSNE and TSNE. The probability matrix is such that all elements are
-positive and sum to 1.
+A weight to probability function.
+}
+\details{
+Creates a conditional probability matrix: the grand sum of the elements are
+one, but does not have to be symmetric. The weight matrix can be symmetric
+or asymmetric.
 }
 
