@@ -31,6 +31,7 @@ Visualizing data using t-SNE.
 \code{\link{embed_prob}} for how to use this function for
 configuring an embedding.
 
-Other sneer trick collections: \code{\link{make_tricks}}
+Other sneer trick collections: \code{\link{make_tricks}},
+  \code{\link{step_perplexity}}
 }
 

@@ -46,6 +46,7 @@ The result value of this function should be passed to the
 \code{\link{tricks}} parameter of embedding routines like
 \code{\link{embed_prob}} and \code{\link{embed_dist}}.
 
-Other sneer trick collections: \code{\link{tsne_tricks}}
+Other sneer trick collections: \code{\link{step_perplexity}},
+  \code{\link{tsne_tricks}}
 }
 
