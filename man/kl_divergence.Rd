@@ -2,7 +2,7 @@
 % Please edit documentation in R/cost.R
 \name{kl_divergence}
 \alias{kl_divergence}
-\title{Kullback Leibler Divergence}
+\title{Kullback-Leibler Divergence}
 \usage{
 kl_divergence(pm, qm, eps = .Machine$double.eps)
 }
@@ -20,7 +20,7 @@ KL divergence between \code{pm} and \code{qm}.
 A measure of embedding quality between input and output probability matrices.
 }
 \details{
-The Kullback Leibler Divergence between two discrete probabilities P and Q
+The Kullback-Leibler Divergence between two discrete probabilities P and Q
 is:
 
 \deqn{D_{KL}(P||Q) = \sum_{i}P(i)\log\frac{P(i)}{Q(i)}}{D_KL(P||Q) = sum(Pi*log(Pi/Qi))}

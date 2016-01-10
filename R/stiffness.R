@@ -59,7 +59,7 @@ hssne_stiffness <- function(pm, qm, wm, alpha = 1.5e-8, beta = 1) {
 #' "Reverse" ASNE Stiffness Function
 #'
 #' Uses the exponential weighting function for similarities, but the
-#' "reverse" Kullback Leibler divergence as the cost function.
+#' "reverse" Kullback-Leibler divergence as the cost function.
 #'
 #' @param pm Input probability matrix.
 #' @param qm Output probabilty matrix.
@@ -89,7 +89,7 @@ nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5,
 #' "Reverse" SSNE Stiffness Function
 #'
 #' Uses the exponential weighting function for similarities, but the
-#' "reverse" Kullback Leibler divergence as the cost function.
+#' "reverse" Kullback-Leibler divergence as the cost function.
 #'
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.
@@ -119,7 +119,7 @@ snerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
 #' "Reverse" t-SNE Stiffness Function
 #'
 #' Uses the exponential weighting function for similarities, but the
-#' "reverse" Kullback Leibler divergence as the cost function.
+#' "reverse" Kullback-Leibler divergence as the cost function.
 #'
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.

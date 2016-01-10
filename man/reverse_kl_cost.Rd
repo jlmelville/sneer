@@ -2,7 +2,7 @@
 % Please edit documentation in R/nerv.R
 \name{reverse_kl_cost}
 \alias{reverse_kl_cost}
-\title{Reverse Kullback Leibler Divergence Cost Function}
+\title{Reverse Kullback-Leibler Divergence Cost Function}
 \usage{
 reverse_kl_cost(inp, out, method)
 }

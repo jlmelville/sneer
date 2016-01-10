@@ -22,6 +22,6 @@ Stiffness matrix.
 }
 \description{
 Uses the exponential weighting function for similarities, but the
-"reverse" Kullback Leibler divergence as the cost function.
+"reverse" Kullback-Leibler divergence as the cost function.
 }
 

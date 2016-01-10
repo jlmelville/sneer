@@ -2,7 +2,7 @@
 % Please edit documentation in R/cost.R
 \name{kl_cost}
 \alias{kl_cost}
-\title{Kullback Leibler Divergence Cost Function}
+\title{Kullback-Leibler Divergence Cost Function}
 \usage{
 kl_cost(inp, out, method)
 }

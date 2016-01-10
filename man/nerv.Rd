@@ -25,7 +25,7 @@ A probability-based embedding method.
 \details{
 NeRV is a variant of Asymmetric Stochastic Neighbor Embedding
 (see \code{\link{asne}}), with a modified cost function: in addition to
-calculating the Kullback Leibler divergence of the output probabilities Q,
+calculating the Kullback-Leibler divergence of the output probabilities Q,
 from the input probabilities, P, it also includes the divergence of P from Q.
 The final cost function is a weighted sum of these two individual functions.
 Hence ASNE is a special case of NeRV where all the weight is placed on the

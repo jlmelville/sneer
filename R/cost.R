@@ -1,6 +1,6 @@
 # Cost functions. Used by optimization routines to improve the embedding.
 
-#' Kullback Leibler Divergence Cost Function
+#' Kullback-Leibler Divergence Cost Function
 #'
 #' A measure of embedding quality between input and output data.
 #'
@@ -43,11 +43,11 @@ kl_cost <- function(inp, out, method) {
 attr(kl_cost, "sneer_cost_type") <- "prob"
 
 
-#' Kullback Leibler Divergence
+#' Kullback-Leibler Divergence
 #'
 #' A measure of embedding quality between input and output probability matrices.
 #'
-#' The Kullback Leibler Divergence between two discrete probabilities P and Q
+#' The Kullback-Leibler Divergence between two discrete probabilities P and Q
 #' is:
 #'
 #' \deqn{D_{KL}(P||Q) = \sum_{i}P(i)\log\frac{P(i)}{Q(i)}}{D_KL(P||Q) = sum(Pi*log(Pi/Qi))}
