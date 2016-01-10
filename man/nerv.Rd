@@ -63,11 +63,10 @@ If used in an embedding, the output data list will contain:
 # default NeRV settings
 embed_prob(method = nerv(lambda = 0.5), ...)
 
-# equivalent to ASNE
+# equivalent to ASNE or emphasis on recall over precision
 embed_prob(method = nerv(lambda = 1), ...)
 
-# puts an emphasis on only keeping true neighbors close together
-# tends to produce a larger number of small, tight clusters
+# puts emphasis on precision over recall
 embed_prob(method = nerv(lambda = 0), ...)
 }
 }
@@ -87,16 +86,18 @@ The return value of this function should be used with the
 Other sneer embedding methods: \code{\link{asne}},
   \code{\link{embedding_methods}}, \code{\link{hsnerv}},
   \code{\link{hssne}}, \code{\link{mmds}},
-  \code{\link{sammon_map}}, \code{\link{smmds}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tnerv}},
-  \code{\link{tsne}}
+  \code{\link{rasne}}, \code{\link{rssne}},
+  \code{\link{rtsne}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{snerv}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tnerv}}, \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
   \code{\link{hsnerv}}, \code{\link{hssne}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tnerv}},
-  \code{\link{tsne}}
+  \code{\link{rasne}}, \code{\link{rssne}},
+  \code{\link{rtsne}}, \code{\link{snerv}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tnerv}}, \code{\link{tsne}}
 }
 

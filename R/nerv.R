@@ -60,11 +60,10 @@
 #' # default NeRV settings
 #' embed_prob(method = nerv(lambda = 0.5), ...)
 #'
-#' # equivalent to ASNE
+#' # equivalent to ASNE or emphasis on recall over precision
 #' embed_prob(method = nerv(lambda = 1), ...)
 #'
-#' # puts an emphasis on only keeping true neighbors close together
-#' # tends to produce a larger number of small, tight clusters
+#' # puts emphasis on precision over recall
 #' embed_prob(method = nerv(lambda = 0), ...)
 #' }
 nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
@@ -77,7 +76,7 @@ nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
       out$qm <- weights_to_prow(wm)
-      out$rev_kl <- reverse_kl_cost(inp, out, method)
+      out$rev_kl <- kl_divergence_rows(out$qm, inp$pm, method$eps)
       out
     },
     prob_type = "row",
@@ -151,8 +150,8 @@ nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 #' # equivalent to t-SNE
 #' embed_prob(method = tnerv(lambda = 1), ...)
 #'
-#' # puts an emphasis on only keeping true neighbors close together
-#' # tends to produce a larger number of small, tight clusters
+#' # puts an emphasis on precision over recall and allows long tails
+#' # will create widely-separated small clusters
 #' embed_prob(method = tnerv(lambda = 0), ...)
 #' }
 tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
@@ -165,7 +164,7 @@ tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
       out$qm <- weights_to_pcond(wm)
-      out$rev_kl <- reverse_kl_cost(inp, out, method)
+      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
       out$wm <- wm
       out
     },
@@ -247,7 +246,7 @@ snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
       out$qm <- weights_to_pcond(wm)
-      out$rev_kl <- reverse_kl_cost(inp, out, method)
+      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
       out$wm <- wm
       out
     },
@@ -345,7 +344,7 @@ hsnerv <- function(lambda = 0.5, alpha = 1.5e-8, beta = 1,
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
       out$qm <- weights_to_pcond(wm)
-      out$rev_kl <- reverse_kl_cost(inp, out, method)
+      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
       out$wm <- wm
       out
     },
@@ -417,4 +416,4 @@ attr(nerv_cost, "sneer_cost_type") <- "prob"
 reverse_kl_cost <- function(inp, out, method) {
   kl_divergence(out$qm, inp$pm, method$eps)
 }
-attr(kl_cost, "sneer_cost_type") <- "prob"
+attr(reverse_kl_cost, "sneer_cost_type") <- "prob"

@@ -25,7 +25,7 @@ A probability-based embedding method.
 \details{
 t-NeRV is a variant of t-distributed Stochastic Neighbor Embedding
 (\code{\link{tsne}}), with a modified cost function: in addition to
-calculating the Kullback Leibler divergence of the output probabilities Q,
+calculating the Kullback-Leibler divergence of the output probabilities Q,
 from the input probabilities, P, it also includes the divergence of P from Q.
 The final cost function is a weighted sum of these two individual functions.
 Hence SSNE is a special case of NeRV where all the weight is placed on the
@@ -65,8 +65,8 @@ embed_prob(method = tnerv(lambda = 0.5), ...)
 # equivalent to t-SNE
 embed_prob(method = tnerv(lambda = 1), ...)
 
-# puts an emphasis on only keeping true neighbors close together
-# tends to produce a larger number of small, tight clusters
+# puts an emphasis on precision over recall and allows long tails
+# will create widely-separated small clusters
 embed_prob(method = tnerv(lambda = 0), ...)
 }
 }
@@ -86,16 +86,19 @@ The return value of this function should be used with the
 Other sneer embedding methods: \code{\link{asne}},
   \code{\link{embedding_methods}}, \code{\link{hsnerv}},
   \code{\link{hssne}}, \code{\link{mmds}},
-  \code{\link{nerv}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{snerv}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tsne}}
+  \code{\link{nerv}}, \code{\link{rasne}},
+  \code{\link{rssne}}, \code{\link{rtsne}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
   \code{\link{hsnerv}}, \code{\link{hssne}},
   \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tsne}}
+  \code{\link{rasne}}, \code{\link{rssne}},
+  \code{\link{rtsne}}, \code{\link{snerv}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tsne}}
 }
 

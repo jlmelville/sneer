@@ -27,7 +27,11 @@ is:
 
 The base of the log determines the units of the divergence.
 
-If the matrices represent row probabilities, then the returned divergence
-is the average over the divergence for each row.
+If a row probability matrix is provided (where each row in the matrix is
+a separate distribution), this function returns the sum of all divergences.
+}
+\seealso{
+\code{\link{kl_divergence_rows}} to obtain the separate KL
+divergences when using row probability matrices.
 }
 
