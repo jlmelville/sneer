@@ -28,6 +28,10 @@
 #'  \item{\code{out$qm}}{Output probabilities.}
 #' }
 #'
+#' For embedding methods which define their cost function over multiple
+#' probability distributions (e.g. \code{\link{asne}}), this cost function
+#' returns the sum of the divergences.
+#'
 #' @param inp Input data.
 #' @param out Output data.
 #' @param method Embedding method.
@@ -54,15 +58,40 @@ attr(kl_cost, "sneer_cost_type") <- "prob"
 #'
 #' The base of the log determines the units of the divergence.
 #'
-#' If the matrices represent row probabilities, then the returned divergence
-#' is the average over the divergence for each row.
+#' If a row probability matrix is provided (where each row in the matrix is
+#' a separate distribution), this function returns the sum of all divergences.
 #'
 #' @param pm Probability Matrix. First probability in the divergence.
 #' @param qm Probability Matrix. Second probability in the divergence.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return KL divergence between \code{pm} and \code{qm}.
+#' @seealso \code{\link{kl_divergence_rows}} to obtain the separate KL
+#' divergences when using row probability matrices.
 kl_divergence <- function(pm, qm, eps = .Machine$double.eps) {
-  sum(apply(pm * log((pm + eps) / (qm + eps)), 1, sum)) / sum(pm)
+  sum(kl_divergence_rows(pm, qm, eps))
+}
+
+#' Kullback-Leibler Divergence per Row
+#'
+#' A measure of embedding quality between input and output row probability
+#' matrices.
+#'
+#' The Kullback-Leibler Divergence between two discrete probabilities P and Q
+#' is:
+#'
+#' \deqn{D_{KL}(P||Q) = \sum_{i}P(i)\log\frac{P(i)}{Q(i)}}{D_KL(P||Q) = sum(Pi*log(Pi/Qi))}
+#'
+#' The base of the log determines the units of the divergence.
+#'
+#' This function calculates the KL for each distribution in the provided
+#' matrices, one per row.
+#'
+#' @param pm Row probability Matrix. First probability in the divergence.
+#' @param qm Row Probability Matrix. Second probability in the divergence.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return Vector of KL divergences from \code{qm} to \code{pm}.
+kl_divergence_rows <- function(pm, qm, eps = .Machine$double.eps) {
+  apply(pm * log((pm + eps) / (qm + eps)), 1, sum)
 }
 
 #' Create Cost Function Normalizer

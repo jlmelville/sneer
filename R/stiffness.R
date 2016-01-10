@@ -66,7 +66,7 @@ hssne_stiffness <- function(pm, qm, wm, alpha = 1.5e-8, beta = 1) {
 #' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-rev_asne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
+reverse_asne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
   km <- qm * (log(pm / (qm + eps)) + rev_kl)
   2 * (km + t(km))
 }
@@ -83,7 +83,7 @@ rev_asne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
 nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5,
                            eps = .Machine$double.eps) {
   (lambda * asne_stiffness(pm, qm)) +
-    ((1 - lambda) * rev_asne_stiffness(pm, qm, rev_kl, eps))
+    ((1 - lambda) * reverse_asne_stiffness(pm, qm, rev_kl, eps))
 }
 
 #' "Reverse" SSNE Stiffness Function
@@ -96,7 +96,7 @@ nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5,
 #' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-rev_ssne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
+reverse_ssne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
   4 * qm * (log(pm / (qm + eps)) + rev_kl)
 }
 
@@ -113,7 +113,7 @@ rev_ssne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
 snerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
                             eps = .Machine$double.eps) {
   (lambda * ssne_stiffness(pm, qm)) +
-    ((1 - lambda) * rev_ssne_stiffness(pm, qm, rev_kl, eps))
+    ((1 - lambda) * reverse_ssne_stiffness(pm, qm, rev_kl, eps))
 }
 
 #' "Reverse" t-SNE Stiffness Function
@@ -127,8 +127,9 @@ snerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
 #' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-rev_tsne_stiffness <- function(pm, qm, wm, rev_kl, eps = .Machine$double.eps) {
-  rev_ssne_stiffness(pm, qm, rev_kl, eps) * wm
+reverse_tsne_stiffness <- function(pm, qm, wm, rev_kl,
+                                   eps = .Machine$double.eps) {
+  reverse_ssne_stiffness(pm, qm, rev_kl, eps) * wm
 }
 
 #' t-NeRV Stiffness Function
@@ -144,7 +145,7 @@ rev_tsne_stiffness <- function(pm, qm, wm, rev_kl, eps = .Machine$double.eps) {
 tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
                            eps = .Machine$double.eps) {
   (lambda * tsne_stiffness(pm, qm, wm)) +
-    ((1 - lambda) * rev_tsne_stiffness(pm, qm, wm, rev_kl, eps))
+    ((1 - lambda) * reverse_tsne_stiffness(pm, qm, wm, rev_kl, eps))
 }
 
 #' "Reverse" HSSNE Stiffness Function
@@ -157,7 +158,7 @@ tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
 #' @param beta The precision of the weighting function.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-rev_hssne_stiffness <- function(pm, qm, wm, rev_kl, alpha = 1.5e-8,
+reverse_hssne_stiffness <- function(pm, qm, wm, rev_kl, alpha = 1.5e-8,
                                     beta = 1, eps = .Machine$double.eps) {
   4 * beta * qm * (log(pm / (qm + eps)) + rev_kl) * (wm ^ alpha)
 }
@@ -178,5 +179,5 @@ hsnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
                              alpha = 1.5e-8, beta = 1,
                              eps = .Machine$double.eps) {
   (lambda * hssne_stiffness(pm, qm, wm, alpha, beta)) +
-    ((1 - lambda) * rev_hssne_stiffness(pm, qm, wm, rev_kl, alpha, beta, eps))
+  ((1 - lambda) * reverse_hssne_stiffness(pm, qm, wm, rev_kl, alpha, beta, eps))
 }

@@ -23,6 +23,15 @@ NULL
 #' to generate output probabilities is the Student t-Distribution with one
 #' degree of freedom.
 #'
+#' The probability matrix in t-SNE:
+#'
+#' \itemize{
+#'  \item{represents one probability distribution, i.e. the grand sum of the
+#'  matrix is one.}
+#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+#'  probabilities are joint probabilities.}
+#' }
+#'
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
 #' \describe{
@@ -131,7 +140,7 @@ ssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
       out
     },
     prob_type = "joint",
-    eps = .Machine$double.eps
+    eps = eps
   )
 }
 
@@ -144,7 +153,9 @@ ssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' the probabilities are defined with respect to points, not pairs: an element
 #' Pij from the NxN probability matrix P should be thought of as a conditional
 #' probabilty, pj|i, the probability that point j would be chosen as a close
-#' neighbor of point i. The probability matrix used in ASNE:
+#' neighbor of point i.
+#'
+#' The probability matrix used in ASNE:
 #'
 #' \itemize{
 #'  \item{represents one N row-wise probability distributions, where N is the
@@ -344,3 +355,175 @@ hssne <- function(eps = .Machine$double.eps, alpha = 1.5e-08,
   )
 }
 
+
+#' "Reverse" Asymmetric Stochastic Neighbor Embedding (RASNE)
+#'
+#' A probability-based embedding method.
+#'
+#' Like \code{\link{asne}}, but with the cost function using the "reverse" form
+#' of the Kullback-Leibler divergence, i.e. KL(Q||P).
+#'
+#' The probability matrix in RASNE:
+#'
+#' \itemize{
+#'  \item{represents one N row-wise probability distributions, where N is the
+#'  number of points in the data set, i.e. the row sums of the matrix are all
+#'   one.}
+#'  \item{is asymmetric, i.e. there is no requirement that
+#'  \code{p[i, j] == p[j, i]}.}
+#' }
+#'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates.}
+#'  \item{\code{qm}}{Row probability matrix based on embedded coordinates.}
+#' }
+#'
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
+#' @return An embedding method for use by an embedding function.
+#' @seealso RASNE uses the \code{\link{kl_cost}} cost function and the
+#'   \code{\link{exp_weight}} similarity function. The return value of this
+#'   function should be used with the \code{\link{embed_prob}} embedding
+#'   function.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
+#' @examples
+#' \dontrun{
+#' embed_prob(method = asne(), ...)
+#' }
+rasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
+  list(
+    cost_fn = reverse_kl_cost,
+    weight_fn = exp_weight,
+    stiffness_fn = function(method, inp, out) {
+      reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl, method$eps)
+    },
+    update_out_fn = function(inp, out, method) {
+      wm <- weights(out, method)
+      out$qm <- weights_to_probs(wm, method)
+      out$rev_kl <- kl_divergence_rows(out$qm, inp$pm, method$eps)
+      out
+    },
+    prob_type = "row",
+    eps = eps
+  )
+}
+
+#' "Reverse" Symmetric Stochastic Neighbor Embedding (RSSNE)
+#'
+#' A probability-based embedding method.
+#'
+#' Like \code{\link{ssne}}, but with the cost function using the "reverse" form
+#' of the Kullback-Leibler divergence, i.e. KL(Q||P).
+#'
+#' The probability matrix in RSSNE:
+#'
+#' \itemize{
+#'  \item{represents one probability distribution, i.e. the grand sum of the
+#'  matrix is one.}
+#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+#'  probabilities are joint probabilities.}
+#' }
+#'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates.}
+#'  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
+#' }
+#'
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
+#' @return An embedding method for use by an embedding function.
+#' @seealso SSNE uses the \code{\link{reverse_kl_cost}} cost function and the
+#'   \code{\link{exp_weight}} similarity function. The return value of this
+#'   function should be used with the \code{\link{embed_prob}} embedding
+#'   function.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
+#' @examples
+#' \dontrun{
+#' embed_prob(method = rssne(), ...)
+#' }
+rssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
+  list(
+    cost_fn = reverse_kl_cost,
+    weight_fn = exp_weight,
+    stiffness_fn = function(method, inp, out) {
+      reverse_ssne_stiffness(inp$pm, out$qm, out$rev_kl, method$eps)
+    },
+    update_out_fn = function(inp, out, method) {
+      wm <- weights(out, method)
+      out$qm <- weights_to_probs(wm, method)
+      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
+      out
+    },
+    prob_type = "joint",
+    eps = eps
+  )
+}
+
+#' "Reverse" t-Distributed Stochastic Neighbor Embedding (RTSNE).
+#'
+#' A probability-based embedding method.
+#'
+#' Like \code{\link{tsne}}, but with the cost function using the "reverse" form
+#' of the Kullback-Leibler divergence, i.e. KL(Q||P).
+#'
+#' The probability matrix in RTSNE:
+#'
+#' \itemize{
+#'  \item{represents one probability distribution, i.e. the grand sum of the
+#'  matrix is one.}
+#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+#'  probabilities are joint probabilities.}
+#' }
+#'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates.}
+#'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
+#'  \code{wm}.}
+#'  \item{\code{wm}}{Weight matrix generated from the distances between points
+#'  in \code{ym}.}
+#' }
+#'
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
+#' @return An embedding method for use by an embedding function.
+#' @seealso RTSNE uses the \code{\link{reverse_kl_cost}} cost function and the
+#'   \code{\link{tdist_weight}} similarity function. The return value of this
+#'   function should be used with the \code{\link{embed_prob}} embedding
+#'   function.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
+#' @examples
+#' \dontrun{
+#' embed_prob(method = tsne(), ...)
+#' }
+rtsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
+  list(
+    cost_fn = reverse_kl_cost,
+    weight_fn = tdist_weight,
+    stiffness_fn = function(method, inp, out) {
+      reverse_tsne_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, method$eps)
+    },
+    update_out_fn = function(inp, out, method) {
+      out$wm <- weights(out, method)
+      out$qm <- weights_to_probs(out$wm, method)
+      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
+      out
+    },
+    prob_type = "joint",
+    eps = eps
+  )
+}

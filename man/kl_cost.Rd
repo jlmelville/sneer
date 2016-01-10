@@ -44,6 +44,10 @@ This cost function requires the following matrices to be defined:
  \item{\code{inp$pm}}{Input probabilities.}
  \item{\code{out$qm}}{Output probabilities.}
 }
+
+For embedding methods which define their cost function over multiple
+probability distributions (e.g. \code{\link{asne}}), this cost function
+returns the sum of the divergences.
 }
 \seealso{
 To use \code{out$qm} as the reference probability and calculate the

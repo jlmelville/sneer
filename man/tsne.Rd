@@ -22,6 +22,15 @@ A probability-based embedding method.
 t-SNE is a variant of \code{\link{ssne}} where the similarity function used
 to generate output probabilities is the Student t-Distribution with one
 degree of freedom.
+
+The probability matrix in t-SNE:
+
+\itemize{
+ \item{represents one probability distribution, i.e. the grand sum of the
+ matrix is one.}
+ \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+ probabilities are joint probabilities.}
+}
 }
 \section{Output Data}{
 
@@ -53,16 +62,19 @@ t-SNE uses the \code{\link{kl_cost}} cost function and the
 Other sneer embedding methods: \code{\link{asne}},
   \code{\link{embedding_methods}}, \code{\link{hsnerv}},
   \code{\link{hssne}}, \code{\link{mmds}},
-  \code{\link{nerv}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{snerv}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tnerv}}
+  \code{\link{nerv}}, \code{\link{rasne}},
+  \code{\link{rssne}}, \code{\link{rtsne}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
   \code{\link{hsnerv}}, \code{\link{hssne}},
   \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tnerv}}
+  \code{\link{rasne}}, \code{\link{rssne}},
+  \code{\link{rtsne}}, \code{\link{snerv}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tnerv}}
 }
 
