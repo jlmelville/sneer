@@ -265,6 +265,6 @@ step_perplexity <- function(start_perp, stop_perp, num_iters, num_steps = 10,
       # invalidate cached data (e.g. old costs) in optimizer
       opt$dirty <- TRUE
     }
-    list(inp = inp)
+    list(inp = inp, opt = opt)
   }
 }

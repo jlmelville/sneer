@@ -483,6 +483,7 @@ opt_report <- function(opt) {
   else {
     result$step_size <- opt$step_size$value
   }
+
   if (!is.null(opt$update$momentum)) {
     result$momentum <- opt$update$momentum
   }
