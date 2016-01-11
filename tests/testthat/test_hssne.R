@@ -12,7 +12,7 @@ ssne_iris <-
              export = c("report"), verbose = FALSE, opt = bold_nagger())
 
 hssne_iris_alpha0 <-
-  embed_prob(iris[, 1:4], method = hssne(alpha = 1.5e-8, verbose = FALSE),
+  embed_prob(iris[, 1:4], method = hssne(alpha = 0, verbose = FALSE),
              max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),

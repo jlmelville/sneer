@@ -330,10 +330,16 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' @family sneer probability embedding methods
 #' @examples
 #' \dontrun{
-#' embed_prob(method = hssne(), ...)
+#' # behave like SSNE
+#' embed_prob(method = hssne(alpha = 0), ...)
+#'
+#' # behave like t-SNE
+#' embed_prob(method = hssne(alpha = 1), ...)
 #' }
-hssne <- function(eps = .Machine$double.eps, alpha = 1.5e-08,
+hssne <- function(eps = .Machine$double.eps, alpha = 0,
                   beta = 1, verbose = TRUE) {
+
+  alpha <- clamp(alpha, sqrt(.Machine$double.eps))
   weight_fn <- function(D2) {
     heavy_tail_weight(D2, beta, alpha)
   }

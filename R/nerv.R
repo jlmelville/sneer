@@ -326,8 +326,9 @@ snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
 #' embed_prob(method = hsnerv(lambda = 0.5, alpha = 1), ...)
 #'
 #' }
-hsnerv <- function(lambda = 0.5, alpha = 1.5e-8, beta = 1,
+hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
                    eps = .Machine$double.eps, verbose = TRUE) {
+  alpha <- clamp(alpha, sqrt(.Machine$double.eps))
   weight_fn <- function(D2) {
     heavy_tail_weight(D2, beta, alpha)
   }
