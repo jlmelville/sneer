@@ -54,7 +54,8 @@ To use \code{out$qm} as the reference probability and calculate the
   divergence of \code{inp$pm} from \code{out$qm}, see
   \code{\link{reverse_kl_cost}}.
 
-Other sneer cost functions: \code{\link{kruskal_stress_cost}},
+Other sneer cost functions: \code{\link{jse_cost}},
+  \code{\link{kruskal_stress_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},

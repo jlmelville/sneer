@@ -4,8 +4,7 @@
 \alias{hssne}
 \title{Heavy-Tailed Symmetric Stochastic Neighbor Embedding (HSSNE)}
 \usage{
-hssne(eps = .Machine$double.eps, alpha = 1.5e-08, beta = 1,
-  verbose = TRUE)
+hssne(eps = .Machine$double.eps, alpha = 0, beta = 1, verbose = TRUE)
 }
 \arguments{
 \item{eps}{Small floating point value used to prevent numerical problems,
@@ -65,7 +64,11 @@ If used in an embedding, the output data list will contain:
 }
 \examples{
 \dontrun{
-embed_prob(method = hssne(), ...)
+# behave like SSNE
+embed_prob(method = hssne(alpha = 0), ...)
+
+# behave like t-SNE
+embed_prob(method = hssne(alpha = 1), ...)
 }
 }
 \references{
@@ -80,15 +83,17 @@ The return value of this function should be used with the
 
 Other sneer embedding methods: \code{\link{asne}},
   \code{\link{embedding_methods}}, \code{\link{hsnerv}},
-  \code{\link{mmds}}, \code{\link{nerv}},
-  \code{\link{rasne}}, \code{\link{rssne}},
-  \code{\link{rtsne}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{snerv}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tnerv}}, \code{\link{tsne}}
+  \code{\link{jse}}, \code{\link{mmds}},
+  \code{\link{nerv}}, \code{\link{rasne}},
+  \code{\link{rssne}}, \code{\link{rtsne}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
+  \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{hsnerv}}, \code{\link{nerv}},
+  \code{\link{hsnerv}}, \code{\link{jse}},
+  \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
   \code{\link{rasne}}, \code{\link{rssne}},
   \code{\link{rtsne}}, \code{\link{snerv}},

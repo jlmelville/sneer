@@ -42,8 +42,8 @@ data visualization.
 \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
 }
 \seealso{
-Other sneer cost functions: \code{\link{kl_cost}},
-  \code{\link{kruskal_stress_cost}},
+Other sneer cost functions: \code{\link{jse_cost}},
+  \code{\link{kl_cost}}, \code{\link{kruskal_stress_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},

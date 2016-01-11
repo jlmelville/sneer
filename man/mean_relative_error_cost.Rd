@@ -38,8 +38,8 @@ This cost function requires the following matrices to be defined:
 }
 }
 \seealso{
-Other sneer cost functions: \code{\link{kl_cost}},
-  \code{\link{kruskal_stress_cost}},
+Other sneer cost functions: \code{\link{jse_cost}},
+  \code{\link{kl_cost}}, \code{\link{kruskal_stress_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},
   \code{\link{nerv_cost}},

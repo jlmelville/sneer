@@ -4,8 +4,8 @@
 \alias{hsnerv}
 \title{Heavy-tailed Symmetric Neighbor Retrieval Visualizer (HSNeRV)}
 \usage{
-hsnerv(lambda = 0.5, alpha = 1.5e-08, beta = 1,
-  eps = .Machine$double.eps, verbose = TRUE)
+hsnerv(lambda = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
+  verbose = TRUE)
 }
 \arguments{
 \item{lambda}{Weighting factor controlling the emphasis placed on precision
@@ -89,15 +89,17 @@ The return value of this function should be used with the
 
 Other sneer embedding methods: \code{\link{asne}},
   \code{\link{embedding_methods}}, \code{\link{hssne}},
-  \code{\link{mmds}}, \code{\link{nerv}},
-  \code{\link{rasne}}, \code{\link{rssne}},
-  \code{\link{rtsne}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{snerv}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tnerv}}, \code{\link{tsne}}
+  \code{\link{jse}}, \code{\link{mmds}},
+  \code{\link{nerv}}, \code{\link{rasne}},
+  \code{\link{rssne}}, \code{\link{rtsne}},
+  \code{\link{sammon_map}}, \code{\link{smmds}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
+  \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{hssne}}, \code{\link{nerv}},
+  \code{\link{hssne}}, \code{\link{jse}},
+  \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
   \code{\link{rasne}}, \code{\link{rssne}},
   \code{\link{rtsne}}, \code{\link{snerv}},

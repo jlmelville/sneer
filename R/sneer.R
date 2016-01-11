@@ -212,7 +212,7 @@
 #' A nonlinear mapping for data structure analysis.
 #' \emph{IEEE Transactions on computers}, (5), 401-409.
 #'
-#' t-SNE, SNE and ASNE:
+#' t-SNE, SNE and ASNE
 #' Van der Maaten, L., & Hinton, G. (2008).
 #' Visualizing data using t-SNE.
 #' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
@@ -222,6 +222,12 @@
 #' Information retrieval perspective to nonlinear dimensionality reduction for
 #' data visualization.
 #' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+#'
+#' JSE
+#' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
+#' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
+#' dimensionality reduction based on similarity preservation.
+#' \emph{Neurocomputing}, \emph{112}, 92-108.
 #'
 #' Nesterov Accelerated Gradient:
 #' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
