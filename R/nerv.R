@@ -355,6 +355,72 @@ hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
   )
 }
 
+#' NeRV Stiffness Function
+#'
+#' @param pm Input probability matrix.
+#' @param qm Output probabilty matrix.
+#' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
+#' @param lambda NeRV weighting factor controlling the emphasis placed on
+#' precision versus recall.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return Stiffness matrix.
+nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5,
+                           eps = .Machine$double.eps) {
+  (lambda * asne_stiffness(pm, qm)) +
+    ((1 - lambda) * reverse_asne_stiffness(pm, qm, rev_kl, eps))
+}
+
+#' SNeRV Stiffness Function
+#'
+#' @param pm Input joint probability matrix.
+#' @param qm Output joint probabilty matrix.
+#' @param wm Output weight probability matrix.
+#' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
+#' @param lambda NeRV weighting factor controlling the emphasis placed on
+#' precision versus recall.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return Stiffness matrix
+snerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
+                            eps = .Machine$double.eps) {
+  (lambda * ssne_stiffness(pm, qm)) +
+    ((1 - lambda) * reverse_ssne_stiffness(pm, qm, rev_kl, eps))
+}
+
+#' t-NeRV Stiffness Function
+#'
+#' @param pm Input joint probability matrix.
+#' @param qm Output joint probabilty matrix.
+#' @param wm Output weight probability matrix.
+#' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
+#' @param lambda NeRV weighting factor controlling the emphasis placed on
+#' precision versus recall.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return Stiffness matrix
+tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
+                            eps = .Machine$double.eps) {
+  (lambda * tsne_stiffness(pm, qm, wm)) +
+    ((1 - lambda) * reverse_tsne_stiffness(pm, qm, wm, rev_kl, eps))
+}
+
+#' HSNeRV Stiffness Function
+#'
+#' @param pm Input joint probability matrix.
+#' @param qm Output joint probabilty matrix.
+#' @param wm Output weight probability matrix.
+#' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
+#' @param lambda NeRV weighting factor controlling the emphasis placed on
+#' precision versus recall.
+#' @param alpha Tail heaviness of the weighting function.
+#' @param beta The precision of the weighting function.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return Stiffness matrix.
+hsnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
+                             alpha = 1.5e-8, beta = 1,
+                             eps = .Machine$double.eps) {
+  (lambda * hssne_stiffness(pm, qm, wm, alpha, beta)) +
+    ((1 - lambda) * reverse_hssne_stiffness(pm, qm, wm, rev_kl, alpha, beta, eps))
+}
+
 #' Neighbor Retrieval Visualizer (NeRV) Cost Function
 #'
 #' A measure of embedding quality between input and output data.
