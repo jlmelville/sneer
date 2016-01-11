@@ -84,18 +84,18 @@ The return value of this function should be used with the
 \code{\link{embed_prob}} embedding function.
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{hsnerv}},
-  \code{\link{hssne}}, \code{\link{jse}},
-  \code{\link{mmds}}, \code{\link{rasne}},
-  \code{\link{rssne}}, \code{\link{rtsne}},
-  \code{\link{sammon_map}}, \code{\link{smmds}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tnerv}},
-  \code{\link{tsne}}
+  \code{\link{embedding_methods}}, \code{\link{hsjse}},
+  \code{\link{hsnerv}}, \code{\link{hssne}},
+  \code{\link{jse}}, \code{\link{mmds}},
+  \code{\link{rasne}}, \code{\link{rssne}},
+  \code{\link{rtsne}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{snerv}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tnerv}}, \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{hsnerv}}, \code{\link{hssne}},
-  \code{\link{jse}},
+  \code{\link{hsjse}}, \code{\link{hsnerv}},
+  \code{\link{hssne}}, \code{\link{jse}},
   \code{\link{probability_embedding_methods}},
   \code{\link{rasne}}, \code{\link{rssne}},
   \code{\link{rtsne}}, \code{\link{snerv}},

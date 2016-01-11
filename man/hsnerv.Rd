@@ -78,6 +78,10 @@ Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
 Information retrieval perspective to nonlinear dimensionality reduction for
 data visualization.
 \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+
+Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
+Heavy-tailed symmetric stochastic neighbor embedding.
+In \emph{Advances in neural information processing systems} (pp. 2169-2177).
 }
 \seealso{
 HSNeRV uses the \code{\link{nerv_cost}} cost function and the
@@ -88,18 +92,18 @@ The return value of this function should be used with the
   \code{\link{embed_prob}} embedding function.
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{hssne}},
-  \code{\link{jse}}, \code{\link{mmds}},
-  \code{\link{nerv}}, \code{\link{rasne}},
-  \code{\link{rssne}}, \code{\link{rtsne}},
-  \code{\link{sammon_map}}, \code{\link{smmds}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tnerv}},
-  \code{\link{tsne}}
+  \code{\link{embedding_methods}}, \code{\link{hsjse}},
+  \code{\link{hssne}}, \code{\link{jse}},
+  \code{\link{mmds}}, \code{\link{nerv}},
+  \code{\link{rasne}}, \code{\link{rssne}},
+  \code{\link{rtsne}}, \code{\link{sammon_map}},
+  \code{\link{smmds}}, \code{\link{snerv}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tnerv}}, \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{hssne}}, \code{\link{jse}},
-  \code{\link{nerv}},
+  \code{\link{hsjse}}, \code{\link{hssne}},
+  \code{\link{jse}}, \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
   \code{\link{rasne}}, \code{\link{rssne}},
   \code{\link{rtsne}}, \code{\link{snerv}},

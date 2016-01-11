@@ -302,6 +302,10 @@ snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
 #' Information retrieval perspective to nonlinear dimensionality reduction for
 #' data visualization.
 #' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+#'
+#' Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
+#' Heavy-tailed symmetric stochastic neighbor embedding.
+#' In \emph{Advances in neural information processing systems} (pp. 2169-2177).
 #' @seealso HSNeRV uses the \code{\link{nerv_cost}} cost function and the
 #'   \code{\link{heavy_tail_weight}} similarity function for converting
 #'   distances to probabilities.
@@ -333,7 +337,6 @@ hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
     heavy_tail_weight(D2, beta, alpha)
   }
   attr(weight_fn, "type") <- attr(heavy_tail_weight, "type")
-
 
   list(
     cost_fn = nerv_cost,

@@ -89,19 +89,145 @@ jse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
   )
 }
 
+#' Heavy-Tailed Symmetric Jensen-Shannon Embedding (HSJSE)
+#'
+#' A probability-based embedding method.
+#'
+#' HSJSE is a variant of \code{\link{jse}} which uses a symmetrized, normalized
+#' probability distribution like \code{\link{ssne}}, rather than the that used
+#' by the original JSE method, which used the unnormalized distributions of
+#' \code{\link{asne}}.
+#'
+#' Additionally, it uses the heavy-tailed kernel function of
+#' \code{\link{hssne}}, to generalize exponential and t-distributed weighting.
+#' By modifying the \code{alpha} and \code{kappa} parameters, this embedding
+#' method can reproduce multiple embedding methods (see the examples section).
+#'
+#' The probability matrix used in HSJSE:
+#'
+#' \itemize{
+#'  \item{represents one probability distribution, i.e. the grand sum of the
+#'  matrix is one.}
+#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+#'  probabilities are joint probabilities.}
+#' }
+#'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates.}
+#'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
+#'  \code{wm}.}
+#' }
+#' @param kappa Mixture parameter. Cost function behaves more like the
+#'   Kullback-Leibler divergence as it approaches zero and more like the
+#'   "reverse" KL divergence as it approaches one.
+#' @param alpha Tail heaviness. Must be greater than zero. Set to zero for
+#'   a Gaussian-like kernel, and to one for a Student-t distribution.
+#' @param beta The precision of the function. Becomes equivalent to the
+#'   precision in the Gaussian distribution of distances as \code{alpha}
+#'   approaches zero.
+#' @param eps Small floating point value used to prevent numerical problems,
+#'   e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
+#' @return An embedding method for use by an embedding function.
+#' @references
+#' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
+#' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
+#' dimensionality reduction based on similarity preservation.
+#' \emph{Neurocomputing}, \emph{112}, 92-108.
+#'
+#' Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
+#' Heavy-tailed symmetric stochastic neighbor embedding.
+#' In \emph{Advances in neural information processing systems} (pp. 2169-2177).
+#' @seealso HSJSE uses the \code{\link{jse_cost}} cost function and the
+#'   \code{\link{heavy_tail_weight}} similarity function for converting
+#'   distances to probabilities. The \code{\link{hsnerv}} embedding method is
+#'   similar.
+#' The return value of this function should be used with the
+#' \code{\link{embed_prob}} embedding function.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
+#' @examples
+#' \dontrun{
+#' # default HSJSE, cost function is symmetric
+#' embed_prob(method = hsjse(kappa = 0.5), ...)
+#'
+#' # equivalent to SSNE
+#' embed_prob(method = hsjse(kappa = 0, alpha = 0), ...)
+#'
+#' # equivalent to "reverse" SSNE
+#' embed_prob(method = hsjse(kappa = 1, alpha = 0), ...)
+#'
+#' # equivalent to t-SNE
+#' embed_prob(method = hsjse(kappa = 0, alpha = 1), ...)
+#'
+#' # equivalent to "reverse" t-SNE
+#' embed_prob(method = hsjse(kappa = 1, alpha = 1), ...)
+#' }
+hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
+                  verbose = TRUE) {
+  alpha <- clamp(alpha, sqrt(.Machine$double.eps))
+  weight_fn <- function(D2) {
+    heavy_tail_weight(D2, beta, alpha)
+  }
+  attr(weight_fn, "type") <- attr(heavy_tail_weight, "type")
+
+  list(
+    cost_fn = jse_cost,
+    weight_fn = weight_fn,
+    stiffness_fn = function(method, inp, out) {
+      hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz, method$kappa, alpha,
+                      beta, method$eps)
+    },
+    update_out_fn = function(inp, out, method) {
+      out$wm <- weights(out, method)
+      out$qm <- weights_to_pcond(out$wm)
+      out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
+      out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
+      out
+    },
+    prob_type = "joint",
+    eps = eps,
+    kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
+                  max_val = 1 - sqrt(.Machine$double.eps))
+  )
+}
+
 #' JSE Stiffness Function
 #'
-#' @param kappa Mixture parameter. Should be a value between 0 and 1 and be the
-#'  same value used to produce the mixture matrix \code{zm}.
+#' @param qm Output probabilty matrix.
 #' @param zm Mixture matrix, weighted combination of input probability and
 #'  output probability matrix \code{qm}.
-#' @param qm Output probabilty matrix.
 #' @param kl_qz KL divergence between \code{qm} and \code{zm}. \code{qm} is the
 #'  reference probability.
+#' @param kappa Mixture parameter. Should be a value between 0 and 1 and be the
+#'  same value used to produce the mixture matrix \code{zm}.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-jse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5, eps = .Machine$double.eps) {
-  reverse_asne_stiffness(zm, qm, kl_qz, eps) / (kappa)
+jse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5,
+                          eps = .Machine$double.eps) {
+  reverse_asne_stiffness(zm, qm, kl_qz, eps) / kappa
+}
+
+#' HSJSE Stiffness Function
+#'
+#' @param qm Output probabilty matrix.
+#' @param zm Mixture matrix, weighted combination of input probability and
+#'  output probability matrix \code{qm}.
+#' @param wm Output weight probability matrix.
+#' @param kl_qz KL divergence between \code{qm} and \code{zm}. \code{qm} is the
+#'  reference probability.
+#' @param kappa Mixture parameter. Should be a value between 0 and 1 and be the
+#'  same value used to produce the mixture matrix \code{zm}.
+#' @param alpha Tail heaviness of the weighting function.
+#' @param beta The precision of the weighting function.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return Stiffness matrix.
+hsjse_stiffness <- function(qm, zm, wm, kl_qz, kappa = 0.5, alpha = 1.5e-8,
+                            beta = 1, eps = .Machine$double.eps) {
+  reverse_hssne_stiffness(zm, qm, wm, kl_qz, alpha, beta, eps) / kappa
 }
 
 #' JSE Cost Function
