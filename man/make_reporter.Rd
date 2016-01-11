@@ -7,7 +7,7 @@
 make_reporter(report_every = 100, min_cost = 0,
   reltol = sqrt(.Machine$double.eps), plot = NULL, normalize_cost = TRUE,
   keep_costs = FALSE, extra_costs = NULL, opt_report = FALSE,
-  verbose = TRUE)
+  out_report = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{report_every}{Number of steps between callback invocations.}
@@ -51,6 +51,9 @@ details.}
 
 \item{opt_report}{If \code{TRUE}, summary of the state of the optimization
 (e.g. step size, momentum, gradient length) will be reported.}
+
+\item{out_report}{If \code{TRUE}, summary of the state of the output data
+(e.g. coordinates, probabilities, weights) will be reported.}
 
 \item{verbose}{If \code{TRUE}, report results such as cost values
 will be logged to screen. If set to false, you will have to export the

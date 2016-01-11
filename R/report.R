@@ -39,6 +39,8 @@
 #'  details.
 #' @param opt_report If \code{TRUE}, summary of the state of the optimization
 #'  (e.g. step size, momentum, gradient length) will be reported.
+#' @param out_report If \code{TRUE}, summary of the state of the output data
+#'  (e.g. coordinates, probabilities, weights) will be reported.
 #' @param verbose If \code{TRUE}, report results such as cost values
 #'  will be logged to screen. If set to false, you will have to export the
 #'  report from the embedding routine to access any of the information.
@@ -107,6 +109,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
                           reltol = sqrt(.Machine$double.eps), plot = NULL,
                           normalize_cost = TRUE, keep_costs = FALSE,
                           extra_costs = NULL, opt_report = FALSE,
+                          out_report = FALSE,
                           verbose = TRUE) {
   reporter <- list()
 
@@ -199,6 +202,12 @@ make_reporter <- function(report_every = 100, min_cost = 0,
       if (nchar(opt_str) > 0) {
         message(opt_str)
       }
+      result
+    }
+  }
+
+  if (out_report) {
+    reporter$out_report <- function(iter, inp, out, method, opt, result) {
       for (name in names(out)) {
         if (class(out[[name]]) == "matrix") {
           summarize(out[[name]], name)
