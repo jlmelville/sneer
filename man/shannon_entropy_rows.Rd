@@ -2,19 +2,22 @@
 % Please edit documentation in R/perplexity.R
 \name{shannon_entropy_rows}
 \alias{shannon_entropy_rows}
-\title{Shannon Entropy per Row of a Matrix}
+\title{Shannon Entropies for Row Probability Matrices}
 \usage{
-shannon_entropy_rows(pm, base = 2)
+shannon_entropy_rows(pm, base = 2, eps = .Machine$double.eps)
 }
 \arguments{
-\item{pm}{Matrix of probabilities.}
+\item{pm}{Row probability matrix.}
 
 \item{base}{Base of the logarithm to use in the entropy calculation.}
+
+\item{eps}{Small floating point value used to avoid numerical problems.}
 }
 \value{
 Vector of Shannon entropies, one per row of the matrix.
 }
 \description{
-Each row of the matrix should consist of probabilities summing to 1.
+Calculates the Shannon Entropy per row of a row probability matrix. Each row
+of the matrix should consist of probabilities summing to 1.
 }
 

@@ -219,15 +219,28 @@ make_objective_fn <- function(d2r, i, weight_fn, perplexity, h_base = exp(1)) {
   }
 }
 
-#' Shannon Entropy per Row of a Matrix
+#' Shannon Entropies for Row Probability Matrices
 #'
-#' Each row of the matrix should consist of probabilities summing to 1.
+#' Calculates the Shannon Entropy per row of a row probability matrix. Each row
+#' of the matrix should consist of probabilities summing to 1.
 #'
-#' @param pm Matrix of probabilities.
+#' @param pm Row probability matrix.
 #' @param base Base of the logarithm to use in the entropy calculation.
+#' @param eps Small floating point value used to avoid numerical problems.
 #' @return Vector of Shannon entropies, one per row of the matrix.
-shannon_entropy_rows <- function(pm, base = 2) {
-  -apply(pm * log(pm, base), 1, sum)
+shannon_entropy_rows <- function(pm, base = 2, eps = .Machine$double.eps) {
+  -apply(pm * log(pm + eps, base), 1, sum)
 }
 
-
+#' Perplexity for Row Probability Matrices
+#'
+#' Calculates the perplexity (antilogarithm of the Shannon Entropy) per row of
+#' a row probability matrix. Each row of the matrix should consist of
+#' probabilities summing to 1.
+#'
+#' @param pm Row probability matrix.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return Vector of perplexities, one per row of the matrix.
+perplexity_rows <- function(pm, eps = .Machine$double.eps) {
+  exp(shannon_entropy_rows(pm, base = exp(1), eps = eps))
+}
