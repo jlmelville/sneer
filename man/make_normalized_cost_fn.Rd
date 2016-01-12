@@ -7,16 +7,12 @@
 make_normalized_cost_fn(cost_fn)
 }
 \arguments{
-\item{cost_fn}{Cost function. Should have the signature
-\code{cost_fn(inp, out, method)} and return a scalar numeric cost value.
-In addition it should have an appropriate \code{sneer_cost_type} attribute
-set. For cost functions that act on probabilities, this should be
-\code{"prob"}. For cost function that act on distances, this should be
-\code{"dist"}.}
+\item{cost_fn}{Cost function to normalize.}
 }
 \value{
 Normalized cost function with the signature
-\code{norm_fn(inp, out)} and which return a scalar numeric cost value.
+ \code{norm_fn(inp, out, method)} and which returns a scalar numeric cost
+ value.
 }
 \description{
 A function to transform a cost function into a normalized cost function.
@@ -34,9 +30,19 @@ distances the same, which can only be achieved by making them all zero. For
 probability-based methods, the equivalent would be to make all the
 probabilities equal.
 
-It might also be possible to compare embeddings between different methods,
-but it's safer to simply use it with one method, and know that while an
-embedding with a normalized cost of e.g. 0.85 is poor, one with a normalized
-cost of 1.2 is basically worse than guessing.
+The cost function should have the signature \code{cost_fn(inp, out, method)}
+and return a scalar numeric cost value. In addition it should have an
+appropriate \code{sneer_cost_type} attribute set. For cost functions that act
+on probabilities, this should be \code{"prob"}. For cost function that act on
+distances, this should be \code{"dist"}.
+
+Note that this function will attempt to synthesize a function to calculate
+a suitable normalization value, but isn't very sophisticated: it simply sets
+the output probabilities or distances (depending on the type of the cost)
+function to a uniform value. If this is insufficiently clever, you can set
+the a \code{sneer_cost_norm} attribute instead. The value of this attribute
+should be the name of a separate cost function which does the normalization
+explicitly. In this case, the function won't attempt to synthesize a
+function, but will return that custom function instead.
 }
 

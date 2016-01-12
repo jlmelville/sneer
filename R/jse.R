@@ -276,6 +276,29 @@ jse_cost <- function(inp, out, method) {
   jse_divergence(inp$pm, out$qm, out$zm, method$kappa, method$eps)
 }
 attr(jse_cost, "sneer_cost_type") <- "prob"
+attr(jse_cost, "sneer_cost_norm") <- "jse_cost_norm"
+
+#' Normalized JSE Cost Function
+#'
+#' A measure of embedding quality between input and output data.
+#'
+#' Normalizes the JSE cost using the cost when the output probability matrix
+#' \code{out$qm} is uniform. Also recalculates the mixture matrix \code{out$zm}
+#' too. Intended to be used in the reporter function of sneer as a custom
+#' normalized cost function, not as a main objective function.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return JSE divergence between \code{inp$pm} and \code{out$qm}.
+jse_cost_norm <- function(inp, out, method) {
+  cost <- jse_divergence(inp$pm, out$qm, out$zm, method$kappa, method$eps)
+  null_qm <- null_model_prob(out$qm)
+  null_zm <- js_mixture(inp$pm, null_qm, method$kappa)
+  null_cost <- jse_divergence(inp$pm, null_qm, null_zm, method$kappa,
+                              method$eps)
+  cost / null_cost
+}
 
 #' Jensen-Shannon Embedding (JSE) Divergence
 #'
