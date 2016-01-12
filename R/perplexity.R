@@ -214,7 +214,7 @@ make_objective_fn <- function(d2r, i, weight_fn, perplexity, h_base = exp(1)) {
     wr <- weight_fn_param(beta)
     pr <- weights_to_prow(wr)
     pr <- clamp(pr)
-    h <- shannon_entropy_row(pr, h_base)
+    h <- shannon_entropy_rows(pr, h_base)
     list(value = h - h_target, pr = pr, h = h)
   }
 }
@@ -226,6 +226,8 @@ make_objective_fn <- function(d2r, i, weight_fn, perplexity, h_base = exp(1)) {
 #' @param pm Matrix of probabilities.
 #' @param base Base of the logarithm to use in the entropy calculation.
 #' @return Vector of Shannon entropies, one per row of the matrix.
-shannon_entropy_row <- function(pm, base = 2) {
+shannon_entropy_rows <- function(pm, base = 2) {
   -apply(pm * log(pm, base), 1, sum)
 }
+
+
