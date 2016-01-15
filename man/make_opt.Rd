@@ -100,7 +100,7 @@ make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
 \code{\link{embed_prob}} for how to use this function for configuring
   an embedding.
 
-Other sneer optimization methods: \code{\link{bold_nagger}},
+Other sneer optimization methods: \code{\link{bold_nag}},
   \code{\link{gradient_descent}},
   \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}

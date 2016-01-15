@@ -9,7 +9,7 @@ ssne_iris <-
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 hssne_iris_alpha0 <-
   embed_prob(iris[, 1:4], method = hssne(alpha = 0, verbose = FALSE),
@@ -19,7 +19,7 @@ hssne_iris_alpha0 <-
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, ssne_iris$report$costs),
              mapply(formatC, hssne_iris_alpha0$report$costs))
@@ -32,7 +32,7 @@ tsne_iris <-
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 hssne_iris_alpha1 <-
   embed_prob(iris[, 1:4], method = hssne(alpha = 1, verbose = FALSE),
@@ -42,7 +42,7 @@ hssne_iris_alpha1 <-
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, tsne_iris$report$costs),
              mapply(formatC, hssne_iris_alpha1$report$costs))

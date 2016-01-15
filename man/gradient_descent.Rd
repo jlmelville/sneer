@@ -28,7 +28,7 @@ size method is used to adaptively select the step size.
 \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
  this function for configuring an embedding.
 
-Other sneer optimization methods: \code{\link{bold_nagger}},
+Other sneer optimization methods: \code{\link{bold_nag}},
   \code{\link{make_opt}},
   \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}

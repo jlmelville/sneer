@@ -78,7 +78,7 @@ Carry out an embedding of a dataset using a distance-based method
 # for the iris dataset, which is quite handy for testing.
 mds_iris <- embed_dist(iris[, 1:4],
                        method = mmds(),
-                       opt = bold_nagger(),
+                       opt = bold_nag(),
                        reporter = make_reporter(
                          extra_costs = c("kruskal_stress",
                                          "mean_relative_error")),
@@ -93,7 +93,7 @@ mds_iris <- embed_dist(iris[, 1:4],
 # the output.
 sammon_iris <- embed_dist(iris[, 1:4],
                           method = sammon_map(eps = 1e-4),
-                          opt = bold_nagger(),
+                          opt = bold_nag(),
                           preprocess = make_preprocess(auto_scale = TRUE),
                           init_out = out_from_rnorm(sd = 1e-4),
                           reporter = make_reporter(normalize_cost = FALSE,

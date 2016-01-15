@@ -9,7 +9,7 @@ asne_iris <-
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 jse_iris_kappa0 <-
   embed_prob(iris[, 1:4], method = jse(kappa = 0, verbose = FALSE),
@@ -20,7 +20,7 @@ jse_iris_kappa0 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       extra_costs = c('kl'),
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(asne_iris$cost, jse_iris_kappa0$cost, tolerance = 0.001)
 
@@ -33,7 +33,7 @@ rasne_iris <-
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 jse_iris_kappa1 <-
   embed_prob(iris[, 1:4], method = jse(kappa = 1,
@@ -45,7 +45,7 @@ jse_iris_kappa1 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       extra_costs = c('kl'),
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(rasne_iris$cost, jse_iris_kappa1$cost, tolerance = 0.001)
 
@@ -57,7 +57,7 @@ ssne_iris <-
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 hsjse_iris_kappa0alpha0 <-
   embed_prob(iris[, 1:4], method = hsjse(kappa = 0, alpha = 0, verbose = FALSE),
@@ -68,7 +68,7 @@ hsjse_iris_kappa0alpha0 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       extra_costs = c('kl'),
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(ssne_iris$cost, hsjse_iris_kappa0alpha0$cost, tolerance = 0.001,
              scale = 1)
@@ -82,7 +82,7 @@ rssne_iris <-
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 hsjse_iris_kappa1alpha0 <-
   embed_prob(iris[, 1:4], method = hsjse(kappa = 1, alpha = 0, verbose = FALSE),
@@ -93,7 +93,7 @@ hsjse_iris_kappa1alpha0 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       extra_costs = c('kl'),
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(rssne_iris$cost, hsjse_iris_kappa1alpha0$cost, tolerance = 0.001)
 
@@ -106,7 +106,7 @@ tsne_iris <-
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 hsjse_iris_kappa0alpha1 <-
   embed_prob(iris[, 1:4], method = hsjse(kappa = 0, alpha = 1, verbose = FALSE),
@@ -117,7 +117,7 @@ hsjse_iris_kappa0alpha1 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       extra_costs = c('kl'),
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(tsne_iris$cost, hsjse_iris_kappa0alpha1$cost, tolerance = 0.001)
 
@@ -130,7 +130,7 @@ embed_prob(iris[, 1:4], method = rtsne(verbose = FALSE), max_iter = 50,
            preprocess = make_preprocess(verbose = FALSE),
            reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                     verbose = FALSE),
-           export = c("report"), verbose = FALSE, opt = bold_nagger())
+           export = c("report"), verbose = FALSE, opt = bold_nag())
 
 hsjse_iris_kappa1alpha1 <-
   embed_prob(iris[, 1:4], method = hsjse(kappa = 1, alpha = 1, verbose = FALSE),
@@ -141,7 +141,7 @@ hsjse_iris_kappa1alpha1 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       extra_costs = c('kl'),
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = bold_nagger())
+             export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(rtsne_iris$cost, hsjse_iris_kappa1alpha1$cost, tolerance = 0.001,
              scale = 1)

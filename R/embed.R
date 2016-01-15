@@ -131,7 +131,7 @@ NULL
 #'  preprocess = make_preprocess(auto_scale = TRUE),
 #'  init_inp = inp_from_perp(perplexity = 50),
 #'  init_out = out_from_PCA(),
-#'  opt = bold_nagger(),
+#'  opt = bold_nag(),
 #'  reporter = make_reporter(plot = make_plot(s1k, "Label")))
 #' }
 #' @family sneer embedding functions
@@ -220,7 +220,7 @@ embed_prob <- function(xm,
 #' # for the iris dataset, which is quite handy for testing.
 #' mds_iris <- embed_dist(iris[, 1:4],
 #'                        method = mmds(),
-#'                        opt = bold_nagger(),
+#'                        opt = bold_nag(),
 #'                        reporter = make_reporter(
 #'                          extra_costs = c("kruskal_stress",
 #'                                          "mean_relative_error")),
@@ -235,7 +235,7 @@ embed_prob <- function(xm,
 #' # the output.
 #' sammon_iris <- embed_dist(iris[, 1:4],
 #'                           method = sammon_map(eps = 1e-4),
-#'                           opt = bold_nagger(),
+#'                           opt = bold_nag(),
 #'                           preprocess = make_preprocess(auto_scale = TRUE),
 #'                           init_out = out_from_rnorm(sd = 1e-4),
 #'                           reporter = make_reporter(normalize_cost = FALSE,
