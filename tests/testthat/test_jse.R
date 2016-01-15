@@ -74,7 +74,8 @@ expect_equal(ssne_iris$cost, hsjse_iris_kappa0alpha0$cost, tolerance = 0.001,
              scale = 1)
 
 
-# HSJSE kappa 1 alpha 0 "reverse" SSNE
+# HSJSE kappa 1 alpha 0 approaches "reverse" SSNE but can't get as close as
+# other formulations
 rssne_iris <-
   embed_prob(iris[, 1:4], method = rssne(verbose = FALSE), max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
@@ -95,7 +96,8 @@ hsjse_iris_kappa1alpha0 <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-expect_equal(rssne_iris$cost, hsjse_iris_kappa1alpha0$cost, tolerance = 0.001)
+expect_equal(rssne_iris$cost, hsjse_iris_kappa1alpha0$cost, tolerance = 0.005,
+             scale = 1)
 
 
 # HSJSE kappa 0 alpha 1 equivalent to t-SNE
@@ -119,10 +121,12 @@ hsjse_iris_kappa0alpha1 <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-expect_equal(tsne_iris$cost, hsjse_iris_kappa0alpha1$cost, tolerance = 0.001)
+expect_equal(tsne_iris$cost, hsjse_iris_kappa0alpha1$cost, tolerance = 0.001,
+             scale = 1)
 
 
-# HSJSE kappa 1 alpha 1 equivalent to "reverse" t-SNE
+# HSJSE kappa 1 alpha 1 equivalent to "reverse" t-SNE but need a lower tolerance
+# like reverse SSNE
 rtsne_iris <-
 embed_prob(iris[, 1:4], method = rtsne(verbose = FALSE), max_iter = 50,
            init_inp = inp_from_perp(verbose = FALSE),
@@ -143,5 +147,5 @@ hsjse_iris_kappa1alpha1 <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-expect_equal(rtsne_iris$cost, hsjse_iris_kappa1alpha1$cost, tolerance = 0.001,
+expect_equal(rtsne_iris$cost, hsjse_iris_kappa1alpha1$cost, tolerance = 0.005,
              scale = 1)

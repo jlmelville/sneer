@@ -232,5 +232,5 @@ momentum_update <- function(opt, inp, out, method) {
   mu <- opt$update$momentum
   grad_update <- step_size * direction
 
-  (mu * prev_update) + ((1 - mu) * grad_update)
+  (mu * prev_update) + grad_update
 }
