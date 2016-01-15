@@ -70,7 +70,8 @@ hsjse_iris_kappa0alpha0 <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nagger())
 
-expect_equal(ssne_iris$cost, hsjse_iris_kappa0alpha0$cost, tolerance = 0.001)
+expect_equal(ssne_iris$cost, hsjse_iris_kappa0alpha0$cost, tolerance = 0.001,
+             scale = 1)
 
 
 # HSJSE kappa 1 alpha 0 "reverse" SSNE
