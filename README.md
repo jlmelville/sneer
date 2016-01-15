@@ -53,13 +53,13 @@ fork. It does, however, inherit its license (GPL-2 or later).
 
 ### Features
 
-Sneer is very new so there's not a lot here that's isn't available in other
-packages right now. But currently it offers:
+Currently sneer offers:
 
 * Embedding with t-SNE and its variants ASNE and SSNE.
 * Sammon mapping and metric Multidimensional Scaling.
 * Heavy-Tailed Symmetric SNE (HSSNE).
 * Neighbor Retrieval Visualizer (NeRV).
+* Jensen-Shannon Embedding (JSE).
 * Nesterov Accelerated Gradient method for optimization.
 * The usual t-SNE Steepest descent with momentum and Jacobs adaptive step size
 if NAG is too racy for you.
@@ -73,16 +73,8 @@ the "crowding problem".
 * A bit of documentation!
 
 ### Roadmap
-Some new algorithms coming soon:
-
-
-* Jensen-Shannon Embedding (JSE).
+* Multiscale SNE
 * Numerical scores for qualitatively evaluating the embedding.
-
-I've implemented the above already, I'm just too ashamed of the terrible code it
-involves to air it in public. But unless I get hit by a bus, this will actually
-happen. Other things I'd like to do:
-
 * Better documentation of internals so a hypothetical person who isn't me
 could implement an embedding algorithm.
 * Some vignettes exploring aspects of embedding.
