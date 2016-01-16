@@ -7,15 +7,15 @@ presult <- d_to_p_perp_bisect(distance_matrix(range_scale_matrix(iris[, 1:4])),
 sigmas <- 1 / sqrt(presult$beta * 2)
 
 test_that("distribution of sigmas is ok", {
-  expect_equal(formatC(min(sigmas)), "0.1268")
-  expect_equal(formatC(median(sigmas)), "0.1694")
-  expect_equal(formatC(mean(sigmas)), "0.1717")
-  expect_equal(formatC(max(sigmas)), "0.2187")
+  expect_equal(min(sigmas), 0.1268, tolerance = 0.00005, scale = 1)
+  expect_equal(median(sigmas), 0.1694, tolerance = 0.00005, scale = 1)
+  expect_equal(mean(sigmas), 0.1717, tolerance = 0.00005, scale = 1)
+  expect_equal(max(sigmas), 0.2187, tolerance = 0.00005, scale = 1)
 })
 
 test_that("distribution of P is ok", {
-  expect_equal(formatC(min(presult$pm)), "2.22e-16")
-  expect_equal(formatC(median(presult$pm)), "0.0006403")
-  expect_equal(formatC(mean(presult$pm)), "0.006667")
-  expect_equal(formatC(max(presult$pm)), "0.1286")
+  expect_equal(min(presult$pm), 2.22e-16)
+  expect_equal(median(presult$pm), 0.0006403, tolerance = 5e-8, scale = 1)
+  expect_equal(mean(presult$pm), 0.006667, tolerance = 5e-7, scale = 1)
+  expect_equal(max(presult$pm), 0.1286, tolerance = 5e-5, scale = 1)
 })

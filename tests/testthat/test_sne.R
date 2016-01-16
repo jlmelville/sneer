@@ -13,7 +13,7 @@ tsne_iris <- embed_prob(iris[, 1:4],
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
                        verbose = FALSE)
-expect_equal(formatC(tsne_iris$report$norm), "0.0578")
+expect_equal(tsne_iris$report$norm, 0.0578, tolerance = 5e-5, scale = 1)
 
 ssne_iris <- embed_prob(iris[, 1:4],
                        method = ssne(verbose = FALSE),
@@ -28,7 +28,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
                        export = c("report"),
                        verbose = FALSE,
                        opt = bold_nag())
-expect_equal(formatC(ssne_iris$report$norm), "0.07265")
+expect_equal(ssne_iris$report$norm, 0.07265, tolerance = 5e-5, scale = 1)
 
 asne_iris <- embed_prob(iris[, 1:4],
                        method = asne(verbose = FALSE),
@@ -43,7 +43,7 @@ asne_iris <- embed_prob(iris[, 1:4],
                        export = c("report"),
                        verbose = FALSE,
                        opt = bold_nag(max_momentum = 0.85))
-expect_equal(formatC(asne_iris$report$norm), "0.08479")
+expect_equal(asne_iris$report$norm, 0.08479, tolerance = 5e-6, scale = 1)
 
 pca_iris <- embed_prob(iris[, 1:4],
                       method = tsne(verbose = FALSE),
@@ -57,7 +57,7 @@ pca_iris <- embed_prob(iris[, 1:4],
                       reporter = make_reporter(report_every = 1,
                                                verbose = FALSE),
                       export = c("report"))
-expect_equal(formatC(pca_iris$report$cost), "1.598")
+expect_equal(pca_iris$report$cost, 1.598, tolerance = 5e-4, scale = 1)
 
 context("Jacobs")
 tsne_iris_jacobs <- embed_prob(iris[, 1:4],
@@ -80,13 +80,7 @@ tsne_iris_jacobs <- embed_prob(iris[, 1:4],
                                                        verbose = FALSE),
                               export = c("report"))
 jacobs_costs <- tsne_iris_jacobs$report$costs[,"cost"]
-expect_equal(formatC(jacobs_costs[1]),  "1.598")
-expect_equal(formatC(jacobs_costs[2]),  "1.594")
-expect_equal(formatC(jacobs_costs[3]),  "1.589")
-expect_equal(formatC(jacobs_costs[4]),  "1.584")
-expect_equal(formatC(jacobs_costs[5]),  "1.577")
-expect_equal(formatC(jacobs_costs[6]),  "1.57")
-expect_equal(formatC(jacobs_costs[7]),  "1.562")
-expect_equal(formatC(jacobs_costs[8]),  "1.553")
-expect_equal(formatC(jacobs_costs[9]),  "1.543")
-expect_equal(formatC(jacobs_costs[10]), "1.532")
+expect_equal(jacobs_costs,  c(1.598, 1.594, 1.589, 1.584, 1.577, 1.57, 1.562,
+                              1.553, 1.543, 1.532, 1.52),
+             tolerance = 5e-4, scale = 1)
+
