@@ -37,12 +37,21 @@ NULL
 #' @export
 step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
                           switch_iter = 250, verbose = TRUE) {
+  mu_fn <- function(iter) {
+    if (iter == switch_iter) {
+      if (verbose) {
+        message("Switching momentum to ", final_momentum, " at iter ", iter)
+      }
+      return(final_momentum)
+    }
+    else {
+      return(init_momentum)
+    }
+  }
+
   list(
-    init_momentum = init_momentum,
-    final_momentum = final_momentum,
-    mom_switch_iter = switch_iter,
     init = function(opt, inp, out, method) {
-      opt$update$momentum <- opt$update$init_momentum
+      opt$update$momentum <- mu_fn(0)
       opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
                                     ncol(out[[opt$mat_name]]))
       opt
@@ -52,15 +61,10 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
       list(opt = opt)
     },
     after_step = function(opt, inp, out, new_out, ok, iter) {
-      if (iter == opt$update$mom_switch_iter) {
-        if (verbose) {
-          message("Switching momentum to ", final_momentum, " at iter ", iter)
-        }
-        opt$update$momentum <- opt$update$final_momentum
-      }
-
+      opt$update$momentum <- mu_fn(iter)
       list(opt = opt)
-    }
+    },
+    mu_fn = mu_fn
   )
 }
 
@@ -88,11 +92,15 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
 #' @export
 linear_momentum <- function(max_iter, init_momentum = 0,
                             final_momentum = 0.9) {
+  mu_fn <- function(iter) {
+    mu_i <- init_momentum
+    mu_f <- final_momentum
+    mu <- (mu_f - mu_i) / max_iter
+    (mu * iter) + mu_i
+  }
   list(
-    init_momentum = init_momentum,
-    final_momentum = final_momentum,
     init = function(opt, inp, out, method) {
-      opt$update$momentum <- opt$update$init_momentum
+      opt$update$momentum <- mu_fn(0)
       opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
                                     ncol(out[[opt$mat_name]]))
       opt
@@ -102,13 +110,10 @@ linear_momentum <- function(max_iter, init_momentum = 0,
       list(opt = opt)
     },
     after_step = function(opt, inp, out, new_out, ok, iter) {
-      mu_i <- opt$update$init_momentum
-      mu_f <- opt$update$final_momentum
-      mu <- (mu_f - mu_i) / max_iter
-      opt$update$momentum <- (mu * iter) + mu_i
-
+      opt$update$momentum <- mu_fn(iter)
       list(opt = opt)
-    }
+    },
+    mu_fn = mu_fn
   )
 }
 
@@ -140,10 +145,13 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 #' @family sneer optimization update methods
 #' @export
 nesterov_nsc_momentum <- function(max_momentum = 1) {
+  mu_fn <- function(iter) {
+    mu <- 1 - (3 / (iter + 5))
+    min(max_momentum, mu)
+  }
   list(
-    init_momentum = 0.5,
     init = function(opt, inp, out, method) {
-      opt$update$momentum <- opt$update$init_momentum
+      opt$update$momentum <- mu_fn(0)
       opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
                                     ncol(out[[opt$mat_name]]))
       opt
@@ -153,10 +161,10 @@ nesterov_nsc_momentum <- function(max_momentum = 1) {
       list(opt = opt)
     },
     after_step = function(opt, inp, out, new_out, ok, iter) {
-      mu <- 1 - (3 / (iter + 5))
-      opt$update$momentum <- min(max_momentum, mu)
+      opt$update$momentum <- mu_fn(iter)
       list(opt = opt)
-    }
+    },
+    mu_fn = mu_fn
   )
 }
 
@@ -180,9 +188,12 @@ nesterov_nsc_momentum <- function(max_momentum = 1) {
 #' @family sneer optimization update methods
 #' @export
 constant_momentum <- function(momentum) {
+  mu_fn <- function(iter) {
+    momentum
+  }
   list(
     init = function(opt, inp, out, method) {
-      opt$update$momentum <- momentum
+      opt$update$momentum <- mu_fn(0)
       opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
                                  ncol(out[[opt$mat_name]]))
       opt
@@ -190,7 +201,8 @@ constant_momentum <- function(momentum) {
     calculate = function(opt, inp, out, method) {
       opt$update$value <- momentum_update(opt, inp, out, method)
       list(opt = opt)
-    }
+    },
+    mu_fn = mu_fn
   )
 }
 
