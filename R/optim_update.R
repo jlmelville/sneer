@@ -39,9 +39,6 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
                           switch_iter = 250, verbose = TRUE) {
   mu_fn <- function(iter) {
     if (iter == switch_iter) {
-      if (verbose) {
-        message("Switching momentum to ", final_momentum, " at iter ", iter)
-      }
       return(final_momentum)
     }
     else {
@@ -56,12 +53,14 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
                                     ncol(out[[opt$mat_name]]))
       opt
     },
-    calculate = function(opt, inp, out, method) {
-      opt$update$value <- momentum_update(opt, inp, out, method)
-      list(opt = opt)
-    },
-    after_step = function(opt, inp, out, new_out, ok, iter) {
-      opt$update$momentum <- mu_fn(iter)
+    calculate = function(opt, inp, out, method, iter) {
+      mu <- opt$update$mu_fn(iter)
+      if (verbose && iter == switch_iter) {
+        message("Switching to final momentum ", formatC(final_momentum),
+                " at iter ", iter)
+      }
+      opt$update$value <- momentum_update(opt, inp, out, method, iter, mu)
+      opt$update$momentum <- mu
       list(opt = opt)
     },
     mu_fn = mu_fn
@@ -105,12 +104,10 @@ linear_momentum <- function(max_iter, init_momentum = 0,
                                     ncol(out[[opt$mat_name]]))
       opt
     },
-    calculate = function(opt, inp, out, method) {
-      opt$update$value <- momentum_update(opt, inp, out, method)
-      list(opt = opt)
-    },
-    after_step = function(opt, inp, out, new_out, ok, iter) {
-      opt$update$momentum <- mu_fn(iter)
+    calculate = function(opt, inp, out, method, iter) {
+      mu <- opt$update$mu_fn(iter)
+      opt$update$value <- momentum_update(opt, inp, out, method, iter, mu)
+      opt$update$momentum <- mu
       list(opt = opt)
     },
     mu_fn = mu_fn
@@ -156,12 +153,10 @@ nesterov_nsc_momentum <- function(max_momentum = 1) {
                                     ncol(out[[opt$mat_name]]))
       opt
     },
-    calculate = function(opt, inp, out, method) {
-      opt$update$value <- momentum_update(opt, inp, out, method)
-      list(opt = opt)
-    },
-    after_step = function(opt, inp, out, new_out, ok, iter) {
-      opt$update$momentum <- mu_fn(iter)
+    calculate = function(opt, inp, out, method, iter) {
+      mu <- opt$update$mu_fn(iter)
+      opt$update$value <- momentum_update(opt, inp, out, method, iter, mu)
+      opt$update$momentum <- mu
       list(opt = opt)
     },
     mu_fn = mu_fn
@@ -198,8 +193,10 @@ constant_momentum <- function(momentum) {
                                  ncol(out[[opt$mat_name]]))
       opt
     },
-    calculate = function(opt, inp, out, method) {
-      opt$update$value <- momentum_update(opt, inp, out, method)
+    calculate = function(opt, inp, out, method, iter) {
+      mu <- opt$update$mu_fn(iter)
+      opt$update$value <- momentum_update(opt, inp, out, method, iter, mu)
+      opt$update$momentum <- mu
       list(opt = opt)
     },
     mu_fn = mu_fn
@@ -236,13 +233,15 @@ no_momentum <- function() {
 #' @param inp Input data.
 #' @param out Output data.
 #' @param method Embedding method.
+#' @param iter Iteration number.
+#' @param momentum Momentum for this iteration.
 #' @return Update matrix, consisting of gradient update and momentum term.
-momentum_update <- function(opt, inp, out, method) {
+momentum_update <- function(opt, inp, out, method, iter, momentum) {
   direction <- opt$direction$value
   step_size <- opt$step_size$value
-  prev_update <- opt$update$value
-  mu <- opt$update$momentum
   grad_update <- step_size * direction
 
-  (mu * prev_update) + grad_update
+  prev_update <- opt$update$value
+
+  (momentum * prev_update) + grad_update
 }

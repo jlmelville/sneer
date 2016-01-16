@@ -4,7 +4,7 @@
 \alias{momentum_update}
 \title{Update Solution With Momentum}
 \usage{
-momentum_update(opt, inp, out, method)
+momentum_update(opt, inp, out, method, iter, momentum)
 }
 \arguments{
 \item{opt}{Optimizer.}
@@ -14,6 +14,10 @@ momentum_update(opt, inp, out, method)
 \item{out}{Output data.}
 
 \item{method}{Embedding method.}
+
+\item{iter}{Iteration number.}
+
+\item{momentum}{Momentum for this iteration.}
 }
 \value{
 Update matrix, consisting of gradient update and momentum term.

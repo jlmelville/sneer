@@ -394,7 +394,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
   step_size_result <- opt$step_size$calculate(opt, inp, out, method)
   opt <- step_size_result$opt
 
-  update_result <- opt$update$calculate(opt, inp, out, method)
+  update_result <- opt$update$calculate(opt, inp, out, method, iter)
   opt <- update_result$opt
 
   proposed_out <- update_solution(opt, inp, out, method)
