@@ -4,7 +4,7 @@
 \alias{classical_grad_pos}
 \title{Classical Gradient Calculation}
 \usage{
-classical_grad_pos(opt, inp, out, method)
+classical_grad_pos(opt, inp, out, method, iter)
 }
 \arguments{
 \item{opt}{Optimizer.}
@@ -14,6 +14,8 @@ classical_grad_pos(opt, inp, out, method)
 \item{out}{Output data.}
 
 \item{method}{Embedding method.}
+
+\item{iter}{Iteration number.}
 }
 \value{
 List containing:

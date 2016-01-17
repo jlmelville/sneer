@@ -4,7 +4,7 @@
 \alias{nesterov_grad_pos}
 \title{Nesterov Accelerated Gradient Calculation}
 \usage{
-nesterov_grad_pos(opt, inp, out, method)
+nesterov_grad_pos(opt, inp, out, method, iter)
 }
 \arguments{
 \item{opt}{Optimizer.}
@@ -14,6 +14,8 @@ nesterov_grad_pos(opt, inp, out, method)
 \item{out}{Output data.}
 
 \item{method}{Embedding method.}
+
+\item{iter}{Iteration number.}
 }
 \value{
 List containing:

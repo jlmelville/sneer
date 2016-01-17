@@ -75,10 +75,11 @@ nesterov_gradient <- function() {
 #' @param inp Input data.
 #' @param out Output data.
 #' @param method Embedding method.
+#' @param iter Iteration number.
 #' @return List containing:
 #'  \item{\code{km}}{Stiffness matrix.}
 #'  \item{\code{gm}}{Gradient matrix.}
-classical_grad_pos <- function(opt, inp, out, method) {
+classical_grad_pos <- function(opt, inp, out, method, iter) {
   gradient(inp, out, method, opt$mat_name)
 }
 
@@ -91,6 +92,7 @@ classical_grad_pos <- function(opt, inp, out, method) {
 #' @param inp Input data.
 #' @param out Output data.
 #' @param method Embedding method.
+#' @param iter Iteration number.
 #' @return List containing:
 #'  \item{\code{km}}{Stiffness matrix.}
 #'  \item{\code{gm}}{Gradient matrix.}
@@ -99,9 +101,9 @@ classical_grad_pos <- function(opt, inp, out, method) {
 #' On the importance of initialization and momentum in deep learning.
 #' In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
 #' (pp. 1139-1147).
-nesterov_grad_pos <- function(opt, inp, out, method) {
+nesterov_grad_pos <- function(opt, inp, out, method, iter) {
   prev_update <- opt$update$value
-  mu <- opt$update$momentum
+  mu <- opt$update$mu_fn(iter)
 
   opt$update$value <- mu * prev_update
   new_out <- update_solution(opt, inp, out, method)

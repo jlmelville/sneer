@@ -151,7 +151,7 @@ tsne_opt <- function() {
 #'
 #' Wrapper around \code{\link{make_opt}} which makes a very performant
 #' optimizer. Mixes the NAG descent method and momentum for non-strongly convex
-#' problems formulated by Sutkever et al., along with the bold driver method
+#' problems formulated by Sutskever et al., along with the bold driver method
 #' for step size.
 #'
 #' @note This optimizer is prone to converge prematurely in the face of sudden
@@ -176,10 +176,11 @@ tsne_opt <- function() {
 bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
                          init_step_size = 1,
                          max_momentum = 1) {
-  make_opt(gradient = nesterov_gradient(),
-           step_size = bold_driver(min_step_size = min_step_size,
-                                   init_step_size = init_step_size),
-           update = nesterov_nsc_momentum(max_momentum = max_momentum))
+  nag_toronto(
+    make_opt(
+      step_size = bold_driver(min_step_size = min_step_size,
+                              init_step_size = init_step_size),
+           update = nesterov_nsc_momentum(max_momentum = max_momentum)))
 }
 
 #' Steepest Descent Optimizer with No Momentum
@@ -206,6 +207,72 @@ gradient_descent <- function() {
            step_size = bold_driver(min_step_size = 0.01),
            update = no_momentum(),
            normalize_grads = TRUE)
+}
+
+#' Nesterov Accelerated Gradient (Toronto Formulation)
+#'
+#' Wrapper to apply NAG to an optimizer.
+#'
+#' Given a classical gradient descent optimizer with a momentum term, return
+#' the optimizer implementing the Nesterov Accelerated Gradient method. This
+#' uses the formulation suggested by the Hinton group at Toronto, which involves
+#' evaluating the gradient at the position after the momentum update.
+#'
+#' @param opt Optimizer.
+#' @return Optimizer implementing the NAG.
+#' @references
+#' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
+#' On the importance of initialization and momentum in deep learning.
+#' In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
+#' (pp. 1139-1147).
+#'
+#' Sutskever, I. (2013).
+#' \emph{Training recurrent neural networks}
+#' (Doctoral dissertation, University of Toronto).
+#' @seealso \code{\link{nag_montreal}} is an alternative formulation of NAG
+#' suggested by the Bengio group at Montreal.
+#' @examples
+#' # boring old optimizer
+#' opt <- make_opt(step_size = constant_step_size(0.1),
+#'                 update = constant_momentum(0.8))
+#'
+#' # nesterovize it in the Toronto style
+#' opt <- nag_toronto(opt)
+#' @export
+nag_toronto <- function(opt) {
+  opt$gradient <- nesterov_gradient()
+  opt$update$update_fn <- momentum_update
+  opt
+}
+
+#' Nesterov Accelerated Gradient (Montreal Formulation)
+#'
+#' Wrapper to apply NAG to an optimizer.
+#'
+#' Given a classical gradient descent optimizer with a momentum term, return
+#' the optimizer implementing the Nesterov Accelerated Gradient method. This
+#' uses the formulation suggested by the Bengio group at Montreal, which
+#' involves a modified momentum term.
+#'
+#' @param opt Optimizer.
+#' @return Optimizer implementing the NAG.
+#' @references
+#' Bengio, Y., Boulanger-Lewandowski, N., & Pascanu, R. (2013, May).
+#' Advances in optimizing recurrent networks.
+#' In \emph{Acoustics, Speech and Signal Processing (ICASSP), 2013 IEEE International Conference on}
+#' (pp. 8624-8628). IEEE.
+#' @examples
+#' # boring old optimizer
+#' opt <- make_opt(step_size = constant_step_size(0.1),
+#'                 update = constant_momentum(0.8))
+#'
+#' # nesterovize it in the Montreal style
+#' opt <- nag_montreal(opt)
+#' @export
+nag_montreal <- function(opt) {
+  opt$gradient <- classical_gradient()
+  opt$update$update_fn <- nesterov_momentum_update
+  opt
 }
 
 #' Optimizer Initialization.
@@ -372,7 +439,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
     opt <- opt$init(opt, inp, out, method)
   }
 
-  grad_result <- opt$gradient$calculate(opt, inp, out, method)
+  grad_result <- opt$gradient$calculate(opt, inp, out, method, iter)
 
   if (any(is.nan(grad_result$gm))) {
     stop("NaN in grad. descent at iter ", iter)

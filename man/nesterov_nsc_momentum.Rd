@@ -33,6 +33,10 @@ Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
 On the importance of initialization and momentum in deep learning.
 In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
 (pp. 1139-1147).
+
+Sutskever, I. (2013).
+\emph{Training recurrent neural networks}
+(Doctoral dissertation, University of Toronto).
 }
 \seealso{
 The return value of this function is intended for internal use of

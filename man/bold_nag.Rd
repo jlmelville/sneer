@@ -23,7 +23,7 @@ Optimizer factory function.
 \details{
 Wrapper around \code{\link{make_opt}} which makes a very performant
 optimizer. Mixes the NAG descent method and momentum for non-strongly convex
-problems formulated by Sutkever et al., along with the bold driver method
+problems formulated by Sutskever et al., along with the bold driver method
 for step size.
 }
 \note{
