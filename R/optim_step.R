@@ -83,7 +83,6 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
     min_step_size = min_step_size,
     max_step_size = max_step_size,
     init = function(opt, inp, out, method) {
-      opt$step_size$old_cost <- method$cost_fn(inp, out, method)
       opt$step_size$value <- opt$step_size$init_step_size
       opt$step_size$ok <- TRUE
       opt
@@ -91,38 +90,23 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
     calculate = function(opt, inp, out, method) {
       list(opt = opt)
     },
-    validate = function(opt, inp, out, proposed_out, method) {
-      cost <- method$cost_fn(inp, proposed_out, method)
-      # if a trick changed the input data since last iteration, can't use
-      # cached cost
-      if (opt$dirty) {
-        old_cost <- method$cost_fn(inp, out, method)
-      }
-      else {
-        old_cost <- opt$step_size$old_cost
-      }
-      ok <- cost < old_cost
-      opt$step_size$cost <- cost
-      opt$step_size$ok <- ok
-
-      list(ok = ok, opt = opt)
-    },
+    validate = cost_validate,
     after_step = function(opt, inp, out, new_out, ok, iter) {
       s_old <- opt$step_size$value
-      # only care about this component's validation
-      if (opt$step_size$ok) {
+      # only care if the cost was ok or not
+      if (opt$cost_ok) {
         s_new <- opt$step_size$inc_fn(opt$step_size$value)
       } else {
         s_new <- opt$step_size$dec_fn(opt$step_size$value)
-        opt$step_size$cost <- opt$step_size$old_cost
+        opt$cost <- opt$old_cost
       }
       ds <- s_new - s_old
 
       opt$step_size$value <- s_old + ds
-      opt$step_size$value <-
-        clamp(opt$step_size$value,
-              opt$step_size$min_step_size)
-      opt$step_size$old_cost <- opt$step_size$cost
+      opt$step_size$value <- clamp(opt$step_size$value,
+                                   opt$step_size$min_step_size)
+
+      opt$old_cost <- opt$cost
 
       list(opt = opt)
     }

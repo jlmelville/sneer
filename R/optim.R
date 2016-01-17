@@ -115,7 +115,7 @@ make_opt <- function(gradient = classical_gradient(),
     after_step = after_step,
 
     report = opt_report,
-    dirty = FALSE
+    cost_dirty = TRUE
   )
 }
 
@@ -177,10 +177,9 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
                          init_step_size = 1,
                          max_momentum = 1) {
   nag_toronto(
-    make_opt(
       step_size = bold_driver(min_step_size = min_step_size,
                               init_step_size = init_step_size),
-           update = nesterov_nsc_momentum(max_momentum = max_momentum)))
+      update = nesterov_nsc_momentum(max_momentum = max_momentum))
 }
 
 #' Steepest Descent Optimizer with No Momentum
@@ -211,15 +210,14 @@ gradient_descent <- function() {
 
 #' Nesterov Accelerated Gradient (Toronto Formulation)
 #'
-#' Wrapper to apply NAG to an optimizer.
+#' Wrapper to create a NAG optimizer.
 #'
-#' Given a classical gradient descent optimizer with a momentum term, return
-#' the optimizer implementing the Nesterov Accelerated Gradient method. This
-#' uses the formulation suggested by the Hinton group at Toronto, which involves
-#' evaluating the gradient at the position after the momentum update.
+#' Create an optimizer implementing the Nesterov Accelerated Gradient method.
+#' This uses the formulation suggested by the Hinton group at Toronto, which
+#' involves evaluating the gradient at the position after the momentum update.
 #'
-#' @param opt Optimizer.
-#' @return Optimizer implementing the NAG.
+#' @param ... step size and update parameters for creating an optimizer.
+#' @return Optimizer implementing the NAG method.
 #' @references
 #' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
 #' On the importance of initialization and momentum in deep learning.
@@ -236,10 +234,13 @@ gradient_descent <- function() {
 #' opt <- make_opt(step_size = constant_step_size(0.1),
 #'                 update = constant_momentum(0.8))
 #'
-#' # nesterovize it in the Toronto style
-#' opt <- nag_toronto(opt)
+#' # nesteroved in the Toronto style
+#' opt <- nag_toronto(step_size = constant_step_size(0.1),
+#'                    update = constant_momentum(0.8))
 #' @export
-nag_toronto <- function(opt) {
+#' @family sneer optimization methods
+nag_toronto <- function(...) {
+  opt <- make_opt(...)
   opt$gradient <- nesterov_gradient()
   opt$update$update_fn <- momentum_update
   opt
@@ -254,8 +255,8 @@ nag_toronto <- function(opt) {
 #' uses the formulation suggested by the Bengio group at Montreal, which
 #' involves a modified momentum term.
 #'
-#' @param opt Optimizer.
-#' @return Optimizer implementing the NAG.
+#' @param ... step size and update parameters for creating an optimizer.
+#' @return Optimizer implementing the NAG method.
 #' @references
 #' Bengio, Y., Boulanger-Lewandowski, N., & Pascanu, R. (2013, May).
 #' Advances in optimizing recurrent networks.
@@ -266,10 +267,13 @@ nag_toronto <- function(opt) {
 #' opt <- make_opt(step_size = constant_step_size(0.1),
 #'                 update = constant_momentum(0.8))
 #'
-#' # nesterovize it in the Montreal style
-#' opt <- nag_montreal(opt)
+#' # nesteroved it in the Montreal style
+#' opt <- nag_montreal(step_size = constant_step_size(0.1),
+#'                     update = constant_momentum(0.8))
 #' @export
-nag_montreal <- function(opt) {
+#' @family sneer optimization methods
+nag_montreal <- function(...) {
+  opt <- make_opt(...)
   opt$gradient <- classical_gradient()
   opt$update$update_fn <- nesterov_momentum_update
   opt
@@ -327,6 +331,7 @@ initialize_optimizer <- function(opt, inp, out, method) {
 #' @param out Output data from the start of the iteration.
 #' @param proposed_out Proposed updated output for this iteration.
 #' @param method Embedding method.
+#' @param iter Iteration number.
 #' @return A list containing:
 #' \item{\code{opt}}{Optimizer.}
 #' \item{\code{inp}}{Input data.}
@@ -335,7 +340,7 @@ initialize_optimizer <- function(opt, inp, out, method) {
 #' \item{\code{method}}{Embedding method.}
 #' \item{\code{ok}}{Logical value, \code{TRUE} if \code{proposed_out} passed
 #' validation, \code{FALSE} otherwise}
-validate_solution <- function(opt, inp, out, proposed_out, method) {
+validate_solution <- function(opt, inp, out, proposed_out, method, iter) {
   validate <- remove_nulls(list(
     direction = opt$direction$validate,
     step_size = opt$step_size$validate,
@@ -345,7 +350,7 @@ validate_solution <- function(opt, inp, out, proposed_out, method) {
   all_good <- TRUE
 
   for (name in names(validate)) {
-    result <- validate[[name]](opt, inp, out, proposed_out, method)
+    result <- validate[[name]](opt, inp, out, proposed_out, method, iter)
     if (!is.null(result$opt)) {
       opt <- result$opt
     }
@@ -458,7 +463,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
   direction_result <- opt$direction$calculate(opt, inp, out, method, iter)
   opt <- direction_result$opt
 
-  step_size_result <- opt$step_size$calculate(opt, inp, out, method)
+    step_size_result <- opt$step_size$calculate(opt, inp, out, method)
   opt <- step_size_result$opt
 
   update_result <- opt$update$calculate(opt, inp, out, method, iter)
@@ -469,7 +474,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
   # intercept whether we want to accept the new solution e.g. bold driver
   ok <- TRUE
   if (!is.null(opt$validate)) {
-    validation_result <- opt$validate(opt, inp, out, proposed_out, method)
+    validation_result <- opt$validate(opt, inp, out, proposed_out, method, iter)
     opt <- validation_result$opt
     inp <- validation_result$inp
     out <- validation_result$out
@@ -492,9 +497,9 @@ optimize_step <- function(opt, method, inp, out, iter) {
     new_out <- after_step_result$new_out
   }
 
-  # mark cache data as valid as we exit (tricks can make it dirty before next
-  # step)
-  opt$dirty <- FALSE
+  # mark cached cost data as valid as we exit
+  # (tricks can make it dirty before next step)
+  opt$cost_dirty <- FALSE
 
   list(opt = opt, inp = inp, out = new_out)
 }
@@ -518,6 +523,66 @@ update_solution <- function(opt, inp, out, method) {
   method$update_out_fn(inp, new_out, method)
 }
 
+#' Cost Validation
+#'
+#' Validation function for assessing a proposed solution from the optimizer.
+#'
+#' This function validates a solution by looking for a non-increasing cost
+#' function between iterations. Used by adaptive schemes, e.g. the
+#' \code{\link{bold_driver}} step size method and the
+#' \code{\link{adaptive_restart}} momentum scheme.
+#'
+#' Because multiple methods may use this function, some caching is carried out
+#' to prevent wasteful recalculation of the cost function. This function will
+#' set the following members on the \code{opt} object:
+#' \describe{
+#'  \item{\code{old_cost}}{The cost associated with the previous solution,
+#'    \code{out}. If this value already exists, and \code{opt$cost_dirty} is
+#'    \code{FALSE}, it is assumed that the old cost is up to date and it won't
+#'    be recalculated.}
+#'  \item{\code{cost}}{The cost associated with the proposed solution,
+#'    \code{proposed_out}. If this value already exists, and
+#'    \code{opt$cost_iter} exists and is equal to the current value of
+#'    \code{iter}, it is assumed that the cost is up to data and it won't be
+#'    recalculated.}
+#'  \item{\code{cost_dirty}}{A flag indicating that cost data from the previous
+#'    iteration has been invalidated. If the function recalculates the old cost,
+#'    this flag will be reset to false.}
+#'  \item{\code{cost_iter}}{The iteration at which the current cost was
+#'    calculated. If the function recalculates the cost of the proposed
+#'    solution, this value will be set to the current value of \code{iter}.}
+#'  \item{\code{cost_ok}}{\code{TRUE} if the cost for the proposed solution has not
+#'    increased that of the old solution.}
+#' }
+#'
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @param iter Iteration number.
+#' @return List containing:
+#' \item{ok}{\code{TRUE} if the cost did not increase with the proposed
+#'  solution.}
+#' \item{opt}{Optimizer with any updated data (e.g. cached costs).}
+#' @keywords internal
+cost_validate <- function(opt, inp, out, proposed_out, method, iter) {
+  if (opt$cost_dirty) {
+    opt$old_cost <- method$cost_fn(inp, out, method)
+    opt$cost_dirty <- FALSE
+  }
+  old_cost <- opt$old_cost
+
+  if (is.null(opt$cost_iter) || opt$cost_iter != iter) {
+    opt$cost <- method$cost_fn(inp, proposed_out, method)
+    opt$cost_iter <- iter
+  }
+  cost <- opt$cost
+
+  ok <- cost <= old_cost
+  opt$cost_ok <- ok
+
+  list(ok = ok, opt = opt)
+}
 
 #' Optimizer Diagnostics
 #'

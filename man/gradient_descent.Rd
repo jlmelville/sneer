@@ -29,7 +29,8 @@ size method is used to adaptively select the step size.
  this function for configuring an embedding.
 
 Other sneer optimization methods: \code{\link{bold_nag}},
-  \code{\link{make_opt}},
+  \code{\link{make_opt}}, \code{\link{nag_montreal}},
+  \code{\link{nag_toronto}},
   \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}
 }

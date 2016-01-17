@@ -4,13 +4,13 @@
 \alias{nag_montreal}
 \title{Nesterov Accelerated Gradient (Montreal Formulation)}
 \usage{
-nag_montreal(opt)
+nag_montreal(...)
 }
 \arguments{
-\item{opt}{Optimizer.}
+\item{...}{step size and update parameters for creating an optimizer.}
 }
 \value{
-Optimizer implementing the NAG.
+Optimizer implementing the NAG method.
 }
 \description{
 Wrapper to apply NAG to an optimizer.
@@ -26,13 +26,21 @@ involves a modified momentum term.
 opt <- make_opt(step_size = constant_step_size(0.1),
                 update = constant_momentum(0.8))
 
-# nesterovize it in the Montreal style
-opt <- nag_montreal(opt)
+# nesteroved it in the Montreal style
+opt <- nag_montreal(step_size = constant_step_size(0.1),
+                    update = constant_momentum(0.8))
 }
 \references{
 Bengio, Y., Boulanger-Lewandowski, N., & Pascanu, R. (2013, May).
 Advances in optimizing recurrent networks.
 In \emph{Acoustics, Speech and Signal Processing (ICASSP), 2013 IEEE International Conference on}
 (pp. 8624-8628). IEEE.
+}
+\seealso{
+Other sneer optimization methods: \code{\link{bold_nag}},
+  \code{\link{gradient_descent}}, \code{\link{make_opt}},
+  \code{\link{nag_toronto}},
+  \code{\link{optimization_methods}},
+  \code{\link{tsne_opt}}
 }
 

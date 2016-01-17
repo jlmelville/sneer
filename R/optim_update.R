@@ -12,6 +12,75 @@
 #' @family sneer optimization update methods
 NULL
 
+
+#' Adaptive Restart
+#'
+#' Wrapper to apply an adaptive restart to the update scheme for an optimizer.
+#'
+#' O'Donoghue and Candes suggested an adaptive restart scheme for Nesterov
+#' Accelerated Gradient scheme, where the update is effectively restarted if
+#' a certain criterion is met. This function uses a cost-based criterion: if
+#' the cost increases compared to the last iteration, the restart is applied.
+#' This is intended for use with Nesterov Accelerated Gradient methods, but
+#' it can be applied to other optimizers (whether it will do any good is
+#' another matter).
+#'
+#' When a restart is applied, the momentum is treated as if the optimization
+#' had been restarted: the iteration number for the purposes of the momentum
+#' calculation is set back to zero, and any previous solutions are forgotten.
+#' Future momentum updates are calculated using an effective iteration number
+#' relative to  the last time the reset was applied.
+#'
+#' For schemes where the momentum increases non-linearly over the course of the
+#' optimization, resetting the effective iteration number back to zero may be too
+#' conservative. Therefore, in the spirit of the bold driver adaptive step size
+#' algorithm, the extent to which the effective iteration number is reduced can
+#' be provided with the \code{dec_mult} parameter, which should take a value
+#' between 0 and 1, where 0 means that that no reduction in iteration is
+#' applied, and 1 (the default) means that the full reduction is applied.
+#'
+#' @param update A momentum-based update method.
+#' @param dec_mult Degree to reduce the effective iteration number used to
+#'  calculate a momentum value after a reset.
+#' @param dec_fn Function to decrease the effective iteration number after a
+#'  reset. Should have the signature \code{dec_fn(iter)} where \code{iter} is
+#'  the iteration number. Function should return a new iteration number between
+#'  \code{0} and \code{iter}. Optional: default behavior is to multiply
+#'  \code{iter} by \code{dec_mult}.
+#' @return Update method with adaptive restart behavior.
+#' @references
+#' O'Donoghue, B., & Candes, E. (2013).
+#' Adaptive restart for accelerated gradient schemes.
+#' \emph{Foundations of computational mathematics}, \emph{15}(3), 715-732.
+#' @export
+#' @examples
+#' update <- nesterov_nsc_momentum()
+#' # give it adaptive restart powers,
+#' # jump back to half iteration number when resetting
+#' update <- adaptive_restart(update, dec_mult = 0.5)
+#' \dontrun{
+#' # pass to optimizer creation in an embedder
+#' embed_prob(opt = nag_toronto(make_opt(update = update)), ...)
+#' }
+adaptive_restart <- function(update, dec_mult  = 1,
+                             dec_fn = partial(`*`, dec_mult)) {
+
+  update$validate <- cost_validate
+
+  update$after_step <- function(opt, inp, out, new_out, ok, iter) {
+    if (!opt$cost_ok) {
+      opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
+                                 ncol(out[[opt$mat_name]]))
+      opt$update$iter_reset <- dec_fn(iter)
+    }
+
+    opt$old_cost <- opt$cost
+
+    list(opt = opt, inp = inp, new_out = new_out)
+  }
+  update
+}
+
 #' Momentum Update Method
 #'
 #' Create an update method using a momentum scheme
@@ -36,6 +105,10 @@ momentum_scheme <- function(mu_fn, msg_fn = NULL, verbose = TRUE) {
     calculate = function(opt, inp, out, method, iter) {
       if (verbose && !is.null(msg_fn)) {
         msg_fn(iter)
+      }
+      # for schemes which reset, pretend iter is earlier than we actually are
+      if (!is.null(opt$update$iter_reset)) {
+        iter <- iter - opt$update$iter_reset
       }
       opt$update$momentum <- opt$update$mu_fn(iter)
       opt$update$value <- opt$update$update_fn(opt, inp, out, method, iter)

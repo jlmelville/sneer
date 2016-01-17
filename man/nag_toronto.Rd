@@ -4,30 +4,30 @@
 \alias{nag_toronto}
 \title{Nesterov Accelerated Gradient (Toronto Formulation)}
 \usage{
-nag_toronto(opt)
+nag_toronto(...)
 }
 \arguments{
-\item{opt}{Optimizer.}
+\item{...}{step size and update parameters for creating an optimizer.}
 }
 \value{
-Optimizer implementing the NAG.
+Optimizer implementing the NAG method.
 }
 \description{
-Wrapper to apply NAG to an optimizer.
+Wrapper to create a NAG optimizer.
 }
 \details{
-Given a classical gradient descent optimizer with a momentum term, return
-the optimizer implementing the Nesterov Accelerated Gradient method. This
-uses the formulation suggested by the Hinton group at Toronto, which involves
-evaluating the gradient at the position after the momentum update.
+Create an optimizer implementing the Nesterov Accelerated Gradient method.
+This uses the formulation suggested by the Hinton group at Toronto, which
+involves evaluating the gradient at the position after the momentum update.
 }
 \examples{
 # boring old optimizer
 opt <- make_opt(step_size = constant_step_size(0.1),
                 update = constant_momentum(0.8))
 
-# nesterovize it in the Toronto style
-opt <- nag_toronto(opt)
+# nesteroved in the Toronto style
+opt <- nag_toronto(step_size = constant_step_size(0.1),
+                   update = constant_momentum(0.8))
 }
 \references{
 Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
@@ -42,5 +42,11 @@ Sutskever, I. (2013).
 \seealso{
 \code{\link{nag_montreal}} is an alternative formulation of NAG
 suggested by the Bengio group at Montreal.
+
+Other sneer optimization methods: \code{\link{bold_nag}},
+  \code{\link{gradient_descent}}, \code{\link{make_opt}},
+  \code{\link{nag_montreal}},
+  \code{\link{optimization_methods}},
+  \code{\link{tsne_opt}}
 }
 

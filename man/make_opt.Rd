@@ -102,6 +102,7 @@ make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
 
 Other sneer optimization methods: \code{\link{bold_nag}},
   \code{\link{gradient_descent}},
+  \code{\link{nag_montreal}}, \code{\link{nag_toronto}},
   \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}
 }

@@ -4,7 +4,7 @@
 \alias{validate_solution}
 \title{Optimizer Solution Validation}
 \usage{
-validate_solution(opt, inp, out, proposed_out, method)
+validate_solution(opt, inp, out, proposed_out, method, iter)
 }
 \arguments{
 \item{opt}{Optimizer.}
@@ -16,6 +16,8 @@ validate_solution(opt, inp, out, proposed_out, method)
 \item{proposed_out}{Proposed updated output for this iteration.}
 
 \item{method}{Embedding method.}
+
+\item{iter}{Iteration number.}
 }
 \value{
 A list containing:
