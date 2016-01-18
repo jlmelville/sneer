@@ -39,6 +39,7 @@
 #'  set to 1, then JSE behaves like RASNE.
 #' @param eps Small floating point value used to prevent numerical problems,
 #'   e.g. in gradients and cost functions.
+#' @param min_weight Minimum weight allowed for a similarity value.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @references
@@ -68,7 +69,8 @@
 #' # equivalent to "reverse" ASNE
 #' embed_prob(method = jse(kappa = 1), ...)
 #' }
-jse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
+jse <- function(kappa = 0.5, eps = .Machine$double.eps,
+                min_weight = .Machine$double.eps, verbose = TRUE) {
   list(
     cost_fn = jse_cost,
     weight_fn = exp_weight,
@@ -76,7 +78,7 @@ jse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
       jse_stiffness(out$qm, out$zm, out$kl_qz, method$kappa, method$eps)
     },
     update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
+      wm <- clamp(weights(out, method), min_val = min_weight)
       out$qm <- weights_to_prow(wm)
       out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
       out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)

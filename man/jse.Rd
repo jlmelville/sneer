@@ -4,7 +4,8 @@
 \alias{jse}
 \title{Jensen-Shannon Embedding (JSE)}
 \usage{
-jse(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE)
+jse(kappa = 0.5, eps = .Machine$double.eps,
+  min_weight = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{kappa}{Mixture parameter. If set to 0, then JSE behaves like ASNE. If
@@ -12,6 +13,8 @@ set to 1, then JSE behaves like RASNE.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{min_weight}{Minimum weight allowed for a similarity value.}
 
 \item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
