@@ -44,8 +44,7 @@ the step size is highly recommended.
  this function for configuring an embedding.
 
 Other sneer optimization methods: \code{\link{gradient_descent}},
-  \code{\link{make_opt}}, \code{\link{nag_montreal}},
-  \code{\link{nag_toronto}},
+  \code{\link{make_opt}}, \code{\link{nag}},
   \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}
 }

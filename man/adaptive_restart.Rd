@@ -54,7 +54,7 @@ update <- nesterov_nsc_momentum()
 update <- adaptive_restart(update, dec_mult = 0.5)
 \dontrun{
 # pass to optimizer creation in an embedder
-embed_prob(opt = nag_toronto(make_opt(update = update)), ...)
+embed_prob(opt = nag(update = update), ...)
 }
 }
 \references{

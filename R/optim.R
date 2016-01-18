@@ -176,7 +176,7 @@ tsne_opt <- function() {
 bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
                          init_step_size = 1,
                          max_momentum = 1) {
-  nag_toronto(
+  nag(
       step_size = bold_driver(min_step_size = min_step_size,
                               init_step_size = init_step_size),
       update = nesterov_nsc_momentum(max_momentum = max_momentum))
@@ -227,55 +227,20 @@ gradient_descent <- function() {
 #' Sutskever, I. (2013).
 #' \emph{Training recurrent neural networks}
 #' (Doctoral dissertation, University of Toronto).
-#' @seealso \code{\link{nag_montreal}} is an alternative formulation of NAG
-#' suggested by the Bengio group at Montreal.
 #' @examples
 #' # boring old optimizer
 #' opt <- make_opt(step_size = constant_step_size(0.1),
 #'                 update = constant_momentum(0.8))
 #'
-#' # nesteroved in the Toronto style
-#' opt <- nag_toronto(step_size = constant_step_size(0.1),
-#'                    update = constant_momentum(0.8))
+#' # nesterov accelerated version
+#' opt <- nag(step_size = constant_step_size(0.1),
+#'            update = constant_momentum(0.8))
 #' @export
 #' @family sneer optimization methods
-nag_toronto <- function(...) {
+nag <- function(...) {
   opt <- make_opt(...)
   opt$gradient <- nesterov_gradient()
   opt$update$update_fn <- momentum_update
-  opt
-}
-
-#' Nesterov Accelerated Gradient (Montreal Formulation)
-#'
-#' Wrapper to apply NAG to an optimizer.
-#'
-#' Given a classical gradient descent optimizer with a momentum term, return
-#' the optimizer implementing the Nesterov Accelerated Gradient method. This
-#' uses the formulation suggested by the Bengio group at Montreal, which
-#' involves a modified momentum term.
-#'
-#' @param ... step size and update parameters for creating an optimizer.
-#' @return Optimizer implementing the NAG method.
-#' @references
-#' Bengio, Y., Boulanger-Lewandowski, N., & Pascanu, R. (2013, May).
-#' Advances in optimizing recurrent networks.
-#' In \emph{Acoustics, Speech and Signal Processing (ICASSP), 2013 IEEE International Conference on}
-#' (pp. 8624-8628). IEEE.
-#' @examples
-#' # boring old optimizer
-#' opt <- make_opt(step_size = constant_step_size(0.1),
-#'                 update = constant_momentum(0.8))
-#'
-#' # nesteroved it in the Montreal style
-#' opt <- nag_montreal(step_size = constant_step_size(0.1),
-#'                     update = constant_momentum(0.8))
-#' @export
-#' @family sneer optimization methods
-nag_montreal <- function(...) {
-  opt <- make_opt(...)
-  opt$gradient <- classical_gradient()
-  opt$update$update_fn <- nesterov_momentum_update
   opt
 }
 

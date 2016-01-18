@@ -12,7 +12,6 @@
 #' @family sneer optimization update methods
 NULL
 
-
 #' Adaptive Restart
 #'
 #' Wrapper to apply an adaptive restart to the update scheme for an optimizer.
@@ -60,7 +59,7 @@ NULL
 #' update <- adaptive_restart(update, dec_mult = 0.5)
 #' \dontrun{
 #' # pass to optimizer creation in an embedder
-#' embed_prob(opt = nag_toronto(make_opt(update = update)), ...)
+#' embed_prob(opt = nag(update = update), ...)
 #' }
 adaptive_restart <- function(update, dec_mult  = 1,
                              dec_fn = partial(`*`, dec_mult)) {
@@ -303,42 +302,4 @@ momentum_update <- function(opt, inp, out, method, iter) {
   prev_update <- opt$update$value
 
   (momentum * prev_update) + grad_update
-}
-
-#' Update Solution With Accelerate Nesterov Momentum
-#'
-#' Carries out a solution update using a momentum term in addition to the
-#' gradient update, using the Nesterov acceleration scheme.
-#'
-#' This function implements the Nesterov acceleration scheme in the form
-#' presented by Bengio and co-workers. It uses a modified update rule, but
-#' allows gradient to be calculated in the "classical" position, in contrast
-#' to the form given by Sutskever and co-workers, which uses the standard
-#' update rule, but requires the gradient position to be calculated at a
-#' different position.
-#'
-#' If this function is used as part of the update method of an optimizer, the
-#' \code{gradient} parameter should be set to \code{\link{classical_gradient}}.
-#'
-#' @param opt Optimizer.
-#' @param inp Input data.
-#' @param out Output data.
-#' @param method Embedding method.
-#' @param iter Iteration number.
-#' @return Update matrix, consisting of gradient update and momentum term.
-#' @references
-#' Bengio, Y., Boulanger-Lewandowski, N., & Pascanu, R. (2013, May).
-#' Advances in optimizing recurrent networks.
-#' In \emph{Acoustics, Speech and Signal Processing (ICASSP), 2013 IEEE International Conference on}
-#' (pp. 8624-8628). IEEE.
-nesterov_momentum_update <- function(opt, inp, out, method, iter) {
-  direction <- opt$direction$value
-  step_size <- opt$step_size$value
-  grad_update <- step_size * direction
-
-  momentum <- opt$update$momentum
-  momentum_next <- opt$update$mu_fn(iter + 1)
-  prev_update <- opt$update$value
-
-  (momentum * momentum_next * prev_update) + (1 + momentum_next) * grad_update
 }
