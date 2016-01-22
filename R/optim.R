@@ -163,6 +163,8 @@ tsne_opt <- function() {
 #' @param min_step_size Minimum step size allowed.
 #' @param init_step_size Initial step size.
 #' @param max_momentum Maximum value the momentum may take.
+#' @param normalize_grads If \code{TRUE}, scale the length of the gradient to
+#'  one.
 #' @return Optimizer with NAG parameters and bold driver step size.
 #' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
 #'  this function for configuring an embedding.
@@ -174,12 +176,14 @@ tsne_opt <- function() {
 #' @family sneer optimization methods
 #' @export
 bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
-                         init_step_size = 1,
-                         max_momentum = 1) {
+                     init_step_size = 1,
+                     max_momentum = 1,
+                     normalize_grads = TRUE) {
   nag(
       step_size = bold_driver(min_step_size = min_step_size,
                               init_step_size = init_step_size),
-      update = nesterov_nsc_momentum(max_momentum = max_momentum))
+      update = nesterov_nsc_momentum(max_momentum = max_momentum),
+      normalize_grads = normalize_grads)
 }
 
 #' Steepest Descent Optimizer with No Momentum
@@ -428,7 +432,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
   direction_result <- opt$direction$calculate(opt, inp, out, method, iter)
   opt <- direction_result$opt
 
-    step_size_result <- opt$step_size$calculate(opt, inp, out, method)
+  step_size_result <- opt$step_size$calculate(opt, inp, out, method, iter)
   opt <- step_size_result$opt
 
   update_result <- opt$update$calculate(opt, inp, out, method, iter)
@@ -484,7 +488,23 @@ optimize_step <- function(opt, method, inp, out, iter) {
 update_solution <- function(opt, inp, out, method) {
   new_out <- out
   new_solution <- new_out[[opt$mat_name]] + opt$update$value
-  new_out[[opt$mat_name]] <- new_solution
+  set_solution(opt, inp, new_solution, method)
+}
+
+#' Set Output Data Coordinates
+#'
+#' This function sets the embedded coordinates in the output data, as well as
+#' recalculating any auxiliary output data that is dependent on the coordinates
+#' (e.g. distances and probabilities)
+#'
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param coords Matrix of coordinates.
+#' @param method Embedding method.
+#' @return Updated \code{out}.
+set_solution <- function(opt, inp, coords, method) {
+  new_out <- list()
+  new_out[[opt$mat_name]] <- coords
   method$update_out_fn(inp, new_out, method)
 }
 

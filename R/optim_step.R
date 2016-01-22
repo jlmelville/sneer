@@ -30,7 +30,7 @@ constant_step_size <- function(step_size = 1) {
       opt$step_size$value <- step_size
       opt
     },
-    calculate = function(opt, inp, out, method) {
+    calculate = function(opt, inp, out, method, iter) {
       list(opt = opt)
     }
   )
@@ -87,7 +87,7 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
       opt$step_size$ok <- TRUE
       opt
     },
-    calculate = function(opt, inp, out, method) {
+    calculate = function(opt, inp, out, method, iter) {
       list(opt = opt)
     },
     validate = cost_validate,
@@ -192,7 +192,7 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
         matrix(opt$step_size$init_step_size, nrow(v), ncol(v))
       opt
     },
-    calculate = function(opt, inp, out, method) {
+    calculate = function(opt, inp, out, method, iter) {
 
       gm <- opt$gm
       old_step_size <- opt$step_size$value

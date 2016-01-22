@@ -16,6 +16,8 @@ NULL
 #' Factory function for creating an optimizer gradient method.
 #'
 #' Calculates the gradient at the current location of the solution.
+#' Can also provide the position at which the gradient is calculated, useful
+#' for some step length calculation methods.
 #'
 #' @seealso The return value of this function is intended for internal use of
 #' the sneer framework only. See \code{\link{optimization_gradient_interface}}
@@ -30,7 +32,8 @@ NULL
 #' @export
 classical_gradient <- function() {
   list(
-    calculate = classical_grad_pos
+    calculate_position = classical_position,
+    calculate = calculate_gradient
   )
 }
 
@@ -40,7 +43,8 @@ classical_gradient <- function() {
 #' Factory function for creating an optimizer gradient method.
 #'
 #' Calculates the gradient according to the Nesterov Accelerated Gradient
-#' method.
+#' method. Can also provide the position at which the gradient is calculated,
+#' useful for some step length calculation methods.
 #'
 #' @seealso The return value of this function is intended for internal use of
 #' the sneer framework only. See \code{\link{optimization_gradient_interface}}
@@ -60,33 +64,37 @@ classical_gradient <- function() {
 #' @export
 nesterov_gradient <- function() {
   list(
-    calculate = nesterov_grad_pos
+    calculate_position = nesterov_position,
+    calculate = calculate_gradient
   )
 }
 
-
-#' Classical Gradient Calculation
+#' Gradient Calculation
 #'
-#' If the solution is currently at \code{out$ym}, this function calculates the
-#' gradient is calculated at this position. Contrast this with Nesterov
-#' Accelerated Gradient Descent.
+#' Calculate the gradient of the cost function for a specified position, and
+#' a given type of optimization.
 #'
 #' @param opt Optimizer.
 #' @param inp Input data.
-#' @param out Output data.
+#' @param out Output data containing the desired position.
 #' @param method Embedding method.
 #' @param iter Iteration number.
 #' @return List containing:
-#'  \item{\code{km}}{Stiffness matrix.}
-#'  \item{\code{gm}}{Gradient matrix.}
-classical_grad_pos <- function(opt, inp, out, method, iter) {
-  gradient(inp, out, method, opt$mat_name)
+#' \item{\code{km}}{Stiffness matrix.}
+#' \item{\code{gm}}{Gradient matrix.}
+calculate_gradient <- function(opt, inp, out, method, iter) {
+  pos <- opt$gradient$calculate_position(opt, inp, out, method, iter)
+  gradient(inp, pos, method, opt$mat_name)
 }
 
-#' Nesterov Accelerated Gradient Calculation
+
+#' Classical Gradient Position
 #'
-#' This function calculates the gradient at a position determined by applying
-#' the momentum update to the current solution position.
+#' Function for calculating the position to evaluate the gradient at.
+#'
+#' If the solution is currently at \code{out$ym}, this function returns that
+#' position. In standard gradient descent optimization, this is the location
+#' where the gradient would be calculated.
 #'
 #' @param opt Optimizer.
 #' @param inp Input data.
@@ -96,27 +104,46 @@ classical_grad_pos <- function(opt, inp, out, method, iter) {
 #' @return List containing:
 #'  \item{\code{km}}{Stiffness matrix.}
 #'  \item{\code{gm}}{Gradient matrix.}
+#' @seealso \code{\link{nesterov_position}} for an alternative location to
+#' calculate the gradient at.
+classical_position <- function(opt, inp, out, method, iter) {
+  out
+}
+
+#' Nesterov Accelerated Gradient Calculation Position (Toronto Formulation)
+#'
+#' Function for calculating the position to evaluate the gradient at.
+#'
+#' This function return the position of the current solution after the momentum
+#' update for this iteration has been applied. Sustkever and co-workers at
+#' Toronto demonstrated that calculating the gradient at this location was
+#' equivalent to Nesterov Accelerated Gradient (NAG).
+#'
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @param iter Iteration number.
+#' @return New output data.
 #' @references
 #' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
 #' On the importance of initialization and momentum in deep learning.
 #' In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
 #' (pp. 1139-1147).
-nesterov_grad_pos <- function(opt, inp, out, method, iter) {
+nesterov_position <- function(opt, inp, out, method, iter) {
   prev_update <- opt$update$value
   mu <- opt$update$mu_fn(iter)
 
   opt$update$value <- mu * prev_update
-  new_out <- update_solution(opt, inp, out, method)
-
-  gradient(inp, new_out, method, opt$mat_name)
+  update_solution(opt, inp, out, method)
 }
 
 #' Gradient Calculation
 #'
-#' Calculate the gradient of the cost function for the current configuration.
+#' Calculate the gradient of the cost function for a specified position.
 #'
 #' @param inp Input data.
-#' @param out Output data.
+#' @param out Output data containing the desired position.
 #' @param method Embedding method.
 #' @param mat_name Name of the matrix in the output data list that contains the
 #' embedded coordinates.
