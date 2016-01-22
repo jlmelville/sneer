@@ -71,7 +71,6 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
       out$qm <- weights_to_probs(wm, method)
-
       out$wm <- wm
       out
     },
