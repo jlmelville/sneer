@@ -358,6 +358,11 @@ embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
       }
     }
 
+    if (!is.null(opt$stop_early) && opt$stop_early) {
+      message("Optimizer no longer making progress, stopping early")
+      break
+    }
+
     opt_result <- optimize_step(opt, method, inp, out, iter)
     out <- opt_result$out
     opt <- opt_result$opt
@@ -369,10 +374,9 @@ embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
     out <- after_embed(inp, out)
   }
 
-  # If we're exporting the report, force an update on the report if it wasn't
-  # triggered on the final iteration
+  # Force an update on the report if it wasn't triggered on the final iteration
   if ((is.null(report$iter) || report$iter != iter - 1) &&
-      !report$stop_early && "report" %in% export) {
+      (!report$stop_early || (!is.null(opt$stop_early) && opt$stop_early))) {
     if (!is.null(reporter)) {
       report <- reporter(iter, inp, out, method, opt, report, force = TRUE)
     }
