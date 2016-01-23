@@ -86,8 +86,9 @@ Other sneer embedding methods: \code{\link{asne}},
   \code{\link{jse}}, \code{\link{nerv}},
   \code{\link{rasne}}, \code{\link{rssne}},
   \code{\link{rtsne}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{snerv}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tnerv}}, \code{\link{tsne}}
+  \code{\link{sjse}}, \code{\link{smmds}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
+  \code{\link{tsne}}
 }
 

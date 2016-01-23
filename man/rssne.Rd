@@ -56,9 +56,10 @@ Other sneer embedding methods: \code{\link{asne}},
   \code{\link{jse}}, \code{\link{mmds}},
   \code{\link{nerv}}, \code{\link{rasne}},
   \code{\link{rtsne}}, \code{\link{sammon_map}},
-  \code{\link{smmds}}, \code{\link{snerv}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tnerv}}, \code{\link{tsne}}
+  \code{\link{sjse}}, \code{\link{smmds}},
+  \code{\link{snerv}}, \code{\link{ssne}},
+  \code{\link{tasne}}, \code{\link{tnerv}},
+  \code{\link{tsne}}
 
 Other sneer probability embedding methods: \code{\link{asne}},
   \code{\link{hsjse}}, \code{\link{hsnerv}},
@@ -66,8 +67,8 @@ Other sneer probability embedding methods: \code{\link{asne}},
   \code{\link{nerv}},
   \code{\link{probability_embedding_methods}},
   \code{\link{rasne}}, \code{\link{rtsne}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tnerv}},
-  \code{\link{tsne}}
+  \code{\link{sjse}}, \code{\link{snerv}},
+  \code{\link{ssne}}, \code{\link{tasne}},
+  \code{\link{tnerv}}, \code{\link{tsne}}
 }
 
