@@ -78,20 +78,7 @@ jse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
       out$qm <- weights_to_probs(wm, method)
-      out$zm <- clamp(js_mixture(inp$pm, out$qm, method$kappa))
-
-#      min_val <-  1e-7
-#      wm <- weights(out, method)
-#      qm <- weights_to_prow(wm)
-#      qm <- clamp(qm, min_val = min_val)
-#      diag(qm) <- 0
-#      out$qm <- clamp(weights_to_prow(qm))
-
- #     zm <- js_mixture(inp$pm, out$qm, method$kappa)
-#      zm <- clamp(zm, min_val = min_val)
-#      diag(zm) <- 0
-#      out$zm <- clamp(weights_to_prow(zm))
-
+      out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
       out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
       out
     },

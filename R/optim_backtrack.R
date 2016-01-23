@@ -88,27 +88,11 @@ backtracking_line_search <- function(opt, inp, out, method, iter,
 
   phi_0 <- cost_step_length(opt, inp, method, y0, pm, 0)
   phi_alpha <- cost_step_length(opt, inp, method, y0, pm, alpha)
-  if (is.na(phi_alpha)) {
-    stop("phi_alpha is NA")
-  }
-  if (is.na(alpha)) {
-    stop("alpha is NA")
-  }
-  if (any(is.na(opt$gm))) {
-    stop("NA in gm")
-  }
-  if (any(is.na(pm))) {
-    stop("NA in pm")
-  }
-  if (is.na(cgp)) {
-    stop("cgp is NA")
-  }
 
   while (phi_alpha > phi_0 + (alpha * cgp) && alpha > min_step_size) {
     alpha <- rho * alpha
     phi_alpha <- cost_step_length(opt, inp, method, y0, pm, alpha)
   }
-  #message(iter, ": alpha = ", formatC(alpha), " |gm| = ", formatC(length_vec(opt$gm)))
 
   alpha
 }
@@ -128,20 +112,5 @@ backtracking_line_search <- function(opt, inp, out, method, iter,
 cost_step_length <- function(opt, inp, method, y0, pm, alpha) {
   y_alpha <- y0 + (alpha * pm)
   out_alpha <- set_solution(opt, inp, y_alpha, method)
-  if (any(is.na(out_alpha$ym))) {
-    stop("NA in ym")
-  }
-  if (any(is.na(out_alpha$wm))) {
-    stop("NA in wm")
-  }
-  if (any(is.na(out_alpha$qm))) {
-    stop("NA in qm")
-  }
-  if (any(is.na(out_alpha$zm))) {
-    stop("NA in zm")
-  }
-  if (is.na(out_alpha$kl_qz)) {
-    stop("kl_qz is NA")
-  }
   method$cost_fn(inp, out_alpha, method)
 }
