@@ -184,7 +184,7 @@ weights_to_probs <- function(wm, method) {
   pm <- get(prob_fn_name)(wm)
   attr(pm, "type") <- prob_type
 
-  clamp(pm)
+  pm
 }
 
 #' Create Row Probability Matrix from Weight Matrix
@@ -212,7 +212,9 @@ weights_to_prow <- function(wm) {
 #' @param wm Matrix of weighted distances. Asymmetric or symmetric.
 #' @return Conditional probability matrix.
 weights_to_pcond <- function(wm) {
-  wm / sum(wm)
+  pm <- wm / sum(wm)
+  pm[is.nan(pm)] <- 1 / (ncol(wm) ^ 2)
+  pm
 }
 
 #' Create Joint Probability Matrix from Symmetric Weight Matrix
@@ -324,5 +326,5 @@ handle_prob <- function(pm, method) {
     pm <- get(prob_fn_name)(pm)
     attr(pm, "type") <- prob_out
   }
-  clamp(pm)
+  pm
 }

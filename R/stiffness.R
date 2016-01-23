@@ -67,7 +67,7 @@ hssne_stiffness <- function(pm, qm, wm, alpha = 1.5e-8, beta = 1) {
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
 reverse_asne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
-  km <- qm * (log(pm / (qm + eps)) + rev_kl)
+  km <- qm * (log((pm + eps) / (qm + eps)) + rev_kl)
   2 * (km + t(km))
 }
 
@@ -82,7 +82,7 @@ reverse_asne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
 reverse_ssne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
-  4 * qm * (log(pm / (qm + eps)) + rev_kl)
+  4 * qm * (log((pm + eps) / (qm + eps)) + rev_kl)
 }
 
 #' "Reverse" t-SNE Stiffness Function
@@ -113,6 +113,6 @@ reverse_tsne_stiffness <- function(pm, qm, wm, rev_kl,
 #' @return Stiffness matrix.
 reverse_hssne_stiffness <- function(pm, qm, wm, rev_kl, alpha = 1.5e-8,
                                     beta = 1, eps = .Machine$double.eps) {
-  4 * beta * qm * (log(pm / (qm + eps)) + rev_kl) * (wm ^ alpha)
+  4 * beta * qm * (log((pm + eps) / (qm + eps)) + rev_kl) * (wm ^ alpha)
 }
 
