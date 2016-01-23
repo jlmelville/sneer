@@ -2,6 +2,7 @@
 
 export(adaptive_restart)
 export(asne)
+export(backtracking)
 export(bold_driver)
 export(bold_nag)
 export(classical_gradient)
