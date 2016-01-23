@@ -5,7 +5,7 @@
 \title{Nesterov Accelerated Gradient Optimizer with Bold Driver}
 \usage{
 bold_nag(min_step_size = sqrt(.Machine$double.eps), init_step_size = 1,
-  max_momentum = 1)
+  max_momentum = 1, normalize_grads = TRUE)
 }
 \arguments{
 \item{min_step_size}{Minimum step size allowed.}
@@ -13,6 +13,9 @@ bold_nag(min_step_size = sqrt(.Machine$double.eps), init_step_size = 1,
 \item{init_step_size}{Initial step size.}
 
 \item{max_momentum}{Maximum value the momentum may take.}
+
+\item{normalize_grads}{If \code{TRUE}, scale the length of the gradient to
+one.}
 }
 \value{
 Optimizer with NAG parameters and bold driver step size.

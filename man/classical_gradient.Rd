@@ -14,6 +14,8 @@ Factory function for creating an optimizer gradient method.
 }
 \details{
 Calculates the gradient at the current location of the solution.
+Can also provide the position at which the gradient is calculated, useful
+for some step length calculation methods.
 }
 \examples{
 # Use as part of the make_opt function for configuring an optimizer's
