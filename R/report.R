@@ -11,6 +11,9 @@
 #' @param reltol If the relative tolerance of the cost function between
 #'  consecutive reports falls below this value, the optimization process is
 #'  halted.
+#' @param disttol If the RMSD between output distance matrices calculated
+#'  between consecutive reports falls below this value, the optimization
+#'  process is halted.
 #' @param plot Function for plotting embedding. Signature should be
 #'  \code{plot(out)} where \code{out} is the output data list. Return value
 #'  of this function is ignored.
@@ -106,7 +109,9 @@
 #' }
 #' @export
 make_reporter <- function(report_every = 100, min_cost = 0,
-                          reltol = sqrt(.Machine$double.eps), plot = NULL,
+                          reltol = sqrt(.Machine$double.eps),
+                          disttol = sqrt(.Machine$double.eps),
+                          plot = NULL,
                           normalize_cost = TRUE, keep_costs = FALSE,
                           extra_costs = NULL, opt_report = FALSE,
                           out_report = FALSE,
@@ -115,9 +120,6 @@ make_reporter <- function(report_every = 100, min_cost = 0,
 
   reporter$cost_log <- function(iter, inp, out, method, opt, result) {
     cost <- method$cost_fn(inp, out, method)
-    if (is.null(result$cost)) {
-      result$cost <- .Machine$double.xmax
-    }
 
     if (normalize_cost) {
       norm_fn <- make_normalized_cost_fn(method$cost_fn)
@@ -144,25 +146,60 @@ make_reporter <- function(report_every = 100, min_cost = 0,
       }
     }
 
+    rtol <- NULL
+    if (!is.null(result$cost)) {
+      rtol <- reltol(cost, result$cost)
+      if (verbose) {
+        cost_str <- paste0(cost_str, " rtol = ", formatC(rtol))
+      }
+      result$reltol <- rtol
+    }
+
+    rmsd <- NULL
+    if (is.null(result$dm)) {
+      if (!is.null(out$dm)) {
+        result$dm <- upper_tri(out$dm)
+      }
+      else {
+        result$dm <- upper_tri(distance_matrix(out$ym))
+      }
+    }
+    else {
+      if (!is.null(out$dm)) {
+        dm <- upper_tri(out$dm)
+      }
+      else {
+        dm <- upper_tri(distance_matrix(out$ym))
+      }
+      rmsd <- sqrt(sum((result$dm - dm) ^ 2) / length(dm))
+      result$dm <- dm
+      if (verbose) {
+        cost_str <- paste0(cost_str, " dtol = ", formatC(rmsd))
+      }
+    }
+
     if (verbose) {
       message("Iteration #", iter, cost_str)
       flush.console()
     }
+
     if (cost < min_cost) {
       if (verbose) {
         message("minimum cost ", formatC(min_cost), " convergence reached")
       }
       result$stop_early <- TRUE
-    } else {
-      rtol <- reltol(cost, result$cost)
-      if (rtol < reltol) {
-        if (verbose) {
-          message("relative tolerance ", formatC(reltol),
-                  " convergence reached")
-        }
-        result$stop_early <- TRUE
+    }
+    else if (!is.null(rtol) && rtol < reltol) {
+      if (verbose) {
+        message("relative tolerance ", formatC(reltol), " convergence reached")
       }
-      result$reltol <- rtol
+      result$stop_early <- TRUE
+    }
+    else if (!is.null(rmsd) && rmsd < disttol) {
+      if (verbose) {
+        message("distance tolerance ", formatC(rmsd), " convergence reached")
+      }
+      result$stop_early <- TRUE
     }
 
     result$cost <- cost

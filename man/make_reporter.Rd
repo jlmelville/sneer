@@ -5,9 +5,10 @@
 \title{Reporter}
 \usage{
 make_reporter(report_every = 100, min_cost = 0,
-  reltol = sqrt(.Machine$double.eps), plot = NULL, normalize_cost = TRUE,
-  keep_costs = FALSE, extra_costs = NULL, opt_report = FALSE,
-  out_report = FALSE, verbose = TRUE)
+  reltol = sqrt(.Machine$double.eps), disttol = sqrt(.Machine$double.eps),
+  plot = NULL, normalize_cost = TRUE, keep_costs = FALSE,
+  extra_costs = NULL, opt_report = FALSE, out_report = FALSE,
+  verbose = TRUE)
 }
 \arguments{
 \item{report_every}{Number of steps between callback invocations.}
@@ -18,6 +19,10 @@ value, the optimization process is halted.}
 \item{reltol}{If the relative tolerance of the cost function between
 consecutive reports falls below this value, the optimization process is
 halted.}
+
+\item{disttol}{If the RMSD between output distance matrices calculated
+between consecutive reports falls below this value, the optimization
+process is halted.}
 
 \item{plot}{Function for plotting embedding. Signature should be
 \code{plot(out)} where \code{out} is the output data list. Return value
