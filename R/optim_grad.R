@@ -132,7 +132,7 @@ classical_position <- function(opt, inp, out, method, iter) {
 #' (pp. 1139-1147).
 nesterov_position <- function(opt, inp, out, method, iter) {
   prev_update <- opt$update$value
-  mu <- opt$update$mu_fn(iter)
+  mu <- opt$update$mu_fn(opt, iter)
 
   opt$update$value <- mu * prev_update
   update_solution(opt, inp, out, method)

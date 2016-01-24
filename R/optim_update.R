@@ -84,7 +84,7 @@ adaptive_restart <- function(update, dec_mult  = 1,
 #'
 #' Create an update method using a user-defined momentum scheme function.
 #'
-#' @param mu_fn Momentum function with signature \code{mu_fn(iter)} where
+#' @param mu_fn Momentum function with signature \code{mu_fn(opt, iter)} where
 #'  \code{iter} is the iteration number and the function returns the momentum
 #'  value for that iteration.
 #' @param linear_weight If \code{TRUE}, then the gradient descent contribution
@@ -96,11 +96,12 @@ adaptive_restart <- function(update, dec_mult  = 1,
 #'  iteration.
 #' @return Momentum scheme update method.
 #' @export
-momentum_scheme <- function(mu_fn, linear_weight = FALSE, msg_fn = NULL,
+momentum_scheme <- function(mu_fn, validate = NULL, after_step = NULL,
+                            linear_weight = FALSE, msg_fn = NULL,
                             verbose = TRUE) {
   list(
     init = function(opt, inp, out, method) {
-      opt$update$momentum <- mu_fn(0)
+      opt$update$momentum <- mu_fn(opt, 0)
       opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
                                  ncol(out[[opt$mat_name]]))
       opt
@@ -113,10 +114,13 @@ momentum_scheme <- function(mu_fn, linear_weight = FALSE, msg_fn = NULL,
       if (!is.null(opt$update$iter_reset)) {
         iter <- iter - opt$update$iter_reset
       }
-      opt$update$momentum <- opt$update$mu_fn(iter)
-      opt$update$value <- opt$update$update_fn(opt, inp, out, method, iter, linear_weight = linear_weight)
+      opt$update$momentum <- opt$update$mu_fn(opt, iter)
+      opt$update$value <- opt$update$update_fn(opt, inp, out, method, iter,
+                                               linear_weight = linear_weight)
       list(opt = opt)
     },
+    validate = validate,
+    after_step = after_step,
     mu_fn = mu_fn,
     update_fn = momentum_update
   )
@@ -156,7 +160,7 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
     }
   }
 
-  mu_fn <- function(iter) {
+  mu_fn <- function(opt, iter) {
     if (iter == switch_iter) {
       return(final_momentum)
     }
@@ -194,7 +198,7 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
 #' @export
 linear_momentum <- function(max_iter, init_momentum = 0,
                             final_momentum = 0.9, ...) {
-  mu_fn <- function(iter) {
+  mu_fn <- function(opt, iter) {
     mu_i <- init_momentum
     mu_f <- final_momentum
     mu <- (mu_f - mu_i) / max_iter
@@ -237,7 +241,7 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 #' @family sneer optimization update methods
 #' @export
 nesterov_nsc_momentum <- function(max_momentum = 1, ...) {
-  mu_fn <- function(iter) {
+  mu_fn <- function(opt, iter) {
     mu <- 1 - (3 / (iter + 5))
     min(max_momentum, mu)
   }
@@ -266,7 +270,7 @@ nesterov_nsc_momentum <- function(max_momentum = 1, ...) {
 #' @family sneer optimization update methods
 #' @export
 constant_momentum <- function(momentum, ...) {
-  mu_fn <- function(iter) {
+  mu_fn <- function(opt, iter) {
     momentum
   }
   momentum_scheme(mu_fn, ...)
