@@ -466,6 +466,16 @@ optimize_step <- function(opt, method, inp, out, iter) {
     new_out <- after_step_result$new_out
   }
 
+  # If we're keeping track of the cost, update for the next step
+  if (!ok) {
+    if (!is.null(opt$old_cost)) {
+      opt$cost <- opt$old_cost
+    }
+  }
+  if (!is.null(opt$cost)) {
+    opt$old_cost <- opt$cost
+  }
+
   # mark cached cost data as valid as we exit
   # (tricks can make it dirty before next step)
   opt$cost_dirty <- FALSE

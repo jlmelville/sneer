@@ -95,18 +95,11 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
       s_old <- opt$step_size$value
       # only care if the cost was ok or not
       if (opt$cost_ok) {
-        s_new <- opt$step_size$inc_fn(opt$step_size$value)
+        s_new <- opt$step_size$inc_fn(s_old)
       } else {
-        s_new <- opt$step_size$dec_fn(opt$step_size$value)
-        opt$cost <- opt$old_cost
+        s_new <- opt$step_size$dec_fn(s_old)
       }
-      ds <- s_new - s_old
-
-      opt$step_size$value <- s_old + ds
-      opt$step_size$value <- clamp(opt$step_size$value,
-                                   opt$step_size$min_step_size)
-
-      opt$old_cost <- opt$cost
+      opt$step_size$value <- clamp(s_new, opt$step_size$min_step_size)
 
       list(opt = opt)
     }
