@@ -82,18 +82,22 @@ adaptive_restart <- function(update, dec_mult  = 1,
 
 #' Momentum Update Method
 #'
-#' Create an update method using a momentum scheme
+#' Create an update method using a user-defined momentum scheme function.
 #'
 #' @param mu_fn Momentum function with signature \code{mu_fn(iter)} where
 #'  \code{iter} is the iteration number and the function returns the momentum
 #'  value for that iteration.
+#' @param linear_weight If \code{TRUE}, then the gradient descent contribution
+#'  to the update will be weighted by \code{1 - momentum}.
 #' @param msg_fn Function with signature \code{msg_fn(iter)} where
 #'  \code{iter} is the iteration number. Called on each iteration if
 #'  \code{verbose} is \code{TRUE}. Can be used to provide information.
 #' @param verbose If \code{TRUE}, then \code{msg_fn} will be invoked on each
 #'  iteration.
 #' @return Momentum scheme update method.
-momentum_scheme <- function(mu_fn, msg_fn = NULL, verbose = TRUE) {
+#' @export
+momentum_scheme <- function(mu_fn, linear_weight = FALSE, msg_fn = NULL,
+                            verbose = TRUE) {
   list(
     init = function(opt, inp, out, method) {
       opt$update$momentum <- mu_fn(0)
@@ -110,7 +114,7 @@ momentum_scheme <- function(mu_fn, msg_fn = NULL, verbose = TRUE) {
         iter <- iter - opt$update$iter_reset
       }
       opt$update$momentum <- opt$update$mu_fn(iter)
-      opt$update$value <- opt$update$update_fn(opt, inp, out, method, iter)
+      opt$update$value <- opt$update$update_fn(opt, inp, out, method, iter, linear_weight = linear_weight)
       list(opt = opt)
     },
     mu_fn = mu_fn,
@@ -129,8 +133,9 @@ momentum_scheme <- function(mu_fn, msg_fn = NULL, verbose = TRUE) {
 #' iterations.
 #' @param final_momentum Momentum value after \code{switch_iter} iterations.
 #' @param switch_iter Iteration number at which to switch from
-#' \code{init_momentum} to \code{final_momentum}.
-#' @param verbose if \code{TRUE}, log info about the momentum.
+#'  \code{init_momentum} to \code{final_momentum}.
+#' @param ... Base momentum parameters to pass to the
+#'  \code{\link{momentum_scheme}} factory function.
 #' @return Step momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
 #' the sneer framework only. See \code{\link{optimization_update_interface}}
@@ -143,9 +148,9 @@ momentum_scheme <- function(mu_fn, msg_fn = NULL, verbose = TRUE) {
 #' @export
 step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
                           switch_iter = 250,
-                          verbose = TRUE) {
+                          ...) {
   msg_fn <- function(iter) {
-    if (verbose && iter == switch_iter) {
+    if (iter == switch_iter) {
       message("Switching to final momentum ", formatC(final_momentum),
               " at iter ", iter)
     }
@@ -160,7 +165,7 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
     }
   }
 
-  momentum_scheme(mu_fn, msg_fn = msg_fn, verbose = verbose)
+  momentum_scheme(mu_fn, msg_fn = msg_fn, ...)
 }
 
 #' Linear Momentum
@@ -175,6 +180,8 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
 #' @param init_momentum Momentum value for the first \code{switch_iter}
 #' iterations.
 #' @param final_momentum Momentum value after \code{switch_iter} iterations.
+#' @param ... Base momentum parameters to pass to the
+#'  \code{\link{momentum_scheme}} factory function.
 #' @return Linear momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
 #' the sneer framework only. See \code{\link{optimization_update_interface}}
@@ -186,14 +193,14 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
 #' @family sneer optimization update methods
 #' @export
 linear_momentum <- function(max_iter, init_momentum = 0,
-                            final_momentum = 0.9) {
+                            final_momentum = 0.9, ...) {
   mu_fn <- function(iter) {
     mu_i <- init_momentum
     mu_f <- final_momentum
     mu <- (mu_f - mu_i) / max_iter
     (mu * iter) + mu_i
   }
-  momentum_scheme(mu_fn)
+  momentum_scheme(mu_fn, ...)
 }
 
 #' Nesterov Momentum for Non-Strongly Convex Functions
@@ -208,6 +215,8 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 #' where \eqn{t} is the iteration number.
 #'
 #' @param max_momentum Maximum value the momentum may take.
+#' @param ... Base momentum parameters to pass to the
+#'  \code{\link{momentum_scheme}} factory function.
 #' @return Nesterov momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
 #' the sneer framework only. See \code{\link{optimization_update_interface}}
@@ -227,12 +236,12 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 #' (Doctoral dissertation, University of Toronto).
 #' @family sneer optimization update methods
 #' @export
-nesterov_nsc_momentum <- function(max_momentum = 1) {
+nesterov_nsc_momentum <- function(max_momentum = 1, ...) {
   mu_fn <- function(iter) {
     mu <- 1 - (3 / (iter + 5))
     min(max_momentum, mu)
   }
-  momentum_scheme(mu_fn)
+  momentum_scheme(mu_fn, ...)
 }
 
 #' Constant Momentum
@@ -244,6 +253,8 @@ nesterov_nsc_momentum <- function(max_momentum = 1) {
 #' a solution.
 #'
 #' @param momentum Momentum value to use.
+#' @param ... Base momentum parameters to pass to the
+#'  \code{\link{momentum_scheme}} factory function.
 #' @return Constant momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
 #' the sneer framework only. See \code{\link{optimization_update_interface}}
@@ -254,11 +265,11 @@ nesterov_nsc_momentum <- function(max_momentum = 1) {
 #' make_opt(update = constant_momentum())
 #' @family sneer optimization update methods
 #' @export
-constant_momentum <- function(momentum) {
+constant_momentum <- function(momentum, ...) {
   mu_fn <- function(iter) {
     momentum
   }
-  momentum_scheme(mu_fn)
+  momentum_scheme(mu_fn, ...)
 }
 
 #' No Momentum Update
@@ -268,6 +279,8 @@ constant_momentum <- function(momentum) {
 #' Create an callback for the optimizer to use that uses strict gradient
 #' descent with no momentum term.
 #'
+#' @param ... Base momentum parameters to pass to the
+#'  \code{\link{momentum_scheme}} factory function.
 #' @return Zero-momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
 #' the sneer framework only. See \code{\link{optimization_update_interface}}
@@ -278,8 +291,8 @@ constant_momentum <- function(momentum) {
 #' make_opt(update = no_momentum())
 #' @family sneer optimization update methods
 #' @export
-no_momentum <- function() {
-  constant_momentum(0)
+no_momentum <- function(...) {
+  constant_momentum(0, ...)
 }
 
 #' Update Solution With Momentum
@@ -293,7 +306,7 @@ no_momentum <- function() {
 #' @param method Embedding method.
 #' @param iter Iteration number.
 #' @return Update matrix, consisting of gradient update and momentum term.
-momentum_update <- function(opt, inp, out, method, iter) {
+momentum_update <- function(opt, inp, out, method, iter, linear_weight = FALSE) {
   direction <- opt$direction$value
   step_size <- opt$step_size$value
   grad_update <- step_size * direction
@@ -301,5 +314,11 @@ momentum_update <- function(opt, inp, out, method, iter) {
   momentum <- opt$update$momentum
   prev_update <- opt$update$value
 
-  (momentum * prev_update) + grad_update
+  if (linear_weight) {
+    grad_weight <- (1 - momentum)
+  }
+  else {
+    grad_weight <- 1
+  }
+  (momentum * prev_update) + (grad_weight * grad_update)
 }
