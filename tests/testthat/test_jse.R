@@ -33,6 +33,11 @@ hsjse_iris_k0a0 <- test_embed(hsjse(kappa = 0, alpha = 0))
 expect_equal(all_costs(ssne_iris), all_costs(hsjse_iris_k0a0),
              tolerance = 0.001, scale = 1)
 
+# SJSE kappa 0 equivalent to SSNE
+sjse_iris_k0 <- test_embed(sjse(kappa = 0))
+expect_equal(all_costs(ssne_iris), all_costs(sjse_iris_k0),
+             tolerance = 0.001, scale = 1)
+
 # HSJSE kappa 1 alpha 0 approaches "reverse" SSNE but can't get as close as
 # other formulations
 rssne_iris <- test_embed(rssne())
