@@ -247,8 +247,70 @@ constant_momentum <- function(momentum, ...) {
 #' @family sneer optimization update methods
 #' @export
 no_momentum <- function(...) {
-  constant_momentum(0, ...)
+  list(
+    init = function(opt, inp, out, method) {
+      opt$update$value <- matrix(0,
+                                 nrow(out[[opt$mat_name]]),
+                                 ncol(out[[opt$mat_name]]))
+      opt
+    },
+    calculate = function(opt, inp, out, method, iter) {
+      opt$update$value <- gradient_update_term(opt)
+      list(opt = opt)
+    })
 }
+
+momentum_scheme <- function(mu_fn = NULL,
+                            calculate = NULL,
+                            validate = NULL,
+                            after_step = NULL,
+                            linear_weight = FALSE,
+                            init_momentum = 0,
+                            min_momentum = 0,
+                            max_momentum = 1,
+                            momentum = list(),
+                            msg_fn = NULL,
+                            verbose = TRUE) {
+  momentum$min <- min_momentum
+  momentum$max <- max_momentum
+  momentum$value <- init_momentum
+
+  if (!is.null(mu_fn)) {
+    momentum$calculate <- function(opt, inp, out, method, iter) {
+      min(max(mu_fn(iter), opt$update$momentum$min), opt$update$momentum$max)
+    }
+  } else {
+    momentum$calculate <- function(opt, inp, out, method, iter) {
+      min(max(calculate(opt, inp, out, method, iter),
+              opt$update$momentum$min), opt$update$momentum$max)
+    }
+  }
+
+  list(
+    init = function(opt, inp, out, method) {
+      opt$update$value <- matrix(0,
+                                 nrow(out[[opt$mat_name]]),
+                                 ncol(out[[opt$mat_name]]))
+      opt
+    },
+    calculate = function(opt, inp, out, method, iter) {
+      if (verbose && !is.null(msg_fn)) {
+        msg_fn(iter)
+      }
+      # for schemes which reset, pretend iter is earlier than we actually are
+      if (!is.null(opt$update$iter_reset)) {
+        iter <- iter - opt$update$iter_reset
+      }
+      opt$update$value <- momentum_update(opt, inp, out, method, iter,
+                                          linear_weight = linear_weight)
+      list(opt = opt)
+    },
+    validate = validate,
+    after_step = after_step,
+    momentum = momentum
+  )
+}
+
 
 #' Update Solution With Momentum
 #'
@@ -266,7 +328,8 @@ momentum_update <- function(opt, inp, out, method, iter, linear_weight = FALSE) 
   grad_term <- gradient_update_term(opt)
   momentum_term <- momentum_update_term(opt, inp, out, method, iter)
   if (linear_weight) {
-    grad_weight <- (1 - opt$update$momentum$calculate(opt, inp, out, method, iter))
+    grad_weight <- (1 - opt$update$momentum$calculate(opt, inp, out, method,
+                                                      iter))
   }
   else {
     grad_weight <- 1

@@ -23,11 +23,6 @@ expect_equal(constant_m(1), 0.95)
 expect_equal(constant_m(500), 0.95)
 expect_equal(constant_m(1000), 0.95)
 
-no_m <- mu(no_momentum())
-expect_equal(no_m(1), 0)
-expect_equal(no_m(500), 0)
-expect_equal(no_m(1000), 0)
-
 step_m <- mu(step_momentum(init_momentum = 0.2, final_momentum = 0.6,
                          switch_iter = 100))
 expect_equal(step_m(1), 0.2)
