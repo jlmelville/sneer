@@ -131,10 +131,7 @@ classical_position <- function(opt, inp, out, method, iter) {
 #' In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
 #' (pp. 1139-1147).
 nesterov_position <- function(opt, inp, out, method, iter) {
-  prev_update <- opt$update$value
-  mu <- opt$update$mu_fn(opt, iter)
-
-  opt$update$value <- mu * prev_update
+  opt$update$value <- momentum_update_term(opt, inp, out, method, iter)
   update_solution(opt, inp, out, method)
 }
 
