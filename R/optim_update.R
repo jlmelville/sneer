@@ -39,20 +39,18 @@ momentum_scheme <- function(mu_fn = NULL,
                             momentum = list(),
                             msg_fn = NULL,
                             verbose = TRUE) {
-
   momentum$min <- min_momentum
   momentum$max <- max_momentum
   momentum$value <- init_momentum
 
   if (!is.null(mu_fn)) {
     momentum$calculate <- function(opt, inp, out, method, iter) {
-      clamp(mu_fn(iter), opt$update$momentum$min, opt$update$momentum$max)
+      min(max(mu_fn(iter), opt$update$momentum$min), opt$update$momentum$max)
     }
   } else {
     momentum$calculate <- function(opt, inp, out, method, iter) {
-      clamp(calculate(opt, inp, out, method, iter),
-            opt$update$momentum$min,
-            opt$update$momentum$max)
+      min(max(calculate(opt, inp, out, method, iter),
+          opt$update$momentum$min), opt$update$momentum$max)
     }
   }
 
@@ -196,7 +194,7 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 #' @export
 nesterov_nsc_momentum <- function(...) {
   mu_fn <- function(iter) {
-    mu <- 1 - (3 / (iter + 5))
+    1 - (3 / (iter + 5))
   }
   momentum_scheme(mu_fn, ...)
 }
