@@ -31,6 +31,20 @@ clamp <- function(x, min_val = .Machine$double.eps, max_val = NULL) {
   x
 }
 
+#' Clamp Scalar Numerical Value
+#'
+#' Value is truncated so that it lies within (\code{min, max}).
+#'
+#' @param x Value.
+#' @param min If \code{x} is smaller than this value, it will be truncated to
+#'  this value.
+#' @param max If \code{x} is larger than this value, it will be truncated to
+#'  this value.
+#' @return Clamped value.
+sclamp <- function(x, min, max) {
+  base::min(base::max(x, min), max)
+}
+
 #' Length of a Vector (or Matrix)
 #'
 #' @param x Matrix.
