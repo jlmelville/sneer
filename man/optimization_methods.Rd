@@ -14,7 +14,8 @@ make_opt(step_size = jacobs())
 \seealso{
 Other sneer optimization methods: \code{\link{bold_nag}},
   \code{\link{gradient_descent}}, \code{\link{make_opt}},
-  \code{\link{nag}}, \code{\link{tsne_opt}}
+  \code{\link{nag}}, \code{\link{ropt}},
+  \code{\link{tsne_opt}}
 }
 \keyword{internal}
 

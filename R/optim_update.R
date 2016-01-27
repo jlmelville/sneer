@@ -16,11 +16,21 @@ NULL
 #'
 #' Create an update method using a user-defined momentum scheme function.
 #'
-#' @param mu_fn Momentum function with signature \code{mu_fn(opt, iter)} where
+#' @param mu_fn Momentum function with signature \code{mu_fn(iter)} where
 #'  \code{iter} is the iteration number and the function returns the momentum
-#'  value for that iteration.
+#'  value for that iteration. Ignored if \code{calculate} is specified.
+#' @param calculate Momentum function with signature
+#'  \code{calculate(opt, inp, out, method, iter)} where and the function
+#'  returns the momentum value for that iteration.
+#' @param validate Validation function.
+#' @param after_step After-step function.
 #' @param linear_weight If \code{TRUE}, then the gradient descent contribution
 #'  to the update will be weighted by \code{1 - momentum}.
+#' @param init_momentum Initial momentum value.
+#' @param min_momentum Minimum momentum value.
+#' @param max_momentum Maximum momentum value.
+#' @param momentum Momentum method list containing any specific values required
+#'  by a particular scheme.
 #' @param msg_fn Function with signature \code{msg_fn(iter)} where
 #'  \code{iter} is the iteration number. Called on each iteration if
 #'  \code{verbose} is \code{TRUE}. Can be used to provide information.
@@ -322,6 +332,8 @@ momentum_scheme <- function(mu_fn = NULL,
 #' @param out Output data.
 #' @param method Embedding method.
 #' @param iter Iteration number.
+#' @param linear_weight If \code{TRUE}, then the gradient descent contribution
+#'  to the update will be weighted by \code{1 - momentum}.
 #' @return Update matrix, consisting of gradient update and momentum term.
 momentum_update <- function(opt, inp, out, method, iter, linear_weight = FALSE) {
 
@@ -358,10 +370,6 @@ momentum_update_term <- function(opt, inp, out, method, iter) {
 #' Calculates the gradient term of an update.
 #'
 #' @param opt Optimizer.
-#' @param inp Input data.
-#' @param out Output data.
-#' @param method Embedding method.
-#' @param iter Iteration number.
 #' @return Gradient update.
 gradient_update_term <- function(opt) {
   direction <- opt$direction$value

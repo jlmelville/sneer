@@ -4,10 +4,13 @@
 \alias{constant_momentum}
 \title{Constant Momentum}
 \usage{
-constant_momentum(momentum)
+constant_momentum(momentum, ...)
 }
 \arguments{
 \item{momentum}{Momentum value to use.}
+
+\item{...}{Base momentum parameters to pass to the
+\code{\link{momentum_scheme}} factory function.}
 }
 \value{
 Constant momentum update method, to be used by the optimizer.

@@ -4,7 +4,11 @@
 \alias{no_momentum}
 \title{No Momentum Update}
 \usage{
-no_momentum()
+no_momentum(...)
+}
+\arguments{
+\item{...}{Base momentum parameters to pass to the
+\code{\link{momentum_scheme}} factory function.}
 }
 \value{
 Zero-momentum update method, to be used by the optimizer.

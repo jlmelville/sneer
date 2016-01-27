@@ -42,7 +42,7 @@ Sutskever, I. (2013).
 \seealso{
 Other sneer optimization methods: \code{\link{bold_nag}},
   \code{\link{gradient_descent}}, \code{\link{make_opt}},
-  \code{\link{optimization_methods}},
+  \code{\link{optimization_methods}}, \code{\link{ropt}},
   \code{\link{tsne_opt}}
 }
 

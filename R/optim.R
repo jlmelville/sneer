@@ -101,6 +101,7 @@ make_opt <- function(gradient = classical_gradient(),
                      normalize_grads = TRUE, recenter = TRUE,
                      mat_name = "ym") {
   list(
+    optimize_step = optimize_step,
     mat_name = mat_name,
     normalize_grads = normalize_grads,
     recenter = recenter,

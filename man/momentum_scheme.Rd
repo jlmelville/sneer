@@ -4,12 +4,35 @@
 \alias{momentum_scheme}
 \title{Momentum Update Method}
 \usage{
-momentum_scheme(mu_fn, msg_fn = NULL, verbose = TRUE)
+momentum_scheme(mu_fn = NULL, calculate = NULL, validate = NULL,
+  after_step = NULL, linear_weight = FALSE, init_momentum = 0,
+  min_momentum = 0, max_momentum = 1, momentum = list(), msg_fn = NULL,
+  verbose = TRUE)
 }
 \arguments{
 \item{mu_fn}{Momentum function with signature \code{mu_fn(iter)} where
 \code{iter} is the iteration number and the function returns the momentum
-value for that iteration.}
+value for that iteration. Ignored if \code{calculate} is specified.}
+
+\item{calculate}{Momentum function with signature
+\code{calculate(opt, inp, out, method, iter)} where and the function
+returns the momentum value for that iteration.}
+
+\item{validate}{Validation function.}
+
+\item{after_step}{After-step function.}
+
+\item{linear_weight}{If \code{TRUE}, then the gradient descent contribution
+to the update will be weighted by \code{1 - momentum}.}
+
+\item{init_momentum}{Initial momentum value.}
+
+\item{min_momentum}{Minimum momentum value.}
+
+\item{max_momentum}{Maximum momentum value.}
+
+\item{momentum}{Momentum method list containing any specific values required
+by a particular scheme.}
 
 \item{msg_fn}{Function with signature \code{msg_fn(iter)} where
 \code{iter} is the iteration number. Called on each iteration if
@@ -22,6 +45,6 @@ iteration.}
 Momentum scheme update method.
 }
 \description{
-Create an update method using a momentum scheme
+Create an update method using a user-defined momentum scheme function.
 }
 

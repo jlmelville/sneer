@@ -4,10 +4,11 @@
 \alias{nesterov_nsc_momentum}
 \title{Nesterov Momentum for Non-Strongly Convex Functions}
 \usage{
-nesterov_nsc_momentum(max_momentum = 1)
+nesterov_nsc_momentum(...)
 }
 \arguments{
-\item{max_momentum}{Maximum value the momentum may take.}
+\item{...}{Base momentum parameters to pass to the
+\code{\link{momentum_scheme}} factory function.}
 }
 \value{
 Nesterov momentum update method, to be used by the optimizer.

@@ -4,7 +4,7 @@
 \alias{linear_momentum}
 \title{Linear Momentum}
 \usage{
-linear_momentum(max_iter, init_momentum = 0, final_momentum = 0.9)
+linear_momentum(max_iter, init_momentum = 0, final_momentum = 0.9, ...)
 }
 \arguments{
 \item{max_iter}{Number of iterations to scale the momentum over from
@@ -14,6 +14,9 @@ linear_momentum(max_iter, init_momentum = 0, final_momentum = 0.9)
 iterations.}
 
 \item{final_momentum}{Momentum value after \code{switch_iter} iterations.}
+
+\item{...}{Base momentum parameters to pass to the
+\code{\link{momentum_scheme}} factory function.}
 }
 \value{
 Linear momentum update method, to be used by the optimizer.

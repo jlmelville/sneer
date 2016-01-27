@@ -4,7 +4,7 @@
 \alias{momentum_update}
 \title{Update Solution With Momentum}
 \usage{
-momentum_update(opt, inp, out, method, iter)
+momentum_update(opt, inp, out, method, iter, linear_weight = FALSE)
 }
 \arguments{
 \item{opt}{Optimizer.}
@@ -16,6 +16,9 @@ momentum_update(opt, inp, out, method, iter)
 \item{method}{Embedding method.}
 
 \item{iter}{Iteration number.}
+
+\item{linear_weight}{If \code{TRUE}, then the gradient descent contribution
+to the update will be weighted by \code{1 - momentum}.}
 }
 \value{
 Update matrix, consisting of gradient update and momentum term.

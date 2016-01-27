@@ -28,6 +28,7 @@ that from the t-SNE paper.
 
 Other sneer optimization methods: \code{\link{bold_nag}},
   \code{\link{gradient_descent}}, \code{\link{make_opt}},
-  \code{\link{nag}}, \code{\link{optimization_methods}}
+  \code{\link{nag}}, \code{\link{optimization_methods}},
+  \code{\link{ropt}}
 }
 

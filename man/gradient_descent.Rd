@@ -30,7 +30,7 @@ size method is used to adaptively select the step size.
 
 Other sneer optimization methods: \code{\link{bold_nag}},
   \code{\link{make_opt}}, \code{\link{nag}},
-  \code{\link{optimization_methods}},
+  \code{\link{optimization_methods}}, \code{\link{ropt}},
   \code{\link{tsne_opt}}
 }
 

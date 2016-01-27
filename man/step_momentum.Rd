@@ -5,7 +5,7 @@
 \title{Step Momentum}
 \usage{
 step_momentum(init_momentum = 0.5, final_momentum = 0.8,
-  switch_iter = 250, verbose = TRUE)
+  switch_iter = 250, ...)
 }
 \arguments{
 \item{init_momentum}{Momentum value for the first \code{switch_iter}
@@ -16,7 +16,8 @@ iterations.}
 \item{switch_iter}{Iteration number at which to switch from
 \code{init_momentum} to \code{final_momentum}.}
 
-\item{verbose}{if \code{TRUE}, log info about the momentum.}
+\item{...}{Base momentum parameters to pass to the
+\code{\link{momentum_scheme}} factory function.}
 }
 \value{
 Step momentum update method, to be used by the optimizer.

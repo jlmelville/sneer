@@ -48,7 +48,7 @@ the step size is highly recommended.
 
 Other sneer optimization methods: \code{\link{gradient_descent}},
   \code{\link{make_opt}}, \code{\link{nag}},
-  \code{\link{optimization_methods}},
+  \code{\link{optimization_methods}}, \code{\link{ropt}},
   \code{\link{tsne_opt}}
 }
 

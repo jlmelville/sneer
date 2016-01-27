@@ -31,13 +31,14 @@ backtracking <- function(c1 = 0.1, rho = 0.8,
   list(
     init = function(opt, inp, out, method) {
       opt$step_size$value <- 1
+      opt$step_size$max <- max_step_size
       opt
     },
     calculate = function(opt, inp, out, method, iter) {
       opt$step_size$value <-
         backtracking_line_search(opt, inp, out, method, iter,
-                                 alpha = opt$step_size$max_step_size,
-                                 c1 = 1.e-1, rho = 0.8,
+                                 alpha = opt$step_size$max,
+                                 c1 = c1, rho = rho,
                                  min_step_size = min_step_size)
       list(opt = opt)
     },
@@ -47,10 +48,13 @@ backtracking <- function(c1 = 0.1, rho = 0.8,
         opt$stop_early <- TRUE
         ok <- FALSE
       }
-      opt$step_size$max_step_size <- opt$step_size$max_step_size * (1 + rho)
       list(ok = ok, opt = opt)
     },
-    max_step_size = max_step_size
+    after_step = function(opt, inp, out, new_out, method, ok, iter) {
+      opt$step_size$max <- opt$step_size$value
+      list(opt = opt)
+    },
+    max = max_step_size
   )
 }
 
