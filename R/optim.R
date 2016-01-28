@@ -116,7 +116,7 @@ make_opt <- function(gradient = classical_gradient(),
     after_step = after_step,
 
     report = opt_report,
-    cost_dirty = TRUE
+    old_cost_dirty = TRUE
   )
 }
 
@@ -479,7 +479,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
 
   # mark cached cost data as valid as we exit
   # (tricks can make it dirty before next step)
-  opt$cost_dirty <- FALSE
+  opt$old_cost_dirty <- FALSE
 
   list(opt = opt, inp = inp, out = new_out)
 }
@@ -532,8 +532,8 @@ set_solution <- function(opt, inp, coords, method) {
 #' to prevent wasteful recalculation of the cost function. This function will
 #' set the following members on the \code{opt} object:
 #' \describe{
-#'  \item{\code{old_cost}}{The cost associated with the previous solution,
-#'    \code{out}. If this value already exists, and \code{opt$cost_dirty} is
+#'  \item{\code{old_cost_dirty}}{The cost associated with the previous solution,
+#'    \code{out}. If this value already exists, and \code{opt$old_cost_dirty} is
 #'    \code{FALSE}, it is assumed that the old cost is up to date and it won't
 #'    be recalculated.}
 #'  \item{\code{cost}}{The cost associated with the proposed solution,
@@ -541,9 +541,9 @@ set_solution <- function(opt, inp, coords, method) {
 #'    \code{opt$cost_iter} exists and is equal to the current value of
 #'    \code{iter}, it is assumed that the cost is up to data and it won't be
 #'    recalculated.}
-#'  \item{\code{cost_dirty}}{A flag indicating that cost data from the previous
-#'    iteration has been invalidated. If the function recalculates the old cost,
-#'    this flag will be reset to false.}
+#'  \item{\code{old_cost_dirty}}{A flag indicating that cost data from the
+#'    previous iteration has been invalidated. If the function recalculates the
+#'    old cost, this flag will be reset to false.}
 #'  \item{\code{cost_iter}}{The iteration at which the current cost was
 #'    calculated. If the function recalculates the cost of the proposed
 #'    solution, this value will be set to the current value of \code{iter}.}
@@ -562,9 +562,9 @@ set_solution <- function(opt, inp, coords, method) {
 #' \item{opt}{Optimizer with any updated data (e.g. cached costs).}
 #' @keywords internal
 cost_validate <- function(opt, inp, out, proposed_out, method, iter) {
-  if (opt$cost_dirty) {
+  if (opt$old_cost_dirty) {
     opt$old_cost <- method$cost_fn(inp, out, method)
-    opt$cost_dirty <- FALSE
+    opt$old_cost_dirty <- FALSE
   }
   old_cost <- opt$old_cost
 

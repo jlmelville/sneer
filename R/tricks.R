@@ -263,7 +263,7 @@ step_perplexity <- function(start_perp, stop_perp, num_iters, num_steps = 10,
       inp <- inp_from_perp(perplexity = perp, input_weight_fn = input_weight_fn,
                            verbose = verbose)(inp, method)
       # invalidate cached data (e.g. old costs) in optimizer
-      opt$cost_dirty <- TRUE
+      opt$old_cost_dirty <- TRUE
     }
     list(inp = inp, opt = opt)
   }
