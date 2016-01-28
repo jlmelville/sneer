@@ -51,7 +51,7 @@ backtracking <- function(c1 = 0.1, rho = 0.8,
       list(ok = ok, opt = opt)
     },
     after_step = function(opt, inp, out, new_out, method, ok, iter) {
-      opt$step_size$max <- opt$step_size$value
+      opt$step_size$max <- min(1, opt$step_size$value * 1.01)
       list(opt = opt)
     },
     max = max_step_size
