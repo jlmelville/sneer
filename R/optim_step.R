@@ -80,8 +80,8 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
     inc_fn = inc_fn,
     dec_fn = dec_fn,
     init_step_size = init_step_size,
-    min_step_size = min_step_size,
-    max_step_size = max_step_size,
+    min = min_step_size,
+    max = max_step_size,
     init = function(opt, inp, out, method) {
       opt$step_size$value <- opt$step_size$init_step_size
       opt$step_size$ok <- TRUE
@@ -99,7 +99,9 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
       } else {
         s_new <- opt$step_size$dec_fn(s_old)
       }
-      opt$step_size$value <- clamp(s_new, opt$step_size$min_step_size)
+      opt$step_size$value <- sclamp(s_new,
+                                    min = opt$step_size$min,
+                                    max = opt$step_size$max)
 
       list(opt = opt)
     }
