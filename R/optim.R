@@ -183,7 +183,8 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
   nag(
       step_size = bold_driver(min_step_size = min_step_size,
                               init_step_size = init_step_size),
-      update = nesterov_nsc_momentum(max_momentum = max_momentum),
+      update = nesterov_nsc_momentum(max_momentum = max_momentum,
+                                     linear_weight = TRUE),
       normalize_grads = normalize_grads)
 }
 
