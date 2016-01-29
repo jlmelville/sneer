@@ -4,13 +4,13 @@
 \alias{adaptive_restart}
 \title{Adaptive Restart}
 \usage{
-adaptive_restart(update, dec_mult = 1, dec_fn = partial(`*`, dec_mult))
+adaptive_restart(update, dec_mult = 0, dec_fn = partial(`*`, dec_mult))
 }
 \arguments{
 \item{update}{A momentum-based update method.}
 
-\item{dec_mult}{Degree to reduce the effective iteration number used to
-calculate a momentum value after a reset.}
+\item{dec_mult}{In the event of a reset, the effective iteration number
+will be multiplied by this value.}
 
 \item{dec_fn}{Function to decrease the effective iteration number after a
 reset. Should have the signature \code{dec_fn(iter)} where \code{iter} is

@@ -55,12 +55,15 @@ momentum_scheme <- function(mu_fn = NULL,
 
   if (!is.null(mu_fn)) {
     momentum$calculate <- function(opt, inp, out, method, iter) {
-      min(max(mu_fn(iter), opt$update$momentum$min), opt$update$momentum$max)
+      sclamp(mu_fn(opt$update$t),
+             min = opt$update$momentum$min,
+             max = opt$update$momentum$max)
     }
   } else {
     momentum$calculate <- function(opt, inp, out, method, iter) {
-      min(max(calculate(opt, inp, out, method, iter),
-          opt$update$momentum$min), opt$update$momentum$max)
+      sclamp(calculate(opt, inp, out, method, iter),
+             min = opt$update$momentum$min,
+             max = opt$update$momentum$max)
     }
   }
 
@@ -69,22 +72,35 @@ momentum_scheme <- function(mu_fn = NULL,
       opt$update$value <- matrix(0,
                                  nrow(out[[opt$mat_name]]),
                                  ncol(out[[opt$mat_name]]))
+      opt$update$previous <- opt$update$value
       opt
     },
     calculate = function(opt, inp, out, method, iter) {
       if (verbose && !is.null(msg_fn)) {
         msg_fn(iter)
       }
-      # for schemes which reset, pretend iter is earlier than we actually are
-      if (!is.null(opt$update$iter_reset)) {
-        iter <- iter - opt$update$iter_reset
-      }
       opt$update$value <- momentum_update(opt, inp, out, method, iter,
                                           linear_weight = linear_weight)
       list(opt = opt)
     },
     validate = validate,
-    after_step = after_step,
+    after_step = function(opt, inp, out, new_out, ok, iter) {
+      if (ok) {
+        opt$update$previous <- opt$update$value
+        opt$update$dirty <- TRUE
+        opt$update$t <- opt$update$t + 1
+      }
+      else {
+        opt$update$dirty <- FALSE
+        opt$update$value <- opt$update$previous
+      }
+      if (!is.null(after_step)) {
+        return(after_step(opt, inp, out, new_out, ok, iter))
+      }
+      list(opt = opt)
+    },
+    t = 0,
+    dirty = TRUE,
     momentum = momentum
   )
 }
@@ -270,58 +286,6 @@ no_momentum <- function(...) {
     })
 }
 
-momentum_scheme <- function(mu_fn = NULL,
-                            calculate = NULL,
-                            validate = NULL,
-                            after_step = NULL,
-                            linear_weight = FALSE,
-                            init_momentum = 0,
-                            min_momentum = 0,
-                            max_momentum = 1,
-                            momentum = list(),
-                            msg_fn = NULL,
-                            verbose = TRUE) {
-  momentum$min <- min_momentum
-  momentum$max <- max_momentum
-  momentum$value <- init_momentum
-
-  if (!is.null(mu_fn)) {
-    momentum$calculate <- function(opt, inp, out, method, iter) {
-      min(max(mu_fn(iter), opt$update$momentum$min), opt$update$momentum$max)
-    }
-  } else {
-    momentum$calculate <- function(opt, inp, out, method, iter) {
-      min(max(calculate(opt, inp, out, method, iter),
-              opt$update$momentum$min), opt$update$momentum$max)
-    }
-  }
-
-  list(
-    init = function(opt, inp, out, method) {
-      opt$update$value <- matrix(0,
-                                 nrow(out[[opt$mat_name]]),
-                                 ncol(out[[opt$mat_name]]))
-      opt
-    },
-    calculate = function(opt, inp, out, method, iter) {
-      if (verbose && !is.null(msg_fn)) {
-        msg_fn(iter)
-      }
-      # for schemes which reset, pretend iter is earlier than we actually are
-      if (!is.null(opt$update$iter_reset)) {
-        iter <- iter - opt$update$iter_reset
-      }
-      opt$update$value <- momentum_update(opt, inp, out, method, iter,
-                                          linear_weight = linear_weight)
-      list(opt = opt)
-    },
-    validate = validate,
-    after_step = after_step,
-    momentum = momentum
-  )
-}
-
-
 #' Update Solution With Momentum
 #'
 #' Carries out a solution update using a momentum term in addition to the
@@ -361,8 +325,7 @@ momentum_update <- function(opt, inp, out, method, iter, linear_weight = FALSE) 
 #' @return Momentum update.
 momentum_update_term <- function(opt, inp, out, method, iter) {
   momentum <- opt$update$momentum$calculate(opt, inp, out, method, iter)
-  prev_update <- opt$update$value
-  momentum * prev_update
+  momentum * opt$update$previous
 }
 
 #' Gradient term of an update
@@ -404,8 +367,8 @@ gradient_update_term <- function(opt) {
 #' applied, and 1 (the default) means that the full reduction is applied.
 #'
 #' @param update A momentum-based update method.
-#' @param dec_mult Degree to reduce the effective iteration number used to
-#'  calculate a momentum value after a reset.
+#' @param dec_mult In the event of a reset, the effective iteration number
+#'  will be multiplied by this value.
 #' @param dec_fn Function to decrease the effective iteration number after a
 #'  reset. Should have the signature \code{dec_fn(iter)} where \code{iter} is
 #'  the iteration number. Function should return a new iteration number between
@@ -426,19 +389,60 @@ gradient_update_term <- function(opt) {
 #' # pass to optimizer creation in an embedder
 #' embed_prob(opt = nag(update = update), ...)
 #' }
-adaptive_restart <- function(update, dec_mult  = 1,
+adaptive_restart <- function(update, dec_mult  = 0,
                              dec_fn = partial(`*`, dec_mult)) {
 
-  update$validate <- cost_validate
+  if (!is.null(update$after_step)) {
+    update$old_after_step <- update$after_step
+  }
+  if (!is.null(update$validate)) {
+    update$old_validate <- update$validate
+  }
+
+  update$validate <- function(opt, inp, out, proposed_out, method, iter) {
+    old_ok <- TRUE
+    if (!is.null(opt$update$old_validate)) {
+      result <- opt$update$old_validate(opt, inp, out, proposed_out, method, iter)
+      if (!is.null(result$opt)) {
+        opt <- result$opt
+      }
+      if (!is.null(result$inp)) {
+        inp <- result$inp
+      }
+      if (!is.null(result$proposed_out)) {
+        proposed_out <- result$proposed_out
+      }
+      if (!is.null(result$ok)) {
+        old_ok <- result$ok
+      }
+    }
+    result <- cost_validate(opt, inp, out, proposed_out, method, iter)
+    if (result$ok && !old_ok) {
+      result$ok <- FALSE
+    }
+    result
+  }
 
   update$after_step <- function(opt, inp, out, new_out, ok, iter) {
-    if (!opt$cost_ok) {
-      opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
-                                 ncol(out[[opt$mat_name]]))
-      opt$update$iter_reset <- dec_fn(iter)
+    if (!is.null(opt$update$old_after_step)) {
+      result <- opt$update$old_after_step(opt, inp, out, new_out, ok, iter)
+      if (!is.null(result$opt)) {
+        opt <- result$opt
+      }
+      if (!is.null(result$inp)) {
+        inp <- result$inp
+      }
+      if (!is.null(result$out)) {
+        out <- result$out
+      }
     }
 
-    opt$old_cost <- opt$cost
+    if (!opt$cost_ok) {
+      opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
+                               ncol(out[[opt$mat_name]]))
+      opt$update$t <- dec_fn(opt$update$t)
+      opt$update$dirty <- TRUE
+    }
 
     list(opt = opt, inp = inp, new_out = new_out)
   }

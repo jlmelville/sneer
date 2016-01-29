@@ -4,6 +4,7 @@ context("Momentum")
 mu <- function(update) {
   opt <- make_opt(update = update)
   function(iter) {
+    opt$update$t <- iter
     update$momentum$calculate(opt, NULL ,NULL, NULL, iter)
   }
 }
