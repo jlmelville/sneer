@@ -33,7 +33,10 @@ NULL
 classical_gradient <- function() {
   list(
     calculate_position = classical_position,
-    calculate = calculate_gradient
+    calculate = calculate_gradient,
+    is_dirty = function(opt, inp, out, method, iter) {
+      inp$dirty || out$dirty
+    }
   )
 }
 
@@ -65,7 +68,10 @@ classical_gradient <- function() {
 nesterov_gradient <- function() {
   list(
     calculate_position = nesterov_position,
-    calculate = calculate_gradient
+    calculate = calculate_gradient,
+    is_dirty = function(opt, inp, out, method, iter) {
+      inp$dirty || out$dirty || opt$update$dirty
+    }
   )
 }
 
@@ -83,6 +89,10 @@ nesterov_gradient <- function() {
 #' \item{\code{km}}{Stiffness matrix.}
 #' \item{\code{gm}}{Gradient matrix.}
 calculate_gradient <- function(opt, inp, out, method, iter) {
+  if (!is.null(opt$gradient$is_dirty) &&
+      !opt$gradient$is_dirty(opt, inp, out, method, iter)) {
+    return(list(gm = opt$gm, km = opt$km))
+  }
   pos <- opt$gradient$calculate_position(opt, inp, out, method, iter)
   gradient(inp, pos, method, opt$mat_name)
 }

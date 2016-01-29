@@ -152,7 +152,7 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
     }
 
     flush.console()
-    result <- list(dm = dm)
+    result <- list(dm = dm, dirty = TRUE)
     if (class(xm) != "dist") {
       result$xm <- xm
     }

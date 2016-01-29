@@ -66,6 +66,7 @@ make_tricks <- function(...) {
   tricks <- list(...)
 
   function(inp, out, method, opt, iter) {
+    inp$dirty <- FALSE
     for (i in seq_along(tricks)) {
       result <- tricks[[i]](inp, out, method, opt, iter)
       if (!is.null(result$inp)) {
@@ -264,6 +265,7 @@ step_perplexity <- function(start_perp, stop_perp, num_iters, num_steps = 10,
                            verbose = verbose)(inp, method)
       # invalidate cached data (e.g. old costs) in optimizer
       opt$old_cost_dirty <- TRUE
+      inp$dirty <- TRUE
     }
     list(inp = inp, opt = opt)
   }

@@ -28,7 +28,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
                        export = c("report"),
                        verbose = FALSE,
                        opt = bold_nag())
-expect_equal(ssne_iris$report$norm, 0.07265, tolerance = 5e-5, scale = 1)
+expect_equal(ssne_iris$report$norm, 0.07366, tolerance = 5e-5, scale = 1)
 
 asne_iris <- embed_prob(iris[, 1:4],
                        method = asne(verbose = FALSE),

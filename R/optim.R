@@ -116,7 +116,8 @@ make_opt <- function(gradient = classical_gradient(),
     after_step = after_step,
 
     report = opt_report,
-    old_cost_dirty = TRUE
+    old_cost_dirty = TRUE,
+    grad_dirty = TRUE
   )
 }
 
@@ -454,10 +455,18 @@ optimize_step <- function(opt, method, inp, out, iter) {
     ok <- validation_result$ok
   }
 
+  # If the this solution was vetoed, roll back to the previous one.
+  # There's also a possibility that we won't have to recalculate the
+  # gradient on the next step, although an after_step function can
+  # mark the gradient as dirty if we're using NAG and the update changes
+  # e.g. adaptive restart resets the previous update. Also a change to inp
+  # or out in a trick can dirty the gradient.
   if (ok) {
     new_out <- proposed_out
+    new_out$dirty <- TRUE
   } else {
     new_out <- out
+    new_out$dirty <- FALSE
   }
 
   if (!is.null(opt$after_step)) {
@@ -468,20 +477,15 @@ optimize_step <- function(opt, method, inp, out, iter) {
     new_out <- after_step_result$new_out
   }
 
-  # If we're keeping track of the cost, update for the next step
-  if (!ok) {
-    if (!is.null(opt$old_cost)) {
-      opt$cost <- opt$old_cost
+  if (ok) {
+    if (!is.null(opt$cost)) {
+      opt$old_cost <- opt$cost
     }
-  }
-  if (!is.null(opt$cost)) {
-    opt$old_cost <- opt$cost
   }
 
   # mark cached cost data as valid as we exit
   # (tricks can make it dirty before next step)
   opt$old_cost_dirty <- FALSE
-
   list(opt = opt, inp = inp, out = new_out)
 }
 

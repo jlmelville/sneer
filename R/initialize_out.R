@@ -178,6 +178,7 @@ init_out <- function(initializer) {
   function(inp) {
     out <- list()
     out <- initializer(inp, out)
+    out$dirty <- TRUE
     flush.console()
     out
   }

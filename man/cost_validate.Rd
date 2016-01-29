@@ -36,8 +36,8 @@ Because multiple methods may use this function, some caching is carried out
 to prevent wasteful recalculation of the cost function. This function will
 set the following members on the \code{opt} object:
 \describe{
- \item{\code{old_cost}}{The cost associated with the previous solution,
-   \code{out}. If this value already exists, and \code{opt$cost_dirty} is
+ \item{\code{old_cost_dirty}}{The cost associated with the previous solution,
+   \code{out}. If this value already exists, and \code{opt$old_cost_dirty} is
    \code{FALSE}, it is assumed that the old cost is up to date and it won't
    be recalculated.}
  \item{\code{cost}}{The cost associated with the proposed solution,
@@ -45,9 +45,9 @@ set the following members on the \code{opt} object:
    \code{opt$cost_iter} exists and is equal to the current value of
    \code{iter}, it is assumed that the cost is up to data and it won't be
    recalculated.}
- \item{\code{cost_dirty}}{A flag indicating that cost data from the previous
-   iteration has been invalidated. If the function recalculates the old cost,
-   this flag will be reset to false.}
+ \item{\code{old_cost_dirty}}{A flag indicating that cost data from the
+   previous iteration has been invalidated. If the function recalculates the
+   old cost, this flag will be reset to false.}
  \item{\code{cost_iter}}{The iteration at which the current cost was
    calculated. If the function recalculates the cost of the proposed
    solution, this value will be set to the current value of \code{iter}.}

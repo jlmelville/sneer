@@ -126,6 +126,7 @@ inp_prob <- function(input_initializer) {
   function(inp, method) {
     inp <- input_initializer(inp)
     inp$pm <- handle_prob(inp$pm, method)
+    inp$dirty <- TRUE
     inp
   }
 }
