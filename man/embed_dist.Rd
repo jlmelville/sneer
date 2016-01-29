@@ -6,7 +6,7 @@
 \usage{
 embed_dist(xm, method = mmds(), preprocess = make_preprocess(verbose =
   verbose), init_inp = NULL, init_out = out_from_PCA(verbose = verbose),
-  opt = make_opt(), max_iter = 1000, tricks = NULL,
+  opt = make_opt(), max_iter = 1000, tricks = make_tricks(),
   reporter = make_reporter(verbose = verbose), export = NULL,
   after_embed = NULL, verbose = TRUE)
 }
