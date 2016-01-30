@@ -180,12 +180,13 @@ tsne_opt <- function() {
 bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
                      init_step_size = 1,
                      max_momentum = 1,
-                     normalize_grads = TRUE) {
+                     normalize_grads = TRUE,
+                     linear_weight = TRUE) {
   nag(
       step_size = bold_driver(min_step_size = min_step_size,
                               init_step_size = init_step_size),
       update = nesterov_nsc_momentum(max_momentum = max_momentum,
-                                     linear_weight = TRUE),
+                                     linear_weight = linear_weight),
       normalize_grads = normalize_grads)
 }
 
