@@ -5,9 +5,10 @@ context("MDS")
 # formatC(smacof::mds(dist(iris[, 1:4]), init = prcomp(iris[, 1:4],
 #         center = TRUE, retx = TRUE)$x[, 1:2], eps = 1.5e-8)$stress)
 # = "0.03272" - close enough
+# on this occasion, turning off linear weighting works better
 mds_iris <- embed_dist(iris[, 1:4],
                        method = mmds(),
-                       opt = bold_nag(),
+                       opt = bold_nag(linear_weight = FALSE),
                        reporter = make_reporter(
                          extra_costs = c("kruskal_stress"), verbose = FALSE),
                        export = c("report"), verbose = FALSE, max_iter = 40)
