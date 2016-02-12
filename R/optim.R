@@ -505,7 +505,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
 update_solution <- function(opt, inp, out, method) {
   new_out <- out
   new_solution <- new_out[[opt$mat_name]] + opt$update$value
-  set_solution(opt, inp, new_solution, method)
+  set_solution(opt, inp, new_solution, method, out)
 }
 
 #' Set Output Data Coordinates
@@ -518,11 +518,14 @@ update_solution <- function(opt, inp, out, method) {
 #' @param inp Input data.
 #' @param coords Matrix of coordinates.
 #' @param method Embedding method.
-#' @return Updated \code{out}.
-set_solution <- function(opt, inp, coords, method) {
-  new_out <- list()
-  new_out[[opt$mat_name]] <- coords
-  method$update_out_fn(inp, new_out, method)
+#' @param out Existing output data. Optional.
+#' @return \code{out} list with updated with coords and auxiliary data.
+set_solution <- function(opt, inp, coords, method, out = NULL) {
+  if (is.null(out)) {
+    out <- list()
+  }
+  out[[opt$mat_name]] <- coords
+  method$update_out_fn(inp, out, method)
 }
 
 #' Cost Validation
