@@ -35,8 +35,11 @@ backtracking <- function(c1 = 0.1, rho = 0.8,
       opt
     },
     calculate = function(opt, inp, out, method, iter) {
+      pm <- opt$direction$value
+      phi_alpha <- make_phi_alpha(opt, inp, out, method, iter, pm)
+
       opt$step_size$value <-
-        backtracking_line_search(opt, inp, out, method, iter,
+        backtracking_line_search(phi_alpha,
                                  alpha = opt$step_size$max,
                                  c1 = c1, rho = rho,
                                  min_step_size = min_step_size)
@@ -68,11 +71,7 @@ backtracking <- function(c1 = 0.1, rho = 0.8,
 #' \code{alpha} parameter, and if the sufficient decrease condition is not
 #' met, decreases the step length by a factor of \code{rho} until it does.
 #'
-#' @param opt Optimizer.
-#' @param inp Input data.
-#' @param out Output data.
-#' @param method Embedding method.
-#' @param iter Iteration number.
+#' @param phi_alpha Line function.
 #' @param alpha Initial step size.
 #' @param c1 Constant for the sufficient decrease condition.
 #' @param rho Factor to decrease alpha by.
@@ -82,39 +81,24 @@ backtracking <- function(c1 = 0.1, rho = 0.8,
 #' Nocedal, J., & Wright, S. (2006).
 #' \emph{Numerical optimization.}
 #' Springer Science & Business Media.
-backtracking_line_search <- function(opt, inp, out, method, iter,
-                                     alpha = 1, c1 = 1.e-1, rho = 0.8,
+backtracking_line_search <- function(phi_alpha,
+                                     alpha = 1,
+                                     c1 = 1.e-1, rho = 0.8,
                                      min_step_size = .Machine$double.eps) {
-  pm <- opt$direction$value
-  cgp <- c1 * sum(opt$gm * pm)
-  out0 <- opt$gradient$calculate_position(opt, inp, out, method, iter)
-  y0 <- out0[[opt$mat_name]]
 
-  phi_0 <- cost_step_length(opt, inp, method, y0, pm, 0)
-  phi_alpha <- cost_step_length(opt, inp, method, y0, pm, alpha)
+  s0 <- phi_alpha(0, calc_gradient = TRUE)
+  sa <- phi_alpha(alpha)
 
-  while (phi_alpha > phi_0 + (alpha * cgp) && alpha > min_step_size) {
+  while (!armijo_oks(s0, sa, c1) && alpha > min_step_size) {
     alpha <- rho * alpha
-    phi_alpha <- cost_step_length(opt, inp, method, y0, pm, alpha)
+    sa <- phi_alpha(alpha)
+#    message("alpha = ", formatC(alpha),
+#            " f0 = ", formatC(s0$f),
+#            " f = ", formatC(sa$f))
   }
 
   alpha
 }
 
-#' Cost Evaluated at a Step Length Along a Search Direction
-#'
-#' This function calculates the cost function when the solution is updated
-#' based on moving a specified step length along a search direction.
-#'
-#' @param opt Optimizer.
-#' @param inp Input data.
-#' @param method Embedding method.
-#' @param y0 Coordinate start point of the line search.
-#' @param pm Direction vector to search along.
-#' @param alpha Step length along the direction.
-#' @return Cost at the location given by \code{y0 + alpha * pm}.
-cost_step_length <- function(opt, inp, method, y0, pm, alpha) {
-  y_alpha <- y0 + (alpha * pm)
-  out_alpha <- set_solution(opt, inp, y_alpha, method)
-  method$cost_fn(inp, out_alpha, method)
-}
+
+

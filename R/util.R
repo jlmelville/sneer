@@ -125,3 +125,7 @@ upper_tri <- function(x) {
 remove_nulls <- function(l) {
   l[!sapply(l, is.null)]
 }
+
+dot <- function(a, b) {
+  sum(a * b)
+}
