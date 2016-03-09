@@ -93,13 +93,14 @@ opt_step <- function(opt, par, fn, gr, iter) {
     stop("NaN in grad. descent at iter ", iter)
   }
 
-  if (opt$normalize_grads) {
-    opt$grad_length <- length_vec(opt$gm)
-    opt$gm <- normalize(opt$gm)
-  }
+  opt$grad_length <- length_vec(opt$gm)
 
   direction_result <- opt$direction$calculate(opt, inp, out, method, iter)
   opt <- direction_result$opt
+
+  if (opt$normalize_direction) {
+    opt$direction$value <- normalize(opt$direction$value)
+  }
 
   step_size_result <- opt$step_size$calculate(opt, inp, out, method, iter)
   opt <- step_size_result$opt

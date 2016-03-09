@@ -29,16 +29,16 @@ NULL
 #'  step.
 #' }
 #'
-#' Normalizing the gradients (by setting \code{normalize_grads} to
-#' \code{TRUE}) will scale the gradient matrix to length 1 before the
-#' optimization step. This has the effect of making the size of the gradient
-#' descent dependent only on the step size, rather than the product of the
-#' step size and the size of the gradient. This can increase the stability of
-#' step size methods like Bold Driver and the Jacobs method which iteratively
-#' update the step size based on previous values rather than doing a search,
-#' or with methods where the gradients can get extremely large (e.g. in
-#' traditional distance-based embeddings like MDS and Sammon mapping which
-#' involve dividing by potentially very small distances).
+#' Normalizing the direction vector (by setting \code{normalize_direction} to
+#' \code{TRUE}) will scale it to length 1 before the optimization step. This
+#' has the effect of making the size of the gradient descent dependent only on
+#' the step size, rather than the product of the step size and the size of the
+#' gradient. This can increase the stability of step size methods like Bold
+#' Driver and the Jacobs method which iteratively update the step size based on
+#' previous values rather than doing a search, or with methods where the
+#' gradients can get extremely large (e.g. in traditional distance-based
+#' embeddings like MDS and Sammon mapping which involve dividing by potentially
+#' very small distances).
 #'
 #' The optimizer can validate the proposed solution, rejecting it
 #' if the solution is not acceptable of the methods it is comprised of. It also
@@ -57,7 +57,7 @@ NULL
 #' @param update Method to combine a gradient descent with other terms (e.g.
 #'   momentum) to produce the final update. Set by calling one of the
 #'   configuration functions listed in \code{\link{optimization_update}}.
-#' @param normalize_grads If \code{TRUE} the gradient matrix is normalized to
+#' @param normalize_direction If \code{TRUE} the gradient matrix is normalized to
 #'   a length of one before step size calculation.
 #' @param mat_name Name of the matrix in the output list \code{out} which
 #'   contains the embedded coordinates.
@@ -73,14 +73,14 @@ NULL
 #'                             min_step_size = 0.1),
 #'          update = step_momentum(init_momentum = 0.5, final_momentum = 0.8,
 #'                                 switch_iter = 250),
-#'          normalize_grads = FALSE)
+#'          normalize_direction = FALSE)
 #'
 #' # Use bold driver adaptive step size (1% step size increase, 25% decrease)
 #' # with step momentum and normalizing gradients.
 #' make_opt(step_size = bold_driver(inc_mult = 1.01, dec_mult = 0.75),
 #'          update = step_momentum(init_momentum = 0.5, final_momentum = 0.8,
 #'                                 switch_iter = 250),
-#'          normalize_grads = TRUE)
+#'          normalize_direction = TRUE)
 #'
 #' # Nesterov Accelerated Gradient optimizer with bold driver adaptive step size
 #' make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
@@ -98,12 +98,12 @@ make_opt <- function(gradient = classical_gradient(),
                      direction = steepest_descent(),
                      step_size = bold_driver(),
                      update = no_momentum(),
-                     normalize_grads = TRUE, recenter = TRUE,
+                     normalize_direction = TRUE, recenter = TRUE,
                      mat_name = "ym") {
   list(
     optimize_step = optimize_step,
     mat_name = mat_name,
-    normalize_grads = normalize_grads,
+    normalize_direction = normalize_direction,
     recenter = recenter,
 
     gradient = gradient,
@@ -143,7 +143,7 @@ tsne_opt <- function() {
            direction = steepest_descent(),
            step_size = tsne_jacobs(),
            update = step_momentum(),
-           normalize_grads = FALSE, recenter = TRUE,
+           normalize_direction = FALSE, recenter = TRUE,
            mat_name = "ym")
 }
 
@@ -165,7 +165,7 @@ tsne_opt <- function() {
 #' @param min_step_size Minimum step size allowed.
 #' @param init_step_size Initial step size.
 #' @param max_momentum Maximum value the momentum may take.
-#' @param normalize_grads If \code{TRUE}, scale the length of the gradient to
+#' @param normalize_direction If \code{TRUE}, scale the length of the gradient to
 #'  one.
 #' @return Optimizer with NAG parameters and bold driver step size.
 #' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
@@ -180,14 +180,14 @@ tsne_opt <- function() {
 bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
                      init_step_size = 1,
                      max_momentum = 1,
-                     normalize_grads = TRUE,
+                     normalize_direction = TRUE,
                      linear_weight = TRUE) {
   nag(
       step_size = bold_driver(min_step_size = min_step_size,
                               init_step_size = init_step_size),
       update = nesterov_nsc_momentum(max_momentum = max_momentum,
                                      linear_weight = linear_weight),
-      normalize_grads = normalize_grads)
+      normalize_direction = normalize_direction)
 }
 
 #' Steepest Descent Optimizer with No Momentum
@@ -213,7 +213,7 @@ gradient_descent <- function() {
   make_opt(gradient = classical_gradient(), direction = steepest_descent(),
            step_size = bold_driver(min_step_size = 0.01),
            update = no_momentum(),
-           normalize_grads = TRUE)
+           normalize_direction = TRUE)
 }
 
 #' Nesterov Accelerated Gradient (Toronto Formulation)
@@ -429,12 +429,12 @@ optimize_step <- function(opt, method, inp, out, iter) {
     opt$km <- grad_result$km
   }
 
-  if (opt$normalize_grads) {
-    opt$gm <- normalize(opt$gm)
-  }
-
   direction_result <- opt$direction$calculate(opt, inp, out, method, iter)
   opt <- direction_result$opt
+
+  if (opt$normalize_direction) {
+    opt$direction$value <- normalize(opt$direction$value)
+  }
 
   step_size_result <- opt$step_size$calculate(opt, inp, out, method, iter)
   opt <- step_size_result$opt

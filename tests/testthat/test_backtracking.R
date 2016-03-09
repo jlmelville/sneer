@@ -24,7 +24,7 @@ res00 <- min_fn(
   fn_opt(
     direction = steepest_descent(),
     step_size = backtracking(c1 = 1e-4),
-    update = constant_momentum(0), normalize_grads = FALSE),
+    update = constant_momentum(0), normalize_direction = FALSE),
   x00, rosenbrock_banana$fr, rosenbrock_banana$grr, maxit = 20,
   min_cost = .Machine$double.eps, keep_costs = TRUE, keep_steps = TRUE,
   verbose = FALSE)
