@@ -7,19 +7,21 @@
 #'
 #' @param pm Input probability matrix.
 #' @param qm Output probabilty matrix.
+#' @param beta The precision of the weighting function.
 #' @return Stiffness matrix.
-asne_stiffness <- function(pm, qm) {
+asne_stiffness <- function(pm, qm, beta = 1) {
   km <- pm - qm
-  2 * (km + t(km))
+  2 * beta * (km + t(km))
 }
 
 #' SSNE Stiffness Function
 #'
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.
+#' @param beta The precision of the weighting function.
 #' @return Stiffness matrix.
-ssne_stiffness <- function(pm, qm) {
-  4 * (pm - qm)
+ssne_stiffness <- function(pm, qm, beta = 1) {
+  4 * beta * (pm - qm)
 }
 
 #' t-SNE Stiffness Function
@@ -27,9 +29,10 @@ ssne_stiffness <- function(pm, qm) {
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.
 #' @param wm Output weight probability matrix.
+#' @param beta The precision of the weighting function.
 #' @return Stiffness matrix.
-tsne_stiffness <- function(pm, qm, wm) {
-  ssne_stiffness(pm, qm) * wm
+tsne_stiffness <- function(pm, qm, wm, beta = 1) {
+  ssne_stiffness(pm, qm, beta) * wm
 }
 
 #' t-ASNE Stiffness Function
@@ -37,10 +40,11 @@ tsne_stiffness <- function(pm, qm, wm) {
 #' @param pm Input probability matrix.
 #' @param qm Output probabilty matrix.
 #' @param wm Output weight probability matrix.
+#' @param beta The precision of the weighting function.
 #' @return Stiffness matrix.
-tasne_stiffness <- function(pm, qm, wm) {
+tasne_stiffness <- function(pm, qm, wm, beta = 1) {
   km <- (pm - qm) * wm
-  2 * (km + t(km))
+  2 * beta * (km + t(km))
 }
 
 #' HSSNE Stiffness Function
@@ -64,11 +68,13 @@ hssne_stiffness <- function(pm, qm, wm, alpha = 1.5e-8, beta = 1) {
 #' @param pm Input probability matrix.
 #' @param qm Output probabilty matrix.
 #' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
+#' @param beta The precision of the weighting function.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-reverse_asne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
+reverse_asne_stiffness <- function(pm, qm, rev_kl, beta = 1,
+                                   eps = .Machine$double.eps) {
   km <- qm * (log((pm + eps) / (qm + eps)) + rev_kl)
-  2 * (km + t(km))
+  2 * beta * (km + t(km))
 }
 
 #' "Reverse" SSNE Stiffness Function
@@ -79,10 +85,12 @@ reverse_asne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.
 #' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
+#' @param beta The precision of the weighting function.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-reverse_ssne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
-  4 * qm * (log((pm + eps) / (qm + eps)) + rev_kl)
+reverse_ssne_stiffness <- function(pm, qm, rev_kl, beta = 1,
+                                   eps = .Machine$double.eps) {
+  4 * beta * qm * (log((pm + eps) / (qm + eps)) + rev_kl)
 }
 
 #' "Reverse" t-SNE Stiffness Function
@@ -94,11 +102,12 @@ reverse_ssne_stiffness <- function(pm, qm, rev_kl, eps = .Machine$double.eps) {
 #' @param qm Output joint probabilty matrix.
 #' @param wm Output weight probability matrix.
 #' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
+#' @param beta The precision of the weighting function.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-reverse_tsne_stiffness <- function(pm, qm, wm, rev_kl,
+reverse_tsne_stiffness <- function(pm, qm, wm, rev_kl, beta = 1,
                                    eps = .Machine$double.eps) {
-  reverse_ssne_stiffness(pm, qm, rev_kl, eps) * wm
+  reverse_ssne_stiffness(pm, qm, rev_kl, beta, eps) * wm
 }
 
 #' "Reverse" HSSNE Stiffness Function
