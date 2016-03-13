@@ -203,8 +203,8 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #' @param min_step_size Minimum step size allowed.
 #' @param init_step_size Initial step size.
 #' @param max_momentum Maximum value the momentum may take.
-#' @param normalize_direction If \code{TRUE}, scale the length of the gradient to
-#'  one.
+#' @param normalize_direction If \code{TRUE}, scale the length of the direction
+#'  to one.
 #' @param linear_weight If \code{TRUE}, then the contribution of the gradient
 #'  descent part of the update is scaled relative to the momentum part.
 #' @param dec_mult Degree to downweight the momentum iteration number when
