@@ -40,8 +40,10 @@ Sutskever, I. (2013).
 (Doctoral dissertation, University of Toronto).
 }
 \seealso{
-Other sneer optimization methods: \code{\link{bold_nag}},
-  \code{\link{gradient_descent}}, \code{\link{make_opt}},
+Other sneer optimization methods: \code{\link{back_nag_adapt}},
+  \code{\link{back_nag}}, \code{\link{bold_nag_adapt}},
+  \code{\link{bold_nag}}, \code{\link{gradient_descent}},
+  \code{\link{make_opt}},
   \code{\link{optimization_methods}}, \code{\link{ropt}},
   \code{\link{tsne_opt}}
 }

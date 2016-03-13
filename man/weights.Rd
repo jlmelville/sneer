@@ -12,10 +12,16 @@ weights(out, method)
 \item{method}{Embedding method.}
 }
 \value{
-Weight matrix for the embedded coordinates in \code{out}.
+One or more weight matrix for the embedded coordinates in \code{out}.
 }
 \description{
-Creates a matrix of positive weights from the distance matrix of the
+Creates one or more matrix of positive weights from the distance matrix of the
 embedded coordinates.
+}
+\details{
+The number of matrices returned depends on whether multiscaling has been
+chosen. If using multiscaling (see \code{\link{inp_multiscale}}), then a
+list of weight matrices will be returned, one for each scale distance.
+Otherwise, one matrix is returned.
 }
 

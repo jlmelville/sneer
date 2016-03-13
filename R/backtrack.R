@@ -89,12 +89,9 @@ backtracking_line_search <- function(phi_alpha,
   s0 <- phi_alpha(0, calc_gradient = TRUE)
   sa <- phi_alpha(alpha)
 
-  while (!armijo_oks(s0, sa, c1) && alpha > min_step_size) {
+  while (!step_armijo_ok(s0, sa, c1) && alpha > min_step_size) {
     alpha <- rho * alpha
     sa <- phi_alpha(alpha)
-#    message("alpha = ", formatC(alpha),
-#            " f0 = ", formatC(s0$f),
-#            " f = ", formatC(sa$f))
   }
 
   alpha

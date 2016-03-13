@@ -4,7 +4,7 @@
 \alias{set_solution}
 \title{Set Output Data Coordinates}
 \usage{
-set_solution(opt, inp, coords, method)
+set_solution(opt, inp, coords, method, out = NULL)
 }
 \arguments{
 \item{opt}{Optimizer.}
@@ -14,9 +14,11 @@ set_solution(opt, inp, coords, method)
 \item{coords}{Matrix of coordinates.}
 
 \item{method}{Embedding method.}
+
+\item{out}{Existing output data. Optional.}
 }
 \value{
-Updated \code{out}.
+\code{out} list with updated with coords and auxiliary data.
 }
 \description{
 This function sets the embedded coordinates in the output data, as well as

@@ -151,10 +151,9 @@ tsne_opt <- function() {
 #'
 #' Optimizer factory function.
 #'
-#' Wrapper around \code{\link{make_opt}} which makes a very performant
-#' optimizer. Mixes the NAG descent method and momentum for non-strongly convex
-#' problems formulated by Sutskever et al., along with the bold driver method
-#' for step size.
+#' Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+#' momentum for non-strongly convex problems formulated by Sutskever et al.,
+#' along with the bold driver method for step size.
 #'
 #' @note This optimizer is prone to converge prematurely in the face of sudden
 #' changes to the solution landscape, such as can happen when certain
@@ -167,6 +166,8 @@ tsne_opt <- function() {
 #' @param max_momentum Maximum value the momentum may take.
 #' @param normalize_direction If \code{TRUE}, scale the length of the gradient to
 #'  one.
+#' @param linear_weight If \code{TRUE}, then the contribution of the gradient
+#'  descent part of the update is scaled relative to the momentum part.
 #' @return Optimizer with NAG parameters and bold driver step size.
 #' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
 #'  this function for configuring an embedding.
@@ -190,6 +191,126 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
       normalize_direction = normalize_direction)
 }
 
+#' Nesterov Accelerated Gradient Optimizer with Bold Driver and Adaptive Restart
+#'
+#' Optimizer factory function.
+#'
+#' Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+#' momentum for non-strongly convex problems formulated by Sutskever et al.,
+#' along with the bold driver method for step size. Additionally the adaptive
+#' restart method of O'Donoghue and Candes.
+#'
+#' @param min_step_size Minimum step size allowed.
+#' @param init_step_size Initial step size.
+#' @param max_momentum Maximum value the momentum may take.
+#' @param normalize_direction If \code{TRUE}, scale the length of the gradient to
+#'  one.
+#' @param linear_weight If \code{TRUE}, then the contribution of the gradient
+#'  descent part of the update is scaled relative to the momentum part.
+#' @param dec_mult Degree to downweight the momentum iteration number when
+#'  restarting.
+#' @return Optimizer with NAG parameters and bold driver step size.
+#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#'  this function for configuring an embedding.
+#' @examples
+#' # Should be passed to the opt argument of an embedding function:
+#' \dontrun{
+#'  embed_prob(opt = bold_nag_adapt(), ...)
+#' }
+#' @family sneer optimization methods
+#' @export
+bold_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
+                      init_step_size = 1,
+                      max_momentum = 1,
+                      normalize_direction = TRUE,
+                      linear_weight = TRUE,
+                      dec_mult = 0) {
+  opt <- bold_nag(min_step_size = min_step_size,
+                  init_step_size = init_step_size,
+                  max_momentum = max_momentum,
+                  normalize_direction = normalize_direction,
+                  linear_weight = linear_weight)
+
+  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult)
+  opt
+}
+
+#' Nesterov Accelerated Gradient Optimizer with Backstepping Step Search
+#'
+#' Optimizer factory function.
+#'
+#' Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+#' momentum for non-strongly convex problems formulated by Sutskever et al.,
+#' along with a backstepping method for step size.
+#'
+#' @param min_step_size Minimum step size allowed.
+#' @param max_momentum Maximum value the momentum may take.
+#' @param normalize_direction If \code{TRUE}, scale the length of the gradient to
+#'  one.
+#' @param linear_weight If \code{TRUE}, then the contribution of the gradient
+#'  descent part of the update is scaled relative to the momentum part.
+#' @return Optimizer with NAG parameters and backstepping step size.
+#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#'  this function for configuring an embedding.
+#' @examples
+#' # Should be passed to the opt argument of an embedding function:
+#' \dontrun{
+#'  embed_prob(opt = back_nag(), ...)
+#' }
+#' @family sneer optimization methods
+#' @export
+back_nag <- function(min_step_size = sqrt(.Machine$double.eps),
+                     max_momentum = 1,
+                     normalize_direction = TRUE,
+                     linear_weight = TRUE) {
+  nag(
+    step_size = backtracking(min_step_size = min_step_size),
+    update = nesterov_nsc_momentum(max_momentum = max_momentum,
+                                   linear_weight = linear_weight),
+    normalize_direction = normalize_direction)
+}
+
+#' Nesterov Accelerated Gradient Optimizer with Backstepping Step Search and
+#' Adaptive Restart
+#'
+#' Optimizer factory function.
+#'
+#' Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+#' momentum for non-strongly convex problems formulated by Sutskever et al.,
+#' along with a backstepping method for step size.
+#'
+#' @param min_step_size Minimum step size allowed.
+#' @param max_momentum Maximum value the momentum may take.
+#' @param normalize_direction If \code{TRUE}, scale the length of the gradient to
+#'  one.
+#' @param linear_weight If \code{TRUE}, then the contribution of the gradient
+#'  descent part of the update is scaled relative to the momentum part.
+#' @param dec_mult Degree to downweight the momentum iteration number when
+#'  restarting.
+#' @return Optimizer with NAG parameters and backstepping step size.
+#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#'  this function for configuring an embedding.
+#' @examples
+#' # Should be passed to the opt argument of an embedding function:
+#' \dontrun{
+#'  embed_prob(opt = back_nag_adapt(), ...)
+#' }
+#' @family sneer optimization methods
+#' @export
+back_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
+                      max_momentum = 1,
+                      normalize_direction = TRUE,
+                      linear_weight = TRUE,
+                      dec_mult = 0) {
+  opt <- back_nag(min_step_size = min_step_size,
+                  max_momentum = max_momentum,
+                  normalize_direction = normalize_direction,
+                  linear_weight = linear_weight)
+
+  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult)
+  opt
+}
+
 #' Steepest Descent Optimizer with No Momentum
 #'
 #' Optimizer factory function.
@@ -211,7 +332,9 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #' @export
 gradient_descent <- function() {
   make_opt(gradient = classical_gradient(), direction = steepest_descent(),
-           step_size = bold_driver(min_step_size = 0.01),
+           step_size = bold_driver(
+             min_step_size = 0.01
+             ),
            update = no_momentum(),
            normalize_direction = TRUE)
 }
@@ -571,7 +694,14 @@ set_solution <- function(opt, inp, coords, method, out = NULL) {
 #' \item{opt}{Optimizer with any updated data (e.g. cached costs).}
 #' @keywords internal
 cost_validate <- function(opt, inp, out, proposed_out, method, iter) {
+  ocd <- opt$old_cost_dirty
+  ooc <- opt[["old_cost"]]
+  if (is.null(ooc)) {
+    ooc <- 1.e99
+  }
   if (opt$old_cost_dirty) {
+    # might have to also re-evaluate other matrices
+    out <- method$update_out_fn(inp, out, method)
     opt$old_cost <- method$cost_fn(inp, out, method)
     opt$old_cost_dirty <- FALSE
   }
@@ -582,11 +712,16 @@ cost_validate <- function(opt, inp, out, proposed_out, method, iter) {
     opt$cost_iter <- iter
   }
   cost <- opt$cost
-
   ok <- cost <= old_cost
   opt$cost_ok <- ok
-
-  list(ok = ok, opt = opt)
+#  message("cost_validate: iter ", iter,
+#          " old cost = ", formatC(old_cost),
+#          " cost = ", formatC(cost), " ok = ", ok,
+#          " step size = ", formatC(opt$step_size$value),
+#          " ocd = ", ocd, " ooc = ", formatC(ooc),
+#          " out = ", formatC(out$ym[1,1]),
+#          " prp = ", formatC(proposed_out$ym[1,1]))
+  list(ok = ok, out = out, opt = opt)
 }
 
 #' Optimizer Diagnostics

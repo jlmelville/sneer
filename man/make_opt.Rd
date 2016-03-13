@@ -6,7 +6,7 @@
 \usage{
 make_opt(gradient = classical_gradient(), direction = steepest_descent(),
   step_size = bold_driver(), update = no_momentum(),
-  normalize_grads = TRUE, recenter = TRUE, mat_name = "ym")
+  normalize_direction = TRUE, recenter = TRUE, mat_name = "ym")
 }
 \arguments{
 \item{gradient}{Method to calculate the gradient at a solution
@@ -25,7 +25,7 @@ by calling one of the configuration functions listed in
 momentum) to produce the final update. Set by calling one of the
 configuration functions listed in \code{\link{optimization_update}}.}
 
-\item{normalize_grads}{If \code{TRUE} the gradient matrix is normalized to
+\item{normalize_direction}{If \code{TRUE} the gradient matrix is normalized to
 a length of one before step size calculation.}
 
 \item{recenter}{If \code{TRUE}, recenter the coordinates after each
@@ -53,16 +53,16 @@ The optimizer consists of
  step.
 }
 
-Normalizing the gradients (by setting \code{normalize_grads} to
-\code{TRUE}) will scale the gradient matrix to length 1 before the
-optimization step. This has the effect of making the size of the gradient
-descent dependent only on the step size, rather than the product of the
-step size and the size of the gradient. This can increase the stability of
-step size methods like Bold Driver and the Jacobs method which iteratively
-update the step size based on previous values rather than doing a search,
-or with methods where the gradients can get extremely large (e.g. in
-traditional distance-based embeddings like MDS and Sammon mapping which
-involve dividing by potentially very small distances).
+Normalizing the direction vector (by setting \code{normalize_direction} to
+\code{TRUE}) will scale it to length 1 before the optimization step. This
+has the effect of making the size of the gradient descent dependent only on
+the step size, rather than the product of the step size and the size of the
+gradient. This can increase the stability of step size methods like Bold
+Driver and the Jacobs method which iteratively update the step size based on
+previous values rather than doing a search, or with methods where the
+gradients can get extremely large (e.g. in traditional distance-based
+embeddings like MDS and Sammon mapping which involve dividing by potentially
+very small distances).
 
 The optimizer can validate the proposed solution, rejecting it
 if the solution is not acceptable of the methods it is comprised of. It also
@@ -76,14 +76,14 @@ make_opt(step_size = jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
                             min_step_size = 0.1),
          update = step_momentum(init_momentum = 0.5, final_momentum = 0.8,
                                 switch_iter = 250),
-         normalize_grads = FALSE)
+         normalize_direction = FALSE)
 
 # Use bold driver adaptive step size (1\% step size increase, 25\% decrease)
 # with step momentum and normalizing gradients.
 make_opt(step_size = bold_driver(inc_mult = 1.01, dec_mult = 0.75),
          update = step_momentum(init_momentum = 0.5, final_momentum = 0.8,
                                 switch_iter = 250),
-         normalize_grads = TRUE)
+         normalize_direction = TRUE)
 
 # Nesterov Accelerated Gradient optimizer with bold driver adaptive step size
 make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
@@ -100,9 +100,10 @@ make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
 \code{\link{embed_prob}} for how to use this function for configuring
   an embedding.
 
-Other sneer optimization methods: \code{\link{bold_nag}},
-  \code{\link{gradient_descent}}, \code{\link{nag}},
-  \code{\link{optimization_methods}}, \code{\link{ropt}},
-  \code{\link{tsne_opt}}
+Other sneer optimization methods: \code{\link{back_nag_adapt}},
+  \code{\link{back_nag}}, \code{\link{bold_nag_adapt}},
+  \code{\link{bold_nag}}, \code{\link{gradient_descent}},
+  \code{\link{nag}}, \code{\link{optimization_methods}},
+  \code{\link{ropt}}, \code{\link{tsne_opt}}
 }
 

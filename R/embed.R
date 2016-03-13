@@ -322,9 +322,14 @@ embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
                   preprocess = make_preprocess(),
                   export = NULL, after_embed = NULL) {
   inp <- preprocess(xm)
+
   if (!is.null(init_inp)) {
-    inp <- init_inp(inp, method)
+    inp_result <- init_inp(inp, method, opt, iter = 0, out = NULL)
+    inp <- inp_result$inp
+    method <- inp_result$method
+    opt <- inp_result$opt
   }
+
   out <- init_out(inp)
 
   # do late initialization that relies on input or output initialization
@@ -343,6 +348,14 @@ embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
 
   iter <- 0
   while (iter <= max_iter) {
+    if (iter != 0 && !is.null(init_inp)) {
+      inp_result <- init_inp(inp, method, opt, iter, out)
+      inp <- inp_result$inp
+      out <- inp_result$out
+      method <- inp_result$method
+      opt <- inp_result$opt
+    }
+
     if (!is.null(tricks)) {
       tricks_result <- tricks(inp, out, method, opt, iter)
       inp <- tricks_result$inp

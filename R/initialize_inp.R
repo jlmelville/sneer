@@ -88,45 +88,172 @@ NULL
 #' @family sneer input initializers
 #' @export
 inp_from_perp <- function(perplexity = 30,
-                             input_weight_fn = exp_weight,
-                             keep_all_results = FALSE,
-                             verbose = TRUE) {
+                          input_weight_fn = exp_weight,
+                          keep_all_results = FALSE,
+                          verbose = TRUE) {
   inp_prob(
-    function(inp) {
-      d_to_p_result <- d_to_p_perp_bisect(inp$dm, perplexity = perplexity,
-                                          weight_fn = input_weight_fn,
-                                          verbose = verbose)
-
-      if (keep_all_results) {
-        for (name in names(d_to_p_result)) {
-          inp[[name]] <- d_to_p_result[[name]]
-        }
-      }
-      else {
-        inp$pm <- d_to_p_result$pm
-      }
-      flush.console()
-      inp
+    function(inp, method, opt, iter, out) {
+      single_perplexity(inp, perplexity = perplexity,
+                        input_weight_fn = input_weight_fn,
+                        keep_all_results = keep_all_results,
+                        verbose = verbose)
     }
+  )
+}
+
+#' Initialize With Step Perplexity
+#'
+#' An initialization method for creating input probabilities.
+#'
+#' This function initializes the input probabilities with a starting perplexity,
+#' then recalculates the input probability at different perplexity values for the
+#' first few iterations of the embedding. Normally, the embedding is begun
+#' at a relatively large perplexity and then the value is reduced to the
+#' usual target value over several iterations, recalculating the input
+#' probabilities. The idea is to avoid poor local minima. Rather than
+#' recalculate the input probabilities at each iteration by a linear decreasing
+#' ramp function, which would be time consuming, the perplexity is reduced
+#' in steps.
+#'
+#' @param start_perp Initial target perplexity value for the embedding.
+#' @param stop_perp Final target perplexity value to be achieved after
+#'  \code{num_iters} iterations.
+#' @param num_step_iters Number of iterations for the perplexity of the input
+#'  probability to change from \code{start_perp} to \code{stop_perp}.
+#' @param num_steps Number of discrete transitions of the perplexity to take
+#'  over \code{num_step_iters}. Cannot be larger than \code{num_step_iters}. The
+#'  larger this value, the smaller the change in the input probabilities when the
+#'  perplexity changes, but the more time spent in calculations.
+#' @param input_weight_fn Weighting function for distances. It should have the
+#'  signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix
+#'  of squared distances and \code{beta} is a real-valued scalar parameter
+#'  which will be varied as part of the search to produce the desired
+#'  \code{perplexity}. The function should return a matrix of weights
+#'  corresponding to the transformed squared distances passed in as arguments.
+#' @param verbose If \code{TRUE} print message about tricks during the
+#' embedding.
+#' @return Input initializer for use by an embedding function.
+#' @seealso \code{\link{embed_prob}} for how to use this function for
+#' configuring an embedding. The paper by Venna and co-workers in the references
+#' section describes a very similar method, but with decreasing the bandwidth
+#' of the input weighting function, rather than the perplexity.
+#'
+#' The multiscale approach \code{\link{inp_multiscale}} also uses multiple
+#' perplexity values, but averages the corresponding probability matrices.
+#'
+#' @examples
+#' \dontrun{
+#' # Should be passed to the init_inp argument of an embedding function.
+#' # Step the perplexity from 150 to 50 over 20 iterations, with 10 steps
+#' # (so two iterations per step)
+#'  embed_prob(init_inp = inp_step_perp(start_perp = 150, stop_perp = 50,
+#'                                      num_iters = 20, num_steps = 10), ...)
+#' }
+#' @references
+#' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
+#' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
+#' dimensionality reduction based on similarity preservation.
+#' \emph{Neurocomputing}, \emph{112}, 92-108.
+#'
+#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+#' Information retrieval perspective to nonlinear dimensionality reduction for
+#' data visualization.
+#' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+#' @family sneer input initializers
+#' @export
+inp_step_perp <- function(start_perp, stop_perp, num_step_iters, num_steps = 10,
+                            input_weight_fn = exp_weight, verbose = TRUE) {
+
+  step_every <- max(round(num_step_iters / num_steps), 1)
+  step_size <- (stop_perp - start_perp) / num_steps
+  inp_prob(
+    function(inp, method, opt, iter, out) {
+      if (iter <= num_step_iters && (iter == 0 || iter %% step_every == 0)) {
+        perp <- start_perp + ((iter / step_every) * step_size)
+        if (verbose) {
+          message("Iter: ", iter, " setting perplexity to ", formatC(perp))
+        }
+        inp <- single_perplexity(inp, perplexity = perp,
+                          input_weight_fn = input_weight_fn,
+                          verbose = verbose)$inp
+      }
+      list(inp = inp)
+    },
+    init_only = FALSE
   )
 }
 
 #' Wrap Input Probability Initializer
 #'
-#' This function takes an input initializer which creates a probability, and
-#' wraps it so that the correct handling of the probability matrix can be
-#' carried out when it is invoked.
+#' Takes an input initializer which creates a probability, and
+#' wraps it so that it is invoked at the correct time, the probability matrix
+#' is handled in the correct way (e.g. converting from conditional to joint
+#' probability), and other matrices are updated if needed.
 #'
-#' @param input_initializer Input initializer which creates a probabilty.
+#' @param input_initializer Input initializer which creates a probability.
+#' @param init_only, if \code{TRUE}, then this initializer is only called once,
+#'  when the iteration number is zero.
 #' @return Wrapped initializer with the correct signature for use by an
 #'  embedding function.
 #' @seealso \code{\link{probability_matrices}} describe the type of probability
 #'   matrix used by sneer.
-inp_prob <- function(input_initializer) {
-  function(inp, method) {
-    inp <- input_initializer(inp)
-    inp$pm <- handle_prob(inp$pm, method)
-    inp$dirty <- TRUE
-    inp
+inp_prob <- function(input_initializer, init_only = TRUE) {
+  function(inp, method, opt, iter, out) {
+    if (!init_only || iter == 0) {
+      res <- input_initializer(inp, method, opt, iter, out)
+      inp <- res$inp
+      if (!is.null(res$method)) {
+        method <- res$method
+      }
+      if (!is.null(res$opt)) {
+        opt <- res$opt
+      }
+      if (!is.null(res$out)) {
+        out <- res$out
+      }
+      if (inp$dirty) {
+        inp$pm <- handle_prob(inp$pm, method)
+          if (!is.null(method$inp_updated)) {
+          update_result <- method$inp_updated(inp, out, method)
+          if (!is.null(update_result$inp)) {
+            inp <- update_result$inp
+          }
+          if (!is.null(update_result$out)) {
+            out <- update_result$out
+          }
+          if (!is.null(update_result$method)) {
+            method <- update_result$method
+          }
+        }
+
+        flush.console()
+        # invalidate cached data (e.g. old costs) in optimizer
+        opt$old_cost_dirty <- TRUE
+        inp$dirty <- FALSE
+      }
+    }
+    list(inp = inp, method = method, opt = opt, out = out)
   }
+}
+
+# Calculates a probability matrix for a given perplexity.
+# See the inp_from_perp function for a fuller description.
+single_perplexity <- function(inp, perplexity = 30,
+                              input_weight_fn = exp_weight,
+                              keep_all_results = FALSE,
+                              verbose = TRUE) {
+  d_to_p_result <- d_to_p_perp_bisect(inp$dm, perplexity = perplexity,
+                                      weight_fn = input_weight_fn,
+                                      verbose = verbose)
+
+  if (keep_all_results) {
+    for (name in names(d_to_p_result)) {
+      inp[[name]] <- d_to_p_result[[name]]
+    }
+  }
+  else {
+    inp$pm <- d_to_p_result$pm
+  }
+  inp$dirty <- TRUE
+  list(inp = inp)
 }

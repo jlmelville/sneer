@@ -4,19 +4,23 @@
 \alias{inp_prob}
 \title{Wrap Input Probability Initializer}
 \usage{
-inp_prob(input_initializer)
+inp_prob(input_initializer, init_only = TRUE)
 }
 \arguments{
-\item{input_initializer}{Input initializer which creates a probabilty.}
+\item{input_initializer}{Input initializer which creates a probability.}
+
+\item{init_only, }{if \code{TRUE}, then this initializer is only called once,
+when the iteration number is zero.}
 }
 \value{
 Wrapped initializer with the correct signature for use by an
  embedding function.
 }
 \description{
-This function takes an input initializer which creates a probability, and
-wraps it so that the correct handling of the probability matrix can be
-carried out when it is invoked.
+Takes an input initializer which creates a probability, and
+wraps it so that it is invoked at the correct time, the probability matrix
+is handled in the correct way (e.g. converting from conditional to joint
+probability), and other matrices are updated if needed.
 }
 \seealso{
 \code{\link{probability_matrices}} describe the type of probability

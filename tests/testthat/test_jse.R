@@ -1,7 +1,6 @@
 library(sneer)
 context("JSE")
 
-
 test_embed <- function(method) {
   method$verbose <- FALSE
   embed_prob(iris[, 1:4], method = method, max_iter = 50,
@@ -14,7 +13,7 @@ test_embed <- function(method) {
 }
 
 all_costs <- function(result) {
-  result$report$costs[,"cost"]
+  result$report$costs[, "cost"]
 }
 
 # JSE with kappa -> 0 should be equivalent to ASNE

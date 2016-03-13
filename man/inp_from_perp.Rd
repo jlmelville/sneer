@@ -79,6 +79,8 @@ embed_prob(init_inp = inp_from_perp(perplexity = 30,
 \code{\link{embed_prob}} and \code{\link{embed_dist}} for more
   information on exporting initializer data.
 
-Other sneer input initializers: \code{\link{input_initializers}}
+Other sneer input initializers: \code{\link{inp_multiscale}},
+  \code{\link{inp_step_perp}},
+  \code{\link{input_initializers}}
 }
 

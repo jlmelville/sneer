@@ -83,9 +83,11 @@ ropt(method = "L-BFGS-B", batch_iter = 15)
 \code{\link[stats]{optim}} for more details on what options
  can be passed.
 
-Other sneer optimization methods: \code{\link{bold_nag}},
-  \code{\link{gradient_descent}}, \code{\link{make_opt}},
-  \code{\link{nag}}, \code{\link{optimization_methods}},
+Other sneer optimization methods: \code{\link{back_nag_adapt}},
+  \code{\link{back_nag}}, \code{\link{bold_nag_adapt}},
+  \code{\link{bold_nag}}, \code{\link{gradient_descent}},
+  \code{\link{make_opt}}, \code{\link{nag}},
+  \code{\link{optimization_methods}},
   \code{\link{tsne_opt}}
 }
 

@@ -82,6 +82,12 @@ jse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
       out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
       out
     },
+    inp_updated = function(inp, out, method) {
+      if (!is.null(out)) {
+        out <- method$update_out_fn(inp, out, method)
+      }
+      list(out = out)
+    },
     prob_type = "row",
     eps = eps,
     kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
