@@ -60,6 +60,7 @@ Currently sneer offers:
 * Heavy-Tailed Symmetric SNE (HSSNE).
 * Neighbor Retrieval Visualizer (NeRV).
 * Jensen-Shannon Embedding (JSE).
+* Multiscale SNE.
 * Nesterov Accelerated Gradient method for optimization.
 * The usual t-SNE Steepest descent with momentum and Jacobs adaptive step size
 if NAG is too racy for you.
@@ -73,7 +74,6 @@ the "crowding problem".
 * A bit of documentation!
 
 ### Roadmap
-* Multiscale SNE
 * Numerical scores for qualitatively evaluating the embedding.
 * Better documentation of internals so a hypothetical person who isn't me
 could implement an embedding algorithm.
