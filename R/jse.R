@@ -73,7 +73,8 @@ jse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     cost_fn = jse_cost,
     weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
-      jse_stiffness(out$qm, out$zm, out$kl_qz, method$kappa, method$eps)
+      jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
+                    eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
@@ -184,8 +185,9 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
     cost_fn = jse_cost,
     weight_fn = weight_fn,
     stiffness_fn = function(method, inp, out) {
-      hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz, method$kappa, alpha,
-                      beta, method$eps)
+      hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz, kappa = method$kappa,
+                      alpha = alpha,
+                      beta = beta, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
       out$wm <- weights(out, method)
@@ -264,7 +266,8 @@ sjse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     cost_fn = jse_cost,
     weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
-      sjse_stiffness(out$qm, out$zm, out$kl_qz, method$kappa, method$eps)
+      sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
+                     eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
       out$wm <- weights(out, method)
@@ -293,7 +296,7 @@ sjse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 #' @return Stiffness matrix.
 jse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5,
                           eps = .Machine$double.eps) {
-  reverse_asne_stiffness(zm, qm, kl_qz, eps) / kappa
+  reverse_asne_stiffness(zm, qm, kl_qz, eps = eps) / kappa
 }
 
 #' Symmetric JSE Stiffness Function
@@ -309,7 +312,7 @@ jse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5,
 #' @return Stiffness matrix.
 sjse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5,
                           eps = .Machine$double.eps) {
-  reverse_ssne_stiffness(zm, qm, kl_qz, eps) / kappa
+  reverse_ssne_stiffness(zm, qm, kl_qz, eps = eps) / kappa
 }
 
 #' HSJSE Stiffness Function
@@ -328,7 +331,8 @@ sjse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5,
 #' @return Stiffness matrix.
 hsjse_stiffness <- function(qm, zm, wm, kl_qz, kappa = 0.5, alpha = 1.5e-8,
                             beta = 1, eps = .Machine$double.eps) {
-  reverse_hssne_stiffness(zm, qm, wm, kl_qz, alpha, beta, eps) / kappa
+  reverse_hssne_stiffness(zm, qm, wm, kl_qz,
+                          alpha = alpha, beta = beta, eps = eps) / kappa
 }
 
 #' JSE Cost Function

@@ -4,7 +4,8 @@
 \alias{snerv_stiffness}
 \title{SNeRV Stiffness Function}
 \usage{
-snerv_stiffness(pm, qm, wm, rev_kl, lambda = 0.5, eps = .Machine$double.eps)
+snerv_stiffness(pm, qm, wm, rev_kl, beta = 1, lambda = 0.5,
+  eps = .Machine$double.eps)
 }
 \arguments{
 \item{pm}{Input joint probability matrix.}
@@ -14,6 +15,8 @@ snerv_stiffness(pm, qm, wm, rev_kl, lambda = 0.5, eps = .Machine$double.eps)
 \item{wm}{Output weight probability matrix.}
 
 \item{rev_kl}{"Reverse" KL divergence between \code{pm} and \code{qm}.}
+
+\item{beta}{Precision of the weighting function.}
 
 \item{lambda}{NeRV weighting factor controlling the emphasis placed on
 precision versus recall.}

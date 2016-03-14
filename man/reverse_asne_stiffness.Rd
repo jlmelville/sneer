@@ -4,7 +4,7 @@
 \alias{reverse_asne_stiffness}
 \title{"Reverse" ASNE Stiffness Function}
 \usage{
-reverse_asne_stiffness(pm, qm, rev_kl, eps = .Machine$double.eps)
+reverse_asne_stiffness(pm, qm, rev_kl, beta = 1, eps = .Machine$double.eps)
 }
 \arguments{
 \item{pm}{Input probability matrix.}
@@ -12,6 +12,8 @@ reverse_asne_stiffness(pm, qm, rev_kl, eps = .Machine$double.eps)
 \item{qm}{Output probabilty matrix.}
 
 \item{rev_kl}{"Reverse" KL divergence between \code{pm} and \code{qm}.}
+
+\item{beta}{The precision of the weighting function.}
 
 \item{eps}{Small floating point value used to avoid numerical problems.}
 }

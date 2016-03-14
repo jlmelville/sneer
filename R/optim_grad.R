@@ -166,6 +166,51 @@ gradient <- function(inp, out, method, mat_name = "ym") {
   list(km = km, gm = gm)
 }
 
+#' Finite Difference Gradient Calculation
+#'
+#' Calculate the gradient of the cost function for a specified position using
+#' a finite difference.
+#'
+#' Only intended for testing that analytical gradients have been calculated
+#' correctly.
+#'
+#' @param opt Optimizer.
+#' @param inp Input data.
+#' @param out Output data containing the desired position.
+#' @param method Embedding method.
+#' @param mat_name Name of the matrix in the output data list that contains the
+#' embedded coordinates.
+#' @param diff Step size to take in finite difference calculation.
+#' @return List containing:
+#' \item{\code{gm}}{Gradient matrix.}
+gradient_fd <- function(opt, inp, out, method, mat_name = "ym", diff = 1e-4) {
+  ym <- out[[mat_name]]
+  nr <- nrow(ym)
+  nc <- ncol(ym)
+
+  grad <- matrix(0, nrow = nr, ncol = nc)
+  for (i in 1:nr) {
+    for (j in 1:nc) {
+      ymij_old <- ym[i,j]
+      ym[i,j] <- ymij_old + diff
+      out_fwd <- set_solution(opt, inp, ym, method, out)
+      cost_fwd <- method$cost_fn(inp, out_fwd, method)
+
+      ym[i, j] <- ymij_old - diff
+      out_back <- set_solution(opt, inp, ym, method, out)
+      cost_back <- method$cost_fn(inp, out_back, method)
+
+      fd <- (cost_fwd - cost_back) / (2 * diff)
+      grad[i, j] <- fd
+
+      ym[i, j] <- ymij_old
+      out <- set_solution(opt, inp, ym, method, out)
+    }
+  }
+
+  list(gm = grad)
+}
+
 #' Gradient Matrix from Stiffness Matrix
 #'
 #' Convert stiffness matrix to gradient matrix.

@@ -4,12 +4,14 @@
 \alias{asne_stiffness}
 \title{ASNE Stiffness Function}
 \usage{
-asne_stiffness(pm, qm)
+asne_stiffness(pm, qm, beta = 1)
 }
 \arguments{
 \item{pm}{Input probability matrix.}
 
 \item{qm}{Output probabilty matrix.}
+
+\item{beta}{The precision of the weighting function.}
 }
 \value{
 Stiffness matrix.

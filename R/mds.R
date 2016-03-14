@@ -50,10 +50,10 @@ NULL
 #' of a sneer MDS embedding.}
 #' \item{\code{\link[smacof]{mds}}}{Applies ratio metric MDS, which attempts
 #' to preserve the ratio of the distances in the input and output space. The
-#' result of this function is a list, containin a member \code{stress}, which
+#' result of this function is a list, containing a member \code{stress}, which
 #' is the Kruskal Stress, so can be compared to the
 #' \code{\link{kruskal_stress_cost}} of a sneer embedding. However, the embedded
-#' configuration in the result, \code{conf} configuration, is will not on the
+#' configuration in the result, \code{conf} configuration, is not on the
 #' same scale as the input coordinates.}
 #' \item{\code{\link[stats]{cmdscale}}}{Doesn't use Kruskal Stress, but
 #' implements a form of classical metric MDS called Principal Coordinate
@@ -84,7 +84,6 @@ NULL
 #' @export
 mmds <- function(eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
-    dym <- dym + eps
     -2 * (dxm - dym) / (dym + eps)
   }
 
@@ -127,7 +126,7 @@ mmds <- function(eps = .Machine$double.eps) {
 #' @export
 smmds <- function(eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
-    (-4 * dxm * (dxm ^ 2 - dym ^ 2)) / (dym + eps)
+    -4 * (dxm ^ 2 - dym ^ 2)
   }
 
   list(
@@ -158,8 +157,7 @@ smmds <- function(eps = .Machine$double.eps) {
 #'
 #' This puts a greater emphasis on short distances over long distances, compared
 #' to MDS. Note that the denominator is a constant, and is just there to
-#' normalize the stress. It's not used for calculating the stiffness matrix
-#' or the gradient, but is included in the calculation of the cost function.
+#' normalize the stress.
 #'
 #' @section Output Data:
 #' If used in an embedding, the output data list will contain:
@@ -172,10 +170,13 @@ smmds <- function(eps = .Machine$double.eps) {
 #' e.g. in gradients and cost functions.
 #' @return a list containing:
 #'  \item{\code{cost_fn}}{Cost function for the embedding: Sammon's stress.}
-#'  \item{\code{stiffness_fn}}{Stiffness function for \code{cost_fn}. For
-#'  Sammon's stress, we ignore the constant denominator.}
+#'  \item{\code{stiffness_fn}}{Stiffness function for \code{cost_fn}}.
 #'  \item{\code{update_out_fn}}{Function to calculate and store any needed
 #'  data after a coordinate update.}
+#'  \item{\code{after_init_fn}}{Function to calculate and store any needed
+#'  data after other initialization has been done. For Sammon mapping, we
+#'  store the sum of the input distances as used in the denominator of the
+#'  Sammon Stress as a normalization.}
 #'  \item{\code{eps}}{Small floating point value used to prevent numerical
 #'  problems, e.g. in gradients and cost functions.}
 #' @seealso \code{\link[MASS]{sammon}}, which also carries out Sammon mapping.
@@ -186,20 +187,22 @@ smmds <- function(eps = .Machine$double.eps) {
 #' @family sneer distance embedding methods
 #' @export
 sammon_map <- function(eps = .Machine$double.eps) {
-  f <- function(dxm, dym, eps = .Machine$double.eps) {
-    dxm <- dxm + eps
-    dym <- dym + eps
-    (-2 * (dxm - dym)) / (dym * dxm)
+  f <- function(dxm, dym, sum_rij, eps = .Machine$double.eps) {
+    (-2 * (dxm - dym)) / ((dym * dxm) + eps) / sum_rij
   }
 
   list(
     cost_fn = sammon_stress_cost,
     stiffness_fn = function(method, inp, out) {
-      f(inp$dm, out$dm, eps = method$eps)
+      f(inp$dm, out$dm, sum_rij = method$sum_rij, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
       out$dm <- distance_matrix(out$ym)
       out
+    },
+    after_init_fn = function(inp, out, method) {
+      method$sum_rij <- sum(upper_tri(inp$dm)) + eps
+      list(method = method)
     },
     eps = eps
   )

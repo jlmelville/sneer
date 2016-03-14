@@ -65,10 +65,10 @@ stress and the output configuration can't be directly compared to the output
 of a sneer MDS embedding.}
 \item{\code{\link[smacof]{mds}}}{Applies ratio metric MDS, which attempts
 to preserve the ratio of the distances in the input and output space. The
-result of this function is a list, containin a member \code{stress}, which
+result of this function is a list, containing a member \code{stress}, which
 is the Kruskal Stress, so can be compared to the
 \code{\link{kruskal_stress_cost}} of a sneer embedding. However, the embedded
-configuration in the result, \code{conf} configuration, is will not on the
+configuration in the result, \code{conf} configuration, is not on the
 same scale as the input coordinates.}
 \item{\code{\link[stats]{cmdscale}}}{Doesn't use Kruskal Stress, but
 implements a form of classical metric MDS called Principal Coordinate

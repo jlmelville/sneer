@@ -405,7 +405,7 @@ rasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     cost_fn = reverse_kl_cost,
     weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
-      reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl, method$eps)
+      reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
@@ -461,7 +461,7 @@ rssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     cost_fn = reverse_kl_cost,
     weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
-      reverse_ssne_stiffness(inp$pm, out$qm, out$rev_kl, method$eps)
+      reverse_ssne_stiffness(inp$pm, out$qm, out$rev_kl, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
@@ -520,7 +520,8 @@ rtsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     cost_fn = reverse_kl_cost,
     weight_fn = tdist_weight,
     stiffness_fn = function(method, inp, out) {
-      reverse_tsne_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, method$eps)
+      reverse_tsne_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
+                             eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
       out$wm <- weights(out, method)

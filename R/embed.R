@@ -321,30 +321,13 @@ embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
                   tricks = NULL, reporter = NULL,
                   preprocess = make_preprocess(),
                   export = NULL, after_embed = NULL) {
-  inp <- preprocess(xm)
 
-  if (!is.null(init_inp)) {
-    inp_result <- init_inp(inp, method, opt, iter = 0, out = NULL)
-    inp <- inp_result$inp
-    method <- inp_result$method
-    opt <- inp_result$opt
-  }
-
-  out <- init_out(inp)
-
-  # do late initialization that relies on input or output initialization
-  # being completed
-  after_init_result <- after_init(inp, out, method)
-  inp <- after_init_result$inp
-  out <- after_init_result$out
-  method <- after_init_result$method
-
-  # initialize matrices needed for gradient calculation
-  out <- method$update_out_fn(inp, out, method)
-
-  # reuse reports from old invocation of reporter, so we can use info
-  # to determine whether to stop early (e.g. relative convergence tolerance)
-  report <- list()
+  init_result <- init_embed(xm, method, preprocess, init_inp, init_out, opt)
+  inp <- init_result$inp
+  out <- init_result$out
+  method <- init_result$method
+  opt <- init_result$opt
+  report <- init_result$report
 
   iter <- 0
   while (iter <= max_iter) {
@@ -437,6 +420,63 @@ after_init <- function(inp, out, method) {
   }
   list(inp = inp, out = out, method = method)
 }
+
+#' Embedding Initialziation
+#'
+#' Initializes all data, ready to be optimized.
+#'
+#' @param xm A matrix or data frame to embed.
+#' @param method Embedding method. Set by assigning the result value of one of
+#'   the configuration functions listed in
+#'   \code{\link{embedding_methods}}.
+#' @param preprocess Input data preprocess callback. Does any necessary
+#'  filtering and scaling of the input data.
+#' @param init_inp Input initializer. Creates the input data required by
+#'  embedding algorithm.
+#' @param init_out Output initializer. Creates the initial set of output
+#'  coordinates.
+#' @param opt Optimization method.
+#' @return A list containing:
+#'   \item{\code{inp}}{Initialized input}
+#'   \item{\code{out}}{Initialized output}
+#'   \item{\code{method}}{Initialized embedding method}
+#'   \item{\code{opt}}{Initialized optimizer}
+#'   \item{\code{opt}}{Initialized report}
+init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
+  inp <- preprocess(xm)
+
+  if (!is.null(init_inp)) {
+    inp_result <- init_inp(inp, method, opt, iter = 0, out = NULL)
+    inp <- inp_result$inp
+    method <- inp_result$method
+    opt <- inp_result$opt
+  }
+
+  out <- init_out(inp)
+
+  # do late initialization that relies on input or output initialization
+  # being completed
+  after_init_result <- after_init(inp, out, method)
+  inp <- after_init_result$inp
+  out <- after_init_result$out
+  method <- after_init_result$method
+
+  # initialize matrices needed for gradient calculation
+  out <- method$update_out_fn(inp, out, method)
+
+  # reuse reports from old invocation of reporter, so we can use info
+  # to determine whether to stop early (e.g. relative convergence tolerance)
+  report <- list()
+
+  list(
+    inp = inp,
+    out = out,
+    method = method,
+    opt = opt,
+    report = report
+  )
+}
+
 
 #' Squared (Euclidean) Distance Matrix
 #'

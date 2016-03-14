@@ -13,10 +13,13 @@ e.g. in gradients and cost functions.}
 \value{
 a list containing:
  \item{\code{cost_fn}}{Cost function for the embedding: Sammon's stress.}
- \item{\code{stiffness_fn}}{Stiffness function for \code{cost_fn}. For
- Sammon's stress, we ignore the constant denominator.}
+ \item{\code{stiffness_fn}}{Stiffness function for \code{cost_fn}}.
  \item{\code{update_out_fn}}{Function to calculate and store any needed
  data after a coordinate update.}
+ \item{\code{after_init_fn}}{Function to calculate and store any needed
+ data after other initialization has been done. For Sammon mapping, we
+ store the sum of the input distances as used in the denominator of the
+ Sammon Stress as a normalization.}
  \item{\code{eps}}{Small floating point value used to prevent numerical
  problems, e.g. in gradients and cost functions.}
 }
@@ -35,8 +38,7 @@ the difference between the input distances and the output distances:
 
 This puts a greater emphasis on short distances over long distances, compared
 to MDS. Note that the denominator is a constant, and is just there to
-normalize the stress. It's not used for calculating the stiffness matrix
-or the gradient, but is included in the calculation of the cost function.
+normalize the stress.
 }
 \section{Output Data}{
 

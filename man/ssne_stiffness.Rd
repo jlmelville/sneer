@@ -4,12 +4,14 @@
 \alias{ssne_stiffness}
 \title{SSNE Stiffness Function}
 \usage{
-ssne_stiffness(pm, qm)
+ssne_stiffness(pm, qm, beta = 1)
 }
 \arguments{
 \item{pm}{Input joint probability matrix.}
 
 \item{qm}{Output joint probabilty matrix.}
+
+\item{beta}{The precision of the weighting function.}
 }
 \value{
 Stiffness matrix.

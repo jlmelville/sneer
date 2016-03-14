@@ -4,7 +4,7 @@
 \alias{tsne_stiffness}
 \title{t-SNE Stiffness Function}
 \usage{
-tsne_stiffness(pm, qm, wm)
+tsne_stiffness(pm, qm, wm, beta = 1)
 }
 \arguments{
 \item{pm}{Input joint probability matrix.}
@@ -12,6 +12,8 @@ tsne_stiffness(pm, qm, wm)
 \item{qm}{Output joint probabilty matrix.}
 
 \item{wm}{Output weight probability matrix.}
+
+\item{beta}{The precision of the weighting function.}
 }
 \value{
 Stiffness matrix.

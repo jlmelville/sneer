@@ -389,7 +389,71 @@ attr(sammon_stress_cost, "sneer_cost_type") <- "dist"
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return the Sammon stress between the input and output distances.
 sammon_stress <- function(dxm, dym, eps = .Machine$double.eps) {
-  sum(upper_tri((dxm - dym) ^ 2 / (dxm + eps))) / sum(upper_tri(dxm + eps))
+  sum(upper_tri((dxm - dym) ^ 2 / (dxm + eps))) / (sum(upper_tri(dxm)) + eps)
+}
+
+#' Unnormalized Sammon Stress
+#'
+#' A measure of embedding quality between input and output distance data.
+#'
+#' The Sammon stress is defined as:
+#'
+#' \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+#' {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
+#'
+#' where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
+#' \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
+#'
+#' Note that the denonimator of the stress only contains input distances, and
+#' so is constant with respect to an embedding of a dataset. This version of
+#' the function dispenses with that part of the calculation:
+#'
+#' \deqn{S_{unnorm} = \sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+#' {S = sum(((rij-dij)/rij)^2)}
+#'
+#' This is marginally faster, and is consistent with the analytical gradient
+#' calculation in \code{\link{sammon_map}}.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Sammon Stress of the input and output distances.
+#' @family sneer cost functions
+#' @export
+sammon_stress_unnorm_cost <- function(inp, out, method) {
+  sammon_stress_unnorm(inp$dm, out$dm, method$eps)
+}
+attr(sammon_stress_unnorm_cost, "sneer_cost_type") <- "dist"
+
+#' Unnormalized Sammon Stress
+#'
+#' A measure of embedding quality between input and output distance data.
+#'
+#' The Sammon stress is defined as:
+#'
+#' \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+#' {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
+#'
+#' where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
+#' \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
+#'
+#' Note that the denonimator of the stress only contains input distances, and
+#' so is constant with respect to an embedding of a dataset. This version of
+#' the function dispenses with that part of the calculation:
+#'
+#' \deqn{S_{unnorm} = \sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+#' {S = sum(((rij-dij)/rij)^2)}
+#'
+#' This is marginally faster, and is consistent with the analytical gradient
+#' calculation in \code{\link{sammon_map}}.
+#'
+#' @param dxm Distance matrix.
+#' @param dym Distance matrix, must be of the same dimensions as \code{dxm}.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return the unnormalized Sammon stress between the input and output
+#'  distances.
+sammon_stress_unnorm <- function(dxm, dym, eps = .Machine$double.eps) {
+  sum(upper_tri((dxm - dym) ^ 2 / (dxm + eps)))
 }
 
 #' Null Model for Distance Matrices

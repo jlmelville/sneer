@@ -15,8 +15,8 @@ bold_nag_adapt(min_step_size = sqrt(.Machine$double.eps),
 
 \item{max_momentum}{Maximum value the momentum may take.}
 
-\item{normalize_direction}{If \code{TRUE}, scale the length of the gradient to
-one.}
+\item{normalize_direction}{If \code{TRUE}, scale the length of the direction
+to one.}
 
 \item{linear_weight}{If \code{TRUE}, then the contribution of the gradient
 descent part of the update is scaled relative to the momentum part.}
