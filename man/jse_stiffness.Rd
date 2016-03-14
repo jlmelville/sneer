@@ -4,7 +4,8 @@
 \alias{jse_stiffness}
 \title{JSE Stiffness Function}
 \usage{
-jse_stiffness(qm, zm, kl_qz, kappa = 0.5, eps = .Machine$double.eps)
+jse_stiffness(qm, zm, kl_qz, kappa = 0.5, beta = 1,
+  eps = .Machine$double.eps)
 }
 \arguments{
 \item{qm}{Output probabilty matrix.}
@@ -17,6 +18,8 @@ reference probability.}
 
 \item{kappa}{Mixture parameter. Should be a value between 0 and 1 and be the
 same value used to produce the mixture matrix \code{zm}.}
+
+\item{beta}{The precision of the weighting function.}
 
 \item{eps}{Small floating point value used to avoid numerical problems.}
 }

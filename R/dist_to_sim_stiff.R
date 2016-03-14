@@ -151,7 +151,7 @@ weights_multi <- function(out, method) {
   for (l in 1:method$num_scales) {
     perp <- 2 ^ (method$num_scales - l + 1)
 
-    method$weight_fn <- method$multiscale_out_fn(out, method, perp)
+    method <- method$multiscale_out_fn(out, method, perp)
 
     ws[[l]] <- weights_single(out, method)
   }

@@ -6,14 +6,22 @@
 #' to multiple perplexities, then uses the average of these matrices for the
 #' final probability matrix.
 #'
-#' To avoid local minima, only the largest perplexity value is used initially,
-#' with smaller perplexities being added over time. The perplexities used are
-#' powers of 2, i.e. 2, 4, 8, 16, with the maximum (and initial) perplexity
-#' given by the formula:
+#' A list of perplexities may be provided to this function. Otherwise, the
+#' perplexities used are decreasing powers of 2, e.g. 16, 8, 4, 2
+#' with the maximum perplexity given by the formula:
 #'
 #' \deqn{\lfloor{\log_{2}(N/4)}\rfloor}{floor(log2(N / 4)}
 #'
-#' where N is the number of observations in the data set.
+#' where N is the number of observations in the data set. The smallest
+#' perplexity value tried is 2.
+#'
+#' If a non-zero value of \code{num_scale_iters} is provided, the perplexities
+#' will be combined over the specified number of iterations, averaging over
+#' an increasing number of perplexities until they are all used to generate
+#' the probability matrix at \code{num_scale_iters}. If using the default
+#' scales, the perplexities are added in decreasing order, otherwise, they
+#' are added in the order provided in \code{scales} list. It is suggested that
+#' the \code{scales} list therefore order the perplexities in decreasing order.
 #'
 #' The output function used for the embedding also needs to be adapted for each
 #' scale. Because the perplexity of the output can't be directly controlled,
@@ -47,14 +55,17 @@
 #'
 #' where \code{out} is the current output data, \code{method} is the embedding
 #' method, and \code{perplexity} is a perplexity value used in the multiscaling
-#' of the input probability. This function will be called once for each
-#' perplexity, and a weight function should be returned, which itself has the
+#' of the input probability.
+#'
+#' This function will be called once for each perplexity, and an updated method
+#' should be returned, with a new \code{weight_fn} function member with the
 #' signature:
 #'
 #' \code{weight_fn(D)}
 #'
 #' where D is the output distance matrix, and the return value is a weight
-#' matrix.
+#' matrix. The original weight function is stored as
+#' \code{method$orig_weight_fn}.
 #'
 #' @param num_scale_iters Number of iterations for the perplexity of the input
 #' probability to change from the largest to the smallest value.
@@ -66,6 +77,8 @@
 #'   which will be varied as part of the search to produce the desired
 #'   \code{perplexity}. The function should return a matrix of weights
 #'   corresponding to the transformed squared distances passed in as arguments.
+#' @param scales list of perplexities to scale over. If not provided, a series
+#'  of decreasing perplexities is used. See the Details section.
 #' @param verbose If \code{TRUE} print message about tricks during the
 #' embedding.
 #' @return Input initializer for use by an embedding function.
@@ -79,8 +92,14 @@
 #' @examples
 #' \dontrun{
 #' # Should be passed to the tricks argument of an embedding function.
-#' # Scale the perplexity over 20 iterations
+#' # Scale the perplexity over 20 iterations, using default perplexities
 #'  embed_prob(init_inp = inp_multiscale(num_scale_iters = 20), ...)
+#' # Scale the perplexity over 20 iterations using the provided perplexities
+#'  embed_prob(init_inp = inp_multiscale(num_scale_iters = 20,
+#'    scales = c(150, 100, 50, 25)), ...)
+#' # Scale using the provided perplexities, but use all of them at once
+#'  embed_prob(init_inp = inp_multiscale(num_scale_iters = 0,
+#'    scales = c(150, 100, 50, 25)), ...)
 #' }
 #' @references
 #' Lee, J. A., Peluffo-Ordonez, D. H., & Verleysen, M. (2014).
@@ -88,34 +107,44 @@
 #' dimensionality reduction. In ESANN.
 #' @family sneer input initializers
 #' @export
-inp_multiscale <- function(num_scale_iters,
+inp_multiscale <- function(num_scale_iters = 0,
                            multiscale_out_fn = multiscale_exp,
                            input_weight_fn = exp_weight,
+                           scales = NULL,
                            verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
 
-      max_scales <- max(floor(log2(nrow(inp$dm) / 4)), 1)
-      step_every <- max(round(num_scale_iters / max(max_scales - 1, 1)), 1)
+      if (is.null(scales)) {
+        max_scales <- max(floor(log2(nrow(inp$dm) / 4)), 1)
+      }
+      else {
+        max_scales = length(scales)
+      }
+      num_steps <- max(max_scales - 1, 1)
+      step_every <- num_scale_iters / num_steps
 
-      if (is.null(method$num_scales) ||
-          (method$num_scales < max_scales
-           && (iter == 0 || iter %% step_every == 0))) {
+      if (iter == 0) {
+        if (verbose) {
+          message("Perplexity will be calculated over ", formatC(max_scales),
+                  " scales, scaling every ~", round(step_every), " iters")
+        }
+        method$num_scales <- 0
+        method$scale_type <- "multi"
+        method$multiscale_out_fn <- multiscale_out_fn
+        method$orig_weight_fn <- method$weight_fn
+      }
 
-        if (iter == 0) {
-          if (verbose) {
-            message("Perplexity will be calculated over ", formatC(max_scales),
-                    " scales, scaling every ", step_every, " iters")
-          }
-          method$num_scales <- 1
-          method$scale_type <- "multi"
-          method$multiscale_out_fn <- multiscale_out_fn
-          method$orig_weight_fn <- method$weight_fn
+      while (method$num_scales * step_every <= iter
+             && method$num_scales < max_scales) {
+        method$num_scales <- method$num_scales + 1
+
+        if (is.null(scales)) {
+          perp <- 2 ^ (max_scales - method$num_scales + 1)
         }
         else {
-          method$num_scales <- method$num_scales + 1
+          perp <- scales[method$num_scales]
         }
-        perp <- 2 ^ (max_scales - method$num_scales + 1)
         if (verbose) {
           message("Iter: ", iter,
                   " setting perplexity to ", formatC(perp))
@@ -151,5 +180,6 @@ multiscale_exp <- function(out, method, perplexity) {
 
   weight_fn <- partial(method$orig_weight_fn, prec)
   attr(weight_fn, 'type') <- attr(method$orig_weight_fn, 'type')
-  weight_fn
+  method$weight_fn <- weight_fn
+  method
 }

@@ -4,8 +4,8 @@
 \alias{inp_multiscale}
 \title{Initialize With Multiscale Perplexity}
 \usage{
-inp_multiscale(num_scale_iters, multiscale_out_fn = multiscale_exp,
-  input_weight_fn = exp_weight, verbose = TRUE)
+inp_multiscale(num_scale_iters = 0, multiscale_out_fn = multiscale_exp,
+  input_weight_fn = exp_weight, scales = NULL, verbose = TRUE)
 }
 \arguments{
 \item{num_scale_iters}{Number of iterations for the perplexity of the input
@@ -21,6 +21,9 @@ which will be varied as part of the search to produce the desired
 \code{perplexity}. The function should return a matrix of weights
 corresponding to the transformed squared distances passed in as arguments.}
 
+\item{scales}{list of perplexities to scale over. If not provided, a series
+of decreasing perplexities is used. See the Details section.}
+
 \item{verbose}{If \code{TRUE} print message about tricks during the
 embedding.}
 }
@@ -35,14 +38,22 @@ This function calculates multiple input probability matrices, corresponding
 to multiple perplexities, then uses the average of these matrices for the
 final probability matrix.
 
-To avoid local minima, only the largest perplexity value is used initially,
-with smaller perplexities being added over time. The perplexities used are
-powers of 2, i.e. 2, 4, 8, 16, with the maximum (and initial) perplexity
-given by the formula:
+A list of perplexities may be provided to this function. Otherwise, the
+perplexities used are decreasing powers of 2, e.g. 16, 8, 4, 2
+with the maximum perplexity given by the formula:
 
 \deqn{\lfloor{\log_{2}(N/4)}\rfloor}{floor(log2(N / 4)}
 
-where N is the number of observations in the data set.
+where N is the number of observations in the data set. The smallest
+perplexity value tried is 2.
+
+If a non-zero value of \code{num_scale_iters} is provided, the perplexities
+will be combined over the specified number of iterations, averaging over
+an increasing number of perplexities until they are all used to generate
+the probability matrix at \code{num_scale_iters}. If using the default
+scales, the perplexities are added in decreasing order, otherwise, they
+are added in the order provided in \code{scales} list. It is suggested that
+the \code{scales} list therefore order the perplexities in decreasing order.
 
 The output function used for the embedding also needs to be adapted for each
 scale. Because the perplexity of the output can't be directly controlled,
@@ -76,20 +87,29 @@ functions can be used with the default function. The signature of
 
 where \code{out} is the current output data, \code{method} is the embedding
 method, and \code{perplexity} is a perplexity value used in the multiscaling
-of the input probability. This function will be called once for each
-perplexity, and a weight function should be returned, which itself has the
+of the input probability.
+
+This function will be called once for each perplexity, and an updated method
+should be returned, with a new \code{weight_fn} function member with the
 signature:
 
 \code{weight_fn(D)}
 
 where D is the output distance matrix, and the return value is a weight
-matrix.
+matrix. The original weight function is stored as
+\code{method$orig_weight_fn}.
 }
 \examples{
 \dontrun{
 # Should be passed to the tricks argument of an embedding function.
-# Scale the perplexity over 20 iterations
+# Scale the perplexity over 20 iterations, using default perplexities
  embed_prob(init_inp = inp_multiscale(num_scale_iters = 20), ...)
+# Scale the perplexity over 20 iterations using the provided perplexities
+ embed_prob(init_inp = inp_multiscale(num_scale_iters = 20,
+   scales = c(150, 100, 50, 25)), ...)
+# Scale using the provided perplexities, but use all of them at once
+ embed_prob(init_inp = inp_multiscale(num_scale_iters = 0,
+   scales = c(150, 100, 50, 25)), ...)
 }
 }
 \references{

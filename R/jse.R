@@ -292,11 +292,12 @@ sjse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 #'  reference probability.
 #' @param kappa Mixture parameter. Should be a value between 0 and 1 and be the
 #'  same value used to produce the mixture matrix \code{zm}.
+#' @param beta The precision of the weighting function.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-jse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5,
+jse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5, beta = 1,
                           eps = .Machine$double.eps) {
-  reverse_asne_stiffness(zm, qm, kl_qz, eps = eps) / kappa
+  reverse_asne_stiffness(zm, qm, kl_qz, beta = beta, eps = eps) / kappa
 }
 
 #' Symmetric JSE Stiffness Function
@@ -308,11 +309,12 @@ jse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5,
 #'  reference probability.
 #' @param kappa Mixture parameter. Should be a value between 0 and 1 and be the
 #'  same value used to produce the mixture matrix \code{zm}.
+#' @param beta The precision of the weighting function.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix.
-sjse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5,
+sjse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5, beta = 1,
                           eps = .Machine$double.eps) {
-  reverse_ssne_stiffness(zm, qm, kl_qz, eps = eps) / kappa
+  reverse_ssne_stiffness(zm, qm, kl_qz, beta = beta, eps = eps) / kappa
 }
 
 #' HSJSE Stiffness Function
