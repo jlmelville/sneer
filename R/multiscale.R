@@ -117,10 +117,13 @@ inp_multiscale <- function(num_scale_iters = 0,
 
       if (is.null(scales)) {
         max_scales <- max(floor(log2(nrow(inp$dm) / 4)), 1)
+        scales <- vapply(seq_along(1:max_scales),
+                         function(x) { 2 ^ (max_scales - x + 1) }, 0)
       }
       else {
         max_scales = length(scales)
       }
+      method$scales <- scales
       num_steps <- max(max_scales - 1, 1)
       step_every <- num_scale_iters / num_steps
 
@@ -177,9 +180,50 @@ inp_multiscale <- function(num_scale_iters = 0,
 multiscale_exp <- function(out, method, perplexity) {
   out_dim <- ncol(out$ym)
   prec <- perplexity ^ (-2 / out_dim)
-
-  weight_fn <- partial(method$orig_weight_fn, prec)
+  weight_fn <- partial(method$orig_weight_fn, beta = prec)
   attr(weight_fn, 'type') <- attr(method$orig_weight_fn, 'type')
   method$weight_fn <- weight_fn
+
   method
+}
+
+#' Create Weight Matrices from Output Data
+#'
+#' Creates multi-scale weight matrices.
+#'
+#' A list of weight matrices will be returned, one for each scale distance.
+#' Otherwise, one matrix is returned.
+#'
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return One or more weight matrix for the embedded coordinates in \code{out}.
+weights_multi <- function(out, method) {
+
+  ws <- list()
+  for (l in 1:method$num_scales) {
+    perp <- method$scales[l]
+    method <- method$multiscale_out_fn(out, method, perp)
+    ws[[l]] <- weights_single(out, method)
+  }
+  ws
+}
+
+#' Multiscale Weight Matrices to Probability Matrix Conversion
+#'
+#' Given a list of weight matrices and an embedding method, this function
+#' creates a multiscale probability matrix.
+#'
+#' @param wm List of weight Matrices. Each matrix must have a "type" attribute
+#'  with one of the following values:
+#'   \describe{
+#'   \item{"symm"}{A symmetric matrix.}
+#'   \item{"asymm"}{An asymmetric matrix.}
+#'   }
+#' @param method Embedding method.
+#' @return Probability matrix with a type suitable for the embedding
+#'   \code{method}.
+weights_to_probs_multi <- function(wm, method) {
+  pm <- lapply(wm, weights_to_probs_single, method) # create P matrices
+  pm <- Reduce('+', pm) / method$num_scales # average them
+  pm
 }

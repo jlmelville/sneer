@@ -135,29 +135,6 @@ weights_single <- function(out, method) {
   coords_to_weights(out$ym, method$weight_fn)
 }
 
-#' Create Weight Matrices from Output Data
-#'
-#' Creates multi-scale weight matrices.
-#'
-#' A list of weight matrices will be returned, one for each scale distance.
-#' Otherwise, one matrix is returned.
-#'
-#' @param out Output data.
-#' @param method Embedding method.
-#' @return One or more weight matrix for the embedded coordinates in \code{out}.
-weights_multi <- function(out, method) {
-
-  ws <- list()
-  for (l in 1:method$num_scales) {
-    perp <- 2 ^ (method$num_scales - l + 1)
-
-    method <- method$multiscale_out_fn(out, method, perp)
-
-    ws[[l]] <- weights_single(out, method)
-  }
-  ws
-}
-
 #' Create Weight Matrix from Coordinates Matrix
 #'
 #' @param ym Matrix of coordinates.
@@ -227,26 +204,6 @@ weights_to_probs_single <- function(wm, method) {
   pm <- get(prob_fn_name)(wm)
   attr(pm, "type") <- prob_type
 
-  pm
-}
-
-#' Multiscale Weight Matrices to Probability Matrix Conversion
-#'
-#' Given a list of weight matrices and an embedding method, this function
-#' creates a multiscale probability matrix.
-#'
-#' @param wm List of weight Matrices. Each matrix must have a "type" attribute
-#'  with one of the following values:
-#'   \describe{
-#'   \item{"symm"}{A symmetric matrix.}
-#'   \item{"asymm"}{An asymmetric matrix.}
-#'   }
-#' @param method Embedding method.
-#' @return Probability matrix with a type suitable for the embedding
-#'   \code{method}.
-weights_to_probs_multi <- function(wm, method) {
-  pm <- lapply(wm, weights_to_probs_single, method) # create P matrices
-  pm <- Reduce('+', pm) / method$num_scales # average them
   pm
 }
 

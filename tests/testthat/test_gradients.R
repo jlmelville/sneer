@@ -4,6 +4,14 @@ context("Gradients")
 # This tests that the analytical gradients match those from a finite difference
 # calculation.
 
+gfd <- function(embedder, diff = 1e-4) {
+  gradient_fd(embedder$opt, embedder$inp, embedder$out, embedder$method, diff = diff)$gm
+}
+
+gan <- function(embedder) {
+  gradient(embedder$inp, embedder$out, embedder$method)$gm
+}
+
 preprocess <- make_preprocess(range_scale_matrix = TRUE,
                               verbose = FALSE)
 out_init <- out_from_PCA(verbose = FALSE)
@@ -17,9 +25,8 @@ expect_grad <- function(method,
                          init_inp = inp_init,
                          init_out = out_init,
                          opt = opt)
-  grad_fd <- gradient_fd(embedder$opt, embedder$inp, embedder$out,
-                         embedder$method)$gm
-  grad_an <- gradient(embedder$inp, embedder$out, embedder$method)$gm
+  grad_fd <- gfd(embedder)
+  grad_an <- gan(embedder)
 
   expect_equal(grad_fd, grad_an, tolerance = 1e-4)
 }

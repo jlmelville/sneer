@@ -37,6 +37,7 @@
 #' }
 #' @param kappa Mixture parameter. If set to 0, then JSE behaves like ASNE. If
 #'  set to 1, then JSE behaves like RASNE.
+#' @param beta The precision of the weighting function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #'   e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
@@ -68,13 +69,14 @@
 #' # equivalent to "reverse" ASNE
 #' embed_prob(method = jse(kappa = 1), ...)
 #' }
-jse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
+jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
+                verbose = TRUE) {
   list(
     cost_fn = jse_cost,
     weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
       jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
-                    eps = method$eps)
+                    beta = method$beta, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
@@ -92,7 +94,8 @@ jse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     prob_type = "row",
     eps = eps,
     kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
-                  max_val = 1 - sqrt(.Machine$double.eps))
+                  max_val = 1 - sqrt(.Machine$double.eps)),
+    beta = beta
   )
 }
 
@@ -231,6 +234,7 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
 #' @param kappa Mixture parameter. Cost function behaves more like the
 #'   Kullback-Leibler divergence as it approaches zero and more like the
 #'   "reverse" KL divergence as it approaches one.
+#' @param beta The precision of the weighting function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #'   e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
@@ -260,14 +264,15 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
 #' # equivalent to "reverse" SSNE
 #' embed_prob(method = hsjse(kappa = 1), ...)
 #' }
-sjse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
+sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
+                 verbose = TRUE) {
 
   list(
     cost_fn = jse_cost,
     weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
       sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
-                     eps = method$eps)
+                     beta = method$beta, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
       out$wm <- weights(out, method)
@@ -279,7 +284,8 @@ sjse <- function(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     prob_type = "joint",
     eps = eps,
     kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
-                  max_val = 1 - sqrt(.Machine$double.eps))
+                  max_val = 1 - sqrt(.Machine$double.eps)),
+    beta = beta
   )
 }
 
