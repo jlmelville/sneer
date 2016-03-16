@@ -107,6 +107,23 @@ weights <- function(out, method) {
   coords_to_weights(out$ym, method$weight_fn)
 }
 
+#' Update Output Probabilities
+#'
+#' Intermediate data (squared distance matrix and weight matrix) may be useful
+#' in calculating the gradient, so is also returned from this function.
+#'
+#' @return List containing:
+#'  \item{\code{d2m}}{Matrix of squared distances.}
+#'  \item{\code{wm}}{Weight matrix.}
+#'  \item{\code{qm}}{Probability Matrix.}
+update_probs <- function(out, method) {
+  d2m <- coords_to_dist2(out$ym)
+  wm <- dist2_to_weights(d2m, method$weight_fn)
+  qm <- weights_to_probs(wm, method)
+  list(d2m = d2m, wm = wm, qm = qm)
+}
+
+
 #' Create Weight Matrix from Coordinates Matrix
 #'
 #' @param ym Matrix of coordinates.

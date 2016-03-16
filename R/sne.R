@@ -68,12 +68,7 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       tsne_stiffness(inp$pm, out$qm, out$wm)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_probs(wm, method)
-      out$wm <- wm
-      out
-    },
+    update_out_fn = update_out(keep = c("qm", "wm")),
     prob_type = "joint",
     eps = eps
   )
@@ -133,11 +128,7 @@ ssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       ssne_stiffness(inp$pm, out$qm)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_probs(wm, method)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm")),
     prob_type = "joint",
     eps = eps
   )
@@ -197,11 +188,7 @@ asne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       asne_stiffness(inp$pm, out$qm)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_probs(wm, method)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm")),
     prob_type = "row",
     eps = eps
   )
@@ -258,12 +245,7 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       tasne_stiffness(inp$pm, out$qm, out$wm)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_probs(wm, method)
-      out$wm <- wm
-      out
-    },
+    update_out_fn = update_out(keep = c("qm", "wm")),
     prob_type = "row",
     eps = eps
   )
@@ -349,12 +331,7 @@ hssne <- function(eps = .Machine$double.eps, alpha = 0,
     stiffness_fn = function(method, inp, out) {
       hssne_stiffness(inp$pm, out$qm, out$wm, alpha, beta)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_probs(wm, method)
-      out$wm <- wm
-      out
-    },
+    update_out_fn = update_out(keep = c("qm", "wm")),
     prob_type = "joint",
     eps = eps
   )
