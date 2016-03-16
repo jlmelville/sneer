@@ -71,4 +71,6 @@ test_that("JSE gradients", {
 test_that("Plugin gradients", {
   expect_grad(asne_plugin(), tolerance = 1e-5)
   expect_grad(ssne_plugin(), tolerance = 1e-5)
+  expect_grad(tsne_plugin(), tolerance = 1e-5)
+  expect_grad(hssne_plugin(), tolerance = 1e-5)
 })

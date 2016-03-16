@@ -116,3 +116,67 @@ heavy_tail_weight <- function(d2m, beta = 1, alpha = 1.5e-8) {
   ((alpha * beta * d2m) + 1) ^ (-1 / alpha)
 }
 attr(heavy_tail_weight, "type") <- "symm"
+
+
+#' Exp Kernel Factory Function
+exp_kernel <- function(beta = 1) {
+  fn <- function(d2m) {
+    exp_weight(d2m, beta = beta)
+  }
+  attr(fn, "type") <- attr(exp_weight, "type")
+
+  list(
+    fn = fn,
+    gr = function(d2m) {
+      exp_gr(d2m, beta = beta)
+    }
+  )
+}
+
+#' Exp Kernel Gradient
+exp_gr <- function(dm, beta = 1) {
+  -beta * exp_weight(dm, beta = beta)
+}
+
+#' tDist Kernel Factory Function
+tdist_kernel <- function() {
+  fn <- function(d2m) {
+    tdist_weight(d2m)
+  }
+  attr(fn, "type") <- attr(exp_weight, "type")
+
+  list(
+    fn = fn,
+    gr = function(d2m) {
+      tdist_gr(d2m)
+    }
+  )
+}
+
+#' tDist gradient
+tdist_gr <- function(d2m) {
+  -(tdist_weight(d2m) ^ 2)
+}
+
+#' Heavy Tail Kernel Factory Function
+heavy_tail_kernel <- function(beta = 1, alpha = 0) {
+  alpha <- clamp(alpha, sqrt(.Machine$double.eps))
+  fn <- function(d2m) {
+    heavy_tail_weight(d2m, beta = beta, alpha = alpha)
+  }
+  attr(fn, "type") <- attr(exp_weight, "type")
+
+  list(
+    fn = fn,
+    gr = function(d2m) {
+      heavy_tail_gr(d2m, beta = beta, alpha = alpha)
+    }
+  )
+}
+
+#' Heavy Tail Gradient
+heavy_tail_gr <- function(d2m, beta = 1, alpha = 1.5e-8) {
+  -beta * heavy_tail_weight(d2m, beta = beta, alpha = alpha) ^ (alpha + 1)
+}
+
+

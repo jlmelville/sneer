@@ -2,8 +2,7 @@
 
 #'
 plugin <- function(cost = kl(),
-                   weight_fn = exp_weight,
-                   weight_gr = exp_weight_gr,
+                   kernel = exp_kernel(),
                    stiffness_fn = plugin_stiffness,
                    update_out_fn = update_out(keep = c("qm", "wm", "d2m")),
                    prob_type = "joint",
@@ -12,8 +11,8 @@ plugin <- function(cost = kl(),
   list(
     cost_fn = cost$fn,
     cost_gr = cost$gr,
-    weight_fn = weight_fn,
-    weight_gr = weight_gr,
+    kernel = kernel,
+    weight_fn = kernel$fn,
     beta = beta,
     stiffness_fn = stiffness_fn,
     update_out_fn = update_out_fn,
@@ -26,6 +25,7 @@ plugin <- function(cost = kl(),
 ssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
   plugin(
     cost = kl(),
+    kernel = exp_kernel(beta = beta),
     eps = eps,
     prob_type = "joint"
   )
@@ -35,8 +35,29 @@ ssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
 asne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
   plugin(
     cost = kl(),
+    kernel = exp_kernel(beta = beta),
     eps = eps,
     prob_type = "row"
+  )
+}
+
+#' TSNE plugin
+tsne_plugin <- function(eps = .Machine$double.eps) {
+  plugin(
+    cost = kl(),
+    kernel = tdist_kernel(),
+    eps = eps,
+    prob_type = "joint"
+  )
+}
+
+#' HSSNE plugin
+hssne_plugin <- function(eps = .Machine$double.eps, beta = 1, alpha = 0) {
+  plugin(
+    cost = kl(),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
+    eps = eps,
+    prob_type = "joint"
   )
 }
 
@@ -59,30 +80,6 @@ kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
   -pm / (qm + eps)
 }
 
-#' Exp Kernel
-exp_kernel <- function(beta = 1) {
-  list(
-    fn = exp_weight_fn,
-    gr = exp_weight_gr
-  )
-}
-
-#' Exp Kernel Wrapper
-exp_weight_fn <- function(inp, out, method) {
-  exp_weight(out$d2m, method$weight$beta)
-}
-attr(exp_weight_fn, "type") <- attr(exp_weight, "type")
-
-#' Exp Kernel Gradient Wrapper
-exp_weight_gr <- function(inp, out, method) {
-  exp_gr(out$d2m, method$beta)
-}
-
-#' Exp Kernel Gradient
-exp_gr <- function(dm, beta = 1) {
-  -beta * exp_weight(dm, beta = beta)
-}
-
 #' Plugin Stiffness
 plugin_stiffness <- function(method, inp, out) {
   prob_type <- method$prob_type
@@ -100,7 +97,7 @@ plugin_stiffness <- function(method, inp, out) {
 #' Plugin Stiffness for Row Probabilities
 plugin_stiffness_row <- function(method, inp, out) {
   cm_grad <- method$cost_gr(inp, out, method)
-  wm_grad <- method$weight_gr(inp, out, method)
+  wm_grad <- method$kernel$gr(out$d2m)
 
   wm_sum <-  apply(out$wm, 1, sum)
   km <- apply(cm_grad * out$qm, 1, sum) # row sums
@@ -113,7 +110,7 @@ plugin_stiffness_row <- function(method, inp, out) {
 plugin_stiffness_joint <- function(method, inp, out) {
   wm_sum <- sum(out$wm)
   cm_grad <- method$cost_gr(inp, out, method)
-  wm_grad <- method$weight_gr(inp, out, method)
+  wm_grad <- method$kernel$gr(out$d2m)
   km <- (sum(cm_grad * out$qm) - cm_grad) * (-wm_grad / wm_sum)
   2 * (km + t(km))
 }
