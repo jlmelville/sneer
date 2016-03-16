@@ -477,19 +477,3 @@ init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
   )
 }
 
-
-#' Squared (Euclidean) Distance Matrix
-#'
-#' Creates a matrix of squared Euclidean distances from a coordinate matrix.
-#'
-#' Probability-based embedding techniques use the squared Euclidean distance
-#' as input to their weighting functions.
-#'
-#' @param xm a matrix of coordinates
-#' @return Squared distance matrix.
-coords_to_dist2 <- function(xm) {
-  sumsq <- apply(xm ^ 2, 1, sum)  # sum of squares of each row of xm
-  d2m <- -2 * xm %*% t(xm)  # cross product
-  d2m <- sweep(d2m, 2, -t(sumsq))  # adds sumsq[j] to D2[i,j]
-  sumsq + d2m  # add sumsq[i] to D2[i,j]
-}
