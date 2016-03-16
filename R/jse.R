@@ -78,13 +78,8 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
       jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
                     beta = method$beta, eps = method$eps)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_probs(wm, method)
-      out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
-      out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm")),
+    out_updated_fn = klqz_rows_update,
     inp_updated = function(inp, out, method) {
       if (!is.null(out)) {
         out <- method$update_out_fn(inp, out, method)
@@ -192,13 +187,8 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
                       alpha = alpha,
                       beta = beta, eps = method$eps)
     },
-    update_out_fn = function(inp, out, method) {
-      out$wm <- weights(out, method)
-      out$qm <- weights_to_probs(out$wm, method)
-      out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
-      out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm", "wm")),
+    out_updated_fn = klqz_update,
     prob_type = "joint",
     eps = eps,
     kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
@@ -274,13 +264,8 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
       sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
                      beta = method$beta, eps = method$eps)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_probs(wm, method)
-      out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
-      out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm")),
+    out_updated_fn = klqz_update,
     prob_type = "joint",
     eps = eps,
     kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
@@ -482,4 +467,18 @@ jse_divergence <- function(pm, qm, zm = NULL, kappa = 0.5,
 #' @return Mixture matrix.
 js_mixture <- function(pm, qm, kappa = 0.5) {
   (kappa * pm) + ((1 - kappa) * qm)
+}
+
+#' Update Output With KL Divergence from Q to Z
+klqz_update <- function(inp, out, method) {
+  out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
+  out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
+  out
+}
+
+#' Update Output with KL Divergence from Q to Z per Row
+klqz_rows_update <- function(inp, out, method) {
+  out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
+  out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
+  out
 }
