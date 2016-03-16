@@ -275,8 +275,8 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                      beta = method$beta, eps = method$eps)
     },
     update_out_fn = function(inp, out, method) {
-      out$wm <- weights(out, method)
-      out$qm <- weights_to_probs(out$wm, method)
+      wm <- weights(out, method)
+      out$qm <- weights_to_probs(wm, method)
       out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
       out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
       out
