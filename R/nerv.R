@@ -242,14 +242,13 @@ snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
     cost_fn = nerv_cost,
     weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
-      snerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, lambda = lambda,
+      snerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = lambda,
                       eps = eps)
     },
     update_out_fn = function(inp, out, method) {
       wm <- weights(out, method)
       out$qm <- weights_to_pcond(wm)
       out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
-      out$wm <- wm
       out
     },
     prob_type = "joint",
@@ -388,7 +387,7 @@ nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5, beta = 1,
 #' @param beta Precision of the weighting function.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix
-snerv_stiffness <- function(pm, qm, wm, rev_kl, beta = 1, lambda = 0.5,
+snerv_stiffness <- function(pm, qm, rev_kl, beta = 1, lambda = 0.5,
                             eps = .Machine$double.eps) {
   (lambda * ssne_stiffness(pm, qm, beta = beta)) +
     ((1 - lambda) * reverse_ssne_stiffness(pm, qm, rev_kl, beta = beta,
