@@ -73,12 +73,8 @@ nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = lambda, eps = eps)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_prow(wm)
-      out$rev_kl <- kl_divergence_rows(out$qm, inp$pm, method$eps)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm")),
+    out_updated_fn = klqp_rows_update,
     prob_type = "row",
     eps = eps,
     lambda = lambda
@@ -162,13 +158,8 @@ tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
       tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, lambda = lambda,
                       eps = eps)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_pcond(wm)
-      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
-      out$wm <- wm
-      out
-    },
+    update_out_fn = update_out(keep = c("qm", "wm")),
+    out_updated_fn = klqp_update,
     prob_type = "joint",
     eps = eps,
     lambda = lambda
@@ -245,12 +236,8 @@ snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
       snerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = lambda,
                       eps = eps)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_pcond(wm)
-      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm")),
+    out_updated_fn = klqp_update,
     prob_type = "joint",
     eps = eps,
     lambda = lambda
@@ -346,13 +333,8 @@ hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
       hsnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, lambda, alpha, beta,
                        eps)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_pcond(wm)
-      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
-      out$wm <- wm
-      out
-    },
+    update_out_fn = update_out(keep = c("qm", "wm")),
+    out_updated_fn = klqp_update,
     prob_type = "joint",
     eps = eps,
     lambda = lambda
@@ -495,3 +477,15 @@ reverse_kl_cost <- function(inp, out, method) {
   kl_divergence(out$qm, inp$pm, method$eps)
 }
 attr(reverse_kl_cost, "sneer_cost_type") <- "prob"
+
+#' Update Output With KL Divergence from Q to P
+klqp_update <- function(inp, out, method) {
+  out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
+  out
+}
+
+#' Update Output with KL Divergence from Q to P per Row
+klqp_rows_update <- function(inp, out, method) {
+  out$rev_kl <- kl_divergence_rows(out$qm, inp$pm, method$eps)
+  out
+}

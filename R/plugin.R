@@ -127,6 +127,9 @@ update_out <- function(keep = c("qm")) {
       out[[keep[i]]] <- res[[keep[i]]]
     }
 
+    if (!is.null(method$out_updated_fn)) {
+      out <- method$out_updated_fn(inp, out, method)
+    }
     out
   }
 }

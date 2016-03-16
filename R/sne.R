@@ -384,12 +384,8 @@ rasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl, eps = method$eps)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_probs(wm, method)
-      out$rev_kl <- kl_divergence_rows(out$qm, inp$pm, method$eps)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm")),
+    out_updated_fn = klqp_rows_update,
     prob_type = "row",
     eps = eps
   )
@@ -440,12 +436,8 @@ rssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       reverse_ssne_stiffness(inp$pm, out$qm, out$rev_kl, eps = method$eps)
     },
-    update_out_fn = function(inp, out, method) {
-      wm <- weights(out, method)
-      out$qm <- weights_to_probs(wm, method)
-      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm")),
+    out_updated_fn = klqp_update,
     prob_type = "joint",
     eps = eps
   )
@@ -500,12 +492,8 @@ rtsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
       reverse_tsne_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
                              eps = method$eps)
     },
-    update_out_fn = function(inp, out, method) {
-      out$wm <- weights(out, method)
-      out$qm <- weights_to_probs(out$wm, method)
-      out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
-      out
-    },
+    update_out_fn = update_out(keep = c("qm", "wm")),
+    out_updated_fn = klqp_update,
     prob_type = "joint",
     eps = eps
   )
