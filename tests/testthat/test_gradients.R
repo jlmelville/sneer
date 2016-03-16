@@ -19,7 +19,8 @@ opt <- gradient_descent()
 
 expect_grad <- function(method,
                         inp_init = inp_from_perp(perplexity = 20,
-                                                 verbose = FALSE)) {
+                                                 verbose = FALSE),
+                        tolerance = 1e-4) {
   embedder <- init_embed(iris[1:50, 1:4], method,
                          preprocess = preprocess,
                          init_inp = inp_init,
@@ -31,21 +32,43 @@ expect_grad <- function(method,
   expect_equal(grad_fd, grad_an, tolerance = 1e-4)
 }
 
-expect_grad(mmds(), inp_init = NULL)
-expect_grad(smmds(), inp_init = NULL)
-expect_grad(sammon_map(), inp_init = NULL)
-expect_grad(tsne())
-expect_grad(ssne())
-expect_grad(asne())
-expect_grad(tasne())
-expect_grad(hssne())
-expect_grad(rasne())
-expect_grad(rssne())
-expect_grad(rtsne())
-expect_grad(nerv())
-expect_grad(tnerv())
-expect_grad(snerv())
-expect_grad(hsnerv())
-expect_grad(jse())
-expect_grad(sjse())
-expect_grad(hsjse())
+test_that("Distance gradients", {
+  expect_grad(mmds(), inp_init = NULL)
+  expect_grad(smmds(), inp_init = NULL)
+  expect_grad(sammon_map(), inp_init = NULL)
+})
+
+test_that("SNE gradients", {
+  expect_grad(tsne())
+  expect_grad(ssne())
+  expect_grad(asne())
+  expect_grad(tasne())
+})
+
+test_that("Heavy Tailed gradient", {
+  expect_grad(hssne())
+})
+
+test_that("Reverse SNE gradients", {
+  expect_grad(rasne())
+  expect_grad(rssne())
+  expect_grad(rtsne())
+})
+
+test_that("NeRV gradients", {
+  expect_grad(nerv())
+  expect_grad(tnerv())
+  expect_grad(snerv())
+  expect_grad(hsnerv())
+})
+
+test_that("JSE gradients", {
+  expect_grad(jse())
+  expect_grad(sjse())
+  expect_grad(hsjse())
+})
+
+test_that("Plugin gradients", {
+  expect_grad(asne_plugin(), tolerance = 1e-5)
+  expect_grad(ssne_plugin(), tolerance = 1e-5)
+})

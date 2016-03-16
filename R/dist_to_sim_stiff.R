@@ -95,34 +95,6 @@
 #' @name probability_matrices
 NULL
 
-
-#' Create Weight Matrix from Output Data
-#'
-#' Creates one or more matrix of positive weights from the distance matrix of the
-#' embedded coordinates.
-#'
-#' The number of matrices returned depends on whether multiscaling has been
-#' chosen. If using multiscaling (see \code{\link{inp_multiscale}}), then a
-#' list of weight matrices will be returned, one for each scale distance.
-#' Otherwise, one matrix is returned.
-#'
-#' @param out Output data.
-#' @param method Embedding method.
-#' @return One or more weight matrix for the embedded coordinates in \code{out}.
-weights <- function(out, method) {
-  scale <- "single"
-  if (!is.null(method$scale_type)) {
-    scale <- method$scale_type
-  }
-  weight_fn_name <- paste0("weights_", scale)
-
-  weight_fn <- get(weight_fn_name)
-  if (is.null(weight_fn)) {
-    stop("No ", weight_fn_name, " function defined for weight function")
-  }
-  get(weight_fn_name)(out, method)
-}
-
 #' Create Weight Matrix from Output Data
 #'
 #' Creates a matrix of positive weights from the distance matrix of the
@@ -131,7 +103,7 @@ weights <- function(out, method) {
 #' @param out Output data.
 #' @param method Embedding method.
 #' @return Weight matrix for the embedded coordinates in \code{out}.
-weights_single <- function(out, method) {
+weights <- function(out, method) {
   coords_to_weights(out$ym, method$weight_fn)
 }
 
@@ -181,7 +153,8 @@ dist2_to_weights <- function(d2m, weight_fn) {
 #' @param method Embedding method.
 #' @return Probability matrix with a type suitable for the embedding
 #'   \code{method}.
-weights_to_probs_single <- function(wm, method) {
+# weights_to_probs_single <- function(wm, method) {
+weights_to_probs <- function(wm, method) {
 
   prob_type <- method$prob_type
 
@@ -206,43 +179,6 @@ weights_to_probs_single <- function(wm, method) {
 
   pm
 }
-
-#' Weight Matrix to Probability Matrix Conversion
-#'
-#' Creates a probability matrix from one or more weight matrices.
-#'
-#' If the \code{method} is multiscale (has a \code{scale_type} attribute of
-#' \code{"multi"}) then a list of matrices should be provided, one for each
-#' scale. Otherwise, a single weights matrix should be provided.
-#'
-#' For both single and multiscale approaches, a single probability matrix is
-#' returned.
-#'
-#' @param wm Weight Matrix (Or a list of weight matrices). Each matrix must
-#'  have a "type" attribute with one of the
-#'   following values:
-#'   \describe{
-#'   \item{"symm"}{A symmetric matrix.}
-#'   \item{"asymm"}{An asymmetric matrix.}
-#'   }
-#' @param method Embedding method.
-#' @return Probability matrix with a type suitable for the embedding
-#'   \code{method}.
-weights_to_probs <- function(wm, method) {
-  scale <- "single"
-  if (!is.null(method$scale_type)) {
-    scale <- method$scale_type
-  }
-  prob_fn_name <- paste0("weights_to_probs_", scale)
-
-  prob_fn <- get(prob_fn_name)
-  if (is.null(prob_fn)) {
-    stop("No ", prob_fn_name,
-         " function defined for scale weight to probability function")
-  }
-  get(prob_fn_name)(wm, method)
-}
-
 
 #' Create Row Probability Matrix from Weight Matrix
 #'
