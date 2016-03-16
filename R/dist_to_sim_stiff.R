@@ -95,16 +95,20 @@
 #' @name probability_matrices
 NULL
 
-#' Create Weight Matrix from Output Data
-#'
-#' Creates a matrix of positive weights from the distance matrix of the
-#' embedded coordinates.
-#'
-#' @param out Output data.
-#' @param method Embedding method.
-#' @return Weight matrix for the embedded coordinates in \code{out}.
-weights <- function(out, method) {
-  coords_to_weights(out$ym, method$weight_fn)
+#' Output Update Factory Function
+update_out <- function(keep = c("qm")) {
+  function(inp, out, method) {
+    res <- update_probs(out, method)
+
+    for (i in 1:length(keep)) {
+      out[[keep[i]]] <- res[[keep[i]]]
+    }
+
+    if (!is.null(method$out_updated_fn)) {
+      out <- method$out_updated_fn(inp, out, method)
+    }
+    out
+  }
 }
 
 #' Update Output Probabilities
@@ -121,19 +125,6 @@ update_probs <- function(out, method) {
   wm <- dist2_to_weights(d2m, method$weight_fn)
   qm <- weights_to_probs(wm, method)
   list(d2m = d2m, wm = wm, qm = qm)
-}
-
-
-#' Create Weight Matrix from Coordinates Matrix
-#'
-#' @param ym Matrix of coordinates.
-#' @param weight_fn Function with signature \code{weight_fn(d2m)}
-#' where \code{d2m} is a matrix of squared distances between the output
-#' coordinates. It should return a weight matrix.
-#' @return Weight matrix.
-coords_to_weights <- function(ym, weight_fn) {
-  d2m <- coords_to_dist2(ym)
-  dist2_to_weights(d2m, weight_fn)
 }
 
 #' Squared (Euclidean) Distance Matrix

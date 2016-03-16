@@ -118,18 +118,3 @@ plugin_stiffness_joint <- function(method, inp, out) {
   2 * (km + t(km))
 }
 
-#' Plugin Output Update
-update_out <- function(keep = c("qm")) {
-  function(inp, out, method) {
-    res <- update_probs(out, method)
-
-    for (i in 1:length(keep)) {
-      out[[keep[i]]] <- res[[keep[i]]]
-    }
-
-    if (!is.null(method$out_updated_fn)) {
-      out <- method$out_updated_fn(inp, out, method)
-    }
-    out
-  }
-}
