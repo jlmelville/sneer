@@ -126,6 +126,16 @@ remove_nulls <- function(l) {
   l[!sapply(l, is.null)]
 }
 
+#' Dot product
 dot <- function(a, b) {
   sum(a * b)
+}
+
+#' Replace Members of a List
+lreplace <- function(l, ...) {
+  varargs <- list(...)
+  for (i in names(varargs)) {
+    l[[i]] <- varargs[[i]]
+  }
+  l
 }

@@ -142,6 +142,10 @@ make_normalized_cost_fn <- function(cost_fn) {
 
   # otherwise, synthesize from the cost type
   cost_type <- attr(cost_fn, "sneer_cost_type")
+  if (is.null(cost_type)) {
+    stop("Cost function has no sneer_cost_type")
+  }
+
   null_model_fn_name <- paste("null_model", cost_type, sep = "_")
   if (cost_type == "prob") {
     mat_name <- "qm"
@@ -170,3 +174,23 @@ make_normalized_cost_fn <- function(cost_fn) {
 null_model_prob <- function(pm) {
   matrix(sum(pm) / (nrow(pm) * ncol(pm)), nrow = nrow(pm), ncol = ncol(pm))
 }
+
+#' KL
+kl <- function() {
+  list(
+    fn = kl_cost,
+    gr = kl_cost_gr
+  )
+}
+
+#' Gradient Wrapper
+kl_cost_gr <- function(inp, out, method) {
+  kl_divergence_gr(inp$pm, out$qm, method$eps)
+}
+
+#' KL Gradient
+kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
+  -pm / (qm + eps)
+}
+
+

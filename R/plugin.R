@@ -5,19 +5,22 @@ plugin <- function(cost = kl(),
                    kernel = exp_kernel(),
                    stiffness_fn = plugin_stiffness,
                    update_out_fn = update_out(keep = c("qm", "wm", "d2m")),
+                   out_updated_fn = NULL,
                    prob_type = "joint",
-                   eps = .Machine$double.eps,
-                   beta = 1){
-  list(
-    cost_fn = cost$fn,
-    cost_gr = cost$gr,
-    kernel = kernel,
-    weight_fn = kernel$fn,
-    beta = beta,
-    stiffness_fn = stiffness_fn,
-    update_out_fn = update_out_fn,
-    prob_type = prob_type,
-    eps = eps
+                   eps = .Machine$double.eps) {
+  remove_nulls(
+    list(
+      cost = cost,
+      cost_fn = cost$fn,
+      cost_gr = cost$gr,
+      kernel = kernel,
+      weight_fn = kernel$fn,
+      stiffness_fn = stiffness_fn,
+      out_updated_fn = out_updated_fn,
+      update_out_fn = update_out_fn,
+      prob_type = prob_type,
+      eps = eps
+    )
   )
 }
 
@@ -52,7 +55,7 @@ tsne_plugin <- function(eps = .Machine$double.eps) {
 }
 
 #' HSSNE plugin
-hssne_plugin <- function(eps = .Machine$double.eps, beta = 1, alpha = 0) {
+hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps) {
   plugin(
     cost = kl(),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
@@ -61,23 +64,82 @@ hssne_plugin <- function(eps = .Machine$double.eps, beta = 1, alpha = 0) {
   )
 }
 
-
-#' KL
-kl <- function() {
-  list(
-    fn = kl_cost,
-    gr = kl_cost_gr
+#' TASNE plugin
+tasne_plugin <- function(eps = .Machine$double.eps) {
+  plugin(
+    cost = kl(),
+    kernel = tdist_kernel(),
+    eps = eps,
+    prob_type = "row"
   )
 }
 
-#' Gradient Wrapper
-kl_cost_gr <- function(inp, out, method) {
-  kl_divergence_gr(inp$pm, out$qm, method$eps)
+#' RASNE plugin
+rasne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
+  plugin(
+    cost = reverse_kl(),
+    kernel = exp_kernel(beta = beta),
+    out_updated_fn = klqp_update,
+    eps = eps,
+    prob_type = "row"
+  )
 }
 
-#' KL Gradient
-kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
-  -pm / (qm + eps)
+#' RSSNE Plugin
+rssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
+  plugin(
+    cost = reverse_kl(),
+    kernel = exp_kernel(beta = beta),
+    out_updated_fn = klqp_update,
+    eps = eps,
+    prob_type = "joint"
+  )
+}
+
+#' RTSNE plugin
+rtsne_plugin <- function(eps = .Machine$double.eps) {
+  plugin(
+    cost = reverse_kl(),
+    kernel = tdist_kernel(),
+    out_updated_fn = klqp_update,
+    eps = eps,
+    prob_type = "joint"
+  )
+}
+
+#' NeRV
+nerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
+  plugin(
+    cost = nerv_fg(lambda = lambda),
+    kernel = exp_kernel(beta = beta),
+    out_updated_fn = klqp_update,
+    prob_type = "row",
+    eps = eps
+  )
+}
+
+snerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
+  lreplace(
+    nerv_plugin(lambda = lambda, beta = beta, eps = eps),
+    prob_type = "joint"
+  )
+}
+
+tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
+  lreplace(
+    snerv_plugin(lambda = lambda, beta = beta, eps = eps),
+    kernel = tdist_kernel(),
+    weight_fn = tdist_kernel()$fn
+  )
+}
+
+hsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
+                          eps = .Machine$double.eps) {
+  lreplace(
+    snerv_plugin(lambda = lambda, beta = beta, eps = eps),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
+    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn
+  )
 }
 
 #' Plugin Stiffness

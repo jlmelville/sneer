@@ -385,7 +385,7 @@ rasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
       reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl, eps = method$eps)
     },
     update_out_fn = update_out(keep = c("qm")),
-    out_updated_fn = klqp_rows_update,
+    out_updated_fn = klqp_update,
     prob_type = "row",
     eps = eps
   )

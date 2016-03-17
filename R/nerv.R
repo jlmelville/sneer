@@ -74,7 +74,7 @@ nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
       nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = lambda, eps = eps)
     },
     update_out_fn = update_out(keep = c("qm")),
-    out_updated_fn = klqp_rows_update,
+    out_updated_fn = klqp_update,
     prob_type = "row",
     eps = eps,
     lambda = lambda
@@ -478,14 +478,67 @@ reverse_kl_cost <- function(inp, out, method) {
 }
 attr(reverse_kl_cost, "sneer_cost_type") <- "prob"
 
-#' Update Output With KL Divergence from Q to P
+#' Reverse KL
+reverse_kl <- function() {
+  list(
+    fn = reverse_kl_cost,
+    gr = reverse_kl_cost_gr
+  )
+}
+
+#' Gradient Wrapper
+reverse_kl_cost_gr <- function(inp, out, method) {
+  reverse_kl_divergence_gr(out$qm, inp$pm, method$eps)
+}
+
+#' reverse KL Gradient
+reverse_kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
+  log((pm + eps) / (qm + eps)) + 1
+}
+
 klqp_update <- function(inp, out, method) {
+  prob_type <- method$prob_type
+  if (is.null(prob_type)) {
+    stop("Embedding method must have a prob type")
+  }
+  fn_name <- paste0("klqp_update_p", prob_type)
+  fn <- get(fn_name)
+  if (is.null(fn)) {
+    stop("Unable to find KLQP update function for ", prob_type)
+  }
+  fn(inp, out, method)
+}
+
+#' Update Output With KL Divergence from Q to P
+klqp_update_pjoint <- function(inp, out, method) {
   out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
   out
 }
 
 #' Update Output with KL Divergence from Q to P per Row
-klqp_rows_update <- function(inp, out, method) {
+klqp_update_prow <- function(inp, out, method) {
   out$rev_kl <- kl_divergence_rows(out$qm, inp$pm, method$eps)
   out
 }
+
+nerv_fg <- function(lambda = 0.5) {
+  list(
+    fn = nerv_cost_fn,
+    gr = nerv_cost_gr,
+    lambda = lambda
+  )
+}
+
+nerv_cost_fn <- function(inp, out, method) {
+  method$lambda <- method$cost$lambda
+  nerv_cost(inp, out, method)
+}
+attr(nerv_cost_fn, "sneer_cost_type") <- "prob"
+
+
+nerv_cost_gr <- function(inp, out, method) {
+  method$cost$lambda * kl_cost_gr(inp, out, method) +
+    (1 - method$cost$lambda) * reverse_kl_cost_gr(inp, out, method)
+}
+
+

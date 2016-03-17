@@ -40,5 +40,11 @@ expect_plugin_equal("asne", tolerance = 1e-5)
 expect_plugin_equal("ssne", tolerance = 1e-5)
 expect_plugin_equal("tsne", tolerance = 1e-5)
 expect_plugin_equal("hssne", tolerance = 1e-5)
-
+expect_plugin_equal("rasne", tolerance = 1e-5)
+expect_plugin_equal("rssne", tolerance = 1e-5)
+expect_plugin_equal("rtsne", tolerance = 1e-5)
+expect_plugin_equal("nerv", tolerance = 1e-5)
+expect_plugin_equal("snerv", tolerance = 1e-5)
+expect_plugin_equal("tnerv", tolerance = 1e-5)
+expect_plugin_equal("hsnerv", tolerance = 1e-5)
 
