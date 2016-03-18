@@ -469,8 +469,21 @@ js_mixture <- function(pm, qm, kappa = 0.5) {
   (kappa * pm) + ((1 - kappa) * qm)
 }
 
-#' Update Output With KL Divergence from Q to Z
 klqz_update <- function(inp, out, method) {
+  prob_type <- method$prob_type
+  if (is.null(prob_type)) {
+    stop("Embedding method must have a prob type")
+  }
+  fn_name <- paste0("klqz_update_p", prob_type)
+  fn <- get(fn_name)
+  if (is.null(fn)) {
+    stop("Unable to find KLQZ update function for ", prob_type)
+  }
+  fn(inp, out, method)
+}
+
+#' Update Output With KL Divergence from Q to Z
+klqz_update_pjoint <- function(inp, out, method) {
   out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
   out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
   out
@@ -482,3 +495,31 @@ klqz_rows_update <- function(inp, out, method) {
   out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
   out
 }
+
+klqz_update_prow <- klqz_rows_update
+
+jse_fg <- function(kappa = 0.5) {
+  kappa <- clamp(kappa, min_val = sqrt(.Machine$double.eps),
+                max_val = 1 - sqrt(.Machine$double.eps))
+  list(
+    fn = jse_cost_fn,
+    gr = jse_cost_gr,
+    kappa = kappa,
+    kappa_inv = 1 / kappa
+  )
+}
+
+jse_cost_fn <- function(inp, out, method) {
+  method$kappa <- method$cost$kappa
+  jse_cost(inp, out, method)
+}
+attr(jse_cost_fn, "sneer_cost_type") <- "prob"
+attr(jse_cost_fn, "sneer_cost_norm") <- "jse_cost_norm"
+
+
+jse_cost_gr <- function(inp, out, method) {
+  method$cost$kappa_inv * log((out$qm + method$eps) / (out$zm + method$eps))
+}
+
+
+

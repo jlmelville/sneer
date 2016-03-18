@@ -80,4 +80,7 @@ test_that("Plugin gradients", {
   expect_grad(tnerv_plugin(), tolerance = 1e-5)
   expect_grad(snerv_plugin(), tolerance = 1e-5)
   expect_grad(hsnerv_plugin(), tolerance = 1e-5)
+  expect_grad(jse_plugin(), tolerance = 1e-5)
+  expect_grad(sjse_plugin(), tolerance = 1e-5)
+  expect_grad(hsjse_plugin(), tolerance = 1e-5)
 })

@@ -47,4 +47,7 @@ expect_plugin_equal("nerv", tolerance = 1e-5)
 expect_plugin_equal("snerv", tolerance = 1e-5)
 expect_plugin_equal("tnerv", tolerance = 1e-5)
 expect_plugin_equal("hsnerv", tolerance = 1e-5)
+expect_plugin_equal("jse", tolerance = 1e-5)
+expect_plugin_equal("sjse", tolerance = 1e-5)
+expect_plugin_equal("hsjse", tolerance = 1e-5)
 

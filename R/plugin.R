@@ -7,6 +7,7 @@ plugin <- function(cost = kl(),
                    update_out_fn = update_out(keep = c("qm", "wm", "d2m")),
                    out_updated_fn = NULL,
                    prob_type = "joint",
+                   after_init_fn = NULL,
                    eps = .Machine$double.eps) {
   remove_nulls(
     list(
@@ -129,6 +130,35 @@ hsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
                           eps = .Machine$double.eps) {
   lreplace(
     snerv_plugin(lambda = lambda, beta = beta, eps = eps),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
+    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn
+  )
+}
+
+jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
+  kappa <- clamp(kappa, min_val = sqrt(.Machine$double.eps),
+                 max_val = 1 - sqrt(.Machine$double.eps))
+  lreplace(
+    asne_plugin(beta = beta),
+    cost = jse_fg(kappa = kappa),
+    cost_fn = jse_fg(kappa = kappa)$fn,
+    cost_gr = jse_fg(kappa = kappa)$gr,
+    kappa = kappa,
+    out_updated_fn = klqz_update
+  )
+}
+
+sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
+  lreplace(
+    jse_plugin(kappa = kappa, beta = beta),
+    prob_type = "joint"
+  )
+}
+
+hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
+                         eps = .Machine$double.eps) {
+  lreplace(
+    sjse_plugin(kappa = kappa, beta = beta),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn
   )
