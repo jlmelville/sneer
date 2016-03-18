@@ -24,16 +24,6 @@ plugin <- function(cost = kl(),
   )
 }
 
-#' SSNE Plugin
-ssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
-  plugin(
-    cost = kl(),
-    kernel = exp_kernel(beta = beta),
-    eps = eps,
-    prob_type = "joint"
-  )
-}
-
 #' ASNE plugin
 asne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
   plugin(
@@ -44,32 +34,36 @@ asne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
   )
 }
 
+#' SSNE Plugin
+ssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
+  lreplace(
+    asne_plugin(),
+    prob_type = "joint"
+  )
+}
+
 #' TSNE plugin
 tsne_plugin <- function(eps = .Machine$double.eps) {
-  plugin(
-    cost = kl(),
+  lreplace(
+    ssne_plugin(),
     kernel = tdist_kernel(),
-    eps = eps,
-    prob_type = "joint"
+    weight_fn = tdist_kernel()$fn
   )
 }
 
 #' HSSNE plugin
 hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps) {
-  plugin(
-    cost = kl(),
+  lreplace(
+    ssne_plugin(),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    eps = eps,
-    prob_type = "joint"
+    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn
   )
 }
 
 #' TASNE plugin
 tasne_plugin <- function(eps = .Machine$double.eps) {
-  plugin(
-    cost = kl(),
-    kernel = tdist_kernel(),
-    eps = eps,
+  lreplace(
+    tsne_plugin(),
     prob_type = "row"
   )
 }
@@ -87,23 +81,18 @@ rasne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
 
 #' RSSNE Plugin
 rssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
-  plugin(
-    cost = reverse_kl(),
-    kernel = exp_kernel(beta = beta),
-    out_updated_fn = klqp_update,
-    eps = eps,
+  lreplace(
+    rasne_plugin(),
     prob_type = "joint"
   )
 }
 
 #' RTSNE plugin
 rtsne_plugin <- function(eps = .Machine$double.eps) {
-  plugin(
-    cost = reverse_kl(),
+  lreplace(
+    rssne_plugin(),
     kernel = tdist_kernel(),
-    out_updated_fn = klqp_update,
-    eps = eps,
-    prob_type = "joint"
+    weight_fn = tdist_kernel()$fn
   )
 }
 
@@ -118,6 +107,7 @@ nerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
   )
 }
 
+#' SNeRV
 snerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
   lreplace(
     nerv_plugin(lambda = lambda, beta = beta, eps = eps),
@@ -125,6 +115,7 @@ snerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
   )
 }
 
+#' tNeRV
 tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
   lreplace(
     snerv_plugin(lambda = lambda, beta = beta, eps = eps),
@@ -133,6 +124,7 @@ tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
   )
 }
 
+#' HSNeRV
 hsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
                           eps = .Machine$double.eps) {
   lreplace(
