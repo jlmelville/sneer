@@ -317,9 +317,7 @@ hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
                        rev_kl = out$rev_kl,
                        lambda = method$lambda, alpha = method$kernel$alpha,
                        beta = method$kernel$beta, eps = method$eps)
-    },
-    alpha = heavy_tail_kernel(beta = beta, alpha = alpha)$alpha,
-    beta = heavy_tail_kernel(beta = beta, alpha = alpha)$beta
+    }
   )
 }
 

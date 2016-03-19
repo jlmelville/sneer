@@ -247,9 +247,7 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
                       alpha = method$kernel$alpha, beta = method$kernel$beta,
                       eps = method$eps)
     },
-    update_out_fn = update_out(keep = c("qm", "wm")),
-    alpha = heavy_tail_kernel(beta = beta, alpha = alpha)$alpha,
-    beta = heavy_tail_kernel(beta = beta, alpha = alpha)$beta
+    update_out_fn = update_out(keep = c("qm", "wm"))
   )
 }
 

@@ -71,7 +71,6 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
     },
     update_out_fn = update_out(keep = c("qm")),
     prob_type = "row",
-    beta = beta,
     eps = eps)
 }
 
@@ -316,9 +315,7 @@ hssne <- function(eps = .Machine$double.eps, alpha = 0,
       hssne_stiffness(inp$pm, out$qm, out$wm, alpha = method$kernel$alpha,
                       beta = method$kernel$beta)
     },
-    update_out_fn = update_out(keep = c("qm", "wm")),
-    alpha = heavy_tail_kernel(beta = beta, alpha = alpha)$alpha,
-    beta = heavy_tail_kernel(beta = beta, alpha = alpha)$beta
+    update_out_fn = update_out(keep = c("qm", "wm"))
   )
 }
 
