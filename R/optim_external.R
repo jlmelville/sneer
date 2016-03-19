@@ -130,7 +130,7 @@ make_optim_f <- function(opt, inp, method, iter) {
   }
   function(par) {
     out <- par_to_out(par, opt, inp, method, nr)
-    method$cost_fn(inp, out, method)
+    method$cost$fn(inp, out, method)
   }
 }
 

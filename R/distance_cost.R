@@ -48,6 +48,12 @@ metric_stress <- function(dxm, dym) {
   sum(upper_tri((dxm - dym) ^ 2))
 }
 
+#' Metric Stress fungrad
+metric_stress_fg <- function() {
+  list(
+    fn = metric_stress_cost
+  )
+}
 
 #' Squared Distance STRESS Cost Function (SSTRESS)
 #'
@@ -99,6 +105,13 @@ attr(metric_sstress_cost, "sneer_cost_type") <- "dist"
 #' @return Metric stress.
 metric_sstress <- function(dxm, dym) {
   sum(upper_tri((dxm ^ 2 - dym ^ 2) ^ 2))
+}
+
+#' Metric Stress fungrad
+metric_sstress_fg <- function() {
+  list(
+    fn = metric_sstress_cost
+  )
 }
 
 #' STRESS RMSD Cost Function
@@ -455,6 +468,14 @@ attr(sammon_stress_unnorm_cost, "sneer_cost_type") <- "dist"
 sammon_stress_unnorm <- function(dxm, dym, eps = .Machine$double.eps) {
   sum(upper_tri((dxm - dym) ^ 2 / (dxm + eps)))
 }
+
+#' Sammon
+sammon_fg <- function() {
+  list(
+    fn = sammon_stress_cost
+  )
+}
+
 
 #' Null Model for Distance Matrices
 #'

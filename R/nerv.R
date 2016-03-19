@@ -516,10 +516,7 @@ nerv_cost_fn <- function(inp, out, method) {
 }
 attr(nerv_cost_fn, "sneer_cost_type") <- "prob"
 
-
 nerv_cost_gr <- function(inp, out, method) {
   method$cost$lambda * kl_cost_gr(inp, out, method) +
     (1 - method$cost$lambda) * reverse_kl_cost_gr(inp, out, method)
 }
-
-

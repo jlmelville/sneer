@@ -88,7 +88,7 @@ mmds <- function(eps = .Machine$double.eps) {
   }
 
   list(
-    cost_fn = metric_stress_cost,
+    cost = metric_stress_fg(),
     stiffness_fn = function(method, inp, out) {
       f(inp$dm, out$dm, eps = method$eps)
     },
@@ -130,7 +130,7 @@ smmds <- function(eps = .Machine$double.eps) {
   }
 
   list(
-    cost_fn = metric_sstress_cost,
+    cost = metric_sstress_fg(),
     stiffness_fn = function(method, inp, out) {
       f(inp$dm, out$dm, eps = method$eps)
     },
@@ -192,7 +192,7 @@ sammon_map <- function(eps = .Machine$double.eps) {
   }
 
   list(
-    cost_fn = sammon_stress_cost,
+    cost = sammon_fg(),
     stiffness_fn = function(method, inp, out) {
       f(inp$dm, out$dm, sum_rij = method$sum_rij, eps = method$eps)
     },

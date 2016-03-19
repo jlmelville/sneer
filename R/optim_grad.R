@@ -194,11 +194,11 @@ gradient_fd <- function(opt, inp, out, method, mat_name = "ym", diff = 1e-4) {
       ymij_old <- ym[i,j]
       ym[i, j] <- ymij_old + diff
       out_fwd <- set_solution(opt, inp, ym, method, out)
-      cost_fwd <- method$cost_fn(inp, out_fwd, method)
+      cost_fwd <- method$cost$fn(inp, out_fwd, method)
 
       ym[i, j] <- ymij_old - diff
       out_back <- set_solution(opt, inp, ym, method, out)
-      cost_back <- method$cost_fn(inp, out_back, method)
+      cost_back <- method$cost$fn(inp, out_back, method)
 
       fd <- (cost_fwd - cost_back) / (2 * diff)
       grad[i, j] <- fd

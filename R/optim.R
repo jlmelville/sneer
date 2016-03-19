@@ -694,21 +694,21 @@ set_solution <- function(opt, inp, coords, method, out = NULL) {
 #' \item{opt}{Optimizer with any updated data (e.g. cached costs).}
 #' @keywords internal
 cost_validate <- function(opt, inp, out, proposed_out, method, iter) {
-  ocd <- opt$old_cost_dirty
-  ooc <- opt[["old_cost"]]
-  if (is.null(ooc)) {
-    ooc <- 1.e99
-  }
+  # ocd <- opt$old_cost_dirty
+  # ooc <- opt[["old_cost"]]
+  # if (is.null(ooc)) {
+  #   ooc <- 1.e99
+  # }
   if (opt$old_cost_dirty) {
     # might have to also re-evaluate other matrices
     out <- method$update_out_fn(inp, out, method)
-    opt$old_cost <- method$cost_fn(inp, out, method)
+    opt$old_cost <- method$cost$fn(inp, out, method)
     opt$old_cost_dirty <- FALSE
   }
   old_cost <- opt$old_cost
 
   if (is.null(opt$cost_iter) || opt$cost_iter != iter) {
-    opt$cost <- method$cost_fn(inp, proposed_out, method)
+    opt$cost <- method$cost$fn(inp, proposed_out, method)
     opt$cost_iter <- iter
   }
   cost <- opt$cost

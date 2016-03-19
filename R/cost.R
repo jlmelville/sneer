@@ -156,6 +156,7 @@ make_normalized_cost_fn <- function(cost_fn) {
   else {
     stop("No known null model matrix name for cost type '", cost_type, "'")
   }
+
   function(inp, out, method) {
     cost <- cost_fn(inp, out, method)
     out[[mat_name]] <- do.call(null_model_fn_name, list(out[[mat_name]]))
