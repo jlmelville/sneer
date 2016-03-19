@@ -72,8 +72,8 @@
 jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                 verbose = TRUE) {
   lreplace(
-    asne(eps = eps),
-    cost_fn = jse_cost,
+    asne(beta = beta, eps = eps, verbose = verbose),
+    cost_fn = jse_fg(kappa = kappa)$fn,
     stiffness_fn = function(method, inp, out) {
       jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
                     beta = method$beta, eps = method$eps)
@@ -85,10 +85,8 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
       }
       list(out = out)
     },
-    eps = eps,
     kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
-                  max_val = 1 - sqrt(.Machine$double.eps)),
-    beta = beta
+                  max_val = 1 - sqrt(.Machine$double.eps))
   )
 }
 
@@ -242,14 +240,16 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
                   verbose = TRUE) {
   lreplace(
-    sjse(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
+    sjse(kappa = kappa, eps = eps, verbose = verbose),
     weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn,
     stiffness_fn = function(method, inp, out) {
       hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz, kappa = method$kappa,
-                      alpha = alpha,
-                      beta = beta, eps = method$eps)
+                      alpha = method$alpha, beta = method$beta,
+                      eps = method$eps)
     },
-    update_out_fn = update_out(keep = c("qm", "wm"))
+    update_out_fn = update_out(keep = c("qm", "wm")),
+    alpha = heavy_tail_kernel(beta = beta, alpha = alpha)$alpha,
+    beta = heavy_tail_kernel(beta = beta, alpha = alpha)$beta
   )
 }
 
@@ -489,7 +489,12 @@ jse_fg <- function(kappa = 0.5) {
 
 # JSE cost function wrapper
 jse_cost_fn <- function(inp, out, method) {
-  method$kappa <- method$cost$kappa
+  if (is.null(method$kappa)) {
+    if (is.null(method$cost)) {
+      stop("Missing cost object")
+    }
+    method$kappa <- method$cost$kappa
+  }
   jse_cost(inp, out, method)
 }
 attr(jse_cost_fn, "sneer_cost_type") <- "prob"

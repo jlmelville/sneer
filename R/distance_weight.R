@@ -170,7 +170,9 @@ heavy_tail_kernel <- function(beta = 1, alpha = 0) {
     fn = fn,
     gr = function(d2m) {
       heavy_tail_gr(d2m, beta = beta, alpha = alpha)
-    }
+    },
+    beta = beta,
+    alpha = alpha
   )
 }
 

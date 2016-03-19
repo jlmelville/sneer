@@ -1,7 +1,7 @@
 # Uses the generic "plug in" gradient as given by Lee at al.
 
 #'
-plugin <- function(cost = kl(),
+plugin <- function(cost = kl_fg(),
                    kernel = exp_kernel(),
                    stiffness_fn = plugin_stiffness,
                    update_out_fn = update_out(keep = c("qm", "wm", "d2m")),
@@ -28,7 +28,7 @@ plugin <- function(cost = kl(),
 #' ASNE plugin
 asne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
   plugin(
-    cost = kl(),
+    cost = kl_fg(),
     kernel = exp_kernel(beta = beta),
     eps = eps,
     prob_type = "row"
@@ -72,7 +72,7 @@ tasne_plugin <- function(eps = .Machine$double.eps) {
 #' RASNE plugin
 rasne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
   plugin(
-    cost = reverse_kl(),
+    cost = reverse_kl_fg(),
     kernel = exp_kernel(beta = beta),
     out_updated_fn = klqp_update,
     eps = eps,

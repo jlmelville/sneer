@@ -66,13 +66,14 @@
 #' # puts emphasis on precision over recall
 #' embed_prob(method = nerv(lambda = 0), ...)
 #' }
-nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
+nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+                 verbose = TRUE) {
   lreplace(
-    asne(eps = eps),
-    cost_fn = nerv_cost,
+    asne(beta = beta, eps = eps, verbose = verbose),
+    cost_fn = nerv_fg(lambda = lambda)$fn,
     stiffness_fn = function(method, inp, out) {
       nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$lambda,
-                     eps = method$eps)
+                    beta = method$beta, eps = method$eps)
     },
     out_updated_fn = klqp_update,
     lambda = lambda
@@ -141,12 +142,13 @@ nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 #' # tends to produce a larger number of small, tight clusters
 #' embed_prob(method = snerv(lambda = 0), ...)
 #' }
-snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
+snerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+                  verbose = TRUE) {
   lreplace(
-    nerv(eps = eps, verbose = verbose, lambda = lambda),
+    nerv(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
     stiffness_fn = function(method, inp, out) {
       snerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$lambda,
-                      eps = eps)
+                      beta = method$beta, eps = method$eps)
     },
     prob_type = "joint"
   )
@@ -220,10 +222,10 @@ snerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
 #' # will create widely-separated small clusters
 #' embed_prob(method = tnerv(lambda = 0), ...)
 #' }
-tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
+tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     snerv(eps = eps, verbose = verbose, lambda = lambda),
-    weight_fn = tdist_weight,
+    weight_fn = tdist_kernel()$fn,
     stiffness_fn = function(method, inp, out) {
       tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
                       lambda = method$lambda, eps = method$eps)
@@ -308,12 +310,16 @@ tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
 hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
                    eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    tnerv(eps = eps, verbose = verbose, lambda = lambda),
+    tnerv(lambda = lambda, eps = eps, verbose = verbose),
     weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn,
     stiffness_fn = function(method, inp, out) {
-      hsnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, method$lambda,
-                       alpha, beta, method$eps)
-    }
+      hsnerv_stiffness(pm = inp$pm, qm = out$qm, wm = out$wm,
+                       rev_kl = out$rev_kl,
+                       lambda = method$lambda, alpha = method$alpha,
+                       beta = method$beta, eps = method$eps)
+    },
+    alpha = heavy_tail_kernel(beta = beta, alpha = alpha)$alpha,
+    beta = heavy_tail_kernel(beta = beta, alpha = alpha)$beta
   )
 }
 
@@ -385,9 +391,10 @@ tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5, beta = 1,
 hsnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
                              alpha = 1.5e-8, beta = 1,
                              eps = .Machine$double.eps) {
-  (lambda * hssne_stiffness(pm, qm, wm, alpha, beta)) +
-    ((1 - lambda) * reverse_hssne_stiffness(pm, qm, wm, rev_kl, alpha, beta,
-                                            eps))
+  (lambda * hssne_stiffness(pm, qm, wm, alpha = alpha, beta = beta)) +
+    ((1 - lambda) * reverse_hssne_stiffness(pm, qm, wm, rev_kl,
+                                            alpha = alpha, beta = beta,
+                                            eps = eps))
 }
 
 #' Neighbor Retrieval Visualizer (NeRV) Cost Function
@@ -455,7 +462,7 @@ reverse_kl_cost <- function(inp, out, method) {
 attr(reverse_kl_cost, "sneer_cost_type") <- "prob"
 
 #' Reverse KL
-reverse_kl <- function() {
+reverse_kl_fg <- function() {
   list(
     fn = reverse_kl_cost,
     gr = reverse_kl_cost_gr
@@ -506,7 +513,12 @@ nerv_fg <- function(lambda = 0.5) {
 }
 
 nerv_cost_fn <- function(inp, out, method) {
-  method$lambda <- method$cost$lambda
+  if (is.null(method$lambda)) {
+    if (is.null(method$cost)) {
+      stop("Missing cost object")
+    }
+    method$lambda <- method$cost$lambda
+  }
   nerv_cost(inp, out, method)
 }
 attr(nerv_cost_fn, "sneer_cost_type") <- "prob"

@@ -176,7 +176,7 @@ null_model_prob <- function(pm) {
 }
 
 #' KL
-kl <- function() {
+kl_fg <- function() {
   list(
     fn = kl_cost,
     gr = kl_cost_gr
