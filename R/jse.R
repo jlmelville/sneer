@@ -241,7 +241,7 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
                   verbose = TRUE) {
   lreplace(
     sjse(kappa = kappa, eps = eps, verbose = verbose),
-    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn,
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     stiffness_fn = function(method, inp, out) {
       hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz, kappa = method$kappa,
                       alpha = method$alpha, beta = method$beta,

@@ -122,7 +122,7 @@ update_out <- function(keep = c("qm")) {
 #'  \item{\code{qm}}{Probability Matrix.}
 update_probs <- function(out, method) {
   d2m <- coords_to_dist2(out$ym)
-  wm <- dist2_to_weights(d2m, method$weight_fn)
+  wm <- dist2_to_weights(d2m, method$kernel$fn)
   qm <- weights_to_probs(wm, method)
   list(d2m = d2m, wm = wm, qm = qm)
 }

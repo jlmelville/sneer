@@ -15,7 +15,6 @@ plugin <- function(cost = kl_fg(),
       cost_fn = cost$fn,
       cost_gr = cost$gr,
       kernel = kernel,
-      weight_fn = kernel$fn,
       stiffness_fn = stiffness_fn,
       out_updated_fn = out_updated_fn,
       update_out_fn = update_out_fn,
@@ -38,7 +37,7 @@ asne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
 #' SSNE Plugin
 ssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
   lreplace(
-    asne_plugin(),
+    asne_plugin(eps = eps, beta = beta),
     prob_type = "joint"
   )
 }
@@ -46,44 +45,42 @@ ssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
 #' TSNE plugin
 tsne_plugin <- function(eps = .Machine$double.eps) {
   lreplace(
-    ssne_plugin(),
-    kernel = tdist_kernel(),
-    weight_fn = tdist_kernel()$fn
+    ssne_plugin(eps = eps),
+    kernel = tdist_kernel()
   )
 }
 
 #' HSSNE plugin
 hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps) {
   lreplace(
-    ssne_plugin(),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn
+    ssne_plugin(eps = eps),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 
 #' TASNE plugin
 tasne_plugin <- function(eps = .Machine$double.eps) {
   lreplace(
-    tsne_plugin(),
+    tsne_plugin(eps = eps),
     prob_type = "row"
   )
 }
 
 #' RASNE plugin
 rasne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
-  plugin(
+  lreplace(
+    asne_plugin(beta = beta, eps = eps),
     cost = reverse_kl_fg(),
-    kernel = exp_kernel(beta = beta),
-    out_updated_fn = klqp_update,
-    eps = eps,
-    prob_type = "row"
+    cost_fn = reverse_kl_fg()$fn,
+    cost_gr = reverse_kl_fg()$gr,
+    out_updated_fn = klqp_update
   )
 }
 
 #' RSSNE Plugin
 rssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
   lreplace(
-    rasne_plugin(),
+    rasne_plugin(beta = beta, eps = eps),
     prob_type = "joint"
   )
 }
@@ -91,20 +88,19 @@ rssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
 #' RTSNE plugin
 rtsne_plugin <- function(eps = .Machine$double.eps) {
   lreplace(
-    rssne_plugin(),
-    kernel = tdist_kernel(),
-    weight_fn = tdist_kernel()$fn
+    rssne_plugin(eps = eps),
+    kernel = tdist_kernel()
   )
 }
 
 #' NeRV
 nerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
-  plugin(
+  lreplace(
+    asne_plugin(eps = eps, beta = beta),
     cost = nerv_fg(lambda = lambda),
-    kernel = exp_kernel(beta = beta),
-    out_updated_fn = klqp_update,
-    prob_type = "row",
-    eps = eps
+    cost_fn = nerv_fg(lambda = lambda)$fn,
+    cost_gr = nerv_fg(lambda = lambda)$gr,
+    out_updated_fn = klqp_update
   )
 }
 
@@ -119,9 +115,8 @@ snerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
 #' tNeRV
 tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
   lreplace(
-    snerv_plugin(lambda = lambda, beta = beta, eps = eps),
-    kernel = tdist_kernel(),
-    weight_fn = tdist_kernel()$fn
+    snerv_plugin(lambda = lambda, eps = eps),
+    kernel = tdist_kernel()
   )
 }
 
@@ -130,21 +125,21 @@ hsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
                           eps = .Machine$double.eps) {
   lreplace(
     snerv_plugin(lambda = lambda, beta = beta, eps = eps),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 
 #' JSE
 jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
-  kappa <- clamp(kappa, min_val = sqrt(.Machine$double.eps),
+  kappa <- clamp(kappa,
+                 min_val = sqrt(.Machine$double.eps),
                  max_val = 1 - sqrt(.Machine$double.eps))
   lreplace(
-    asne_plugin(beta = beta),
+    asne_plugin(beta = beta, eps = eps),
     cost = jse_fg(kappa = kappa),
     cost_fn = jse_fg(kappa = kappa)$fn,
     cost_gr = jse_fg(kappa = kappa)$gr,
-    kappa = kappa,
+    kappa = jse_fg(kappa = kappa)$kappa,
     out_updated_fn = klqz_update
   )
 }
@@ -152,7 +147,7 @@ jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
 #' SJSE
 sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
   lreplace(
-    jse_plugin(kappa = kappa, beta = beta),
+    jse_plugin(kappa = kappa, beta = beta, eps = eps),
     prob_type = "joint"
   )
 }
@@ -161,9 +156,8 @@ sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
 hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
                          eps = .Machine$double.eps) {
   lreplace(
-    sjse_plugin(kappa = kappa, beta = beta),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn
+    sjse_plugin(kappa = kappa, eps = eps),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 

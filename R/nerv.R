@@ -225,7 +225,7 @@ snerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     snerv(eps = eps, verbose = verbose, lambda = lambda),
-    weight_fn = tdist_kernel()$fn,
+    kernel = tdist_kernel(),
     stiffness_fn = function(method, inp, out) {
       tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
                       lambda = method$lambda, eps = method$eps)
@@ -311,7 +311,7 @@ hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
                    eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     tnerv(lambda = lambda, eps = eps, verbose = verbose),
-    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn,
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     stiffness_fn = function(method, inp, out) {
       hsnerv_stiffness(pm = inp$pm, qm = out$qm, wm = out$wm,
                        rev_kl = out$rev_kl,

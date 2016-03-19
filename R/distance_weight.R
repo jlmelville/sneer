@@ -129,7 +129,8 @@ exp_kernel <- function(beta = 1) {
     fn = fn,
     gr = function(d2m) {
       exp_gr(d2m, beta = beta)
-    }
+    },
+    beta = beta
   )
 }
 
@@ -143,7 +144,7 @@ tdist_kernel <- function() {
   fn <- function(d2m) {
     tdist_weight(d2m)
   }
-  attr(fn, "type") <- attr(exp_weight, "type")
+  attr(fn, "type") <- attr(tdist_weight, "type")
 
   list(
     fn = fn,
@@ -164,7 +165,7 @@ heavy_tail_kernel <- function(beta = 1, alpha = 0) {
   fn <- function(d2m) {
     heavy_tail_weight(d2m, beta = beta, alpha = alpha)
   }
-  attr(fn, "type") <- attr(exp_weight, "type")
+  attr(fn, "type") <- attr(heavy_tail_weight, "type")
 
   list(
     fn = fn,
