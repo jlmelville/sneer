@@ -73,9 +73,10 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                 verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
+    cost = jse_fg(kappa = kappa),
     cost_fn = jse_fg(kappa = kappa)$fn,
     stiffness_fn = function(method, inp, out) {
-      jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
+      jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
                     beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqz_update,
@@ -153,7 +154,7 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
   lreplace(
     jse(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
     stiffness_fn = function(method, inp, out) {
-      sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
+      sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
                      beta = method$kernel$beta, eps = method$eps)
     },
     prob_type = "joint"
@@ -243,9 +244,9 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
     sjse(kappa = kappa, eps = eps, verbose = verbose),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     stiffness_fn = function(method, inp, out) {
-      hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz, kappa = method$kappa,
-                      alpha = method$kernel$alpha, beta = method$kernel$beta,
-                      eps = method$eps)
+      hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz,
+                      kappa = method$cost$kappa, alpha = method$kernel$alpha,
+                      beta = method$kernel$beta, eps = method$eps)
     },
     update_out_fn = update_out(keep = c("qm", "wm"))
   )
@@ -348,7 +349,7 @@ hsjse_stiffness <- function(qm, zm, wm, kl_qz, kappa = 0.5, alpha = 1.5e-8,
 #'   \code{\link{reverse_kl_cost}}.
 #' @family sneer cost functions
 jse_cost <- function(inp, out, method) {
-  jse_divergence(inp$pm, out$qm, out$zm, method$kappa, method$eps)
+  jse_divergence(inp$pm, out$qm, out$zm, method$cost$kappa, method$eps)
 }
 attr(jse_cost, "sneer_cost_type") <- "prob"
 attr(jse_cost, "sneer_cost_norm") <- "jse_cost_norm"
@@ -367,10 +368,10 @@ attr(jse_cost, "sneer_cost_norm") <- "jse_cost_norm"
 #' @param method Embedding method.
 #' @return JSE divergence between \code{inp$pm} and \code{out$qm}.
 jse_cost_norm <- function(inp, out, method) {
-  cost <- jse_divergence(inp$pm, out$qm, out$zm, method$kappa, method$eps)
+  cost <- jse_divergence(inp$pm, out$qm, out$zm, method$cost$kappa, method$eps)
   null_qm <- null_model_prob(out$qm)
-  null_zm <- js_mixture(inp$pm, null_qm, method$kappa)
-  null_cost <- jse_divergence(inp$pm, null_qm, null_zm, method$kappa,
+  null_zm <- js_mixture(inp$pm, null_qm, method$cost$kappa)
+  null_cost <- jse_divergence(inp$pm, null_qm, null_zm, method$cost$kappa,
                               method$eps)
   cost / null_cost
 }
@@ -461,14 +462,14 @@ klqz_update <- function(inp, out, method) {
 
 #' Update Output With KL Divergence from Q to Z
 klqz_update_pjoint <- function(inp, out, method) {
-  out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
+  out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
   out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
   out
 }
 
 #' Update Output with KL Divergence from Q to Z per Row
 klqz_update_prow <- function(inp, out, method) {
-  out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
+  out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
   out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
   out
 }
@@ -487,12 +488,6 @@ jse_fg <- function(kappa = 0.5) {
 
 # JSE cost function wrapper
 jse_cost_fn <- function(inp, out, method) {
-  if (is.null(method$kappa)) {
-    if (is.null(method$cost)) {
-      stop("Missing cost object")
-    }
-    method$kappa <- method$cost$kappa
-  }
   jse_cost(inp, out, method)
 }
 attr(jse_cost_fn, "sneer_cost_type") <- "prob"

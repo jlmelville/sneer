@@ -64,6 +64,7 @@ NULL
 #' }
 asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   list(
+    cost = kl_fg(),
     cost_fn = kl_fg()$fn,
     kernel = exp_kernel(beta = beta),
     stiffness_fn = function(method, inp, out) {
@@ -361,6 +362,7 @@ hssne <- function(eps = .Machine$double.eps, alpha = 0,
 rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
+    cost = reverse_kl_fg(),
     cost_fn = reverse_kl_fg()$fn,
     stiffness_fn = function(method, inp, out) {
       reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl,

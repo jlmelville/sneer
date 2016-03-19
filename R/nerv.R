@@ -70,9 +70,10 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
                  verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
+    cost = nerv_fg(lambda = lambda),
     cost_fn = nerv_fg(lambda = lambda)$fn,
     stiffness_fn = function(method, inp, out) {
-      nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$lambda,
+      nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
                     beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqp_update,
@@ -147,7 +148,7 @@ snerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
   lreplace(
     nerv(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
     stiffness_fn = function(method, inp, out) {
-      snerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$lambda,
+      snerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
                       beta = method$kernel$beta, eps = method$eps)
     },
     prob_type = "joint"
@@ -228,7 +229,7 @@ tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     kernel = tdist_kernel(),
     stiffness_fn = function(method, inp, out) {
       tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
-                      lambda = method$lambda, eps = method$eps)
+                      lambda = method$cost$lambda, eps = method$eps)
     },
     update_out_fn = update_out(keep = c("qm", "wm"))
   )
@@ -315,7 +316,7 @@ hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
     stiffness_fn = function(method, inp, out) {
       hsnerv_stiffness(pm = inp$pm, qm = out$qm, wm = out$wm,
                        rev_kl = out$rev_kl,
-                       lambda = method$lambda, alpha = method$kernel$alpha,
+                       lambda = method$cost$lambda, alpha = method$kernel$alpha,
                        beta = method$kernel$beta, eps = method$eps)
     }
   )
@@ -411,7 +412,7 @@ hsnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
 #' \describe{
 #'  \item{\code{inp$pm}}{Input probabilities.}
 #'  \item{\code{out$qm}}{Output probabilities.}
-#'  \item{\code{method$lambda}}{Weighting factor between 0 and 1.}
+#'  \item{\code{method$cost$lambda}}{Weighting factor between 0 and 1.}
 #' }
 #'
 #' @param inp Input data.
@@ -426,8 +427,8 @@ hsnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
 #' @family sneer cost functions
 #' @export
 nerv_cost <- function(inp, out, method) {
-  method$lambda * kl_cost(inp, out, method) +
-    (1 - method$lambda) * reverse_kl_cost(inp, out, method)
+  method$cost$lambda * kl_cost(inp, out, method) +
+    (1 - method$cost$lambda) * reverse_kl_cost(inp, out, method)
 }
 attr(nerv_cost, "sneer_cost_type") <- "prob"
 
@@ -511,12 +512,6 @@ nerv_fg <- function(lambda = 0.5) {
 }
 
 nerv_cost_fn <- function(inp, out, method) {
-  if (is.null(method$lambda)) {
-    if (is.null(method$cost)) {
-      stop("Missing cost object")
-    }
-    method$lambda <- method$cost$lambda
-  }
   nerv_cost(inp, out, method)
 }
 attr(nerv_cost_fn, "sneer_cost_type") <- "prob"
