@@ -12,8 +12,6 @@ plugin <- function(cost = kl_fg(),
   remove_nulls(
     list(
       cost = cost,
-      cost_fn = cost$fn,
-      cost_gr = cost$gr,
       kernel = kernel,
       stiffness_fn = stiffness_fn,
       out_updated_fn = out_updated_fn,
@@ -71,8 +69,6 @@ rasne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
   lreplace(
     asne_plugin(beta = beta, eps = eps),
     cost = reverse_kl_fg(),
-    cost_fn = reverse_kl_fg()$fn,
-    cost_gr = reverse_kl_fg()$gr,
     out_updated_fn = klqp_update
   )
 }
@@ -98,8 +94,6 @@ nerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
   lreplace(
     asne_plugin(eps = eps, beta = beta),
     cost = nerv_fg(lambda = lambda),
-    cost_fn = nerv_fg(lambda = lambda)$fn,
-    cost_gr = nerv_fg(lambda = lambda)$gr,
     out_updated_fn = klqp_update
   )
 }
@@ -137,9 +131,6 @@ jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
   lreplace(
     asne_plugin(beta = beta, eps = eps),
     cost = jse_fg(kappa = kappa),
-    cost_fn = jse_fg(kappa = kappa)$fn,
-    cost_gr = jse_fg(kappa = kappa)$gr,
-    kappa = jse_fg(kappa = kappa)$kappa,
     out_updated_fn = klqz_update
   )
 }
@@ -177,7 +168,7 @@ plugin_stiffness <- function(method, inp, out) {
 
 #' Plugin Stiffness for Row Probabilities
 plugin_stiffness_row <- function(method, inp, out) {
-  cm_grad <- method$cost_gr(inp, out, method)
+  cm_grad <- method$cost$gr(inp, out, method)
   wm_grad <- method$kernel$gr(out$d2m)
 
   wm_sum <-  apply(out$wm, 1, sum)
@@ -190,7 +181,7 @@ plugin_stiffness_row <- function(method, inp, out) {
 #' Plugin Stiffness for Joint Probabilities
 plugin_stiffness_joint <- function(method, inp, out) {
   wm_sum <- sum(out$wm)
-  cm_grad <- method$cost_gr(inp, out, method)
+  cm_grad <- method$cost$gr(inp, out, method)
   wm_grad <- method$kernel$gr(out$d2m)
   km <- (sum(cm_grad * out$qm) - cm_grad) * (-wm_grad / wm_sum)
   2 * (km + t(km))
