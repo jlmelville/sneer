@@ -135,6 +135,7 @@ hsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
   )
 }
 
+#' JSE
 jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
   kappa <- clamp(kappa, min_val = sqrt(.Machine$double.eps),
                  max_val = 1 - sqrt(.Machine$double.eps))
@@ -148,6 +149,7 @@ jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
   )
 }
 
+#' SJSE
 sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
   lreplace(
     jse_plugin(kappa = kappa, beta = beta),
@@ -155,6 +157,7 @@ sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
   )
 }
 
+#' HSJSE
 hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
                          eps = .Machine$double.eps) {
   lreplace(

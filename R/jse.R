@@ -71,26 +71,94 @@
 #' }
 jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                 verbose = TRUE) {
-  list(
+  lreplace(
+    asne(eps = eps),
     cost_fn = jse_cost,
-    weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
       jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
                     beta = method$beta, eps = method$eps)
     },
-    update_out_fn = update_out(keep = c("qm")),
-    out_updated_fn = klqz_rows_update,
+    out_updated_fn = klqz_update,
     inp_updated = function(inp, out, method) {
       if (!is.null(out)) {
         out <- method$update_out_fn(inp, out, method)
       }
       list(out = out)
     },
-    prob_type = "row",
     eps = eps,
     kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
                   max_val = 1 - sqrt(.Machine$double.eps)),
     beta = beta
+  )
+}
+
+#' Symmetric Jensen-Shannon Embedding (SJSE)
+#'
+#' A probability-based embedding method.
+#'
+#' SJSE is a variant of \code{\link{jse}} which uses a symmetrized, normalized
+#' probability distribution like \code{\link{ssne}}, rather than the that used
+#' by the original JSE method, which used the unnormalized distributions of
+#' \code{\link{asne}}.
+#'
+#' The probability matrix used in SJSE:
+#'
+#' \itemize{
+#'  \item{represents one probability distribution, i.e. the grand sum of the
+#'  matrix is one.}
+#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+#'  probabilities are joint probabilities.}
+#' }
+#'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates.}
+#'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
+#'  \code{wm}.}
+#' }
+#' @param kappa Mixture parameter. Cost function behaves more like the
+#'   Kullback-Leibler divergence as it approaches zero and more like the
+#'   "reverse" KL divergence as it approaches one.
+#' @param beta The precision of the weighting function.
+#' @param eps Small floating point value used to prevent numerical problems,
+#'   e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
+#' @return An embedding method for use by an embedding function.
+#' @references
+#' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
+#' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
+#' dimensionality reduction based on similarity preservation.
+#' \emph{Neurocomputing}, \emph{112}, 92-108.
+#' @seealso SJSE uses the \code{\link{jse_cost}} cost function and the
+#'   \code{\link{exp_weight}} similarity function for converting
+#'   distances to probabilities. The \code{\link{snerv}} embedding method is
+#'   similar.
+#' The return value of this function should be used with the
+#' \code{\link{embed_prob}} embedding function.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
+#' @examples
+#' \dontrun{
+#' # default SJSE, cost function is symmetric
+#' embed_prob(method = hsjse(kappa = 0.5), ...)
+#'
+#' # equivalent to SSNE
+#' embed_prob(method = hsjse(kappa = 0), ...)
+#'
+#' # equivalent to "reverse" SSNE
+#' embed_prob(method = hsjse(kappa = 1), ...)
+#' }
+sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
+                 verbose = TRUE) {
+  lreplace(
+    jse(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
+    stiffness_fn = function(method, inp, out) {
+      sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
+                     beta = method$beta, eps = method$eps)
+    },
+    prob_type = "joint"
   )
 }
 
@@ -179,98 +247,15 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
   }
   attr(weight_fn, "type") <- attr(heavy_tail_weight, "type")
 
-  list(
-    cost_fn = jse_cost,
+  lreplace(
+    sjse(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
     weight_fn = weight_fn,
     stiffness_fn = function(method, inp, out) {
       hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz, kappa = method$kappa,
                       alpha = alpha,
                       beta = beta, eps = method$eps)
     },
-    update_out_fn = update_out(keep = c("qm", "wm")),
-    out_updated_fn = klqz_update,
-    prob_type = "joint",
-    eps = eps,
-    kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
-                  max_val = 1 - sqrt(.Machine$double.eps))
-  )
-}
-
-#' Symmetric Jensen-Shannon Embedding (SJSE)
-#'
-#' A probability-based embedding method.
-#'
-#' SJSE is a variant of \code{\link{jse}} which uses a symmetrized, normalized
-#' probability distribution like \code{\link{ssne}}, rather than the that used
-#' by the original JSE method, which used the unnormalized distributions of
-#' \code{\link{asne}}.
-#'
-#' The probability matrix used in SJSE:
-#'
-#' \itemize{
-#'  \item{represents one probability distribution, i.e. the grand sum of the
-#'  matrix is one.}
-#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
-#'  probabilities are joint probabilities.}
-#' }
-#'
-#' @section Output Data:
-#' If used in an embedding, the output data list will contain:
-#' \describe{
-#'  \item{\code{ym}}{Embedded coordinates.}
-#'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
-#'  \code{wm}.}
-#' }
-#' @param kappa Mixture parameter. Cost function behaves more like the
-#'   Kullback-Leibler divergence as it approaches zero and more like the
-#'   "reverse" KL divergence as it approaches one.
-#' @param beta The precision of the weighting function.
-#' @param eps Small floating point value used to prevent numerical problems,
-#'   e.g. in gradients and cost functions.
-#' @param verbose If \code{TRUE}, log information about the embedding.
-#' @return An embedding method for use by an embedding function.
-#' @references
-#' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
-#' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
-#' dimensionality reduction based on similarity preservation.
-#' \emph{Neurocomputing}, \emph{112}, 92-108.
-#' @seealso SJSE uses the \code{\link{jse_cost}} cost function and the
-#'   \code{\link{exp_weight}} similarity function for converting
-#'   distances to probabilities. The \code{\link{snerv}} embedding method is
-#'   similar.
-#' The return value of this function should be used with the
-#' \code{\link{embed_prob}} embedding function.
-#' @export
-#' @family sneer embedding methods
-#' @family sneer probability embedding methods
-#' @examples
-#' \dontrun{
-#' # default SJSE, cost function is symmetric
-#' embed_prob(method = hsjse(kappa = 0.5), ...)
-#'
-#' # equivalent to SSNE
-#' embed_prob(method = hsjse(kappa = 0), ...)
-#'
-#' # equivalent to "reverse" SSNE
-#' embed_prob(method = hsjse(kappa = 1), ...)
-#' }
-sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
-                 verbose = TRUE) {
-
-  list(
-    cost_fn = jse_cost,
-    weight_fn = exp_weight,
-    stiffness_fn = function(method, inp, out) {
-      sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
-                     beta = method$beta, eps = method$eps)
-    },
-    update_out_fn = update_out(keep = c("qm")),
-    out_updated_fn = klqz_update,
-    prob_type = "joint",
-    eps = eps,
-    kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
-                  max_val = 1 - sqrt(.Machine$double.eps)),
-    beta = beta
+    update_out_fn = update_out(keep = c("qm", "wm"))
   )
 }
 
@@ -490,14 +475,13 @@ klqz_update_pjoint <- function(inp, out, method) {
 }
 
 #' Update Output with KL Divergence from Q to Z per Row
-klqz_rows_update <- function(inp, out, method) {
+klqz_update_prow <- function(inp, out, method) {
   out$zm <- js_mixture(inp$pm, out$qm, method$kappa)
   out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
   out
 }
 
-klqz_update_prow <- klqz_rows_update
-
+#' JSE fun/grad wrapper
 jse_fg <- function(kappa = 0.5) {
   kappa <- clamp(kappa, min_val = sqrt(.Machine$double.eps),
                 max_val = 1 - sqrt(.Machine$double.eps))
@@ -509,6 +493,7 @@ jse_fg <- function(kappa = 0.5) {
   )
 }
 
+# JSE cost function wrapper
 jse_cost_fn <- function(inp, out, method) {
   method$kappa <- method$cost$kappa
   jse_cost(inp, out, method)
@@ -516,10 +501,8 @@ jse_cost_fn <- function(inp, out, method) {
 attr(jse_cost_fn, "sneer_cost_type") <- "prob"
 attr(jse_cost_fn, "sneer_cost_norm") <- "jse_cost_norm"
 
-
+# JSE cost gradient
 jse_cost_gr <- function(inp, out, method) {
   method$cost$kappa_inv * log((out$qm + method$eps) / (out$zm + method$eps))
 }
-
-
 

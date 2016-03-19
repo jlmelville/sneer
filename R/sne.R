@@ -15,125 +15,6 @@
 #' @family sneer probability embedding methods
 NULL
 
-#' t-Distributed Stochastic Neighbor Embedding (t-SNE).
-#'
-#' A probability-based embedding method.
-#'
-#' t-SNE is a variant of \code{\link{ssne}} where the similarity function used
-#' to generate output probabilities is the Student t-Distribution with one
-#' degree of freedom.
-#'
-#' The probability matrix in t-SNE:
-#'
-#' \itemize{
-#'  \item{represents one probability distribution, i.e. the grand sum of the
-#'  matrix is one.}
-#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
-#'  probabilities are joint probabilities.}
-#' }
-#'
-#' @section Output Data:
-#' If used in an embedding, the output data list will contain:
-#' \describe{
-#'  \item{\code{ym}}{Embedded coordinates.}
-#'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
-#'  \code{wm}.}
-#'  \item{\code{wm}}{Weight matrix generated from the distances between points
-#'  in \code{ym}.}
-#' }
-#'
-#' @param eps Small floating point value used to prevent numerical problems,
-#' e.g. in gradients and cost functions.
-#' @param verbose If \code{TRUE}, log information about the embedding.
-#' @return An embedding method for use by an embedding function.
-#' @references
-#' Van der Maaten, L., & Hinton, G. (2008).
-#' Visualizing data using t-SNE.
-#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
-#' @seealso t-SNE uses the \code{\link{kl_cost}} cost function and the
-#'   \code{\link{tdist_weight}} similarity function. The return value of this
-#'   function should be used with the \code{\link{embed_prob}} embedding
-#'   function.
-#' @export
-#' @family sneer embedding methods
-#' @family sneer probability embedding methods
-#' @examples
-#' \dontrun{
-#' embed_prob(method = tsne(), ...)
-#' }
-tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
-  list(
-    cost_fn = kl_cost,
-    weight_fn = tdist_weight,
-    stiffness_fn = function(method, inp, out) {
-      tsne_stiffness(inp$pm, out$qm, out$wm)
-    },
-    update_out_fn = update_out(keep = c("qm", "wm")),
-    prob_type = "joint",
-    eps = eps
-  )
-}
-
-#' Symmetric Stochastic Neighbor Embedding (SSNE)
-#'
-#' A probability-based embedding method.
-#'
-#' SSNE is a variant of \code{\link{asne}} where the probabilities are with
-#' respect to pairs of points, not individual points. The element
-#' \code{P[i, j]} in matrix P should be thought of as the probability of
-#' selecting a pair of points i and j as close neighbours. As a result, unlike
-#' ASNE, the probability matrix in SSNE:
-#'
-#' \itemize{
-#'  \item{represents one probability distribution, i.e. the grand sum of the
-#'  matrix is one.}
-#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
-#'  probabilities are joint probabilities.}
-#' }
-#'
-#' @section Output Data:
-#' If used in an embedding, the output data list will contain:
-#' \describe{
-#'  \item{\code{ym}}{Embedded coordinates.}
-#'  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
-#' }
-#'
-#' @param eps Small floating point value used to prevent numerical problems,
-#' e.g. in gradients and cost functions.
-#' @param verbose If \code{TRUE}, log information about the embedding.
-#' @return An embedding method for use by an embedding function.
-#' @references
-#' Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
-#' Visualizing similarity data with a mixture of maps.
-#' In \emph{International Conference on Artificial Intelligence and Statistics} (pp. 67-74).
-#'
-#' Van der Maaten, L., & Hinton, G. (2008).
-#' Visualizing data using t-SNE.
-#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
-#' @seealso SSNE uses the \code{\link{kl_cost}} cost function and the
-#'   \code{\link{exp_weight}} similarity function. The return value of this
-#'   function should be used with the \code{\link{embed_prob}} embedding
-#'   function.
-#' @export
-#' @family sneer embedding methods
-#' @family sneer probability embedding methods
-#' @examples
-#' \dontrun{
-#' embed_prob(method = ssne(), ...)
-#' }
-ssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
-  list(
-    cost_fn = kl_cost,
-    weight_fn = exp_weight,
-    stiffness_fn = function(method, inp, out) {
-      ssne_stiffness(inp$pm, out$qm)
-    },
-    update_out_fn = update_out(keep = c("qm")),
-    prob_type = "joint",
-    eps = eps
-  )
-}
-
 #' Asymmetric Stochastic Neighbor Embedding (ASNE)
 #'
 #' A probability-based embedding method.
@@ -190,8 +71,119 @@ asne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     },
     update_out_fn = update_out(keep = c("qm")),
     prob_type = "row",
-    eps = eps
-  )
+    eps = eps)
+}
+
+#' Symmetric Stochastic Neighbor Embedding (SSNE)
+#'
+#' A probability-based embedding method.
+#'
+#' SSNE is a variant of \code{\link{asne}} where the probabilities are with
+#' respect to pairs of points, not individual points. The element
+#' \code{P[i, j]} in matrix P should be thought of as the probability of
+#' selecting a pair of points i and j as close neighbours. As a result, unlike
+#' ASNE, the probability matrix in SSNE:
+#'
+#' \itemize{
+#'  \item{represents one probability distribution, i.e. the grand sum of the
+#'  matrix is one.}
+#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+#'  probabilities are joint probabilities.}
+#' }
+#'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates.}
+#'  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
+#' }
+#'
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
+#' @return An embedding method for use by an embedding function.
+#' @references
+#' Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
+#' Visualizing similarity data with a mixture of maps.
+#' In \emph{International Conference on Artificial Intelligence and Statistics} (pp. 67-74).
+#'
+#' Van der Maaten, L., & Hinton, G. (2008).
+#' Visualizing data using t-SNE.
+#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
+#' @seealso SSNE uses the \code{\link{kl_cost}} cost function and the
+#'   \code{\link{exp_weight}} similarity function. The return value of this
+#'   function should be used with the \code{\link{embed_prob}} embedding
+#'   function.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
+#' @examples
+#' \dontrun{
+#' embed_prob(method = ssne(), ...)
+#' }
+ssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
+  lreplace(
+    asne(eps = eps, verbose = verbose),
+    stiffness_fn = function(method, inp, out) {
+      ssne_stiffness(inp$pm, out$qm)
+    },
+    prob_type = "joint")
+}
+
+#' t-Distributed Stochastic Neighbor Embedding (t-SNE).
+#'
+#' A probability-based embedding method.
+#'
+#' t-SNE is a variant of \code{\link{ssne}} where the similarity function used
+#' to generate output probabilities is the Student t-Distribution with one
+#' degree of freedom.
+#'
+#' The probability matrix in t-SNE:
+#'
+#' \itemize{
+#'  \item{represents one probability distribution, i.e. the grand sum of the
+#'  matrix is one.}
+#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+#'  probabilities are joint probabilities.}
+#' }
+#'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates.}
+#'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
+#'  \code{wm}.}
+#'  \item{\code{wm}}{Weight matrix generated from the distances between points
+#'  in \code{ym}.}
+#' }
+#'
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
+#' @return An embedding method for use by an embedding function.
+#' @references
+#' Van der Maaten, L., & Hinton, G. (2008).
+#' Visualizing data using t-SNE.
+#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
+#' @seealso t-SNE uses the \code{\link{kl_cost}} cost function and the
+#'   \code{\link{tdist_weight}} similarity function. The return value of this
+#'   function should be used with the \code{\link{embed_prob}} embedding
+#'   function.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
+#' @examples
+#' \dontrun{
+#' embed_prob(method = tsne(), ...)
+#' }
+tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
+  lreplace(
+    ssne(eps = eps, verbose = verbose),
+    weight_fn = tdist_weight,
+    stiffness_fn = function(method, inp, out) {
+      tsne_stiffness(inp$pm, out$qm, out$wm)
+    },
+    update_out_fn = update_out(keep = c("qm", "wm")))
 }
 
 #' t-distributed Asymmetric Stochastic Neighbor Embedding (t-ASNE)
@@ -239,16 +231,12 @@ asne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' embed_prob(method = tasne(), ...)
 #' }
 tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
-  list(
-    cost_fn = kl_cost,
+  lreplace(
+    tsne(eps = eps, verbose = verbose),
     weight_fn = tdist_weight,
     stiffness_fn = function(method, inp, out) {
       tasne_stiffness(inp$pm, out$qm, out$wm)
-    },
-    update_out_fn = update_out(keep = c("qm", "wm")),
-    prob_type = "row",
-    eps = eps
-  )
+    })
 }
 
 #' Heavy-Tailed Symmetric Stochastic Neighbor Embedding (HSSNE)
@@ -325,18 +313,15 @@ hssne <- function(eps = .Machine$double.eps, alpha = 0,
     heavy_tail_weight(D2, beta, alpha)
   }
   attr(weight_fn, "type") <- attr(heavy_tail_weight, "type")
-  list(
-    cost_fn = kl_cost,
+
+  lreplace(
+    ssne(eps = eps, verbose = verbose),
     weight_fn = weight_fn,
     stiffness_fn = function(method, inp, out) {
       hssne_stiffness(inp$pm, out$qm, out$wm, alpha, beta)
     },
-    update_out_fn = update_out(keep = c("qm", "wm")),
-    prob_type = "joint",
-    eps = eps
-  )
+    update_out_fn = update_out(keep = c("qm", "wm")))
 }
-
 
 #' "Reverse" Asymmetric Stochastic Neighbor Embedding (RASNE)
 #'
@@ -378,17 +363,13 @@ hssne <- function(eps = .Machine$double.eps, alpha = 0,
 #' embed_prob(method = asne(), ...)
 #' }
 rasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
-  list(
+  lreplace(
+    asne(eps = eps, verbose = verbose),
     cost_fn = reverse_kl_cost,
-    weight_fn = exp_weight,
     stiffness_fn = function(method, inp, out) {
       reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl, eps = method$eps)
     },
-    update_out_fn = update_out(keep = c("qm")),
-    out_updated_fn = klqp_update,
-    prob_type = "row",
-    eps = eps
-  )
+    out_updated_fn = klqp_update)
 }
 
 #' "Reverse" Symmetric Stochastic Neighbor Embedding (RSSNE)
@@ -430,17 +411,12 @@ rasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' embed_prob(method = rssne(), ...)
 #' }
 rssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
-  list(
-    cost_fn = reverse_kl_cost,
-    weight_fn = exp_weight,
+  lreplace(
+    rasne(eps = eps, verbose = verbose),
     stiffness_fn = function(method, inp, out) {
       reverse_ssne_stiffness(inp$pm, out$qm, out$rev_kl, eps = method$eps)
     },
-    update_out_fn = update_out(keep = c("qm")),
-    out_updated_fn = klqp_update,
-    prob_type = "joint",
-    eps = eps
-  )
+    prob_type = "joint")
 }
 
 #' "Reverse" t-Distributed Stochastic Neighbor Embedding (RTSNE).
@@ -485,16 +461,12 @@ rssne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' embed_prob(method = tsne(), ...)
 #' }
 rtsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
-  list(
-    cost_fn = reverse_kl_cost,
+  lreplace(
+    rssne(eps = eps, verbose = verbose),
     weight_fn = tdist_weight,
     stiffness_fn = function(method, inp, out) {
       reverse_tsne_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
                              eps = method$eps)
     },
-    update_out_fn = update_out(keep = c("qm", "wm")),
-    out_updated_fn = klqp_update,
-    prob_type = "joint",
-    eps = eps
-  )
+    update_out_fn = update_out(keep = c("qm", "wm")))
 }
