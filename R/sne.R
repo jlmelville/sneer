@@ -307,16 +307,9 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' }
 hssne <- function(eps = .Machine$double.eps, alpha = 0,
                   beta = 1, verbose = TRUE) {
-
-  alpha <- clamp(alpha, sqrt(.Machine$double.eps))
-  weight_fn <- function(D2) {
-    heavy_tail_weight(D2, beta, alpha)
-  }
-  attr(weight_fn, "type") <- attr(heavy_tail_weight, "type")
-
   lreplace(
     ssne(eps = eps, verbose = verbose),
-    weight_fn = weight_fn,
+    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn,
     stiffness_fn = function(method, inp, out) {
       hssne_stiffness(inp$pm, out$qm, out$wm, alpha, beta)
     },

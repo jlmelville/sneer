@@ -307,15 +307,9 @@ tnerv <- function(eps = .Machine$double.eps, lambda = 0.5, verbose = TRUE) {
 #' }
 hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
                    eps = .Machine$double.eps, verbose = TRUE) {
-  alpha <- clamp(alpha, sqrt(.Machine$double.eps))
-  weight_fn <- function(D2) {
-    heavy_tail_weight(D2, beta, alpha)
-  }
-  attr(weight_fn, "type") <- attr(heavy_tail_weight, "type")
-
   lreplace(
     tnerv(eps = eps, verbose = verbose, lambda = lambda),
-    weight_fn = weight_fn,
+    weight_fn = heavy_tail_kernel(beta = beta, alpha = alpha)$fn,
     stiffness_fn = function(method, inp, out) {
       hsnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl, method$lambda,
                        alpha, beta, method$eps)
