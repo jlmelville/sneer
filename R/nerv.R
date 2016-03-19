@@ -73,7 +73,7 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
     cost_fn = nerv_fg(lambda = lambda)$fn,
     stiffness_fn = function(method, inp, out) {
       nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$lambda,
-                    beta = method$beta, eps = method$eps)
+                    beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqp_update,
     lambda = lambda
@@ -148,7 +148,7 @@ snerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
     nerv(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
     stiffness_fn = function(method, inp, out) {
       snerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$lambda,
-                      beta = method$beta, eps = method$eps)
+                      beta = method$kernel$beta, eps = method$eps)
     },
     prob_type = "joint"
   )
@@ -315,8 +315,8 @@ hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
     stiffness_fn = function(method, inp, out) {
       hsnerv_stiffness(pm = inp$pm, qm = out$qm, wm = out$wm,
                        rev_kl = out$rev_kl,
-                       lambda = method$lambda, alpha = method$alpha,
-                       beta = method$beta, eps = method$eps)
+                       lambda = method$lambda, alpha = method$kernel$alpha,
+                       beta = method$kernel$beta, eps = method$eps)
     },
     alpha = heavy_tail_kernel(beta = beta, alpha = alpha)$alpha,
     beta = heavy_tail_kernel(beta = beta, alpha = alpha)$beta

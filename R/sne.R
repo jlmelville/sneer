@@ -67,7 +67,7 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
     cost_fn = kl_fg()$fn,
     kernel = exp_kernel(beta = beta),
     stiffness_fn = function(method, inp, out) {
-      asne_stiffness(inp$pm, out$qm, beta = method$beta)
+      asne_stiffness(inp$pm, out$qm, beta = method$kernel$beta)
     },
     update_out_fn = update_out(keep = c("qm")),
     prob_type = "row",
@@ -127,7 +127,7 @@ ssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
     asne(beta = beta, eps = eps, verbose = verbose),
     kernel = exp_kernel(beta = beta),
     stiffness_fn = function(method, inp, out) {
-      ssne_stiffness(inp$pm, out$qm, beta = method$beta)
+      ssne_stiffness(inp$pm, out$qm, beta = method$kernel$beta)
     },
     prob_type = "joint")
 }
@@ -313,8 +313,8 @@ hssne <- function(eps = .Machine$double.eps, alpha = 0,
     ssne(eps = eps, verbose = verbose),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     stiffness_fn = function(method, inp, out) {
-      hssne_stiffness(inp$pm, out$qm, out$wm, alpha = method$alpha,
-                      beta = method$beta)
+      hssne_stiffness(inp$pm, out$qm, out$wm, alpha = method$kernel$alpha,
+                      beta = method$kernel$beta)
     },
     update_out_fn = update_out(keep = c("qm", "wm")),
     alpha = heavy_tail_kernel(beta = beta, alpha = alpha)$alpha,
@@ -367,7 +367,7 @@ rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
     cost_fn = reverse_kl_fg()$fn,
     stiffness_fn = function(method, inp, out) {
       reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl,
-                             beta = method$beta, eps = method$eps)
+                             beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqp_update)
 }
@@ -415,7 +415,7 @@ rssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
     rasne(beta = beta, eps = eps, verbose = verbose),
     stiffness_fn = function(method, inp, out) {
       reverse_ssne_stiffness(inp$pm, out$qm, out$rev_kl,
-                             beta = method$beta, eps = method$eps)
+                             beta = method$kernel$beta, eps = method$eps)
     },
     prob_type = "joint")
 }

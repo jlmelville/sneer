@@ -76,7 +76,7 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
     cost_fn = jse_fg(kappa = kappa)$fn,
     stiffness_fn = function(method, inp, out) {
       jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
-                    beta = method$beta, eps = method$eps)
+                    beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqz_update,
     inp_updated = function(inp, out, method) {
@@ -154,7 +154,7 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
     jse(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
     stiffness_fn = function(method, inp, out) {
       sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$kappa,
-                     beta = method$beta, eps = method$eps)
+                     beta = method$kernel$beta, eps = method$eps)
     },
     prob_type = "joint"
   )
@@ -244,7 +244,7 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     stiffness_fn = function(method, inp, out) {
       hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz, kappa = method$kappa,
-                      alpha = method$alpha, beta = method$beta,
+                      alpha = method$kernel$alpha, beta = method$kernel$beta,
                       eps = method$eps)
     },
     update_out_fn = update_out(keep = c("qm", "wm")),
