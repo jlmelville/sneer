@@ -176,7 +176,18 @@ null_model_prob <- function(pm) {
   matrix(sum(pm) / (nrow(pm) * ncol(pm)), nrow = nrow(pm), ncol = ncol(pm))
 }
 
-#' KL
+#' Kullback-Leibler Divergence Cost Wrapper Factory Function
+#'
+#' Cost wrapper factory function.
+#'
+#' Creates the a list containing the required functions for using the Kullback
+#' Leibler divergence, KL(P||Q), in an embedding.
+#'
+#' Provides the cost function and its gradient (with respect to Q).
+#'
+#' @return KL divergence function and gradient.
+#' @family sneer cost wrappers
+#' @export
 kl_fg <- function() {
   list(
     fn = kl_cost,
@@ -184,12 +195,28 @@ kl_fg <- function() {
   )
 }
 
-#' Gradient Wrapper
+#' Kullback Leibler Cost Gradients
+#'
+#' Measures the gradient of the KL divergence of an embedding, with respect
+#' to the probabilities of the ouput probabilities.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Gradient of the KL divergence from \code{inp$pm} to \code{out$qm}.
 kl_cost_gr <- function(inp, out, method) {
   kl_divergence_gr(inp$pm, out$qm, method$eps)
 }
 
-#' KL Gradient
+#' Kullback Leibler Gradient
+#'
+#' Calculates the gradient of the KL divergence with respect to the
+#' probability Q in KL(P||Q).
+#'
+#' @param pm Probability Matrix. First probability in the divergence.
+#' @param qm Probability Matrix. Second probability in the divergence.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return Gradient of the KL divergence from \code{pm} to \code{qm}.
 kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
   -pm / (qm + eps)
 }

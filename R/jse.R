@@ -447,6 +447,18 @@ js_mixture <- function(pm, qm, kappa = 0.5) {
   (kappa * pm) + ((1 - kappa) * qm)
 }
 
+#' Updates the Kullback Leibler Divergence Q||Z
+#'
+#' Calculates and stores the mixture probability Z and calculates the KL
+#' divergence from Q (output probabilities) to Z on the output data. Used by
+#' those embedding methods where this KL divergence is used to calculate the
+#' stiffness matrix in a gradient calculation (e.g. \code{\link{jse}}).
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return \code{out} updated with the KL divergence from {\code{out$qm}} to
+#' \code{inp$zm}.
 klqz_update <- function(inp, out, method) {
   prob_type <- method$prob_type
   if (is.null(prob_type)) {
@@ -460,40 +472,82 @@ klqz_update <- function(inp, out, method) {
   fn(inp, out, method)
 }
 
-#' Update Output With KL Divergence from Q to Z
+#' Updates the Kullback Leibler Divergence Q||Z for Joint Probabilities.
+#'
+#' Calculates and stores the mixture probability Z and calculates the KL
+#' divergence from Q (output probabilities) to Z on the output data. Used by
+#' those embedding methods where this KL divergence is used to calculate the
+#' stiffness matrix in a gradient calculation (e.g. \code{\link{sjse}}).
+#'
+#' Only appropriate for embedding methods that use joint probabilities.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return \code{out} updated with the KL divergence from {\code{out$qm}} to
+#' \code{inp$zm}.
 klqz_update_pjoint <- function(inp, out, method) {
   out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
   out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
   out
 }
 
-#' Update Output with KL Divergence from Q to Z per Row
+#' Updates the Kullback Leibler Divergence Q||Z for Row Probabilities.
+#'
+#' Calculates and stores the mixture probability Z and calculates the KL
+#' divergence from Q (output probabilities) to Z on the output data. Used by
+#' those embedding methods where this KL divergence is used to calculate the
+#' stiffness matrix in a gradient calculation (e.g. \code{\link{jse}}).
+#'
+#' Only appropriate for embedding methods that use row probabilities.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return \code{out} updated with the KL divergence from {\code{out$qm}} to
+#' \code{inp$zm}.
 klqz_update_prow <- function(inp, out, method) {
   out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
   out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
   out
 }
 
-#' JSE fun/grad wrapper
+#' JSE Cost
+#'
+#' Cost wrapper factory function.
+#'
+#' Creates the a list containing the required functions for using the JSE cost
+#' in an embedding.
+#'
+#' Provides the cost function and its gradient (with respect to Q).
+#'
+#' @param kappa Mixture parameter. If set to 0, then the cost behaves like the
+#' Kullback Leibler divergence. If set to 1, then the cost behaves like the
+#' reverse KL divergence.
+#' @return JSE function and gradient.
+#' @family sneer cost wrappers
+#' @export
 jse_fg <- function(kappa = 0.5) {
-  kappa <- clamp(kappa, min_val = sqrt(.Machine$double.eps),
-                max_val = 1 - sqrt(.Machine$double.eps))
+  kappa <- clamp(kappa,
+                 min_val = sqrt(.Machine$double.eps),
+                 max_val = 1 - sqrt(.Machine$double.eps))
   list(
-    fn = jse_cost_fn,
+    fn = jse_cost,
     gr = jse_cost_gr,
     kappa = kappa,
     kappa_inv = 1 / kappa
   )
 }
 
-# JSE cost function wrapper
-jse_cost_fn <- function(inp, out, method) {
-  jse_cost(inp, out, method)
-}
-attr(jse_cost_fn, "sneer_cost_type") <- "prob"
-attr(jse_cost_fn, "sneer_cost_norm") <- "jse_cost_norm"
-
-# JSE cost gradient
+#' JSE Cost Gradient
+#'
+#' Calculates the gradient of the JSE cost of an embedding with respect to the
+#' output probabilities.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Gradient of the JSE cost.
 jse_cost_gr <- function(inp, out, method) {
   method$cost$kappa_inv * log((out$qm + method$eps) / (out$zm + method$eps))
 }

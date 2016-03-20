@@ -14,14 +14,22 @@ embed_prob(method = asne(), ...)
 }
 }
 \seealso{
-Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{hsjse}}, \code{\link{hsnerv}},
-  \code{\link{hssne}}, \code{\link{jse}},
-  \code{\link{nerv}}, \code{\link{rasne}},
-  \code{\link{rssne}}, \code{\link{rtsne}},
-  \code{\link{sjse}}, \code{\link{snerv}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tnerv}}, \code{\link{tsne}}
+Other sneer probability embedding methods: \code{\link{asne_plugin}},
+  \code{\link{asne}}, \code{\link{hsjse_plugin}},
+  \code{\link{hsjse}}, \code{\link{hsnerv_plugin}},
+  \code{\link{hsnerv}}, \code{\link{hssne_plugin}},
+  \code{\link{hssne}}, \code{\link{jse_plugin}},
+  \code{\link{jse}}, \code{\link{nerv_plugin}},
+  \code{\link{nerv}}, \code{\link{plugin}},
+  \code{\link{rasne_plugin}}, \code{\link{rasne}},
+  \code{\link{rssne_plugin}}, \code{\link{rssne}},
+  \code{\link{rtsne_plugin}}, \code{\link{rtsne}},
+  \code{\link{sjse_plugin}}, \code{\link{sjse}},
+  \code{\link{snerv_plugin}}, \code{\link{snerv}},
+  \code{\link{ssne_plugin}}, \code{\link{ssne}},
+  \code{\link{tasne_plugin}}, \code{\link{tasne}},
+  \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
+  \code{\link{tsne_plugin}}, \code{\link{tsne}}
 }
 \keyword{internal}
 

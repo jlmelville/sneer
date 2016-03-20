@@ -197,16 +197,16 @@ multiscale_exp <- function(out, method, perplexity) {
 #' @param out Output data.
 #' @param method Embedding method.
 #' @return One or more weight matrix for the embedded coordinates in \code{out}.
-weights_multi <- function(out, method) {
-
-  ws <- list()
-  for (l in 1:method$num_scales) {
-    perp <- method$scales[l]
-    method <- method$multiscale_out_fn(out, method, perp)
-    ws[[l]] <- weights_single(out, method)
-  }
-  ws
-}
+# weights_multi <- function(out, method) {
+#
+#   ws <- list()
+#   for (l in 1:method$num_scales) {
+#     perp <- method$scales[l]
+#     method <- method$multiscale_out_fn(out, method, perp)
+#     ws[[l]] <- weights_single(out, method)
+#   }
+#   ws
+# }
 
 #' Multiscale Weight Matrices to Probability Matrix Conversion
 #'
@@ -222,8 +222,8 @@ weights_multi <- function(out, method) {
 #' @param method Embedding method.
 #' @return Probability matrix with a type suitable for the embedding
 #'   \code{method}.
-weights_to_probs_multi <- function(wm, method) {
-  pm <- lapply(wm, weights_to_probs_single, method) # create P matrices
-  pm <- Reduce('+', pm) / method$num_scales # average them
-  pm
-}
+# weights_to_probs_multi <- function(wm, method) {
+#   pm <- lapply(wm, weights_to_probs_single, method) # create P matrices
+#   pm <- Reduce('+', pm) / method$num_scales # average them
+#   pm
+# }

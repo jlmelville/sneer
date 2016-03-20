@@ -43,6 +43,8 @@ NULL
 #'  \item{\code{qm}}{Row probability matrix based on embedded coordinates.}
 #' }
 #'
+#' @param beta Precision parameter of the exponential similarity kernel
+#'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
@@ -99,8 +101,10 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #'  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
 #' }
 #'
+#' @param beta Precision parameter of the exponential similarity kernel
+#'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
-#' e.g. in gradients and cost functions.
+#'  e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @references
@@ -279,12 +283,12 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #'  in \code{ym}.}
 #' }
 #'
-#' @param alpha Tail heaviness. Must be greater than zero. When set to a small
-#' value this method is equivalent to SSNE. When set to one to one, this method
-#' behaves like t-SNE.
-#' @param beta The precision of the function. Becomes equivalent to the
-#' precision in the Gaussian distribution of distances as \code{alpha}
-#' approaches zero.
+#' @param alpha Tail heaviness of the kernel similarity function. Must be
+#' greater than zero. When set to a small value this method is equivalent to
+#' SSNE. When set to one to one, this method behaves like t-SNE.
+#' @param beta The precision of the kernel similarity function. Becomes
+#' equivalent to the precision in the Gaussian distribution of distances as
+#' \code{alpha} approaches zero.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
@@ -307,8 +311,8 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' # behave like t-SNE
 #' embed_prob(method = hssne(alpha = 1), ...)
 #' }
-hssne <- function(eps = .Machine$double.eps, alpha = 0,
-                  beta = 1, verbose = TRUE) {
+hssne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
+                  verbose = TRUE) {
   lreplace(
     ssne(eps = eps, verbose = verbose),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
@@ -344,6 +348,8 @@ hssne <- function(eps = .Machine$double.eps, alpha = 0,
 #'  \item{\code{qm}}{Row probability matrix based on embedded coordinates.}
 #' }
 #'
+#' @param beta Precision parameter of the exponential similarity kernel
+#'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
@@ -394,6 +400,8 @@ rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #'  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
 #' }
 #'
+#' @param beta Precision parameter of the exponential similarity kernel
+#'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.

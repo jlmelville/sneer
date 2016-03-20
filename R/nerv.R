@@ -38,6 +38,8 @@
 #' @param lambda Weighting factor controlling the emphasis placed on precision
 #'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 #'   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
+#' @param beta Precision parameter of the exponential similarity kernel
+#'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #'   e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
@@ -110,6 +112,8 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 #' @param lambda Weighting factor controlling the emphasis placed on precision
 #'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 #'   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
+#' @param beta Precision parameter of the exponential similarity kernel
+#'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #'   e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
@@ -343,11 +347,10 @@ nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5, beta = 1,
 #'
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.
-#' @param wm Output weight probability matrix.
 #' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
+#' @param beta Precision of the weighting function.
 #' @param lambda NeRV weighting factor controlling the emphasis placed on
 #' precision versus recall.
-#' @param beta Precision of the weighting function.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix
 snerv_stiffness <- function(pm, qm, rev_kl, beta = 1, lambda = 0.5,
@@ -460,7 +463,18 @@ reverse_kl_cost <- function(inp, out, method) {
 }
 attr(reverse_kl_cost, "sneer_cost_type") <- "prob"
 
-#' Reverse KL
+#' Reverse Kullback Leibler Divergence Cost
+#'
+#' Cost wrapper factory function.
+#'
+#' Creates the a list containing the required functions for using "reverse"
+#' Kullback Leibler Divergence, i.e. KL(Q||P), in an embedding.
+#'
+#' Provides the cost function and its gradient (with respect to Q).
+#'
+#' @return KL divergence function and gradient.
+#' @family sneer cost wrappers
+#' @export
 reverse_kl_fg <- function() {
   list(
     fn = reverse_kl_cost,
@@ -468,16 +482,45 @@ reverse_kl_fg <- function() {
   )
 }
 
-#' Gradient Wrapper
+#' Reverse Kullback Leibler Divergence Cost Gradient
+#'
+#' Calculates the gradient of the "reverse" KL divergence cost function of
+#' an embedding with respect to the output probabilities.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Gradient of the reverse KL divergence cost of the embedding with
+#' respect to the output probabilities.
 reverse_kl_cost_gr <- function(inp, out, method) {
   reverse_kl_divergence_gr(out$qm, inp$pm, method$eps)
 }
 
-#' reverse KL Gradient
+#' Reverse Kullback Leibler Gradient
+#'
+#' Calculates the gradient of the KL divergence with respect to the
+#' probability Q in KL(Q||P).
+#'
+#' @param pm Probability Matrix. First probability in the divergence.
+#' @param qm Probability Matrix. Second probability in the divergence.
+#' @param eps Small floating point value used to avoid numerical problems.
+#' @return Gradient of the KL divergence from \code{qm} to \code{pm}.
 reverse_kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
   log((pm + eps) / (qm + eps)) + 1
 }
 
+#' Updates the Kullback Leibler Divergence.
+#'
+#' Calculates and stores the KL divergence from P (input probabilities) to Q
+#' (output probabilities) on the output data. Used by those embedding methods
+#' where the KL divergence is used to calculate the stiffness matrix in a
+#' gradient calculation (e.g. \code{\link{nerv}}).
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return \code{out} updated with the KL divergence from {\code{inp$pm}} to
+#' \code{out$qm}.
 klqp_update <- function(inp, out, method) {
   prob_type <- method$prob_type
   if (is.null(prob_type)) {
@@ -491,31 +534,82 @@ klqp_update <- function(inp, out, method) {
   fn(inp, out, method)
 }
 
-#' Update Output With KL Divergence from Q to P
+#' Updates the Kullback Leibler Divergence for Joint Probabilities.
+#'
+#' Calculates and stores the KL divergence from P (input probabilities) to Q
+#' (output probabilities) on the output data. Used by those embedding methods
+#' where the KL divergence is used to calculate the stiffness matrix in a
+#' gradient calculation (e.g. \code{\link{snerv}}).
+#'
+#' Only appropriate for embedding methods that use joint probabilities.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return \code{out} updated with the KL divergence from {\code{inp$pm}} to
+#' \code{out$qm}.
 klqp_update_pjoint <- function(inp, out, method) {
   out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
   out
 }
 
-#' Update Output with KL Divergence from Q to P per Row
+#' Updates the Kullback Leibler Divergence for Row Probabilities.
+#'
+#' Calculates and stores the KL divergence from P (input probabilities) to Q
+#' (output probabilities) on the output data. Used by those embedding methods
+#' where the KL divergence is used to calculate the stiffness matrix in a
+#' gradient calculation (e.g. \code{\link{nerv}}).
+#'
+#' Only appropriate for embedding methods that use row probabilities.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return \code{out} updated with the KL divergence from {\code{inp$pm}} to
+#' \code{out$qm}.
 klqp_update_prow <- function(inp, out, method) {
   out$rev_kl <- kl_divergence_rows(out$qm, inp$pm, method$eps)
   out
 }
 
+#' NeRV Cost
+#'
+#' Cost wrapper factory function.
+#'
+#' Creates the a list containing the required functions for using the NeRV cost
+#' in an embedding.
+#'
+#' Provides the cost function and its gradient (with respect to Q).
+#'
+#' @param lambda Weighting factor controlling the emphasis placed on precision
+#'  (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
+#'  1, then the cost behaves like the Kullback Leibler divergence. If set to 0,
+#'  the cost behaves like the "reverse" KL divergence.
+#' @return NeRV cost function and gradient.
+#' @family sneer cost wrappers
+#' @export
 nerv_fg <- function(lambda = 0.5) {
+  fn <- function(inp, out, method) {
+    nerv_cost(inp, out, method)
+  }
+  attr(fn, "sneer_cost_type") <- "prob"
+
   list(
-    fn = nerv_cost_fn,
+    fn = fn,
     gr = nerv_cost_gr,
     lambda = lambda
   )
 }
 
-nerv_cost_fn <- function(inp, out, method) {
-  nerv_cost(inp, out, method)
-}
-attr(nerv_cost_fn, "sneer_cost_type") <- "prob"
-
+#' NeRV Cost Gradient
+#'
+#' Calculates the gradient of the NeRV cost of an embedding with respect to the
+#' output probabilities.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Gradient of the NeRV cost.
 nerv_cost_gr <- function(inp, out, method) {
   method$cost$lambda * kl_cost_gr(inp, out, method) +
     (1 - method$cost$lambda) * reverse_kl_cost_gr(inp, out, method)

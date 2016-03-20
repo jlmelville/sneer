@@ -96,6 +96,25 @@
 NULL
 
 #' Output Update Factory Function
+#'
+#' Embedding methods can specify which of the three matrices created as
+#' part of mapping from embedded coordinates to the output probabilities they
+#' want to keep. The squared distances (\code{d2m}) are not always useful,
+#' except if the plugin gradient is being used to calculate the stiffness
+#' matrix. The weight matrix (\code{wm}) is used by the plugin gradient method
+#' and by some non-plugin method stiffness functions (e.g. \code{\link{tsne}}
+#' or \code{\link{hssne}}). The output probability (\code{qm}) is an integral
+#' part of all cost functions and gradients so should always be retained.
+#'
+#' @param keep List containing any or all of the following matrix names:
+#' \describe{
+#'  \item{\code{d2m}}{Output squared distances matrix.}
+#'  \item{\code{wm}}{Output weight matrix.}
+#'  \item{\code{qm}}{Output probability matrix.}
+#' }
+#' @return The output list, with all the matrices specified by \code{keep}
+#'   added to it.
+#' @export
 update_out <- function(keep = c("qm")) {
   function(inp, out, method) {
     res <- update_probs(out, method)
@@ -116,6 +135,8 @@ update_out <- function(keep = c("qm")) {
 #' Intermediate data (squared distance matrix and weight matrix) may be useful
 #' in calculating the gradient, so is also returned from this function.
 #'
+#' @param out Output data.
+#' @param method Embedding method.
 #' @return List containing:
 #'  \item{\code{d2m}}{Matrix of squared distances.}
 #'  \item{\code{wm}}{Weight matrix.}

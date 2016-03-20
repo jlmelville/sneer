@@ -126,12 +126,49 @@ remove_nulls <- function(l) {
   l[!sapply(l, is.null)]
 }
 
-#' Dot product
+#' Dot Product
+#'
+#' Returns the dot product of two vectors. But will also treat two matrices
+#' of equal dimensions as if they were two vectors. For the purposes of an
+#' emedding, this allows the various matrices involved to keep their "natural"
+#' shape, i.e. the gradient can be calculated as an N x N matrix without having
+#' to convert it into a vector, as normally required in optimization methods.
+#'
+#' @param a A vector or matrix.
+#' @param b Another vector or matrix of the same dimensions as \code{a}.
+#' @return Dot product of \code{a} and \code{b}.
+#' @examples
+#' \dontrun{
+#'  a <- c(1, 2, 3, 4)
+#'  b <- c(5, 6, 7, 8)
+#'  dot(a, b) # 70
+#'  am <- matrix(a, nrow = 2) # turn them into matrices
+#'  bm <- matrix(b, nrow = 2)
+#'  dot(am, bm) # still 70
+#' }
 dot <- function(a, b) {
   sum(a * b)
 }
 
 #' Replace Members of a List
+#'
+#' Updates a list with a set of named arguments, adding to, or replacing the
+#' current contents.
+#'
+#' Given a list and some named arguments, the contents of the list will
+#' augmented by the named arguments. If the list already contains a value with
+#' a name in the named arguments, it will be replaced.
+#'
+#' @param l A list.
+#' @param ... Named arguments to add to the list.
+#' @return The list \code{l} with the contents of the rest of the function
+#' arguments added to it.
+#' @examples
+#' \dontrun{
+#'  nato <- list(b = "bravo", m = "moto", x = "xray")
+#'  lapd <- lreplace(nato,  b = "boy", m = "mary", s = "sam")
+#'  # lapd is list(b = "boy", m = "mary", x = "xray", s = "sam")
+#' }
 lreplace <- function(l, ...) {
   varargs <- list(...)
   for (i in names(varargs)) {
