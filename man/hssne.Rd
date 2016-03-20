@@ -4,19 +4,19 @@
 \alias{hssne}
 \title{Heavy-Tailed Symmetric Stochastic Neighbor Embedding (HSSNE)}
 \usage{
-hssne(eps = .Machine$double.eps, alpha = 0, beta = 1, verbose = TRUE)
+hssne(beta = 1, alpha = 0, eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
+\item{beta}{The precision of the kernel similarity function. Becomes
+equivalent to the precision in the Gaussian distribution of distances as
+\code{alpha} approaches zero.}
+
+\item{alpha}{Tail heaviness of the kernel similarity function. Must be
+greater than zero. When set to a small value this method is equivalent to
+SSNE. When set to one to one, this method behaves like t-SNE.}
+
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
-
-\item{alpha}{Tail heaviness. Must be greater than zero. When set to a small
-value this method is equivalent to SSNE. When set to one to one, this method
-behaves like t-SNE.}
-
-\item{beta}{The precision of the function. Becomes equivalent to the
-precision in the Gaussian distribution of distances as \code{alpha}
-approaches zero.}
 
 \item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
@@ -81,25 +81,41 @@ HSSNE uses the \code{\link{heavy_tail_weight}} similarity function.
 The return value of this function should be used with the
 \code{\link{embed_prob}} embedding function.
 
-Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{hsjse}},
-  \code{\link{hsnerv}}, \code{\link{jse}},
-  \code{\link{mmds}}, \code{\link{nerv}},
-  \code{\link{rasne}}, \code{\link{rssne}},
+Other sneer embedding methods: \code{\link{asne_plugin}},
+  \code{\link{asne}}, \code{\link{embedding_methods}},
+  \code{\link{hsjse_plugin}}, \code{\link{hsjse}},
+  \code{\link{hsnerv_plugin}}, \code{\link{hsnerv}},
+  \code{\link{hssne_plugin}}, \code{\link{jse_plugin}},
+  \code{\link{jse}}, \code{\link{mmds}},
+  \code{\link{nerv_plugin}}, \code{\link{nerv}},
+  \code{\link{plugin}}, \code{\link{rasne_plugin}},
+  \code{\link{rasne}}, \code{\link{rssne_plugin}},
+  \code{\link{rssne}}, \code{\link{rtsne_plugin}},
   \code{\link{rtsne}}, \code{\link{sammon_map}},
-  \code{\link{sjse}}, \code{\link{smmds}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tnerv}},
+  \code{\link{sjse_plugin}}, \code{\link{sjse}},
+  \code{\link{smmds}}, \code{\link{snerv_plugin}},
+  \code{\link{snerv}}, \code{\link{ssne_plugin}},
+  \code{\link{ssne}}, \code{\link{tasne_plugin}},
+  \code{\link{tasne}}, \code{\link{tnerv_plugin}},
+  \code{\link{tnerv}}, \code{\link{tsne_plugin}},
   \code{\link{tsne}}
 
-Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{hsjse}}, \code{\link{hsnerv}},
-  \code{\link{jse}}, \code{\link{nerv}},
+Other sneer probability embedding methods: \code{\link{asne_plugin}},
+  \code{\link{asne}}, \code{\link{hsjse_plugin}},
+  \code{\link{hsjse}}, \code{\link{hsnerv_plugin}},
+  \code{\link{hsnerv}}, \code{\link{hssne_plugin}},
+  \code{\link{jse_plugin}}, \code{\link{jse}},
+  \code{\link{nerv_plugin}}, \code{\link{nerv}},
+  \code{\link{plugin}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{rasne}}, \code{\link{rssne}},
-  \code{\link{rtsne}}, \code{\link{sjse}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tnerv}},
-  \code{\link{tsne}}
+  \code{\link{rasne_plugin}}, \code{\link{rasne}},
+  \code{\link{rssne_plugin}}, \code{\link{rssne}},
+  \code{\link{rtsne_plugin}}, \code{\link{rtsne}},
+  \code{\link{sjse_plugin}}, \code{\link{sjse}},
+  \code{\link{snerv_plugin}}, \code{\link{snerv}},
+  \code{\link{ssne_plugin}}, \code{\link{ssne}},
+  \code{\link{tasne_plugin}}, \code{\link{tasne}},
+  \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
+  \code{\link{tsne_plugin}}, \code{\link{tsne}}
 }
 

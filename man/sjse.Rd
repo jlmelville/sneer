@@ -4,12 +4,14 @@
 \alias{sjse}
 \title{Symmetric Jensen-Shannon Embedding (SJSE)}
 \usage{
-sjse(kappa = 0.5, eps = .Machine$double.eps, verbose = TRUE)
+sjse(kappa = 0.5, beta = 1, eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{kappa}{Mixture parameter. Cost function behaves more like the
 Kullback-Leibler divergence as it approaches zero and more like the
 "reverse" KL divergence as it approaches one.}
+
+\item{beta}{The precision of the weighting function.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
@@ -72,25 +74,41 @@ SJSE uses the \code{\link{jse_cost}} cost function and the
 The return value of this function should be used with the
 \code{\link{embed_prob}} embedding function.
 
-Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}}, \code{\link{hsjse}},
-  \code{\link{hsnerv}}, \code{\link{hssne}},
-  \code{\link{jse}}, \code{\link{mmds}},
-  \code{\link{nerv}}, \code{\link{rasne}},
-  \code{\link{rssne}}, \code{\link{rtsne}},
-  \code{\link{sammon_map}}, \code{\link{smmds}},
-  \code{\link{snerv}}, \code{\link{ssne}},
-  \code{\link{tasne}}, \code{\link{tnerv}},
+Other sneer embedding methods: \code{\link{asne_plugin}},
+  \code{\link{asne}}, \code{\link{embedding_methods}},
+  \code{\link{hsjse_plugin}}, \code{\link{hsjse}},
+  \code{\link{hsnerv_plugin}}, \code{\link{hsnerv}},
+  \code{\link{hssne_plugin}}, \code{\link{hssne}},
+  \code{\link{jse_plugin}}, \code{\link{jse}},
+  \code{\link{mmds}}, \code{\link{nerv_plugin}},
+  \code{\link{nerv}}, \code{\link{plugin}},
+  \code{\link{rasne_plugin}}, \code{\link{rasne}},
+  \code{\link{rssne_plugin}}, \code{\link{rssne}},
+  \code{\link{rtsne_plugin}}, \code{\link{rtsne}},
+  \code{\link{sammon_map}}, \code{\link{sjse_plugin}},
+  \code{\link{smmds}}, \code{\link{snerv_plugin}},
+  \code{\link{snerv}}, \code{\link{ssne_plugin}},
+  \code{\link{ssne}}, \code{\link{tasne_plugin}},
+  \code{\link{tasne}}, \code{\link{tnerv_plugin}},
+  \code{\link{tnerv}}, \code{\link{tsne_plugin}},
   \code{\link{tsne}}
 
-Other sneer probability embedding methods: \code{\link{asne}},
-  \code{\link{hsjse}}, \code{\link{hsnerv}},
-  \code{\link{hssne}}, \code{\link{jse}},
-  \code{\link{nerv}},
+Other sneer probability embedding methods: \code{\link{asne_plugin}},
+  \code{\link{asne}}, \code{\link{hsjse_plugin}},
+  \code{\link{hsjse}}, \code{\link{hsnerv_plugin}},
+  \code{\link{hsnerv}}, \code{\link{hssne_plugin}},
+  \code{\link{hssne}}, \code{\link{jse_plugin}},
+  \code{\link{jse}}, \code{\link{nerv_plugin}},
+  \code{\link{nerv}}, \code{\link{plugin}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{rasne}}, \code{\link{rssne}},
-  \code{\link{rtsne}}, \code{\link{snerv}},
-  \code{\link{ssne}}, \code{\link{tasne}},
-  \code{\link{tnerv}}, \code{\link{tsne}}
+  \code{\link{rasne_plugin}}, \code{\link{rasne}},
+  \code{\link{rssne_plugin}}, \code{\link{rssne}},
+  \code{\link{rtsne_plugin}}, \code{\link{rtsne}},
+  \code{\link{sjse_plugin}}, \code{\link{snerv_plugin}},
+  \code{\link{snerv}}, \code{\link{ssne_plugin}},
+  \code{\link{ssne}}, \code{\link{tasne_plugin}},
+  \code{\link{tasne}}, \code{\link{tnerv_plugin}},
+  \code{\link{tnerv}}, \code{\link{tsne_plugin}},
+  \code{\link{tsne}}
 }
 

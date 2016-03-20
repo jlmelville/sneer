@@ -7,13 +7,12 @@
 weights_to_probs(wm, method)
 }
 \arguments{
-\item{wm}{Weight Matrix (Or a list of weight matrices). Each matrix must
-have a "type" attribute with one of the
- following values:
- \describe{
- \item{"symm"}{A symmetric matrix.}
- \item{"asymm"}{An asymmetric matrix.}
- }}
+\item{wm}{Weight Matrix. Must have a "type" attribute with one of the
+following values:
+\describe{
+\item{"symm"}{A symmetric matrix.}
+\item{"asymm"}{An asymmetric matrix.}
+}}
 
 \item{method}{Embedding method.}
 }
@@ -22,14 +21,7 @@ Probability matrix with a type suitable for the embedding
   \code{method}.
 }
 \description{
-Creates a probability matrix from one or more weight matrices.
-}
-\details{
-If the \code{method} is multiscale (has a \code{scale_type} attribute of
-\code{"multi"}) then a list of matrices should be provided, one for each
-scale. Otherwise, a single weights matrix should be provided.
-
-For both single and multiscale approaches, a single probability matrix is
-returned.
+Given a weight matrix and an embedding method, this function creates a
+probability matrix.
 }
 

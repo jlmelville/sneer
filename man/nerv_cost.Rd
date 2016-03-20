@@ -32,7 +32,7 @@ This cost function requires the following matrices and values to be defined:
 \describe{
  \item{\code{inp$pm}}{Input probabilities.}
  \item{\code{out$qm}}{Output probabilities.}
- \item{\code{method$lambda}}{Weighting factor between 0 and 1.}
+ \item{\code{method$cost$lambda}}{Weighting factor between 0 and 1.}
 }
 }
 \references{

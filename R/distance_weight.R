@@ -118,7 +118,16 @@ heavy_tail_weight <- function(d2m, beta = 1, alpha = 1.5e-8) {
 attr(heavy_tail_weight, "type") <- "symm"
 
 
-#' Exp Kernel Factory Function
+#' Exponential Kernel Factory Function
+#'
+#' Similarity Kernel factory function.
+#'
+#' Creates a list implementing the exponential kernel function and gradient.
+#'
+#' @param beta exponential parameter.
+#' @return Exponential function and gradient.
+#' @family sneer similiarity kernels
+#' @export
 exp_kernel <- function(beta = 1) {
   fn <- function(d2m) {
     exp_weight(d2m, beta = beta)
@@ -134,12 +143,29 @@ exp_kernel <- function(beta = 1) {
   )
 }
 
-#' Exp Kernel Gradient
-exp_gr <- function(dm, beta = 1) {
-  -beta * exp_weight(dm, beta = beta)
+#' Exponential Gradient
+#'
+#' Similarity Kernel Gradient.
+#'
+#' Calculates the gradient of the exponential function with respect to d2m,
+#' the matrix of squared distances.
+#'
+#' @param d2m Matrix of squared distances.
+#' @param beta exponential parameter.
+#' @return Matrix containing the gradient of (with respect to \code{d2m}).
+exp_gr <- function(d2m, beta = 1) {
+  -beta * exp_weight(d2m, beta = beta)
 }
 
-#' tDist Kernel Factory Function
+#' t-Distribution Kernel Factory Function
+#'
+#' Similarity Kernel factory function.
+#'
+#' Creates a list implementing the t-distributed kernel function and gradient.
+#'
+#' @return t-Distributed function and gradient.
+#' @family sneer similiarity kernels
+#' @export
 tdist_kernel <- function() {
   fn <- function(d2m) {
     tdist_weight(d2m)
@@ -154,12 +180,33 @@ tdist_kernel <- function() {
   )
 }
 
-#' tDist gradient
+#' Exponential Gradient
+#'
+#' t-Distributed Kernel Gradient.
+#'
+#' Calculates the gradient of the Student-t distribution with one degree of
+#' freedom with respect to d2m, the matrix of squared distances.
+#'
+#' @param d2m Matrix of squared distances.
+#' @return Matrix containing the gradient (with respect to \code{d2m}).
 tdist_gr <- function(d2m) {
   -(tdist_weight(d2m) ^ 2)
 }
 
-#' Heavy Tail Kernel Factory Function
+#' Heavy Tailed Kernel Factory Function
+#'
+#' Similarity Kernel factory function.
+#'
+#' Creates a list implementing a heavy tailed (compared to an exponential)
+#' function and gradient.
+#'
+#' @param beta The precision of the function. Becomes equivalent to the
+#' precision in the Gaussian distribution of distances as \code{alpha}
+#' approaches zero.
+#' @param alpha Tail heaviness. Must be greater than zero.
+#' @return Heavy tailed function and gradient.
+#' @family sneer similiarity kernels
+#' @export
 heavy_tail_kernel <- function(beta = 1, alpha = 0) {
   alpha <- clamp(alpha, sqrt(.Machine$double.eps))
   fn <- function(d2m) {
@@ -177,7 +224,19 @@ heavy_tail_kernel <- function(beta = 1, alpha = 0) {
   )
 }
 
-#' Heavy Tail Gradient
+#' Exponential Gradient
+#'
+#' t-Distributed Kernel Gradient.
+#'
+#' Calculates the gradient of the Student-t distribution with one degree of
+#' freedom with respect to d2m, the matrix of squared distances.
+#'
+#' @param d2m Matrix of squared distances.
+#' @param beta The precision of the function. Becomes equivalent to the
+#' precision in the Gaussian distribution of distances as \code{alpha}
+#' approaches zero.
+#' @param alpha Tail heaviness. Must be greater than zero.
+#' @return Matrix containing the gradient (with respect to \code{d2m}).
 heavy_tail_gr <- function(d2m, beta = 1, alpha = 1.5e-8) {
   -beta * heavy_tail_weight(d2m, beta = beta, alpha = alpha) ^ (alpha + 1)
 }

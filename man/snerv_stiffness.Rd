@@ -4,15 +4,13 @@
 \alias{snerv_stiffness}
 \title{SNeRV Stiffness Function}
 \usage{
-snerv_stiffness(pm, qm, wm, rev_kl, beta = 1, lambda = 0.5,
+snerv_stiffness(pm, qm, rev_kl, beta = 1, lambda = 0.5,
   eps = .Machine$double.eps)
 }
 \arguments{
 \item{pm}{Input joint probability matrix.}
 
 \item{qm}{Output joint probabilty matrix.}
-
-\item{wm}{Output weight probability matrix.}
 
 \item{rev_kl}{"Reverse" KL divergence between \code{pm} and \code{qm}.}
 
