@@ -73,7 +73,6 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
     cost = nerv_fg(lambda = lambda),
-    cost_fn = nerv_fg(lambda = lambda)$fn,
     stiffness_fn = function(method, inp, out) {
       nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
                     beta = method$kernel$beta, eps = method$eps)

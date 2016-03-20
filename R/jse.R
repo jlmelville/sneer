@@ -74,7 +74,6 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
     cost = jse_fg(kappa = kappa),
-    cost_fn = jse_fg(kappa = kappa)$fn,
     stiffness_fn = function(method, inp, out) {
       jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
                     beta = method$kernel$beta, eps = method$eps)
