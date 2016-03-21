@@ -443,7 +443,7 @@ after_init <- function(inp, out, method) {
 #'   \item{\code{out}}{Initialized output}
 #'   \item{\code{method}}{Initialized embedding method}
 #'   \item{\code{opt}}{Initialized optimizer}
-#'   \item{\code{opt}}{Initialized report}
+#'   \item{\code{report}}{Initialized report}
 init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
   inp <- preprocess(xm)
 
