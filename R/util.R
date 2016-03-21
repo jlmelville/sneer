@@ -176,3 +176,27 @@ lreplace <- function(l, ...) {
   }
   l
 }
+
+#' Initialize Embedding
+#'
+#' A convenience function which intializes an embedder with a small amount
+#' of data. Useful for interactive exploration of e.g. gradients.
+#'
+#' @param method Embedding method.
+#' @param xm Input data matrix.
+#' @param init_inp Input initializer.
+#' @param init_out Output initializer.
+#' @param opt Optimizer.
+#' @return An initialized embedder.
+iembed <- function(method,
+                   xm = iris[1:50, 1:4],
+                   init_inp = inp_from_perp(perplexity = 20, verbose = FALSE),
+                   init_out = out_from_PCA(verbose = FALSE),
+                   opt = gradient_descent()
+) {
+
+  init_embed(iris[1:50, 1:4], method, preprocess = preprocess,
+             init_inp = init_inp,
+             init_out = init_out,
+             opt = opt)
+}
