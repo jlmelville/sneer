@@ -184,6 +184,7 @@ lreplace <- function(l, ...) {
 #'
 #' @param method Embedding method.
 #' @param xm Input data matrix.
+#' @param preprocess Preprocessing method.
 #' @param init_inp Input initializer.
 #' @param init_out Output initializer.
 #' @param opt Optimizer.
@@ -195,6 +196,8 @@ lreplace <- function(l, ...) {
 #'   \item{\code{report}}{Initialized report}
 iembed <- function(method,
                    xm = iris[1:50, 1:4],
+                   preprocess = make_preprocess(range_scale_matrix = TRUE,
+                                   verbose = FALSE),
                    init_inp = inp_from_perp(perplexity = 20, verbose = FALSE),
                    init_out = out_from_PCA(verbose = FALSE),
                    opt = gradient_descent()
