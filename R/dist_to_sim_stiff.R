@@ -155,7 +155,7 @@ update_out <- function(keep = c("qm")) {
 #'  \item{\code{wm}}{Weight matrix.}
 #'  \item{\code{qm}}{Probability Matrix.}
 update_probs <- function(out, method, d2m = coords_to_dist2(out$ym)) {
-  wm <- dist2_to_weights(d2m, method$kernel$fn)
+  wm <- dist2_to_weights(d2m, method$kernel)
   qm <- weights_to_probs(wm, method)
   list(d2m = d2m, wm = wm, qm = qm)
 }
@@ -182,17 +182,17 @@ coords_to_dist2 <- function(xm) {
 #' embedding. This function guarantees that the self-weight is 0.
 #'
 #' @param d2m Matrix of squared distances.
-#' @param weight_fn Function with signature \code{weight_fn(d2m)} where
+#' @param kernel Function with signature \code{weight_fn(d2m)} where
 #' \code{d2m} is a matrix of squared distances.
 #' @return Weights matrix. The diagonal (i.e. self-weight) is enforced to be
 #' zero.
-dist2_to_weights <- function(d2m, weight_fn) {
-  if (is.null(attr(weight_fn, "type"))) {
-    stop("weight_fn must have type attribute")
+dist2_to_weights <- function(d2m, kernel) {
+  if (is.null(attr(kernel$fn, "type"))) {
+    stop("kernel fn must have type attribute")
   }
-  wm <- weight_fn(d2m)
+  wm <- kernel$fn(kernel, d2m)
   diag(wm) <- 0  # set self-weights to 0
-  attr(wm, "type") <- attr(weight_fn, "type")
+  attr(wm, "type") <- attr(kernel$fn, "type")
   wm
 }
 

@@ -84,9 +84,7 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
         out <- method$update_out_fn(inp, out, method)
       }
       list(out = out)
-    },
-    kappa = clamp(kappa, min_val = sqrt(.Machine$double.eps),
-                  max_val = 1 - sqrt(.Machine$double.eps))
+    }
   )
 }
 

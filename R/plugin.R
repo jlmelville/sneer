@@ -354,9 +354,6 @@ hsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
 jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
-  kappa <- clamp(kappa,
-                 min_val = sqrt(.Machine$double.eps),
-                 max_val = 1 - sqrt(.Machine$double.eps))
   lreplace(
     asne_plugin(beta = beta, eps = eps),
     cost = jse_fg(kappa = kappa),
@@ -440,7 +437,7 @@ plugin_stiffness <- function(method, inp, out) {
 #' @return Stiffness matrix.
 plugin_stiffness_row <- function(method, inp, out) {
   cm_grad <- method$cost$gr(inp, out, method)
-  wm_grad <- method$kernel$gr(out$d2m)
+  wm_grad <- method$kernel$gr(method$kernel, out$d2m)
 
   wm_sum <-  apply(out$wm, 1, sum)
   km <- apply(cm_grad * out$qm, 1, sum) # row sums
@@ -461,7 +458,7 @@ plugin_stiffness_row <- function(method, inp, out) {
 plugin_stiffness_joint <- function(method, inp, out) {
   wm_sum <- sum(out$wm)
   cm_grad <- method$cost$gr(inp, out, method)
-  wm_grad <- method$kernel$gr(out$d2m)
+  wm_grad <- method$kernel$gr(method$kernel, out$d2m)
   km <- (sum(cm_grad * out$qm) - cm_grad) * (-wm_grad / wm_sum)
   2 * (km + t(km))
 }

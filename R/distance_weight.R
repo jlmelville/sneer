@@ -129,15 +129,15 @@ attr(heavy_tail_weight, "type") <- "symm"
 #' @family sneer similiarity kernels
 #' @export
 exp_kernel <- function(beta = 1) {
-  fn <- function(d2m) {
-    exp_weight(d2m, beta = beta)
+  fn <- function(kernel, d2m) {
+    exp_weight(d2m, beta = kernel$beta)
   }
   attr(fn, "type") <- attr(exp_weight, "type")
 
   list(
     fn = fn,
-    gr = function(d2m) {
-      exp_gr(d2m, beta = beta)
+    gr = function(kernel, d2m) {
+      exp_gr(d2m, beta = kernel$beta)
     },
     beta = beta
   )
@@ -167,14 +167,14 @@ exp_gr <- function(d2m, beta = 1) {
 #' @family sneer similiarity kernels
 #' @export
 tdist_kernel <- function() {
-  fn <- function(d2m) {
+  fn <- function(kernel, d2m) {
     tdist_weight(d2m)
   }
   attr(fn, "type") <- attr(tdist_weight, "type")
 
   list(
     fn = fn,
-    gr = function(d2m) {
+    gr = function(kernel, d2m) {
       tdist_gr(d2m)
     }
   )
@@ -208,19 +208,18 @@ tdist_gr <- function(d2m) {
 #' @family sneer similiarity kernels
 #' @export
 heavy_tail_kernel <- function(beta = 1, alpha = 0) {
-  alpha <- clamp(alpha, sqrt(.Machine$double.eps))
-  fn <- function(d2m) {
-    heavy_tail_weight(d2m, beta = beta, alpha = alpha)
+  fn <- function(kernel, d2m) {
+    heavy_tail_weight(d2m, beta = kernel$beta, alpha = kernel$alpha)
   }
   attr(fn, "type") <- attr(heavy_tail_weight, "type")
 
   list(
     fn = fn,
-    gr = function(d2m) {
-      heavy_tail_gr(d2m, beta = beta, alpha = alpha)
+    gr = function(kernel, d2m) {
+      heavy_tail_gr(d2m, beta = kernel$beta, alpha = kernel$alpha)
     },
     beta = beta,
-    alpha = alpha
+    alpha = clamp(alpha, sqrt(.Machine$double.eps))
   )
 }
 
