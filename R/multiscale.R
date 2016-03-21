@@ -91,7 +91,7 @@
 #'
 #' @examples
 #' \dontrun{
-#' # Should be passed to the tricks argument of an embedding function.
+#' # Should be passed to the init_inp argument of an embedding function.
 #' # Scale the perplexity over 20 iterations, using default perplexities
 #'  embed_prob(init_inp = inp_multiscale(num_scale_iters = 20), ...)
 #' # Scale the perplexity over 20 iterations using the provided perplexities
@@ -102,62 +102,73 @@
 #'    scales = c(150, 100, 50, 25)), ...)
 #' }
 #' @references
-#' Lee, J. A., Peluffo-Ordonez, D. H., & Verleysen, M. (2014).
+#' Lee, J. A., Peluffo-Ordo'nez, D. H., & Verleysen, M. (2014).
 #' Multiscale stochastic neighbor embedding: Towards parameter-free
 #' dimensionality reduction. In ESANN.
+#'
+#' Lee, J. A., Peluffo-Ordo'nez, D. H., & Verleysen, M. (2015).
+#' Multi-scale similarities in stochastic neighbour embedding: Reducing
+#' dimensionality while preserving both local and global structure.
+#' \emph{Neurocomputing}, \emph{169}, 246-261.
 #' @family sneer input initializers
 #' @export
-inp_multiscale <- function(num_scale_iters = 0,
-                           multiscale_out_fn = multiscale_exp,
-                           input_weight_fn = exp_weight,
-                           scales = NULL,
-                           verbose = TRUE) {
+inp_from_perps_multi <- function(perplexities = NULL,
+                                 input_weight_fn = exp_weight,
+                                 num_scale_iters = NULL,
+                                 modify_kernel_fn = scale_prec_to_perp,
+                                 verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
 
-      if (is.null(scales)) {
-        max_scales <- max(floor(log2(nrow(inp$dm) / 4)), 1)
-        scales <- vapply(seq_along(1:max_scales),
-                         function(x) { 2 ^ (max_scales - x + 1) }, 0)
+      if (is.null(perplexities)) {
+          max_scales <- max(round(log2(nrow(inp$dm) / 4)), 1)
+          perplexities <- vapply(seq_along(1:max_scales),
+                                 function(x) { 2 ^ (max_scales - x + 1) }, 0)
       }
       else {
-        max_scales = length(scales)
+        max_scales = length(perplexities)
       }
-      method$scales <- scales
+      method$perplexities <- perplexities
+
+      if (is.null(num_scale_iters)) {
+        num_scale_iters <- (max_scales - 1) * 100
+      }
       num_steps <- max(max_scales - 1, 1)
       step_every <- num_scale_iters / num_steps
 
       if (iter == 0) {
         if (verbose) {
-          message("Perplexity will be calculated over ", formatC(max_scales),
-                  " scales, scaling every ~", round(step_every), " iters")
+          message("Perplexity will be multi-scaled over ", max_scales,
+                  " values, calculating every ~", round(step_every), " iters")
         }
         method$num_scales <- 0
-        method$scale_type <- "multi"
-        method$multiscale_out_fn <- multiscale_out_fn
-        method$orig_weight_fn <- method$weight_fn
+        method$modify_kernel_fn <- modify_kernel_fn
+        method$orig_kernel <- method$kernel
+        method$update_out_fn <- update_out_ms()
+        method$stiffness_fn <- plugin_stiffness_ms
+        method$out_updated_fn <- NULL
       }
-
       while (method$num_scales * step_every <= iter
              && method$num_scales < max_scales) {
         method$num_scales <- method$num_scales + 1
 
-        if (is.null(scales)) {
-          perp <- 2 ^ (max_scales - method$num_scales + 1)
-        }
-        else {
-          perp <- scales[method$num_scales]
-        }
+        perp <- perplexities[method$num_scales]
+
         if (verbose) {
-          message("Iter: ", iter,
-                  " setting perplexity to ", formatC(perp))
+          message("Iter: ", iter, " setting perplexity to ", formatC(perp))
         }
+
+        if (!is.null(method$modify_kernel_fn)) {
+          method$kernels[[method$num_scales]] <-
+            method$modify_kernel_fn(inp, method, opt, iter, perp, out, verbose)
+        }
+
         inp <- single_perplexity(inp, perplexity = perp,
                                  input_weight_fn = input_weight_fn,
                                  verbose = verbose)$inp
 
-        # initialize or update the running total and mean of pms for each
-        # perplexity
+        # initialize or update the running total and mean of
+        # pms for each perplexity
         if (is.null(inp$pm_sum)) {
           inp$pm_sum <- inp$pm
         }
@@ -175,55 +186,235 @@ inp_multiscale <- function(num_scale_iters = 0,
   )
 }
 
-# Factory function which creates an output weight function for a given input
-# perplexity, in the context of multiscale embedding.
-multiscale_exp <- function(out, method, perplexity) {
-  out_dim <- ncol(out$ym)
-  prec <- perplexity ^ (-2 / out_dim)
-  weight_fn <- partial(method$orig_weight_fn, beta = prec)
-  attr(weight_fn, 'type') <- attr(method$orig_weight_fn, 'type')
-  method$weight_fn <- weight_fn
 
-  method
+#' Initialize With Step Perplexity
+#'
+#' An initialization method for creating input probabilities.
+#'
+#' This function initializes the input probabilities with a starting perplexity,
+#' then recalculates the input probability at different perplexity values for
+#' the first few iterations of the embedding. Normally, the embedding is begun
+#' at a relatively large perplexity and then the value is reduced to the
+#' usual target value over several iterations, recalculating the input
+#' probabilities. The idea is to avoid poor local minima. Rather than
+#' recalculate the input probabilities at each iteration by a linear decreasing
+#' ramp function, which would be time consuming, the perplexity is reduced
+#' in steps.
+#'
+#' You will need to decide what to do about the output function: should its
+#' parameters change as the input probabilities change? You could decide to
+#' do nothing, especially if you're using a kernel without any parameters, such
+#' as the Student t-distribution used in t-SNE, but you will need to explicitly
+#' set the \code{modify_kernel_fn} parameter to \code{NULL}.
+#'
+#' By default, the kernel function will try the  suggestion of Lee and
+#' co-workers, which is to scale the beta parameter of the exponential kernel
+#' function used in many embedding methods so that as the perplexity gets
+#' smaller, the beta value gets larger, thus reducing the bandwidth of the
+#' kernel. See the \code{\link{scale_prec_to_perp}} function for more details.
+#' If your kernel function doesn't have a \code{beta} parameter, the function
+#' will still run but have no effect on the output kernel.
+#'
+#' @param perplexities List of perplexities to use. If not provided, then
+#'   ten equally spaced perplexities will be used, starting at half the size
+#'   of the dataset, and ending at 32.
+#' @param input_weight_fn Weighting function for distances. It should have the
+#'  signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix
+#'  of squared distances and \code{beta} is a real-valued scalar parameter
+#'  which will be varied as part of the search to produce the desired
+#'  perplexity. The function should return a matrix of weights
+#'  corresponding to the transformed squared distances passed in as arguments.
+#' @param num_scale_iters Number of iterations for the perplexity of the input
+#'  probability to change from the start perplexity to the end perplexity.
+#' @param modify_kernel_fn Function to create a new similarity kernel based
+#'  on the new perplexity. Will be called every time a new input probability
+#'  matrix is generated. See the details section for more.
+#' @param verbose If \code{TRUE} print message about tricks during the
+#' embedding.
+#' @return Input initializer for use by an embedding function.
+#' @seealso \code{\link{embed_prob}} for how to use this function for
+#' configuring an embedding.
+#'
+#' @examples
+#' \dontrun{
+#' # Should be passed to the init_inp argument of an embedding function.
+#' # Step the perplexity from 75 to 25 with 6 values inclusive, taking 20
+#' # iterations overall (so 4 iterations per step)
+#'  embed_prob(init_inp = inp_step_perp(
+#'    perplexities = seq(75, 25, length.out = 6), num_scale_iters = 20), ...)
+#' }
+#' @references
+#' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
+#' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
+#' dimensionality reduction based on similarity preservation.
+#' \emph{Neurocomputing}, \emph{112}, 92-108.
+#'
+#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+#' Information retrieval perspective to nonlinear dimensionality reduction for
+#' data visualization.
+#' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+#'
+#' The paper by Venna and co-workers describes a very similar approach, but
+#' with decreasing the bandwidth of the input weighting function, rather than
+#' the perplexity. This is because NeRV sets the bandwidths of the output
+#' exponential similarity kernel to those from the input kernel.
+#'
+#' @family sneer input initializers
+#' @export
+inp_step_perp <- function(perplexities = NULL,
+                          input_weight_fn = exp_weight,
+                          num_scale_iters = NULL,
+                          modify_kernel_fn = scale_prec_to_perp,
+                          verbose = TRUE) {
+  inp_prob(
+    function(inp, method, opt, iter, out) {
+
+      if (is.null(perplexities)) {
+          max_scales <- 10
+          max_perp <- nrow(out$ym / 2)
+          min_perp <- 32
+          if (nrow(out$ym) < min_perp) {
+            min_perp <- 2
+          }
+          perplexities <- seq(max_perp, min_perp, length.out = max_scales)
+      }
+      else {
+        max_scales = length(perplexities)
+      }
+      method$perplexities <- perplexities
+      num_steps <- max(max_scales - 1, 1)
+      step_every <- num_scale_iters / num_steps
+
+      if (iter == 0) {
+        if (verbose) {
+          message("Perplexity will be single-scaled over ", max_scales,
+                  " values, calculating every ~", round(step_every), " iters")
+        }
+        method$num_scales <- 0
+        method$modify_kernel_fn <- modify_kernel_fn
+        method$orig_kernel <- method$kernel
+      }
+
+      while (method$num_scales * step_every <= iter
+             && method$num_scales < max_scales) {
+        method$num_scales <- method$num_scales + 1
+
+        perp <- perplexities[method$num_scales]
+
+        if (verbose) {
+          message("Iter: ", iter,
+                  " setting perplexity to ", formatC(perp))
+        }
+
+        if (!is.null(method$modify_kernel_fn)) {
+          method$kernel <- method$modify_kernel_fn(inp, method, opt, iter, perp,
+                                                   out, verbose)
+        }
+
+        inp <- single_perplexity(inp, perplexity = perp,
+                                 input_weight_fn = input_weight_fn,
+                                 verbose = verbose)$inp
+      }
+      list(inp = inp, method = method)
+    },
+    init_only = FALSE
+  )
 }
 
-#' Create Weight Matrices from Output Data
-#'
-#' Creates multi-scale weight matrices.
-#'
-#' A list of weight matrices will be returned, one for each scale distance.
-#' Otherwise, one matrix is returned.
-#'
-#' @param out Output data.
-#' @param method Embedding method.
-#' @return One or more weight matrix for the embedded coordinates in \code{out}.
-# weights_multi <- function(out, method) {
-#
-#   ws <- list()
-#   for (l in 1:method$num_scales) {
-#     perp <- method$scales[l]
-#     method <- method$multiscale_out_fn(out, method, perp)
-#     ws[[l]] <- weights_single(out, method)
-#   }
-#   ws
-# }
+#' Factory function which creates an output weight function for a given input
+#' perplexity, in the context of multiscale embedding.
+#' @family sneer kernel modifiers
+scale_prec_to_perp <- function(inp, method, opt, iter, perp, out,
+                           verbose = TRUE) {
+  # Lee et al (from whence this equation is taken) use prec/2 in their
+  # exponential kernel, whereas the one in sneer uses prec directly.
+  # just divide by 2 here to be consistent
+  prec <- (perp ^ (-2 / out$dim)) * 0.5
+  if (verbose) {
+    message("Creating kernel with precision ", formatC(prec),
+            " for perplexity ", formatC(perp))
+  }
+  new_kernel <- method$orig_kernel
+  new_kernel$beta <- prec
+  new_kernel
+}
 
-#' Multiscale Weight Matrices to Probability Matrix Conversion
-#'
-#' Given a list of weight matrices and an embedding method, this function
-#' creates a multiscale probability matrix.
-#'
-#' @param wm List of weight Matrices. Each matrix must have a "type" attribute
-#'  with one of the following values:
-#'   \describe{
-#'   \item{"symm"}{A symmetric matrix.}
-#'   \item{"asymm"}{An asymmetric matrix.}
-#'   }
-#' @param method Embedding method.
-#' @return Probability matrix with a type suitable for the embedding
-#'   \code{method}.
-# weights_to_probs_multi <- function(wm, method) {
-#   pm <- lapply(wm, weights_to_probs_single, method) # create P matrices
-#   pm <- Reduce('+', pm) / method$num_scales # average them
-#   pm
-# }
+#' Multiscale Plugin Stiffness
+plugin_stiffness_ms <- function(method, inp, out) {
+  prob_type <- method$prob_type
+  if (is.null(prob_type)) {
+    stop("Embedding method must have a prob type")
+  }
+  fn_name <- paste0('plugin_stiffness_ms_', prob_type)
+  stiffness_fn <- get(fn_name)
+  if (is.null(stiffness_fn)) {
+    stop("Unable to find plugin stiffness function for ", prob_type)
+  }
+  stiffness_fn(method, inp, out)
+}
+
+#' Multiscale Plugin Stiffness for Row Probability
+plugin_stiffness_ms_row <- function(method, inp, out) {
+  cm_grad <- method$cost$gr(inp, out, method)
+
+  for (l in 1:method$num_scales) {
+    wm_sum <-  apply(out$wms[[l]], 1, sum)
+    wm_grad <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
+    kml <- apply(cm_grad * out$qms[[l]], 1, sum) # row sums
+    kml <- sweep(-cm_grad, 1, -kml) # subtract row sum from each row element
+    kml <- kml * (-wm_grad / wm_sum)
+    kml <- 2 * (kml + t(kml))
+    if (l == 1) {
+      kml_sum <- kml
+    }
+    else {
+      kml_sum <- kml_sum + kml
+    }
+  }
+
+  kml_sum / method$num_scales
+}
+
+#' Multiscale Plugin Stiffness for Joint Probability
+plugin_stiffness_ms_joint <- function(method, inp, out) {
+  cm_grad <- method$cost$gr(inp, out, method)
+
+  for (l in 1:method$num_scales) {
+    wm_sum <- sum(out$wms[[l]])
+    wm_grad <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
+    kml <- (sum(cm_grad * out$qms[[l]]) - cm_grad) * (-wm_grad / wm_sum)
+    kml <- 2 * (kml + t(kml))
+    if (l == 1) {
+      kml_sum <- kml
+    }
+    else {
+      kml_sum <- kml_sum + kml
+    }
+  }
+
+  kml_sum / method$num_scales
+}
+
+#' Output Update Factory Function for Multiscale Probability
+update_out_ms <- function() {
+  function(inp, out, method) {
+    out$d2m = coords_to_dist2(out$ym)
+
+    out$qms <- list()
+    out$wms <- list()
+    for (i in 1:method$num_scales) {
+      method$kernel <- method$kernels[[i]]
+      res <- update_probs(out, method, d2m = out$d2m)
+      out$qms[[i]] <- res$qm
+      out$wms[[i]] <- res$wm
+    }
+
+    # average the probability matrices
+    out$qm <- Reduce(`+`, out$qms) / length(out$qms)
+
+    if (!is.null(method$out_updated_fn)) {
+      out <- method$out_updated_fn(inp, out, method)
+    }
+    out
+  }
+}
