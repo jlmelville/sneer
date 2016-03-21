@@ -84,3 +84,20 @@ expect_equal(jacobs_costs,  c(1.598, 1.594, 1.589, 1.584, 1.577, 1.57, 1.562,
                               1.553, 1.543, 1.532, 1.52),
              tolerance = 5e-4, scale = 1)
 
+
+test_that("different beta gives different results", {
+  ssne_iris <- embed_prob(iris[, 1:4],
+                          method = ssne(beta = 0.5),
+                          init_inp = inp_from_perp(
+                            perplexity = 50,
+                            input_weight_fn = sqrt_exp_weight,
+                            verbose = FALSE),
+                          preprocess = make_preprocess(range_scale_matrix = TRUE,
+                                                       verbose = FALSE),
+                          max_iter = 60,
+                          reporter = make_reporter(verbose = FALSE),
+                          export = c("report"),
+                          verbose = FALSE,
+                          opt = bold_nag())
+  expect_equal(ssne_iris$report$norm, 0.07327, tolerance = 5e-5, scale = 1)
+})
