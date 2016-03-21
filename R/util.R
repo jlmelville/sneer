@@ -187,7 +187,12 @@ lreplace <- function(l, ...) {
 #' @param init_inp Input initializer.
 #' @param init_out Output initializer.
 #' @param opt Optimizer.
-#' @return An initialized embedder.
+#' @return A list containing:
+#'   \item{\code{inp}}{Initialized input}
+#'   \item{\code{out}}{Initialized output}
+#'   \item{\code{method}}{Initialized embedding method}
+#'   \item{\code{opt}}{Initialized optimizer}
+#'   \item{\code{report}}{Initialized report}
 iembed <- function(method,
                    xm = iris[1:50, 1:4],
                    init_inp = inp_from_perp(perplexity = 20, verbose = FALSE),
