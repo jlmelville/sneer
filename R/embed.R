@@ -331,6 +331,8 @@ embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
 
   iter <- 0
   while (iter <= max_iter) {
+    # For convenience we already did the 0 iter initialization in init_embed,
+    # so we skip calling init_inp on the first iteration. Cheesy, I know.
     if (iter != 0 && !is.null(init_inp)) {
       inp_result <- init_inp(inp, method, opt, iter, out)
       inp <- inp_result$inp
@@ -445,14 +447,22 @@ after_init <- function(inp, out, method) {
 init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
   inp <- preprocess(xm)
 
+  # Output initialization normally only needs to make us of input coordinates
+  # or distance matrix, which preprocessing gives us, not things like the input
+  # probabilities. So we can do output initialization here.
+  out <- init_out(inp)
+
+  # Input initialization handles input probability and other related data.
+  # As we often only indirectly control the shape of the input data, we may want
+  # to adjust some method parameters in the light of this data and the output
+  # data. So it's most convenient to allow input initialization to assume output
+  # initialization has already happened, rather than vice versa.
   if (!is.null(init_inp)) {
-    inp_result <- init_inp(inp, method, opt, iter = 0, out = NULL)
+    inp_result <- init_inp(inp, method, opt, iter = 0, out)
     inp <- inp_result$inp
     method <- inp_result$method
     opt <- inp_result$opt
   }
-
-  out <- init_out(inp)
 
   # do late initialization that relies on input or output initialization
   # being completed
