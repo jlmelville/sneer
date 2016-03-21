@@ -179,6 +179,7 @@ init_out <- function(initializer) {
     out <- list()
     out <- initializer(inp, out)
     out$dirty <- TRUE
+    out$dim <- ncol(out$ym)
     flush.console()
     out
   }
