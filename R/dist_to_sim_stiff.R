@@ -132,17 +132,29 @@ update_out <- function(keep = c("qm")) {
 
 #' Update Output Probabilities
 #'
+#' Calculates the output probabilities based on the current embedding
+#' coordinates.
+#'
 #' Intermediate data (squared distance matrix and weight matrix) may be useful
 #' in calculating the gradient, so is also returned from this function.
 #'
+#' Some embedding techniques (e.g. multiscale perplexity approaches) calculate
+#' the output probabilities from multiple values based using several different
+#' similarity kernels to produce different weight matrices. The squared distance
+#' matrix is the same in all cases, so it can be calculated once and then passed
+#' to this function as an optional parameter, avoiding recalculating multiple
+#' times.
+#'
 #' @param out Output data.
 #' @param method Embedding method.
+#' @param d2m Optional squared distance matrix, if the same embedding
+#' coordinate configuration is to be used for multiple weight or probability
+#' calculations.
 #' @return List containing:
 #'  \item{\code{d2m}}{Matrix of squared distances.}
 #'  \item{\code{wm}}{Weight matrix.}
 #'  \item{\code{qm}}{Probability Matrix.}
-update_probs <- function(out, method) {
-  d2m <- coords_to_dist2(out$ym)
+update_probs <- function(out, method, d2m = coords_to_dist2(out$ym)) {
   wm <- dist2_to_weights(d2m, method$kernel$fn)
   qm <- weights_to_probs(wm, method)
   list(d2m = d2m, wm = wm, qm = qm)
