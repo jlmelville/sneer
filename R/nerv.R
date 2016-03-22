@@ -69,7 +69,16 @@
 #' embed_prob(method = nerv(lambda = 0), ...)
 #' }
 nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
-  nerv_plugin(lambda = lambda, eps = eps)
+  lreplace(
+    asne(eps = eps, verbose = verbose),
+    cost = nerv_fg(lambda = lambda),
+    stiffness_fn = function(method, inp, out) {
+      nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
+                     beta = method$kernel$beta, eps = method$eps)
+    },
+    inp_updated_fn = transfer_kernel_betas,
+    out_updated_fn = klqp_update
+  )
 }
 
 #' UNeRV
@@ -148,6 +157,14 @@ unerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 #' }
 snerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
   snerv_plugin(lambda = lambda, eps = eps)
+  # lreplace(
+  #   nerv(lambda = lambda, eps = eps, verbose = verbose),
+  #   stiffness_fn = function(method, inp, out) {
+  #     snerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
+  #                     beta = method$kernel$beta, eps = method$eps)
+  #   },
+  #   prob_type = "joint"
+  # )
 }
 
 #' USNeRV
@@ -239,6 +256,18 @@ usnerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 hsnerv <- function(lambda = 0.5, alpha = 0,
                    eps = .Machine$double.eps, verbose = TRUE) {
   hsnerv_plugin(lambda = lambda, alpha = alpha, eps = eps)
+
+  # lreplace(
+  #   snerv(lambda = lambda, eps = eps, verbose = verbose),
+  #   kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
+  #   stiffness_fn = function(method, inp, out) {
+  #     hsnerv_stiffness(pm = inp$pm, qm = out$qm, wm = out$wm,
+  #                      rev_kl = out$rev_kl,
+  #                      lambda = method$cost$lambda, alpha = method$kernel$alpha,
+  #                      beta = method$kernel$beta, eps = method$eps)
+  #   },
+  #   update_out_fn = update_out(keep = c("qm", "wm"))
+  # )
 }
 
 #' UHSNeRV
