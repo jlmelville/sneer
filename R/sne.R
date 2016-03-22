@@ -238,10 +238,10 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     tsne(eps = eps, verbose = verbose),
-    kernel = tdist_kernel(),
     stiffness_fn = function(method, inp, out) {
       tasne_stiffness(inp$pm, out$qm, out$wm)
-    })
+    },
+    prob_type = "row")
 }
 
 #' Heavy-Tailed Symmetric Stochastic Neighbor Embedding (HSSNE)

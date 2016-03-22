@@ -48,15 +48,17 @@ plugin <- function(cost = kl_fg(),
                    kernel = exp_kernel(),
                    stiffness_fn = plugin_stiffness,
                    update_out_fn = update_out(keep = c("qm", "wm", "d2m")),
+                   inp_updated_fn = NULL,
                    out_updated_fn = NULL,
-                   prob_type = "joint",
                    after_init_fn = NULL,
+                   prob_type = "joint",
                    eps = .Machine$double.eps) {
   remove_nulls(
     list(
       cost = cost,
       kernel = kernel,
       stiffness_fn = stiffness_fn,
+      inp_updated_fn = inp_updated_fn,
       out_updated_fn = out_updated_fn,
       update_out_fn = update_out_fn,
       prob_type = prob_type,
@@ -248,8 +250,6 @@ rtsne_plugin <- function(eps = .Machine$double.eps) {
 
 #' An implementation of NeRV using the plugin gradient.
 #'
-#' @param beta Precision parameter of the exponential similarity kernel
-#'  function.
 #' @param lambda Weighting factor controlling the emphasis placed on precision
 #'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 #'   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
@@ -261,18 +261,18 @@ rtsne_plugin <- function(eps = .Machine$double.eps) {
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-nerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
+nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
   lreplace(
-    asne_plugin(eps = eps, beta = beta),
+    asne_plugin(eps = eps),
     cost = nerv_fg(lambda = lambda),
+    kernel = exp_kernel(),
+    inp_updated_fn = transfer_kernel_betas,
     out_updated_fn = klqp_update
   )
 }
 
 #' An implementation of SNeRV using the plugin gradient.
 #'
-#' @param beta Precision parameter of the exponential similarity kernel
-#'  function.
 #' @param lambda Weighting factor controlling the emphasis placed on precision
 #'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 #'   1, then the method is equivalent to SSNE. Must be a value between 0 and 1.
@@ -284,10 +284,34 @@ nerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-snerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
+snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
   lreplace(
-    nerv_plugin(lambda = lambda, beta = beta, eps = eps),
+    nerv_plugin(lambda = lambda, eps = eps),
     prob_type = "joint"
+  )
+}
+
+#' An implementation of HSNeRV using the plugin gradient.
+#'
+#' @param lambda Weighting factor controlling the emphasis placed on precision
+#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
+#'   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
+#' @param alpha Tail heaviness. Must be greater than zero. When set to a small
+#'   value this method is equivalent to SSNE or SNeRV (depending on the value
+#'   of \code{lambda}. When set to one to one, this method behaves like
+#'   t-SNE/t-NeRV.
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @return An embedding method for use by an embedding function.
+#' @seealso \code{\link{hsnerv}} should give equivalent results, but is probably
+#' a bit more efficient.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
+hsnerv_plugin <- function(lambda = 0.5, alpha = 0, eps = .Machine$double.eps) {
+  lreplace(
+    snerv_plugin(lambda = lambda, eps = eps),
+    kernel = heavy_tail_kernel(alpha = alpha)
   )
 }
 
@@ -306,35 +330,35 @@ snerv_plugin <- function(beta = 1, lambda = 0.5, eps = .Machine$double.eps) {
 #' @family sneer probability embedding methods
 tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
   lreplace(
-    snerv_plugin(lambda = lambda, eps = eps),
-    kernel = tdist_kernel()
+    tsne_plugin(eps = eps),
+    cost = nerv_fg(lambda = lambda),
+    out_updated_fn = klqp_update
   )
 }
 
-#' An implementation of HSNeRV using the plugin gradient.
-#'
-#' @param lambda Weighting factor controlling the emphasis placed on precision
-#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#'   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
-#' @param alpha Tail heaviness. Must be greater than zero. When set to a small
-#'   value this method is equivalent to SSNE or SNeRV (depending on the value
-#'   of \code{lambda}. When set to one to one, this method behaves like
-#'   t-SNE/t-NeRV.
-#' @param beta The precision of the function. Becomes equivalent to the
-#'   precision in the Gaussian distribution of distances as \code{alpha}
-#'   approaches zero.
-#' @param eps Small floating point value used to prevent numerical problems,
-#' e.g. in gradients and cost functions.
-#' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{hsnerv}} should give equivalent results, but is probably
-#' a bit more efficient.
-#' @export
-#' @family sneer embedding methods
-#' @family sneer probability embedding methods
-hsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
-                          eps = .Machine$double.eps) {
+#' An implementation of UNeRV using the plugin gradient.
+unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
   lreplace(
-    snerv_plugin(lambda = lambda, beta = beta, eps = eps),
+    asne_plugin(beta = beta, eps = eps),
+    cost = nerv_fg(lambda = lambda),
+    kernel = exp_kernel(),
+    out_updated_fn = klqp_update
+  )
+}
+
+#' An implementation of USNeRV using the plugin gradient.
+usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
+  lreplace(
+    unerv_plugin(lambda = lambda, beta = beta, eps = eps),
+    prob_type = "joint"
+  )
+}
+
+#' An implementation of UHSNeRV using the plugin gradient.
+uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
+                           eps = .Machine$double.eps) {
+  lreplace(
+    tnerv_plugin(lambda = lambda, eps = eps),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
@@ -436,13 +460,13 @@ plugin_stiffness <- function(method, inp, out) {
 #' @param method Embedding method.
 #' @return Stiffness matrix.
 plugin_stiffness_row <- function(method, inp, out) {
-  cm_grad <- method$cost$gr(inp, out, method)
-  wm_grad <- method$kernel$gr(method$kernel, out$d2m)
+  dc_dq <- method$cost$gr(inp, out, method)
+  dw_du <- method$kernel$gr(method$kernel, out$d2m)
 
   wm_sum <-  apply(out$wm, 1, sum)
-  km <- apply(cm_grad * out$qm, 1, sum) # row sums
-  km <- sweep(-cm_grad, 1, -km) # subtract row sum from each row element
-  km <- km * (-wm_grad / wm_sum)
+  km <- apply(dc_dq * out$qm, 1, sum) # row sums
+  km <- sweep(-dc_dq, 1, -km) # subtract row sum from each row element
+  km <- km * (-dw_du / wm_sum)
   2 * (km + t(km))
 }
 
@@ -457,9 +481,9 @@ plugin_stiffness_row <- function(method, inp, out) {
 #' @return Stiffness matrix.
 plugin_stiffness_joint <- function(method, inp, out) {
   wm_sum <- sum(out$wm)
-  cm_grad <- method$cost$gr(inp, out, method)
-  wm_grad <- method$kernel$gr(method$kernel, out$d2m)
-  km <- (sum(cm_grad * out$qm) - cm_grad) * (-wm_grad / wm_sum)
+  dc_dq <- method$cost$gr(inp, out, method)
+  dw_du <- method$kernel$gr(method$kernel, out$d2m)
+  km <- (sum(dc_dq * out$qm) - dc_dq) * (-dw_du / wm_sum)
   2 * (km + t(km))
 }
 

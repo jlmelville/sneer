@@ -68,17 +68,21 @@
 #' # puts emphasis on precision over recall
 #' embed_prob(method = nerv(lambda = 0), ...)
 #' }
-nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
-                 verbose = TRUE) {
+nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
+  nerv_plugin(lambda = lambda, eps = eps)
+}
+
+#' UNeRV
+unerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+                  verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
     cost = nerv_fg(lambda = lambda),
     stiffness_fn = function(method, inp, out) {
       nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
-                    beta = method$kernel$beta, eps = method$eps)
+                     beta = method$kernel$beta, eps = method$eps)
     },
-    out_updated_fn = klqp_update,
-    lambda = lambda
+    out_updated_fn = klqp_update
   )
 }
 
@@ -122,10 +126,6 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 #' Information retrieval perspective to nonlinear dimensionality reduction for
 #' data visualization.
 #'
-#' Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
-#' Heavy-tailed symmetric stochastic neighbor embedding.
-#' In \emph{Advances in neural information processing systems} (pp. 2169-2177).
-#' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
 #' @seealso SNeRV uses the \code{\link{nerv_cost}} cost function and the
 #'   \code{\link{exp_weight}} similarity function for converting distances to
 #'   probabilities.
@@ -146,95 +146,20 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 #' # tends to produce a larger number of small, tight clusters
 #' embed_prob(method = snerv(lambda = 0), ...)
 #' }
-snerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
-                  verbose = TRUE) {
+snerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
+  snerv_plugin(lambda = lambda, eps = eps)
+}
+
+#' USNeRV
+usnerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+                   verbose = TRUE) {
   lreplace(
-    nerv(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
+    unerv(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
     stiffness_fn = function(method, inp, out) {
       snerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
                       beta = method$kernel$beta, eps = method$eps)
     },
     prob_type = "joint"
-  )
-}
-
-#' t-Distributed Neighbor Retrieval Visualizer (t-NeRV)
-#'
-#' A probability-based embedding method.
-#'
-#' t-NeRV is a variant of t-distributed Stochastic Neighbor Embedding
-#' (\code{\link{tsne}}), with a modified cost function: in addition to
-#' calculating the Kullback-Leibler divergence of the output probabilities Q,
-#' from the input probabilities, P, it also includes the divergence of P from Q.
-#' The final cost function is a weighted sum of these two individual functions.
-#' Hence SSNE is a special case of NeRV where all the weight is placed on the
-#' first component of the cost function.
-#'
-#' From an information retrieval perspective, the weighting factor allows the
-#' user to place a relative weight on false positives: points on the embedded
-#' map which have a close distance, but a low input probability, i.e. should not
-#' have been embedded as close neighbors, versus false negatives: pairs with a
-#' large distance in the output coordinates, but a high input probability, i.e.
-#' should have been embedded as close neighbors. From this perspective, t-SNE
-#' is the equivalent of emphasising false positives over false negatives.
-#'
-#' The probability matrix used in t-NeRV:
-#'
-#' \itemize{
-#'  \item{represents one probability distribution, i.e. the grand sum of the
-#'  matrix is one.}
-#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
-#'  probabilities are joint probabilities.}
-#' }
-#'
-#' @section Output Data:
-#' If used in an embedding, the output data list will contain:
-#' \describe{
-#'  \item{\code{ym}}{Embedded coordinates.}
-#'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
-#'  \code{wm}.}
-#' }
-#' @param lambda Weighting factor controlling the emphasis placed on precision
-#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#'   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
-#' @param eps Small floating point value used to prevent numerical problems,
-#'   e.g. in gradients and cost functions.
-#' @param verbose If \code{TRUE}, log information about the embedding.
-#' @return An embedding method for use by an embedding function.
-#' @references
-#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
-#' Information retrieval perspective to nonlinear dimensionality reduction for
-#' data visualization.
-#' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
-#' @seealso NeRV uses the \code{\link{nerv_cost}} cost function and the
-#'   \code{\link{tdist_weight}} similarity function for converting distances to
-#'   probabilities.
-#' The return value of this function should be used with the
-#'  \code{\link{embed_prob}} embedding function.
-#' @export
-#' @family sneer embedding methods
-#' @family sneer probability embedding methods
-#' @examples
-#' \dontrun{
-#' # default t-NeRV settings
-#' embed_prob(method = tnerv(lambda = 0.5), ...)
-#'
-#' # equivalent to t-SNE
-#' embed_prob(method = tnerv(lambda = 1), ...)
-#'
-#' # puts an emphasis on precision over recall and allows long tails
-#' # will create widely-separated small clusters
-#' embed_prob(method = tnerv(lambda = 0), ...)
-#' }
-tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
-  lreplace(
-    snerv(eps = eps, verbose = verbose, lambda = lambda),
-    kernel = tdist_kernel(),
-    stiffness_fn = function(method, inp, out) {
-      tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
-                      lambda = method$cost$lambda, eps = method$eps)
-    },
-    update_out_fn = update_out(keep = c("qm", "wm"))
   )
 }
 
@@ -311,17 +236,104 @@ tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 #' embed_prob(method = hsnerv(lambda = 0.5, alpha = 1), ...)
 #'
 #' }
-hsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
+hsnerv <- function(lambda = 0.5, alpha = 0,
                    eps = .Machine$double.eps, verbose = TRUE) {
+  hsnerv_plugin(lambda = lambda, alpha = alpha, eps = eps)
+}
+
+#' UHSNeRV
+uhsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
+                    eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    tnerv(lambda = lambda, eps = eps, verbose = verbose),
+    usnerv(lambda = lambda, eps = eps, verbose = verbose),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     stiffness_fn = function(method, inp, out) {
       hsnerv_stiffness(pm = inp$pm, qm = out$qm, wm = out$wm,
                        rev_kl = out$rev_kl,
                        lambda = method$cost$lambda, alpha = method$kernel$alpha,
                        beta = method$kernel$beta, eps = method$eps)
-    }
+    },
+    update_out_fn = update_out(keep = c("qm", "wm"))
+  )
+}
+
+#' t-Distributed Neighbor Retrieval Visualizer (t-NeRV)
+#'
+#' A probability-based embedding method.
+#'
+#' t-NeRV is a variant of t-distributed Stochastic Neighbor Embedding
+#' (\code{\link{tsne}}), with a modified cost function: in addition to
+#' calculating the Kullback-Leibler divergence of the output probabilities Q,
+#' from the input probabilities, P, it also includes the divergence of P from Q.
+#' The final cost function is a weighted sum of these two individual functions.
+#' Hence SSNE is a special case of NeRV where all the weight is placed on the
+#' first component of the cost function.
+#'
+#' From an information retrieval perspective, the weighting factor allows the
+#' user to place a relative weight on false positives: points on the embedded
+#' map which have a close distance, but a low input probability, i.e. should not
+#' have been embedded as close neighbors, versus false negatives: pairs with a
+#' large distance in the output coordinates, but a high input probability, i.e.
+#' should have been embedded as close neighbors. From this perspective, t-SNE
+#' is the equivalent of emphasising false positives over false negatives.
+#'
+#' The probability matrix used in t-NeRV:
+#'
+#' \itemize{
+#'  \item{represents one probability distribution, i.e. the grand sum of the
+#'  matrix is one.}
+#'  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
+#'  probabilities are joint probabilities.}
+#' }
+#'
+#' @section Output Data:
+#' If used in an embedding, the output data list will contain:
+#' \describe{
+#'  \item{\code{ym}}{Embedded coordinates.}
+#'  \item{\code{qm}}{Joint probability matrix based on the weight matrix
+#'  \code{wm}.}
+#' }
+#' @param lambda Weighting factor controlling the emphasis placed on precision
+#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
+#'   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
+#' @param eps Small floating point value used to prevent numerical problems,
+#'   e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
+#' @return An embedding method for use by an embedding function.
+#' @references
+#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+#' Information retrieval perspective to nonlinear dimensionality reduction for
+#' data visualization.
+#' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+#' @seealso NeRV uses the \code{\link{nerv_cost}} cost function and the
+#'   \code{\link{tdist_weight}} similarity function for converting distances to
+#'   probabilities.
+#' The return value of this function should be used with the
+#'  \code{\link{embed_prob}} embedding function.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
+#' @examples
+#' \dontrun{
+#' # default t-NeRV settings
+#' embed_prob(method = tnerv(lambda = 0.5), ...)
+#'
+#' # equivalent to t-SNE
+#' embed_prob(method = tnerv(lambda = 1), ...)
+#'
+#' # puts an emphasis on precision over recall and allows long tails
+#' # will create widely-separated small clusters
+#' embed_prob(method = tnerv(lambda = 0), ...)
+#' }
+tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
+  lreplace(
+    tsne(eps = eps, verbose = verbose),
+    cost = nerv_fg(lambda = lambda),
+    stiffness_fn = function(method, inp, out) {
+      tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
+                      lambda = method$cost$lambda, eps = method$eps)
+    },
+    out_updated_fn = klqp_update
   )
 }
 
@@ -506,6 +518,40 @@ reverse_kl_cost_gr <- function(inp, out, method) {
 #' @return Gradient of the KL divergence from \code{qm} to \code{pm}.
 reverse_kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
   log((pm + eps) / (qm + eps)) + 1
+}
+
+
+#' Set Output Kernel Parameter From Input Results
+#'
+#' Updates the output kernel in response to a change in input parameters.
+#'
+#' This function is called when the input data has changed. It transfers the
+#' beta parameters from the input data to the output kernel. This is used in
+#' the NeRV family of embedding routines where the precisions of the output
+#' exponential kernel are set to those of the input kernel.
+#'
+#' This function expects:
+#' \itemize{
+#'  \item{The \code{inp} list contains a member called \code{beta}.}
+#'  \item{\code{beta} is a vector of numeric parameters with the same length
+#'  as the size of output squared distance matrix.}
+#'  \item{The \code{out$kernel} has a \code{beta} parameter which can make
+#'  use of a vector of parameters.}
+#' }
+#'
+#' These conditions are all satisifed if you use an exponential kernel for
+#' creating the input data, and an asymmetric exponential kernel for the output
+#' data, as in the usual NeRV functions. If you deviate from these conditions,
+#' you may get incorrect behavior.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return List containing the updated method.
+#' @family sneer kernel modifiers
+transfer_kernel_betas <- function(inp, out, method) {
+  method$kernel$beta <- inp$beta
+  list(method = method)
 }
 
 #' Updates the Kullback Leibler Divergence.

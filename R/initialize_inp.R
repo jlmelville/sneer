@@ -89,7 +89,7 @@ NULL
 #' @export
 inp_from_perp <- function(perplexity = 30,
                           input_weight_fn = exp_weight,
-                          keep_all_results = FALSE,
+                          keep_all_results = TRUE,
                           verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
@@ -158,7 +158,7 @@ inp_prob <- function(input_initializer, init_only = TRUE) {
 # See the inp_from_perp function for a fuller description.
 single_perplexity <- function(inp, perplexity = 30,
                               input_weight_fn = exp_weight,
-                              keep_all_results = FALSE,
+                              keep_all_results = TRUE,
                               verbose = TRUE) {
   d_to_p_result <- d_to_p_perp_bisect(inp$dm, perplexity = perplexity,
                                       weight_fn = input_weight_fn,

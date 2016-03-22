@@ -14,7 +14,8 @@ test_that("see three spikes due to perplexity change", {
                                      num_scale_iters = 10, verbose = FALSE,
                                      modify_kernel_fn = NULL),
     init_out = out_from_PCA(verbose = FALSE),
-    reporter = make_reporter(keep_costs = TRUE, verbose = FALSE, report_every = 1),
+    reporter = make_reporter(keep_costs = TRUE, verbose = FALSE,
+                             report_every = 1),
     max_iter = 20,
     export = c("report")
   )
@@ -36,7 +37,8 @@ test_that("use default kernel adjustment, results should be different", {
     init_inp = inp_step_perp(perplexities = seq(75, 25, length.out = 3),
                                      num_scale_iters = 10, verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
-    reporter = make_reporter(keep_costs = TRUE, report_every = 1),
+    reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+                             verbose = FALSE),
     max_iter = 20,
     export = c("report")
   )
@@ -56,7 +58,8 @@ test_that("first five costs with single perplexity and custom beta", {
     preprocess = make_preprocess(auto_scale = TRUE),
     init_inp = inp_from_perp(perplexity = 75, verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
-    reporter = make_reporter(keep_costs = TRUE, report_every = 1),
+    reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+                             verbose = FALSE),
     max_iter = 4,
     export = c("report")
   )

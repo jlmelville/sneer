@@ -132,41 +132,14 @@ exp_kernel <- function(beta = 1) {
   fn <- function(kernel, d2m) {
     exp_weight(d2m, beta = kernel$beta)
   }
-  attr(fn, "type") <- attr(exp_weight, "type")
-
-  list(
-    fn = fn,
-    gr = function(kernel, d2m) {
-      exp_gr(d2m, beta = kernel$beta)
-    },
-    beta = beta
-  )
-}
-
-#' Asymmetric Exponential Kernel Factory Function
-#'
-#' Similarity Kernel factory function.
-#'
-#' Creates a list implementing the exponential kernel function and gradient,
-#' allowing for the exponential parameter, \code{beta}, to vary for each row
-#' of the matrix, by passing a numeric vector. The vector should have the
-#' length of the number of rows in the distance matrix.
-#'
-#' Passing a scalar beta will still work with this function, but it will be
-#' slightly more efficient to use \code{\link{exp_kernel}} because this function
-#' assumes the resulting weight matrix is always asymmetric and the embedding
-#' routine will do extra work to symmetrize the resulting probability matrix
-#' for those methods which require joint probabilities.
-#'
-#' @param beta List of exponential parameters.
-#' @return Exponential function and gradient.
-#' @family sneer similiarity kernels
-#' @export
-exp_asymm_kernel <- function(beta = 1) {
-  fn <- function(kernel, d2m) {
-    exp_weight(d2m, beta = kernel$beta)
+  # if we use a vector of betas we assume the contents are all different
+  # and hence will result in an asymmetric W matrix
+  if (length(beta) > 1) {
+    attr(fn, "type") <- "asymm"
   }
-  attr(fn, "type") <- "asymm"
+  else {
+    attr(fn, "type") <- "symm"
+  }
 
   list(
     fn = fn,
@@ -176,7 +149,6 @@ exp_asymm_kernel <- function(beta = 1) {
     beta = beta
   )
 }
-
 
 #' Exponential Gradient
 #'
@@ -246,7 +218,12 @@ heavy_tail_kernel <- function(beta = 1, alpha = 0) {
   fn <- function(kernel, d2m) {
     heavy_tail_weight(d2m, beta = kernel$beta, alpha = kernel$alpha)
   }
-  attr(fn, "type") <- attr(heavy_tail_weight, "type")
+  if (length(beta) > 1 || length(alpha) > 1) {
+    attr(fn, "type") <- "asymm"
+  }
+  else {
+    attr(fn, "type") <- "symm"
+  }
 
   list(
     fn = fn,

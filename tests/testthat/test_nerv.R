@@ -1,7 +1,8 @@
 library(sneer)
 context("NeRV")
 
-# NeRV with lambda = 1 should be equivalent to ASNE
+test_that("NeRV with unit precisions has SNE methods as limiting cases", {
+# UNeRV with lambda = 1 should be equivalent to ASNE
 asne_iris <-
   embed_prob(iris[, 1:4], method = asne(verbose = FALSE), max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
@@ -11,8 +12,8 @@ asne_iris <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-nerv_iris_lambda1 <-
-  embed_prob(iris[, 1:4], method = nerv(lambda = 1, verbose = FALSE),
+unerv_iris_lambda1 <-
+  embed_prob(iris[, 1:4], method = unerv(lambda = 1, beta = 1, verbose = FALSE),
              max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
@@ -22,9 +23,9 @@ nerv_iris_lambda1 <-
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, asne_iris$report$costs),
-             mapply(formatC, nerv_iris_lambda1$report$costs))
+             mapply(formatC, unerv_iris_lambda1$report$costs))
 
-# NeRV with lambda = 0 should be equivalent to rASNE
+# UNeRV with lambda = 0 should be equivalent to rASNE
 rasne_iris <-
   embed_prob(iris[, 1:4], method = rasne(verbose = FALSE), max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
@@ -34,8 +35,8 @@ rasne_iris <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-nerv_iris_lambda0 <-
-  embed_prob(iris[, 1:4], method = nerv(lambda = 0, verbose = FALSE),
+unerv_iris_lambda0 <-
+  embed_prob(iris[, 1:4], method = unerv(lambda = 0, beta = 1, verbose = FALSE),
              max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
@@ -45,7 +46,7 @@ nerv_iris_lambda0 <-
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, rasne_iris$report$costs),
-             mapply(formatC, nerv_iris_lambda0$report$costs))
+             mapply(formatC, unerv_iris_lambda0$report$costs))
 
 # t-NeRV with lambda = 1 should be equivalent to t-SNE
 tsne_iris <-
@@ -104,8 +105,8 @@ ssne_iris <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-snerv_iris_lambda1 <-
-  embed_prob(iris[, 1:4], method = snerv(lambda = 1, verbose = FALSE),
+usnerv_iris_lambda1 <-
+  embed_prob(iris[, 1:4], method = usnerv(lambda = 1, beta = 1, verbose = FALSE),
              max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
@@ -115,9 +116,9 @@ snerv_iris_lambda1 <-
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, ssne_iris$report$costs),
-             mapply(formatC, snerv_iris_lambda1$report$costs))
+             mapply(formatC, usnerv_iris_lambda1$report$costs))
 
-# SNeRV with lamda = 0 should be equivalent to rSSNE
+# USNeRV with lamda = 0 should be equivalent to rSSNE
 rssne_iris <-
   embed_prob(iris[, 1:4], method = rssne(verbose = FALSE), max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
@@ -127,8 +128,9 @@ rssne_iris <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-snerv_iris_lambda0 <-
-  embed_prob(iris[, 1:4], method = snerv(lambda = 0, verbose = FALSE),
+usnerv_iris_lambda0 <-
+  embed_prob(iris[, 1:4],
+             method = usnerv(lambda = 0, beta = 1, verbose = FALSE),
              max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
@@ -138,12 +140,12 @@ snerv_iris_lambda0 <-
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, rssne_iris$report$costs),
-             mapply(formatC, snerv_iris_lambda0$report$costs))
+             mapply(formatC, usnerv_iris_lambda0$report$costs))
 
 # HSNeRV with lambda = 1, alpha = 0 should be equivalent to SSNE
-hsnerv_iris_lambda1alpha0 <-
+uhsnerv_iris_lambda1alpha0 <-
   embed_prob(iris[, 1:4], max_iter = 50,
-             method = hsnerv(lambda = 1, alpha = 0, verbose = FALSE),
+             method = uhsnerv(lambda = 1, alpha = 0, beta = 1, verbose = FALSE),
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
@@ -152,12 +154,12 @@ hsnerv_iris_lambda1alpha0 <-
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, ssne_iris$report$costs),
-             mapply(formatC, hsnerv_iris_lambda1alpha0$report$costs))
+             mapply(formatC, uhsnerv_iris_lambda1alpha0$report$costs))
 
-# HSNeRV with lambda = 1, alpha = 1 should be equivalent to t-SNE
-hsnerv_iris_lambda1alpha1 <-
+# UHSNeRV with lambda = 1, alpha = 1 should be equivalent to t-SNE
+uhsnerv_iris_lambda1alpha1 <-
   embed_prob(iris[, 1:4], max_iter = 50,
-             method = hsnerv(lambda = 1, alpha = 1, verbose = FALSE),
+             method = uhsnerv(lambda = 1, alpha = 1, beta = 1, verbose = FALSE),
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
@@ -166,12 +168,12 @@ hsnerv_iris_lambda1alpha1 <-
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, tsne_iris$report$costs),
-             mapply(formatC, hsnerv_iris_lambda1alpha1$report$costs))
+             mapply(formatC, uhsnerv_iris_lambda1alpha1$report$costs))
 
 # HSNeRV with lambda = 0, alpha = 0 should be equivalent to rSSNE
-hsnerv_iris_lambda0alpha0 <-
+uhsnerv_iris_lambda0alpha0 <-
   embed_prob(iris[, 1:4], max_iter = 50,
-             method = hsnerv(lambda = 0, alpha = 0, verbose = FALSE),
+             method = uhsnerv(lambda = 0, alpha = 0, beta = 1, verbose = FALSE),
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
@@ -180,12 +182,12 @@ hsnerv_iris_lambda0alpha0 <-
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, rssne_iris$report$costs),
-             mapply(formatC, hsnerv_iris_lambda0alpha0$report$costs))
+             mapply(formatC, uhsnerv_iris_lambda0alpha0$report$costs))
 
-# HSNeRV with lambda = 0, alpha = 1 should be equivalent to rt-SNE
-hsnerv_iris_lambda0alpha1 <-
+# UHSNeRV with lambda = 0, alpha = 1 should be equivalent to rt-SNE
+uhsnerv_iris_lambda0alpha1 <-
   embed_prob(iris[, 1:4], max_iter = 50,
-             method = hsnerv(lambda = 0, alpha = 1, verbose = FALSE),
+             method = uhsnerv(lambda = 0, alpha = 1, beta = 1, verbose = FALSE),
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
@@ -194,9 +196,9 @@ hsnerv_iris_lambda0alpha1 <-
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, rtsne_iris$report$costs),
-             mapply(formatC, hsnerv_iris_lambda0alpha1$report$costs))
+             mapply(formatC, uhsnerv_iris_lambda0alpha1$report$costs))
 
-# HSNeRV with lambda = 0.5, alpha = 1 should be equivalent to
+# UHSNeRV with lambda = 0.5, alpha = 1 should be equivalent to
 # t-NeRV with lambda 0.5
 tnerv_iris_lambda0_5 <-
   embed_prob(iris[, 1:4], method = tnerv(lambda = 0.5, verbose = FALSE),
@@ -208,9 +210,9 @@ tnerv_iris_lambda0_5 <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-hsnerv_iris_lambda0_5alpha1 <-
+uhsnerv_iris_lambda0_5alpha1 <-
   embed_prob(iris[, 1:4], max_iter = 50,
-             method = hsnerv(lambda = 0.5, alpha = 1, verbose = FALSE),
+             method = uhsnerv(lambda = 0.5, alpha = 1, verbose = FALSE),
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
@@ -219,13 +221,14 @@ hsnerv_iris_lambda0_5alpha1 <-
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
 expect_equal(mapply(formatC, tnerv_iris_lambda0_5$report$costs),
-             mapply(formatC, hsnerv_iris_lambda0_5alpha1$report$costs))
+             mapply(formatC, uhsnerv_iris_lambda0_5alpha1$report$costs))
 
 
-# HSNeRV with lambda = 0.5, alpha = 0 should be equivalent to
-# SNeRV with lambda 0.5
-snerv_iris_lambda0_5 <-
-  embed_prob(iris[, 1:4], method = snerv(lambda = 0.5, verbose = FALSE),
+# UHSNeRV with lambda = 0.5, alpha = 0 should be equivalent to
+# USNeRV with lambda 0.5
+usnerv_iris_lambda0_5 <-
+  embed_prob(iris[, 1:4], method = usnerv(lambda = 0.5, beta = 1,
+                                         verbose = FALSE),
              max_iter = 50,
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
@@ -234,9 +237,10 @@ snerv_iris_lambda0_5 <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-hsnerv_iris_lambda0_5alpha0_5 <-
+uhsnerv_iris_lambda0_5alpha0_5 <-
   embed_prob(iris[, 1:4], max_iter = 50,
-             method = hsnerv(lambda = 0.5, alpha = 0, verbose = FALSE),
+             method = uhsnerv(lambda = 0.5, alpha = 0, beta = 1,
+                             verbose = FALSE),
              init_inp = inp_from_perp(verbose = FALSE),
              init_out = out_from_PCA(verbose = FALSE),
              preprocess = make_preprocess(verbose = FALSE),
@@ -244,5 +248,6 @@ hsnerv_iris_lambda0_5alpha0_5 <-
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE, opt = bold_nag())
 
-expect_equal(mapply(formatC, snerv_iris_lambda0_5$report$costs),
-             mapply(formatC, hsnerv_iris_lambda0_5alpha0_5$report$costs))
+expect_equal(mapply(formatC, usnerv_iris_lambda0_5$report$costs),
+             mapply(formatC, uhsnerv_iris_lambda0_5alpha0_5$report$costs))
+})
