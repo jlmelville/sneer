@@ -379,14 +379,12 @@ snerv_stiffness <- function(pm, qm, rev_kl, beta = 1, lambda = 0.5,
 #' @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
 #' @param lambda NeRV weighting factor controlling the emphasis placed on
 #' precision versus recall.
-#' @param beta Precision of the weighting function.
 #' @param eps Small floating point value used to avoid numerical problems.
 #' @return Stiffness matrix
-tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5, beta = 1,
+tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
                             eps = .Machine$double.eps) {
-  (lambda * tsne_stiffness(pm, qm, wm, beta = beta)) +
-    ((1 - lambda) * reverse_tsne_stiffness(pm, qm, wm, rev_kl, beta = beta,
-                                           eps = eps))
+  (lambda * tsne_stiffness(pm, qm, wm)) +
+    ((1 - lambda) * reverse_tsne_stiffness(pm, qm, wm, rev_kl, eps = eps))
 }
 
 #' HSNeRV Stiffness Function
