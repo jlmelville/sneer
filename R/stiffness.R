@@ -54,7 +54,7 @@ tasne_stiffness <- function(pm, qm, wm) {
 #' @param beta The precision of the weighting function.
 #' @return Stiffness matrix.
 hssne_stiffness <- function(pm, qm, wm, alpha = 1.5e-8, beta = 1) {
-  4 * beta * (pm - qm) * (wm ^ alpha)
+  ssne_stiffness(pm, qm, beta = beta) * (wm ^ alpha)
 }
 
 #' "Reverse" ASNE Stiffness Function
@@ -118,6 +118,6 @@ reverse_tsne_stiffness <- function(pm, qm, wm, rev_kl,
 #' @return Stiffness matrix.
 reverse_hssne_stiffness <- function(pm, qm, wm, rev_kl, alpha = 1.5e-8,
                                     beta = 1, eps = .Machine$double.eps) {
-  4 * beta * qm * (log((pm + eps) / (qm + eps)) + rev_kl) * (wm ^ alpha)
+  reverse_ssne_stiffness(pm, qm, rev_kl, beta = beta, eps) * (wm ^ alpha)
 }
 
