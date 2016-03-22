@@ -546,6 +546,9 @@ jse_fg <- function(kappa = 0.5) {
 #' @param method Embedding method.
 #' @return Gradient of the JSE cost.
 jse_cost_gr <- function(inp, out, method) {
+  if (is.null(out$zm)) {
+    out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
+  }
   method$cost$kappa_inv * log((out$qm + method$eps) / (out$zm + method$eps))
 }
 

@@ -221,4 +221,48 @@ kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
   -pm / (qm + eps)
 }
 
+#' Finite Difference Gradient Calculation
+#'
+#' Calculate the gradient of the cost function for a specified position using
+#' a finite difference.
+#'
+#' Only intended for testing that analytical gradients have been calculated
+#' correctly.
+#'
+#' @param inp Input data.
+#' @param out Output data containing the desired position.
+#' @param method Embedding method.
+#' @param diff Step size to take in finite difference calculation.
+#' @return Gradient matrix.
+cost_gradient_fd <- function(inp, out, method, diff = 1e-4) {
+  qm <- out$qm
+  nr <- nrow(qm)
+  nc <- ncol(qm)
+
+  grad <- matrix(0, nrow = nr, ncol = nc)
+  for (i in 1:nr) {
+    for (j in 1:nc) {
+      # if (i != j) {
+        old <- qm[i, j]
+        qm[i, j] <- old - diff
+        out$qm <- qm
+        if (!is.null(method$out_updated_fn)) {
+          out <- method$out_updated_fn(inp, out, method)
+        }
+        cost_back <- method$cost$fn(inp, out, method)
+
+        qm[i, j] <- old + diff
+        out$qm <- qm
+        if (!is.null(method$out_updated_fn)) {
+          out <- method$out_updated_fn(inp, out, method)
+        }
+        cost_fwd <- method$cost$fn(inp, out, method)
+
+        fd <- (cost_fwd - cost_back) / (2 * diff)
+        grad[i, j] <- fd
+      }
+    # }
+  }
+  grad
+}
 
