@@ -125,8 +125,8 @@ early_exaggeration <- function(exaggeration = 4, off_iter = 50,
       dirty <- TRUE
     }
 
-    if (dirty && !is.null(method$inp_updated)) {
-      update_result <- method$inp_updated(inp, out, method)
+    if (dirty && !is.null(method$inp_updated_fn)) {
+      update_result <- method$inp_updated_fn(inp, out, method)
       if (!is.null(update_result$inp)) {
         inp <- update_result$inp
       }

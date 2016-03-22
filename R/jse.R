@@ -79,10 +79,10 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                     beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqz_update,
-    inp_updated = function(inp, out, method) {
-      if (!is.null(out)) {
-        out <- method$update_out_fn(inp, out, method)
-      }
+    inp_updated_fn = function(inp, out, method) {
+      # as we always explicitly invoke update_out_fn as part of initialization
+      # this runs twice during initialization, but oh well
+      out <- method$update_out_fn(inp, out, method)
       list(out = out)
     }
   )
