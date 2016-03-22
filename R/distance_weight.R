@@ -143,6 +143,41 @@ exp_kernel <- function(beta = 1) {
   )
 }
 
+#' Asymmetric Exponential Kernel Factory Function
+#'
+#' Similarity Kernel factory function.
+#'
+#' Creates a list implementing the exponential kernel function and gradient,
+#' allowing for the exponential parameter, \code{beta}, to vary for each row
+#' of the matrix, by passing a numeric vector. The vector should have the
+#' length of the number of rows in the distance matrix.
+#'
+#' Passing a scalar beta will still work with this function, but it will be
+#' slightly more efficient to use \code{\link{exp_kernel}} because this function
+#' assumes the resulting weight matrix is always asymmetric and the embedding
+#' routine will do extra work to symmetrize the resulting probability matrix
+#' for those methods which require joint probabilities.
+#'
+#' @param beta List of exponential parameters.
+#' @return Exponential function and gradient.
+#' @family sneer similiarity kernels
+#' @export
+exp_asymm_kernel <- function(beta = 1) {
+  fn <- function(kernel, d2m) {
+    exp_weight(d2m, beta = kernel$beta)
+  }
+  attr(fn, "type") <- "asymm"
+
+  list(
+    fn = fn,
+    gr = function(kernel, d2m) {
+      exp_gr(d2m, beta = kernel$beta)
+    },
+    beta = beta
+  )
+}
+
+
 #' Exponential Gradient
 #'
 #' Similarity Kernel Gradient.
@@ -240,4 +275,21 @@ heavy_tail_gr <- function(d2m, beta = 1, alpha = 1.5e-8) {
   -beta * heavy_tail_weight(d2m, beta = beta, alpha = alpha) ^ (alpha + 1)
 }
 
+#' Finite Difference Gradient of Kernel
+#'
+#' Calculates the gradient of a similarity kernel by finite difference.
+#' Only intended for testing purposes.
+#'
+#' @param kernel A similarity kernel.
+#' @param d2m Matrix of squared distances.
+#' @param diff Step size to take in finite difference calculation.
+#' @return Gradient matrix.
+kernel_gr_fd <- function(kernel, d2m, diff = 1e-4) {
+  d2m_fwd <- d2m + diff
+  fwd <- kernel$fn(kernel, d2m_fwd)
 
+  d2m_back <- d2m - diff
+  back <- kernel$fn(kernel, d2m_back)
+
+  (fwd - back) / (2 * diff)
+}
