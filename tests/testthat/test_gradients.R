@@ -11,8 +11,6 @@ inp_init <- inp_from_perp(perplexity = 20,
                           verbose = FALSE)
 inp_aw <- inp_from_perp(perplexity = 45,
               verbose = FALSE)
-opt <- gradient_descent()
-
 
 aw <- function(method) {
   lreplace(method,
@@ -22,7 +20,7 @@ aw <- function(method) {
 }
 
 gfd <- function(embedder, diff = 1e-4) {
-  gradient_fd(embedder$opt, embedder$inp, embedder$out, embedder$method, diff = diff)$gm
+  gradient_fd(embedder$inp, embedder$out, embedder$method, diff = diff)$gm
 }
 
 gan <- function(embedder) {
@@ -41,7 +39,7 @@ expect_grad <- function(method,
                          preprocess = preprocess,
                          init_inp = inp_init,
                          init_out = out_init,
-                         opt = opt)
+                         opt = gradient_descent())
   grad_fd <- gfd(embedder, diff = diff)
   grad_an <- gan(embedder)
 

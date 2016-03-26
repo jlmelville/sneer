@@ -174,7 +174,6 @@ gradient <- function(inp, out, method, mat_name = "ym") {
 #' Only intended for testing that analytical gradients have been calculated
 #' correctly.
 #'
-#' @param opt Optimizer.
 #' @param inp Input data.
 #' @param out Output data containing the desired position.
 #' @param method Embedding method.
@@ -183,7 +182,7 @@ gradient <- function(inp, out, method, mat_name = "ym") {
 #' @param diff Step size to take in finite difference calculation.
 #' @return List containing:
 #' \item{\code{gm}}{Gradient matrix.}
-gradient_fd <- function(opt, inp, out, method, mat_name = "ym", diff = 1e-4) {
+gradient_fd <- function(inp, out, method, mat_name = "ym", diff = 1e-4) {
   ym <- out[[mat_name]]
   nr <- nrow(ym)
   nc <- ncol(ym)

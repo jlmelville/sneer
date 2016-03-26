@@ -4,11 +4,9 @@
 \alias{gradient_fd}
 \title{Finite Difference Gradient Calculation}
 \usage{
-gradient_fd(opt, inp, out, method, mat_name = "ym", diff = 1e-04)
+gradient_fd(inp, out, method, mat_name = "ym", diff = 1e-04)
 }
 \arguments{
-\item{opt}{Optimizer.}
-
 \item{inp}{Input data.}
 
 \item{out}{Output data containing the desired position.}
