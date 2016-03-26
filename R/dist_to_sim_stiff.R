@@ -116,7 +116,7 @@ NULL
 #' updated, output data with all the matrices specified by \code{keep}
 #' added to it.
 #' @export
-update_out <- function(keep = c("qm")) {
+make_update_out <- function(keep = c("qm")) {
   function(inp, out, method) {
     res <- update_probs(out, method)
 

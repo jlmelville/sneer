@@ -71,7 +71,7 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       asne_stiffness(inp$pm, out$qm, beta = method$kernel$beta)
     },
-    update_out_fn = update_out(keep = c("qm")),
+    update_out_fn = make_update_out(keep = c("qm")),
     prob_type = "row",
     eps = eps)
 }
@@ -188,7 +188,7 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       tsne_stiffness(inp$pm, out$qm, out$wm)
     },
-    update_out_fn = update_out(keep = c("qm", "wm")))
+    update_out_fn = make_update_out(keep = c("qm", "wm")))
 }
 
 #' t-distributed Asymmetric Stochastic Neighbor Embedding (t-ASNE)
@@ -320,7 +320,7 @@ hssne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
       hssne_stiffness(inp$pm, out$qm, out$wm, alpha = method$kernel$alpha,
                       beta = method$kernel$beta)
     },
-    update_out_fn = update_out(keep = c("qm", "wm"))
+    update_out_fn = make_update_out(keep = c("qm", "wm"))
   )
 }
 
@@ -475,5 +475,5 @@ rtsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
       reverse_tsne_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
                              eps = method$eps)
     },
-    update_out_fn = update_out(keep = c("qm", "wm")))
+    update_out_fn = make_update_out(keep = c("qm", "wm")))
 }

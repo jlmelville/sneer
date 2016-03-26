@@ -50,7 +50,7 @@
 plugin <- function(cost = kl_fg(),
                    kernel = exp_kernel(),
                    stiffness_fn = plugin_stiffness,
-                   update_out_fn = update_out(keep = c("qm", "wm", "d2m")),
+                   update_out_fn = make_update_out(keep = c("qm", "wm", "d2m")),
                    inp_updated_fn = NULL,
                    out_updated_fn = NULL,
                    after_init_fn = NULL,
@@ -286,7 +286,7 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
 snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
   lreplace(
     nerv_plugin(lambda = lambda, eps = eps),
-    update_out_fn = update_out(keep = c("qm", "wm", "d2m", "qcm")),
+    update_out_fn = make_update_out(keep = c("qm", "wm", "d2m", "qcm")),
     prob_type = "joint"
   )
 }

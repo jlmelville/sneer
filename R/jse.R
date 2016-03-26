@@ -240,7 +240,7 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
                       kappa = method$cost$kappa, alpha = method$kernel$alpha,
                       beta = method$kernel$beta, eps = method$eps)
     },
-    update_out_fn = update_out(keep = c("qm", "wm"))
+    update_out_fn = make_update_out(keep = c("qm", "wm"))
   )
 }
 
@@ -456,7 +456,7 @@ jse_inp_update <- function(inp, out, method) {
   # The embedding routine always calls update_out_fn as part of initialization
   # so when the probabilities are created for the first time (which might be the
   # only time), this function gets called an extra time pointlessly. Oh well.
-  out <- method$update_out_fn(inp, out, method)
+  out <- update_out(inp, out, method)
   list(out = out)
 }
 

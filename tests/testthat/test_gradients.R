@@ -15,7 +15,7 @@ inp_aw <- inp_from_perp(perplexity = 45,
 aw <- function(method) {
   lreplace(method,
            inp_updated_fn = transfer_kernel_bandwidths,
-           update_out_fn = update_out(keep = c("qm", "wm", "d2m", "qcm"))
+           update_out_fn = make_update_out(keep = c("qm", "wm", "d2m", "qcm"))
 )
 }
 

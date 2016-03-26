@@ -472,7 +472,7 @@ init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
   method <- after_init_result$method
 
   # initialize matrices needed for gradient calculation
-  out <- method$update_out_fn(inp, out, method)
+  out <- update_out(inp, out, method)
 
   # reuse reports from old invocation of reporter, so we can use info
   # to determine whether to stop early (e.g. relative convergence tolerance)
@@ -506,5 +506,10 @@ set_solution <- function(inp, coords, method, mat_name = "ym",
     out <- list()
   }
   out[[mat_name]] <- coords
+  update_out(inp, out, method)
+}
+
+update_out <- function(inp, out, method) {
   method$update_out_fn(inp, out, method)
 }
+

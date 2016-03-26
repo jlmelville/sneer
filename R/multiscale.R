@@ -146,7 +146,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
         method$num_scales <- 0
         method$modify_kernel_fn <- modify_kernel_fn
         method$orig_kernel <- method$kernel
-        method$update_out_fn <- update_out_ms()
+        method$update_out_fn <- make_update_out_ms()
         method$stiffness_fn <- plugin_stiffness_ms
         method$out_updated_fn <- NULL
       }
@@ -445,7 +445,7 @@ plugin_stiffness_ms_joint <- function(method, inp, out) {
 #' @return The output update function which will be invoked as part of the
 #' embedding.
 #' @export
-update_out_ms <- function() {
+make_update_out_ms <- function() {
   function(inp, out, method) {
     out$d2m = coords_to_dist2(out$ym)
 

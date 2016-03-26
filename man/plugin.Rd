@@ -5,8 +5,8 @@
 \title{Factory Function Using the Plugin Gradient of Lee and co-workers}
 \usage{
 plugin(cost = kl_fg(), kernel = exp_kernel(),
-  stiffness_fn = plugin_stiffness, update_out_fn = update_out(keep = c("qm",
-  "wm", "d2m")), inp_updated_fn = NULL, out_updated_fn = NULL,
+  stiffness_fn = plugin_stiffness, update_out_fn = make_update_out(keep =
+  c("qm", "wm", "d2m")), inp_updated_fn = NULL, out_updated_fn = NULL,
   after_init_fn = NULL, prob_type = "joint", eps = .Machine$double.eps)
 }
 \arguments{
