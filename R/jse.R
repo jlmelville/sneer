@@ -79,12 +79,7 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                     beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqz_update,
-    inp_updated_fn = function(inp, out, method) {
-      # as we always explicitly invoke update_out_fn as part of initialization
-      # this runs twice during initialization, but oh well
-      out <- method$update_out_fn(inp, out, method)
-      list(out = out)
-    }
+    inp_updated_fn = jse_inp_update
   )
 }
 
@@ -442,6 +437,27 @@ jse_divergence <- function(pm, qm, zm = NULL, kappa = 0.5,
 #' @return Mixture matrix.
 js_mixture <- function(pm, qm, kappa = 0.5) {
   (kappa * pm) + ((1 - kappa) * qm)
+}
+
+#' Update JSE Output Data When Input Data Changes
+#'
+#' Because JSE explicitly couples the input data to the output data via the
+#' JS mixture matrix (\code{\link{js_mixture}}), whenever the input data
+#' changes, this function should be called.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return a list containing:
+#' \item{inp}{Updated input data.}
+#' \item{out}{Updated output data.}
+#' \item{method}{Updated embedding method.}
+jse_inp_update <- function(inp, out, method) {
+  # The embedding routine always calls update_out_fn as part of initialization
+  # so when the probabilities are created for the first time (which might be the
+  # only time), this function gets called an extra time pointlessly. Oh well.
+  out <- method$update_out_fn(inp, out, method)
+  list(out = out)
 }
 
 #' Updates the Kullback Leibler Divergence Q||Z

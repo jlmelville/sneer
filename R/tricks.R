@@ -125,17 +125,11 @@ early_exaggeration <- function(exaggeration = 4, off_iter = 50,
       dirty <- TRUE
     }
 
-    if (dirty && !is.null(method$inp_updated_fn)) {
-      update_result <- method$inp_updated_fn(inp, out, method)
-      if (!is.null(update_result$inp)) {
-        inp <- update_result$inp
-      }
-      if (!is.null(update_result$out)) {
-        out <- update_result$out
-      }
-      if (!is.null(update_result$method)) {
-        method <- update_result$method
-      }
+    if (dirty) {
+      upd_res <- inp_updated(inp, out, method)
+      inp <- upd_res$inp
+      out <- upd_res$out
+      method <- upd_res$method
     }
 
     list(inp = inp, out = out, method = method)

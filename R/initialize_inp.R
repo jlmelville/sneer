@@ -131,18 +131,10 @@ inp_prob <- function(input_initializer, init_only = TRUE) {
       }
       if (inp$dirty) {
         inp$pm <- handle_prob(inp$pm, method)
-          if (!is.null(method$inp_updated_fn)) {
-          update_result <- method$inp_updated_fn(inp, out, method)
-          if (!is.null(update_result$inp)) {
-            inp <- update_result$inp
-          }
-          if (!is.null(update_result$out)) {
-            out <- update_result$out
-          }
-          if (!is.null(update_result$method)) {
-            method <- update_result$method
-          }
-        }
+        update_res <- inp_updated(inp, out, method)
+        inp <- update_res$inp
+        out <- update_res$out
+        method <- update_res$method
 
         flush.console()
         # invalidate cached data (e.g. old costs) in optimizer
@@ -174,4 +166,40 @@ single_perplexity <- function(inp, perplexity = 30,
   }
   inp$dirty <- TRUE
   list(inp = inp)
+}
+
+
+#' Update Embedding Internals When Input Data Changes
+#'
+#' Called when the input data changes, normally when the input probability
+#' matrix is calculated. Some embedding method's output has an explicit
+#' dependency on such data: for example, the JSE (\code{\link{jse}}) cost
+#' function uses a mixture matrix of the input and output probability matrices.
+#'
+#' Normally this will only be called once when the input data is first
+#' initialized, but is using a technique where the input probabilities change,
+#' such as multiscaling, then this should be called every time such a change
+#' occurs.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return a list containing:
+#' \item{inp}{Updated input data.}
+#' \item{out}{Updated output data.}
+#' \item{method}{Updated embedding method.}
+inp_updated <- function(inp, out, method) {
+  if (!is.null(method$inp_updated_fn)) {
+    update_result <- method$inp_updated_fn(inp, out, method)
+    if (!is.null(update_result$inp)) {
+      inp <- update_result$inp
+    }
+    if (!is.null(update_result$out)) {
+      out <- update_result$out
+    }
+    if (!is.null(update_result$method)) {
+      method <- update_result$method
+    }
+  }
+  list(inp = inp, out = out, method = method)
 }
