@@ -7,9 +7,7 @@
 hssne_plugin(beta = 1, alpha = 0, eps = .Machine$double.eps)
 }
 \arguments{
-\item{beta}{The precision of the kernel similarity function. Becomes
-equivalent to the precision in the Gaussian distribution of distances as
-\code{alpha} approaches zero.}
+\item{beta}{The bandwidth of the kernel similarity function.}
 
 \item{alpha}{Tail heaviness of the kernel similarity function. Must be
 greater than zero. When set to a small value this method is equivalent to
@@ -48,7 +46,10 @@ Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne}}, \code{\link{tasne_plugin}},
   \code{\link{tasne}}, \code{\link{tnerv_plugin}},
   \code{\link{tnerv}}, \code{\link{tsne_plugin}},
-  \code{\link{tsne}}
+  \code{\link{tsne}}, \code{\link{uhsnerv_plugin}},
+  \code{\link{uhsnerv}}, \code{\link{unerv_plugin}},
+  \code{\link{unerv}}, \code{\link{usnerv_plugin}},
+  \code{\link{usnerv}}
 
 Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{hsjse_plugin}},
@@ -66,6 +67,9 @@ Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne_plugin}}, \code{\link{ssne}},
   \code{\link{tasne_plugin}}, \code{\link{tasne}},
   \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
-  \code{\link{tsne_plugin}}, \code{\link{tsne}}
+  \code{\link{tsne_plugin}}, \code{\link{tsne}},
+  \code{\link{uhsnerv_plugin}}, \code{\link{uhsnerv}},
+  \code{\link{unerv_plugin}}, \code{\link{unerv}},
+  \code{\link{usnerv_plugin}}, \code{\link{usnerv}}
 }
 

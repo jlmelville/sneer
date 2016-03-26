@@ -44,7 +44,7 @@ NULL
 #' }
 #'
 #' @param beta Precision parameter of the exponential similarity kernel
-#'  function.
+#'  function. This is usually left at its default value of 1.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
@@ -101,7 +101,7 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #' }
 #'
 #' @param beta Precision parameter of the exponential similarity kernel
-#'  function.
+#'  function. This is usually left at its default value of 1.
 #' @param eps Small floating point value used to prevent numerical problems,
 #'  e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
@@ -287,7 +287,8 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' SSNE. When set to one to one, this method behaves like t-SNE.
 #' @param beta The precision of the kernel similarity function. Becomes
 #' equivalent to the precision in the Gaussian distribution of distances as
-#' \code{alpha} approaches zero.
+#' \code{alpha} approaches zero. Leave at the default value of 1 if you want
+#' consistency with SSNE and ASNE.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.

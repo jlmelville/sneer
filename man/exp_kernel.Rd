@@ -7,7 +7,7 @@
 exp_kernel(beta = 1)
 }
 \arguments{
-\item{beta}{exponential parameter.}
+\item{beta}{Exponential parameter.}
 }
 \value{
 Exponential function and gradient.

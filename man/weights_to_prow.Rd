@@ -10,7 +10,8 @@ weights_to_prow(wm)
 \item{wm}{Matrix of weighted distances.}
 }
 \value{
-Row probability matrix.
+A list containing
+ \item{pm}{Row probability matrix.}
 }
 \description{
 Used in ASNE. The probability matrix is such that all elements are positive

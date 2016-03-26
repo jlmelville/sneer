@@ -11,12 +11,16 @@ asne_stiffness(pm, qm, beta = 1)
 
 \item{qm}{Output probabilty matrix.}
 
-\item{beta}{The precision of the weighting function.}
+\item{beta}{The precision of the weighting function. Usually left at the
+default value of 1.}
 }
 \value{
 Stiffness matrix.
 }
 \description{
-ASNE Stiffness Function
+The precision parameter \code{beta} is normally a scalar, but it can also
+work with a vector, as long as the length of the vector is equal to the
+number of rows  in the probability matrices. The \code{\link{nerv}} method
+makes use of this property.
 }
 

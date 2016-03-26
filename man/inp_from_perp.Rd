@@ -5,7 +5,7 @@
 \title{Input Probability Initialization By Bisection Search on Perplexity}
 \usage{
 inp_from_perp(perplexity = 30, input_weight_fn = exp_weight,
-  keep_all_results = FALSE, verbose = TRUE)
+  keep_all_results = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{perplexity}{Target perplexity value for the probability distributions.}
@@ -79,7 +79,7 @@ embed_prob(init_inp = inp_from_perp(perplexity = 30,
 \code{\link{embed_prob}} and \code{\link{embed_dist}} for more
   information on exporting initializer data.
 
-Other sneer input initializers: \code{\link{inp_multiscale}},
+Other sneer input initializers: \code{\link{inp_from_perps_multi}},
   \code{\link{inp_step_perp}},
   \code{\link{input_initializers}}
 }

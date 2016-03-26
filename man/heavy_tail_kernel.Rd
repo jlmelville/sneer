@@ -7,9 +7,9 @@
 heavy_tail_kernel(beta = 1, alpha = 0)
 }
 \arguments{
-\item{beta}{The precision of the function. Becomes equivalent to the
-precision in the Gaussian distribution of distances as \code{alpha}
-approaches zero.}
+\item{beta}{The bandwidth of the function. Becomes equivalent to the
+precision of the exponential distribution of squared distances as
+\code{alpha} approaches zero.}
 
 \item{alpha}{Tail heaviness. Must be greater than zero.}
 }

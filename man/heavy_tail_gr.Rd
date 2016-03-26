@@ -2,7 +2,7 @@
 % Please edit documentation in R/distance_weight.R
 \name{heavy_tail_gr}
 \alias{heavy_tail_gr}
-\title{Exponential Gradient}
+\title{Heavy Tail Kernel Gradient.}
 \usage{
 heavy_tail_gr(d2m, beta = 1, alpha = 1.5e-08)
 }
@@ -19,9 +19,6 @@ approaches zero.}
 Matrix containing the gradient (with respect to \code{d2m}).
 }
 \description{
-t-Distributed Kernel Gradient.
-}
-\details{
 Calculates the gradient of the Student-t distribution with one degree of
 freedom with respect to d2m, the matrix of squared distances.
 }

@@ -4,7 +4,7 @@
 \alias{hsnerv}
 \title{Heavy-tailed Symmetric Neighbor Retrieval Visualizer (HSNeRV)}
 \usage{
-hsnerv(lambda = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
+hsnerv(lambda = 0.5, alpha = 0, eps = .Machine$double.eps,
   verbose = TRUE)
 }
 \arguments{
@@ -16,10 +16,6 @@ hsnerv(lambda = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
 value this method is equivalent to SSNE or SNeRV (depending on the value
 of \code{lambda}. When set to one to one, this method behaves like
 t-SNE/t-NeRV.}
-
-\item{beta}{The precision of the function. Becomes equivalent to the
-precision in the Gaussian distribution of distances as \code{alpha}
-approaches zero.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
@@ -35,9 +31,12 @@ A probability-based embedding method.
 \details{
 HSNeRV is a hybrid of \code{\link{snerv}} and \code{\link{hssne}}. It has
 the \code{lambda} parameter of SNeRV, allowing for the control of precision
-versus recall, and the \code{alpha} and \code{beta} parameters of HSSNE which
-give the behavior of SSNE/SNeRV when \code{alpha} is close to zero,
-and of t-SNE/t-NeRV when \code{alpha = 1}.
+versus recall, and the \code{alpha} parameter of HSSNE which
+give the behavior of SNeRV when \code{alpha} is close to zero,
+and behavior somewhat like that of t-NeRV when \code{alpha = 1}.
+
+Like NeRV and SNeRV, the kernel bandwidth parameters are non-uniform and
+taken from the input data.
 
 The probability matrix used in HSNeRV:
 
@@ -59,17 +58,8 @@ If used in an embedding, the output data list will contain:
 }
 \examples{
 \dontrun{
-# equivalent to SSNE
-embed_prob(method = hsnerv(lambda = 1, alpha = 1.5e-8), ...)
-
-# equivalent to t-SNE
-embed_prob(method = hsnerv(lambda = 1, alpha = 1), ...)
-
 # equivalent to default SNeRV
 embed_prob(method = hsnerv(lambda = 0.5, alpha = 1.5e-8), ...)
-
-# equivalent to default t-NeRV
-embed_prob(method = hsnerv(lambda = 0.5, alpha = 1), ...)
 
 }
 }
@@ -108,7 +98,10 @@ Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne}}, \code{\link{tasne_plugin}},
   \code{\link{tasne}}, \code{\link{tnerv_plugin}},
   \code{\link{tnerv}}, \code{\link{tsne_plugin}},
-  \code{\link{tsne}}
+  \code{\link{tsne}}, \code{\link{uhsnerv_plugin}},
+  \code{\link{uhsnerv}}, \code{\link{unerv_plugin}},
+  \code{\link{unerv}}, \code{\link{usnerv_plugin}},
+  \code{\link{usnerv}}
 
 Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{hsjse_plugin}},
@@ -126,6 +119,9 @@ Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne_plugin}}, \code{\link{ssne}},
   \code{\link{tasne_plugin}}, \code{\link{tasne}},
   \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
-  \code{\link{tsne_plugin}}, \code{\link{tsne}}
+  \code{\link{tsne_plugin}}, \code{\link{tsne}},
+  \code{\link{uhsnerv_plugin}}, \code{\link{uhsnerv}},
+  \code{\link{unerv_plugin}}, \code{\link{unerv}},
+  \code{\link{usnerv_plugin}}, \code{\link{usnerv}}
 }
 

@@ -4,15 +4,12 @@
 \alias{nerv}
 \title{Neighbor Retrieval Visualizer (NeRV)}
 \usage{
-nerv(lambda = 0.5, beta = 1, eps = .Machine$double.eps, verbose = TRUE)
+nerv(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{lambda}{Weighting factor controlling the emphasis placed on precision
 (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 1, then the method is equivalent to ASNE. Must be a value between 0 and 1.}
-
-\item{beta}{Precision parameter of the exponential similarity kernel
-function.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
@@ -41,6 +38,20 @@ have been embedded as close neighbors, versus false negatives: pairs with a
 large distance in the output coordinates, but a high input probability, i.e.
 should have been embedded as close neighbors. From this perspective, ASNE
 is the equivalent of emphasising false positives over false negatives.
+
+Additionally, where ASNE uses an exponential function with a parameter set
+to 1 for all pairs of points for its output weighting function, NeRV uses
+the parameters calculated from the input probability matrix which can (and
+do) vary for each observation in the data set. For a more direct compairson
+with ASNE, use the uniform NeRV method \code{unerv} which uses one parameter
+for all weight generation in the output.
+
+The parameter associated with the exponential kernel is sometimes referred
+to as the "precision" in the literature (and in other parts of the help
+text). NeRV already uses the term "precision" as defined in terms of
+information retrieval, so when referring to the output weighting kernel
+function, what's called the "precision" in other parts of the documentation
+is just called the kernel parameter (or "bandwidth") when talking about NeRV.
 
 The probability matrix used in NeRV:
 
@@ -103,7 +114,10 @@ Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne}}, \code{\link{tasne_plugin}},
   \code{\link{tasne}}, \code{\link{tnerv_plugin}},
   \code{\link{tnerv}}, \code{\link{tsne_plugin}},
-  \code{\link{tsne}}
+  \code{\link{tsne}}, \code{\link{uhsnerv_plugin}},
+  \code{\link{uhsnerv}}, \code{\link{unerv_plugin}},
+  \code{\link{unerv}}, \code{\link{usnerv_plugin}},
+  \code{\link{usnerv}}
 
 Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{hsjse_plugin}},
@@ -121,6 +135,9 @@ Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne_plugin}}, \code{\link{ssne}},
   \code{\link{tasne_plugin}}, \code{\link{tasne}},
   \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
-  \code{\link{tsne_plugin}}, \code{\link{tsne}}
+  \code{\link{tsne_plugin}}, \code{\link{tsne}},
+  \code{\link{uhsnerv_plugin}}, \code{\link{uhsnerv}},
+  \code{\link{unerv_plugin}}, \code{\link{unerv}},
+  \code{\link{usnerv_plugin}}, \code{\link{usnerv}}
 }
 

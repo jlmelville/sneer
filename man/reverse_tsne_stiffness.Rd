@@ -4,8 +4,7 @@
 \alias{reverse_tsne_stiffness}
 \title{"Reverse" t-SNE Stiffness Function}
 \usage{
-reverse_tsne_stiffness(pm, qm, wm, rev_kl, beta = 1,
-  eps = .Machine$double.eps)
+reverse_tsne_stiffness(pm, qm, wm, rev_kl, eps = .Machine$double.eps)
 }
 \arguments{
 \item{pm}{Input joint probability matrix.}
@@ -15,8 +14,6 @@ reverse_tsne_stiffness(pm, qm, wm, rev_kl, beta = 1,
 \item{wm}{Output weight probability matrix.}
 
 \item{rev_kl}{"Reverse" KL divergence between \code{pm} and \code{qm}.}
-
-\item{beta}{The precision of the weighting function.}
 
 \item{eps}{Small floating point value used to avoid numerical problems.}
 }

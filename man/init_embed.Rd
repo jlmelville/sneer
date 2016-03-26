@@ -30,7 +30,7 @@ A list containing:
   \item{\code{out}}{Initialized output}
   \item{\code{method}}{Initialized embedding method}
   \item{\code{opt}}{Initialized optimizer}
-  \item{\code{opt}}{Initialized report}
+  \item{\code{report}}{Initialized report}
 }
 \description{
 Initializes all data, ready to be optimized.

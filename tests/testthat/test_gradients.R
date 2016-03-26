@@ -7,7 +7,19 @@ context("Gradients")
 preprocess <- make_preprocess(range_scale_matrix = TRUE,
                               verbose = FALSE)
 out_init <- out_from_PCA(verbose = FALSE)
+inp_init <- inp_from_perp(perplexity = 20,
+                          verbose = FALSE)
+inp_aw <- inp_from_perp(perplexity = 45,
+              verbose = FALSE)
 opt <- gradient_descent()
+
+
+aw <- function(method) {
+  lreplace(method,
+           inp_updated_fn = transfer_kernel_bandwidths,
+           update_out_fn = update_out(keep = c("qm", "wm", "d2m", "qcm"))
+)
+}
 
 gfd <- function(embedder, diff = 1e-4) {
   gradient_fd(embedder$opt, embedder$inp, embedder$out, embedder$method, diff = diff)$gm
@@ -22,6 +34,7 @@ expect_grad <- function(method,
                         info = label,
                         inp_init = inp_from_perp(perplexity = 20,
                                                  verbose = FALSE),
+                        diff = 1e-4,
                         tolerance = 1e-4) {
 
   embedder <- init_embed(iris[1:50, 1:4], method,
@@ -29,7 +42,7 @@ expect_grad <- function(method,
                          init_inp = inp_init,
                          init_out = out_init,
                          opt = opt)
-  grad_fd <- gfd(embedder)
+  grad_fd <- gfd(embedder, diff = diff)
   grad_an <- gan(embedder)
 
   expect_equal(grad_an, grad_fd, tolerance = 1e-4, label = label,
@@ -43,9 +56,9 @@ test_that("Distance gradients", {
 })
 
 test_that("SNE gradients", {
-  expect_grad(tsne(), label = "tsne")
-  expect_grad(ssne(), label = "ssne")
   expect_grad(asne(), label = "asne")
+  expect_grad(ssne(), label = "ssne")
+  expect_grad(tsne(), label = "tsne")
   expect_grad(tasne(), label = "tasne")
 })
 
@@ -59,10 +72,17 @@ test_that("Reverse SNE gradients", {
   expect_grad(rtsne(), label = "rtsne")
 })
 
+test_that("SNE gradients with asymmetric weights", {
+  expect_grad(aw(asne()), label = "asne-aw", inp_init = inp_aw)
+  expect_grad(aw(rasne()), label = "rasne-aw", inp_init = inp_aw)
+  expect_grad(aw(asne_plugin()), label = "plugin asne-aw", inp_init = inp_aw)
+  expect_grad(aw(rasne_plugin()), label = "plugin rasne-aw", inp_init = inp_aw)
+})
+
 test_that("NeRV gradients", {
-  expect_grad(nerv(), label = "nerv")
-  expect_grad(snerv(), label = "snerv")
-  expect_grad(hsnerv(), label = "hsnerv")
+  expect_grad(nerv(), label = "nerv", inp_init = inp_aw)
+  expect_grad(snerv(), label = "snerv", inp_init = inp_aw)
+  expect_grad(hsnerv(), label = "hsnerv", inp_init = inp_aw)
 })
 
 test_that("NeRV gradients with fixed (or no) bandwidth", {
@@ -79,26 +99,24 @@ test_that("JSE gradients", {
 })
 
 test_that("Plugin gradients", {
-  expect_grad(asne_plugin(), tolerance = 1e-5, label = "plugin asne")
-  expect_grad(ssne_plugin(), tolerance = 1e-5, label = "plugin ssne")
-  expect_grad(tsne_plugin(), tolerance = 1e-5, label = "plugin tsne")
-  expect_grad(hssne_plugin(), tolerance = 1e-5, label = "plugin hssne")
-  expect_grad(tasne_plugin(), tolerance = 1e-5, label = "plugin tasne")
+  expect_grad(asne_plugin(), label = "plugin asne")
+  expect_grad(ssne_plugin(), label = "plugin ssne")
+  expect_grad(tsne_plugin(), label = "plugin tsne")
+  expect_grad(hssne_plugin(), label = "plugin hssne")
+  expect_grad(tasne_plugin(), label = "plugin tasne")
 
-  expect_grad(rasne_plugin(), tolerance = 1e-5, label = "plugin rasne")
-  expect_grad(rssne_plugin(), tolerance = 1e-5, label = "plugin rssne")
-  expect_grad(rtsne_plugin(), tolerance = 1e-5, label = "plugin rtsne")
+  expect_grad(rasne_plugin(), label = "plugin rasne")
+  expect_grad(rssne_plugin(), label = "plugin rssne")
+  expect_grad(rtsne_plugin(), label = "plugin rtsne")
 
-  expect_grad(unerv_plugin(), tolerance = 1e-5, label = "plugin unerv")
-  expect_grad(usnerv_plugin(), tolerance = 1e-5, label = "plugin usnerv")
-  expect_grad(uhsnerv_plugin(), tolerance = 1e-5, label = "plugin uhsnerv")
-  expect_grad(tnerv_plugin(), tolerance = 1e-5, label = "plugin tnerv")
+  expect_grad(unerv_plugin(), label = "plugin unerv")
+  expect_grad(usnerv_plugin(), label = "plugin usnerv")
+  expect_grad(uhsnerv_plugin(), label = "plugin uhsnerv")
+  expect_grad(tnerv_plugin(), label = "plugin tnerv")
 
-  expect_grad(nerv_plugin(), tolerance = 1e-5, label = "plugin nerv")
-  expect_grad(snerv_plugin(), tolerance = 1e-5, label = "plugin snerv")
-  expect_grad(hsnerv_plugin(), tolerance = 1e-5, label = "plugin hsnerv")
+  expect_grad(nerv_plugin(), label = "plugin nerv")
 
-  expect_grad(jse_plugin(), tolerance = 1e-5, label = "plugin jse")
-  expect_grad(sjse_plugin(), tolerance = 1e-5, label = "plugin sjse")
-  expect_grad(hsjse_plugin(), tolerance = 1e-5, label = "plugin hsjse")
+  expect_grad(jse_plugin(), label = "plugin jse")
+  expect_grad(sjse_plugin(), label = "plugin sjse")
+  expect_grad(hsjse_plugin(), label = "plugin hsjse")
 })

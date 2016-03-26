@@ -4,12 +4,12 @@
 \alias{dist2_to_weights}
 \title{Create Weight Matrix from Squared Distances}
 \usage{
-dist2_to_weights(d2m, weight_fn)
+dist2_to_weights(d2m, kernel)
 }
 \arguments{
 \item{d2m}{Matrix of squared distances.}
 
-\item{weight_fn}{Function with signature \code{weight_fn(d2m)} where
+\item{kernel}{Function with signature \code{weight_fn(d2m)} where
 \code{d2m} is a matrix of squared distances.}
 }
 \value{

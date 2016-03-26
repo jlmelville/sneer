@@ -17,6 +17,9 @@ ssne_stiffness(pm, qm, beta = 1)
 Stiffness matrix.
 }
 \description{
-SSNE Stiffness Function
+The precision parameter \code{beta} is normally left at its default value of
+1. Note that unlike the \code{\link{asne_stiffness}} function, a vector of
+precisions can not be used as input to \code{beta}: an incorrect gradient
+will result.
 }
 

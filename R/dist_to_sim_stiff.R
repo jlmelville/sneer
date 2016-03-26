@@ -112,8 +112,9 @@ NULL
 #'  \item{\code{wm}}{Output weight matrix.}
 #'  \item{\code{qm}}{Output probability matrix.}
 #' }
-#' @return The output list, with all the matrices specified by \code{keep}
-#'   added to it.
+#' @return The output update function, which, when invoked will return the
+#' updated, output data with all the matrices specified by \code{keep}
+#' added to it.
 #' @export
 update_out <- function(keep = c("qm")) {
   function(inp, out, method) {
@@ -154,10 +155,13 @@ update_out <- function(keep = c("qm")) {
 #'  \item{\code{d2m}}{Matrix of squared distances.}
 #'  \item{\code{wm}}{Weight matrix.}
 #'  \item{\code{qm}}{Probability Matrix.}
+#'  \item{\code{qcm}}{Conditional Probability Matrix. Non-null only if an
+#'  asymmetric kernel is used and the embedding method uses a joint
+#'  probability matrix.}
 update_probs <- function(out, method, d2m = coords_to_dist2(out$ym)) {
   wm <- dist2_to_weights(d2m, method$kernel)
-  qm <- weights_to_probs(wm, method)
-  list(d2m = d2m, wm = wm, qm = qm)
+  res <- weights_to_probs(wm, method)
+  list(d2m = d2m, wm = wm, qm = res$pm, qcm = res$pcm)
 }
 
 #' Squared (Euclidean) Distance Matrix
@@ -208,9 +212,12 @@ dist2_to_weights <- function(d2m, kernel) {
 #'   \item{"asymm"}{An asymmetric matrix.}
 #'   }
 #' @param method Embedding method.
-#' @return Probability matrix with a type suitable for the embedding
-#'   \code{method}.
-# weights_to_probs_single <- function(wm, method) {
+#' @return List containing:
+#'  \item{\code{pm}}{Probability matrix of the type required by the embedding
+#'  method.}
+#'  \item{\code{pcm}}{Conditional Probability Matrix. Non-null only if an
+#'  asymmetric kernel is used and the embedding method uses a joint
+#'  probability matrix.}
 weights_to_probs <- function(wm, method) {
 
   prob_type <- method$prob_type
@@ -231,10 +238,13 @@ weights_to_probs <- function(wm, method) {
     stop("No ", prob_fn_name, " function defined for weight to probability ",
          "matrix conversion")
   }
-  pm <- get(prob_fn_name)(wm)
-  attr(pm, "type") <- prob_type
+  res <- get(prob_fn_name)(wm)
+  attr(res$pm, "type") <- prob_type
+  if (!is.null(res$pc)) {
+    attr(res$pc, "type") <- "cond"
+  }
 
-  pm
+  res
 }
 
 #' Create Row Probability Matrix from Weight Matrix
@@ -243,12 +253,14 @@ weights_to_probs <- function(wm, method) {
 #' and each row sums to 1.
 #'
 #' @param wm Matrix of weighted distances.
-#' @return Row probability matrix.
+#' @return A list containing
+#'  \item{pm}{Row probability matrix.}
 weights_to_prow <- function(wm) {
   row_sums <- apply(wm, 1, sum)
   pm <- sweep(wm, 1, row_sums, "/")
   pm[is.nan(pm)] <- 1 / ncol(pm)
   pm
+  list(pm = pm)
 }
 
 #' Create Conditional Probability Matrix from Weight Matrix
@@ -260,11 +272,13 @@ weights_to_prow <- function(wm) {
 #' or asymmetric.
 #'
 #' @param wm Matrix of weighted distances. Asymmetric or symmetric.
-#' @return Conditional probability matrix.
+#' @return A list containing
+#'  \item{pm}{Conditional probability matrix.}
 weights_to_pcond <- function(wm) {
   pm <- wm / sum(wm)
   pm[is.nan(pm)] <- 1 / (ncol(wm) ^ 2)
   pm
+  list(pm = pm)
 }
 
 #' Create Joint Probability Matrix from Symmetric Weight Matrix
@@ -276,7 +290,8 @@ weights_to_pcond <- function(wm) {
 #' in SSNE and t-SNE to generate the output probabilities.
 #'
 #' @param wm Symmetric matrix of weighted distances.
-#' @return Joint probability matrix.
+#' @return List containing:
+#' \item{pm}{Joint probability matrix.}
 symm_weights_to_pjoint <- weights_to_pcond
 
 #' Create Joint Probability Matrix from Asymmetric Weight Matrix
@@ -285,13 +300,22 @@ symm_weights_to_pjoint <- weights_to_pcond
 #'
 #' Creates a joint probability matrix: the grand sum of the elements are
 #' one, and the matrix is symmetric. The weight matrix should be asymmetric.
-#' A symmetric matrix is also a valid input, but it's more  efficient to use
+#' A symmetric matrix is also a valid input, but it's more efficient to use
 #' \code{symm_weights_to_pjoint}.
+#'
+#' The joint probability matrix is created by averaging \code{p[i, j]} and
+#' \code{p[j, i]} of the conditional probability matrix formed by normalizing
+#' the weights matrix over the sum of all elements.
 #'
 #' @param wm Asymmetric matrix of weighted distances.
 #' @return Joint probability matrix.
+#' @return List containing:
+#' \item{pm}{Joint probability matrix.}
+#' \item{pcm}{Conditional probability matrix}
 asymm_weights_to_pjoint <- function(wm) {
-  symmetrize_matrix(weights_to_pcond(wm))
+  pcm <- weights_to_pcond(wm)$pm
+  pm <- symmetrize_matrix(pcm)
+  list(pm = pm, pcm = pcm)
 }
 
 #' Convert Row Probability Matrix to a Conditional Probability Matrix

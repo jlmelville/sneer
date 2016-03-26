@@ -8,7 +8,7 @@ asne(beta = 1, eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{beta}{Precision parameter of the exponential similarity kernel
-function.}
+function. This is usually left at its default value of 1.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
@@ -80,7 +80,10 @@ Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne_plugin}}, \code{\link{ssne}},
   \code{\link{tasne_plugin}}, \code{\link{tasne}},
   \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
-  \code{\link{tsne_plugin}}, \code{\link{tsne}}
+  \code{\link{tsne_plugin}}, \code{\link{tsne}},
+  \code{\link{uhsnerv_plugin}}, \code{\link{uhsnerv}},
+  \code{\link{unerv_plugin}}, \code{\link{unerv}},
+  \code{\link{usnerv_plugin}}, \code{\link{usnerv}}
 
 Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{hsjse_plugin}}, \code{\link{hsjse}},
@@ -98,6 +101,9 @@ Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne_plugin}}, \code{\link{ssne}},
   \code{\link{tasne_plugin}}, \code{\link{tasne}},
   \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
-  \code{\link{tsne_plugin}}, \code{\link{tsne}}
+  \code{\link{tsne_plugin}}, \code{\link{tsne}},
+  \code{\link{uhsnerv_plugin}}, \code{\link{uhsnerv}},
+  \code{\link{unerv_plugin}}, \code{\link{unerv}},
+  \code{\link{usnerv_plugin}}, \code{\link{usnerv}}
 }
 

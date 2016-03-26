@@ -5,9 +5,15 @@
 
 #' ASNE Stiffness Function
 #'
+#' The precision parameter \code{beta} is normally a scalar, but it can also
+#' work with a vector, as long as the length of the vector is equal to the
+#' number of rows  in the probability matrices. The \code{\link{nerv}} method
+#' makes use of this property.
+#'
 #' @param pm Input probability matrix.
 #' @param qm Output probabilty matrix.
-#' @param beta The precision of the weighting function.
+#' @param beta The precision of the weighting function. Usually left at the
+#' default value of 1.
 #' @return Stiffness matrix.
 asne_stiffness <- function(pm, qm, beta = 1) {
   km <- beta * (pm - qm)
@@ -15,6 +21,11 @@ asne_stiffness <- function(pm, qm, beta = 1) {
 }
 
 #' SSNE Stiffness Function
+#'
+#' The precision parameter \code{beta} is normally left at its default value of
+#' 1. Note that unlike the \code{\link{asne_stiffness}} function, a vector of
+#' precisions can not be used as input to \code{beta}: an incorrect gradient
+#' will result.
 #'
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.
@@ -47,6 +58,10 @@ tasne_stiffness <- function(pm, qm, wm) {
 
 #' HSSNE Stiffness Function
 #'
+#' Note that unlike the \code{\link{asne_stiffness}} function, a vector of
+#' precisions can not be used as input to \code{beta}: an incorrect gradient
+#' will result.
+#'
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.
 #' @param wm Output weight probability matrix.
@@ -61,6 +76,11 @@ hssne_stiffness <- function(pm, qm, wm, alpha = 1.5e-8, beta = 1) {
 #'
 #' Uses the exponential weighting function for similarities, but the
 #' "reverse" Kullback-Leibler divergence as the cost function.
+#'
+#' The precision parameter \code{beta} is normally a scalar, but it can also
+#' work with a vector, as long as the length of the vector is equal to the
+#' number of rows  in the probability matrices. The \code{\link{nerv}} method
+#' makes use of this property.
 #'
 #' @param pm Input probability matrix.
 #' @param qm Output probabilty matrix.
@@ -78,6 +98,11 @@ reverse_asne_stiffness <- function(pm, qm, rev_kl, beta = 1,
 #'
 #' Uses the exponential weighting function for similarities, but the
 #' "reverse" Kullback-Leibler divergence as the cost function.
+#'
+#' The precision parameter \code{beta} is normally left at its default value of
+#' 1. Note that unlike the \code{\link{reverse_asne_stiffness}} function, a
+#' vector of precisions can not be used as input to \code{beta}: an incorrect
+#' gradient will result.
 #'
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.
@@ -107,6 +132,11 @@ reverse_tsne_stiffness <- function(pm, qm, wm, rev_kl,
 }
 
 #' "Reverse" HSSNE Stiffness Function
+#'
+#' The precision parameter \code{beta} is normally left at its default value of
+#' 1. Note that unlike the \code{\link{reverse_asne_stiffness}} function, a
+#' vector of precisions can not be used as input to \code{beta}: an incorrect
+#' gradient will result.
 #'
 #' @param pm Input joint probability matrix.
 #' @param qm Output joint probabilty matrix.

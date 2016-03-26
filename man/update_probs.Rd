@@ -4,21 +4,39 @@
 \alias{update_probs}
 \title{Update Output Probabilities}
 \usage{
-update_probs(out, method)
+update_probs(out, method, d2m = coords_to_dist2(out$ym))
 }
 \arguments{
 \item{out}{Output data.}
 
 \item{method}{Embedding method.}
+
+\item{d2m}{Optional squared distance matrix, if the same embedding
+coordinate configuration is to be used for multiple weight or probability
+calculations.}
 }
 \value{
 List containing:
  \item{\code{d2m}}{Matrix of squared distances.}
  \item{\code{wm}}{Weight matrix.}
  \item{\code{qm}}{Probability Matrix.}
+ \item{\code{qcm}}{Conditional Probability Matrix. Non-null only if an
+ asymmetric kernel is used and the embedding method uses a joint
+ probability matrix.}
 }
 \description{
+Calculates the output probabilities based on the current embedding
+coordinates.
+}
+\details{
 Intermediate data (squared distance matrix and weight matrix) may be useful
 in calculating the gradient, so is also returned from this function.
+
+Some embedding techniques (e.g. multiscale perplexity approaches) calculate
+the output probabilities from multiple values based using several different
+similarity kernels to produce different weight matrices. The squared distance
+matrix is the same in all cases, so it can be calculated once and then passed
+to this function as an optional parameter, avoiding recalculating multiple
+times.
 }
 

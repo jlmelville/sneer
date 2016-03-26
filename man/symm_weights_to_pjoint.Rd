@@ -10,7 +10,8 @@ symm_weights_to_pjoint(wm)
 \item{wm}{Symmetric matrix of weighted distances.}
 }
 \value{
-Joint probability matrix.
+List containing:
+\item{pm}{Joint probability matrix.}
 }
 \description{
 A weight to probability function.

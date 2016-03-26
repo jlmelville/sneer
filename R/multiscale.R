@@ -67,18 +67,20 @@
 #' matrix. The original weight function is stored as
 #' \code{method$orig_weight_fn}.
 #'
-#' @param num_scale_iters Number of iterations for the perplexity of the input
-#' probability to change from the largest to the smallest value.
-#' @param multiscale_out_fn Factory function to create an output function
-#'  appropriate for each scale. See the Details section.
+#' @param perplexities List of perplexities to use. If not provided, then
+#'   ten equally spaced perplexities will be used, starting at half the size
+#'   of the dataset, and ending at 32.
 #' @param input_weight_fn Weighting function for distances. It should have the
-#'   signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix
-#'   of squared distances and \code{beta} is a real-valued scalar parameter
-#'   which will be varied as part of the search to produce the desired
-#'   \code{perplexity}. The function should return a matrix of weights
-#'   corresponding to the transformed squared distances passed in as arguments.
-#' @param scales list of perplexities to scale over. If not provided, a series
-#'  of decreasing perplexities is used. See the Details section.
+#'  signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix
+#'  of squared distances and \code{beta} is a real-valued scalar parameter
+#'  which will be varied as part of the search to produce the desired
+#'  perplexity. The function should return a matrix of weights
+#'  corresponding to the transformed squared distances passed in as arguments.
+#' @param num_scale_iters Number of iterations for the perplexity of the input
+#'  probability to change from the start perplexity to the end perplexity.
+#' @param modify_kernel_fn Function to create a new similarity kernel based
+#'  on the new perplexity. Will be called every time a new input probability
+#'  matrix is generated. See the details section for more.
 #' @param verbose If \code{TRUE} print message about tricks during the
 #' embedding.
 #' @return Input initializer for use by an embedding function.
@@ -323,6 +325,15 @@ inp_step_perp <- function(perplexities = NULL,
 
 #' Factory function which creates an output weight function for a given input
 #' perplexity, in the context of multiscale embedding.
+#'
+#' @param inp Input data.
+#' @param method Embedding method.
+#' @param opt Optimizer.
+#' @param iter Current iteration.
+#' @param perp Perplexity of the input probability.
+#' @param out Output data.
+#' @param verbose If \code{TRUE} print message about tricks during the
+#' embedding.
 #' @family sneer kernel modifiers
 scale_prec_to_perp <- function(inp, method, opt, iter, perp, out,
                            verbose = TRUE) {
@@ -340,6 +351,14 @@ scale_prec_to_perp <- function(inp, method, opt, iter, perp, out,
 }
 
 #' Multiscale Plugin Stiffness
+#'
+#' Calculates the stiffness matrix of an embedding method using the multiscale
+#' plugin gradient formulation.
+#'
+#' @param method Embedding method.
+#' @param inp Input data.
+#' @param out Output data.
+#' @return Stiffness matrix.
 plugin_stiffness_ms <- function(method, inp, out) {
   prob_type <- method$prob_type
   if (is.null(prob_type)) {
@@ -354,6 +373,14 @@ plugin_stiffness_ms <- function(method, inp, out) {
 }
 
 #' Multiscale Plugin Stiffness for Row Probability
+#'
+#' Calculates the multiscale stiffness matrix for row probability based
+#' embedding methods.
+#'
+#' @param method Embedding method.
+#' @param inp Input data.
+#' @param out Output data.
+#' @return Stiffness matrix.
 plugin_stiffness_ms_row <- function(method, inp, out) {
   cm_grad <- method$cost$gr(inp, out, method)
 
@@ -376,6 +403,14 @@ plugin_stiffness_ms_row <- function(method, inp, out) {
 }
 
 #' Multiscale Plugin Stiffness for Joint Probability
+#'
+#' Calculates the multiscale stiffness matrix for joint probability based
+#' embedding methods.
+#'
+#' @param method Embedding method.
+#' @param inp Input data.
+#' @param out Output data.
+#' @return Stiffness matrix.
 plugin_stiffness_ms_joint <- function(method, inp, out) {
   cm_grad <- method$cost$gr(inp, out, method)
 
@@ -396,6 +431,20 @@ plugin_stiffness_ms_joint <- function(method, inp, out) {
 }
 
 #' Output Update Factory Function for Multiscale Probability
+#'
+#' In a multiscale embedding, the distance matrix is calculated once
+#' when the coordinates change, and then multiple similarity kernels
+#' are used to produce multiple weights matrices. These in turn
+#' create multiple probability matrices, which are averaged to create
+#' the final probability matrix.
+#'
+#' The weights and probabilities associated with the lth kernel is stored on
+#' the \code{wms[[l]]} and \code{qms[[l]]} list on \code{out}. The averaged
+#' probability matrix is stored as \code{out$qm} as usual.
+#'
+#' @return The output update function which will be invoked as part of the
+#' embedding.
+#' @export
 update_out_ms <- function() {
   function(inp, out, method) {
     out$d2m = coords_to_dist2(out$ym)

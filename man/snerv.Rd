@@ -4,15 +4,12 @@
 \alias{snerv}
 \title{Symmetric Neighbor Retrieval Visualizer (SNeRV)}
 \usage{
-snerv(lambda = 0.5, beta = 1, eps = .Machine$double.eps, verbose = TRUE)
+snerv(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{lambda}{Weighting factor controlling the emphasis placed on precision
 (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.}
-
-\item{beta}{Precision parameter of the exponential similarity kernel
-function.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
@@ -28,10 +25,13 @@ A probability-based embedding method.
 \details{
 SNeRV is a "symmetric" variant of \code{\link{nerv}}. Rather than use the
 conditional point-based probabilities of \code{\link{asne}}, it uses the
-joint pair-based probabilities of \code{\link{ssne}}. Empirically, this seems
-to provides better convergence behavior when the \code{lambda} parameter is
-set to small values. When \code{lambda = 1}, this method is equivalent to
-SSNE.
+joint pair-based probabilities of \code{\link{ssne}}. However, it uses a
+non-uniform exponential kernel in its output space (the bandwidth parameter
+\code{beta} is allowed to vary per point by using the value calculated
+from the input data). As a result, there is an extra step required to
+produce the joint probability output: like the input probability matrix,
+the joint probabilities are generated from the conditional probabilities by
+averaging \code{q[i, j]} and \code{q[j, i]}.
 
 The probability matrix used in SNeRV:
 
@@ -53,25 +53,13 @@ If used in an embedding, the output data list will contain:
 \examples{
 \dontrun{
 # default SNeRV settings
-embed_prob(method = snerv(lambda = 0.5), ...)
-
-# equivalent to SSNE
-embed_prob(method = snerv(lambda = 1), ...)
-
-# puts an emphasis on only keeping true neighbors close together
-# tends to produce a larger number of small, tight clusters
-embed_prob(method = snerv(lambda = 0), ...)
+embed_prob(method = usnerv(lambda = 0.5), ...)
 }
 }
 \references{
 Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
 Information retrieval perspective to nonlinear dimensionality reduction for
 data visualization.
-
-Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
-Heavy-tailed symmetric stochastic neighbor embedding.
-In \emph{Advances in neural information processing systems} (pp. 2169-2177).
-\emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
 }
 \seealso{
 SNeRV uses the \code{\link{nerv_cost}} cost function and the
@@ -97,7 +85,10 @@ Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne}}, \code{\link{tasne_plugin}},
   \code{\link{tasne}}, \code{\link{tnerv_plugin}},
   \code{\link{tnerv}}, \code{\link{tsne_plugin}},
-  \code{\link{tsne}}
+  \code{\link{tsne}}, \code{\link{uhsnerv_plugin}},
+  \code{\link{uhsnerv}}, \code{\link{unerv_plugin}},
+  \code{\link{unerv}}, \code{\link{usnerv_plugin}},
+  \code{\link{usnerv}}
 
 Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{hsjse_plugin}},
@@ -115,6 +106,9 @@ Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne}}, \code{\link{tasne_plugin}},
   \code{\link{tasne}}, \code{\link{tnerv_plugin}},
   \code{\link{tnerv}}, \code{\link{tsne_plugin}},
-  \code{\link{tsne}}
+  \code{\link{tsne}}, \code{\link{uhsnerv_plugin}},
+  \code{\link{uhsnerv}}, \code{\link{unerv_plugin}},
+  \code{\link{unerv}}, \code{\link{usnerv_plugin}},
+  \code{\link{usnerv}}
 }
 

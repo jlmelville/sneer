@@ -4,15 +4,11 @@
 \alias{nerv_plugin}
 \title{An implementation of NeRV using the plugin gradient.}
 \usage{
-nerv_plugin(beta = 1, lambda = 0.5, eps = .Machine$double.eps)
+nerv_plugin(lambda = 0.5, eps = .Machine$double.eps)
 }
 \arguments{
-\item{beta}{Precision parameter of the exponential similarity kernel
-function.}
-
 \item{lambda}{Weighting factor controlling the emphasis placed on precision
-(set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-1, then the method is equivalent to ASNE. Must be a value between 0 and 1.}
+(set \code{lambda} to 0), versus recall (set \code{lambda} to 1).}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
@@ -44,7 +40,10 @@ Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne}}, \code{\link{tasne_plugin}},
   \code{\link{tasne}}, \code{\link{tnerv_plugin}},
   \code{\link{tnerv}}, \code{\link{tsne_plugin}},
-  \code{\link{tsne}}
+  \code{\link{tsne}}, \code{\link{uhsnerv_plugin}},
+  \code{\link{uhsnerv}}, \code{\link{unerv_plugin}},
+  \code{\link{unerv}}, \code{\link{usnerv_plugin}},
+  \code{\link{usnerv}}
 
 Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{hsjse_plugin}},
@@ -62,6 +61,9 @@ Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne_plugin}}, \code{\link{ssne}},
   \code{\link{tasne_plugin}}, \code{\link{tasne}},
   \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
-  \code{\link{tsne_plugin}}, \code{\link{tsne}}
+  \code{\link{tsne_plugin}}, \code{\link{tsne}},
+  \code{\link{uhsnerv_plugin}}, \code{\link{uhsnerv}},
+  \code{\link{unerv_plugin}}, \code{\link{unerv}},
+  \code{\link{usnerv_plugin}}, \code{\link{usnerv}}
 }
 

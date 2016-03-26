@@ -4,7 +4,7 @@
 \alias{tasne_stiffness}
 \title{t-ASNE Stiffness Function}
 \usage{
-tasne_stiffness(pm, qm, wm, beta = 1)
+tasne_stiffness(pm, qm, wm)
 }
 \arguments{
 \item{pm}{Input probability matrix.}
@@ -12,8 +12,6 @@ tasne_stiffness(pm, qm, wm, beta = 1)
 \item{qm}{Output probabilty matrix.}
 
 \item{wm}{Output weight probability matrix.}
-
-\item{beta}{The precision of the weighting function.}
 }
 \value{
 Stiffness matrix.

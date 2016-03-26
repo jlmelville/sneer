@@ -4,8 +4,7 @@
 \alias{tnerv_stiffness}
 \title{t-NeRV Stiffness Function}
 \usage{
-tnerv_stiffness(pm, qm, wm, rev_kl, lambda = 0.5, beta = 1,
-  eps = .Machine$double.eps)
+tnerv_stiffness(pm, qm, wm, rev_kl, lambda = 0.5, eps = .Machine$double.eps)
 }
 \arguments{
 \item{pm}{Input joint probability matrix.}
@@ -18,8 +17,6 @@ tnerv_stiffness(pm, qm, wm, rev_kl, lambda = 0.5, beta = 1,
 
 \item{lambda}{NeRV weighting factor controlling the emphasis placed on
 precision versus recall.}
-
-\item{beta}{Precision of the weighting function.}
 
 \item{eps}{Small floating point value used to avoid numerical problems.}
 }

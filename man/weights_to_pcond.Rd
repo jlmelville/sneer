@@ -10,7 +10,8 @@ weights_to_pcond(wm)
 \item{wm}{Matrix of weighted distances. Asymmetric or symmetric.}
 }
 \value{
-Conditional probability matrix.
+A list containing
+ \item{pm}{Conditional probability matrix.}
 }
 \description{
 A weight to probability function.

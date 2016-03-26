@@ -17,8 +17,12 @@ following values:
 \item{method}{Embedding method.}
 }
 \value{
-Probability matrix with a type suitable for the embedding
-  \code{method}.
+List containing:
+ \item{\code{pm}}{Probability matrix of the type required by the embedding
+ method.}
+ \item{\code{pcm}}{Conditional Probability Matrix. Non-null only if an
+ asymmetric kernel is used and the embedding method uses a joint
+ probability matrix.}
 }
 \description{
 Given a weight matrix and an embedding method, this function creates a

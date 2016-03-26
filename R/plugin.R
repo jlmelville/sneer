@@ -27,6 +27,9 @@
 #' @param kernel Similarity kernel for weight generation.
 #' @param stiffness_fn Stiffness function appropriate for a plugin.
 #' @param update_out_fn Function to run when embedding coordinates are updated.
+#' @param inp_updated_fn Optional custom function to run when the input data
+#' changes (e.g. if input perplexities have changed).
+#'  \code{update_out_fn} runs.
 #' @param out_updated_fn Optional custom function to run after
 #'  \code{update_out_fn} runs.
 #' @param prob_type Type of probability matrix used by the probability matrix,
@@ -73,7 +76,7 @@ plugin <- function(cost = kl_fg(),
 #'
 #' An implementation of ASNE using the plugin gradient.
 #'
-#' @param beta Precision parameter of the exponential similarity kernel
+#' @param beta Bandwidth parameter of the exponential similarity kernel
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
@@ -98,7 +101,7 @@ asne_plugin <- function(beta = 1, eps = .Machine$double.eps) {
 #'
 #' An implementation of SSNE using the plugin gradient.
 #'
-#' @param beta Precision parameter of the exponential similarity kernel
+#' @param beta Bandwidth parameter of the exponential similarity kernel
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
@@ -145,9 +148,7 @@ tsne_plugin <- function(eps = .Machine$double.eps) {
 #' @param alpha Tail heaviness of the kernel similarity function. Must be
 #' greater than zero. When set to a small value this method is equivalent to
 #' SSNE. When set to one to one, this method behaves like t-SNE.
-#' @param beta The precision of the kernel similarity function. Becomes
-#' equivalent to the precision in the Gaussian distribution of distances as
-#' \code{alpha} approaches zero.
+#' @param beta The bandwidth of the kernel similarity function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return An embedding method for use by an embedding function.
@@ -190,7 +191,7 @@ tasne_plugin <- function(eps = .Machine$double.eps) {
 #'
 #' An implementation of RASNE using the plugin gradient.
 #'
-#' @param beta Precision parameter of the exponential similarity kernel
+#' @param beta Bandwidth of the exponential similarity kernel
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
@@ -210,8 +211,7 @@ rasne_plugin <- function(beta = 1, eps = .Machine$double.eps) {
 
 #' An implementation of RSSNE using the plugin gradient.
 #'
-#' @param beta Precision parameter of the exponential similarity kernel
-#'  function.
+#' @param beta Bandwidth of the exponential similarity kernel function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return An embedding method for use by an embedding function.
@@ -251,8 +251,7 @@ rtsne_plugin <- function(eps = .Machine$double.eps) {
 #' An implementation of NeRV using the plugin gradient.
 #'
 #' @param lambda Weighting factor controlling the emphasis placed on precision
-#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#'   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
+#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1).
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return An embedding method for use by an embedding function.
@@ -266,7 +265,7 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
     asne_plugin(eps = eps),
     cost = nerv_fg(lambda = lambda),
     kernel = exp_kernel(),
-    inp_updated_fn = transfer_kernel_betas,
+    inp_updated_fn = transfer_kernel_bandwidths,
     out_updated_fn = klqp_update
   )
 }
@@ -274,8 +273,8 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
 #' An implementation of SNeRV using the plugin gradient.
 #'
 #' @param lambda Weighting factor controlling the emphasis placed on precision
-#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#'   1, then the method is equivalent to SSNE. Must be a value between 0 and 1.
+#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1).
+#'   Must be a value between 0 and 1.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
 #' @return An embedding method for use by an embedding function.
@@ -287,6 +286,7 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
 snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
   lreplace(
     nerv_plugin(lambda = lambda, eps = eps),
+    update_out_fn = update_out(keep = c("qm", "wm", "d2m", "qcm")),
     prob_type = "joint"
   )
 }
@@ -294,8 +294,8 @@ snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
 #' An implementation of HSNeRV using the plugin gradient.
 #'
 #' @param lambda Weighting factor controlling the emphasis placed on precision
-#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#'   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
+#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). Must be
+#'   a value between 0 and 1.
 #' @param alpha Tail heaviness. Must be greater than zero. When set to a small
 #'   value this method is equivalent to SSNE or SNeRV (depending on the value
 #'   of \code{lambda}. When set to one to one, this method behaves like
@@ -337,6 +337,19 @@ tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
 }
 
 #' An implementation of UNeRV using the plugin gradient.
+#'
+#' @param lambda Weighting factor controlling the emphasis placed on precision
+#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
+#'   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
+#' @param beta Bandwidth of the exponential similarity kernel function.
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @return An embedding method for use by an embedding function.
+#' @seealso \code{\link{unerv}} should give equivalent results, but is probably
+#' a bit more efficient.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
 unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
   lreplace(
     asne_plugin(beta = beta, eps = eps),
@@ -347,6 +360,19 @@ unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
 }
 
 #' An implementation of USNeRV using the plugin gradient.
+#'
+#' @param lambda Weighting factor controlling the emphasis placed on precision
+#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1).
+#'   Must be a value between 0 and 1.
+#' @param beta Bandwidth of the exponential similarity kernel function.
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @return An embedding method for use by an embedding function.
+#' @seealso \code{\link{usnerv}} should give equivalent results, but is probably
+#' a bit more efficient.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
 usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
   lreplace(
     unerv_plugin(lambda = lambda, beta = beta, eps = eps),
@@ -355,6 +381,22 @@ usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
 }
 
 #' An implementation of UHSNeRV using the plugin gradient.
+#'
+#' @param lambda Weighting factor controlling the emphasis placed on precision
+#'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). Must be
+#'   a value between 0 and 1.
+#' @param beta The bandwidth of the kernel similarity function.
+#' @param alpha Tail heaviness of the kernel similarity function. Must be
+#' greater than zero. When set to a small value this method is equivalent to
+#' SSNE. When set to one to one, this method behaves like t-SNE.
+#' @param eps Small floating point value used to prevent numerical problems,
+#' e.g. in gradients and cost functions.
+#' @return An embedding method for use by an embedding function.
+#' @seealso \code{\link{uhsnerv}} should give equivalent results, but is probably
+#' a bit more efficient.
+#' @export
+#' @family sneer embedding methods
+#' @family sneer probability embedding methods
 uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
                            eps = .Machine$double.eps) {
   lreplace(
@@ -367,7 +409,7 @@ uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
 #'
 #' @param kappa Mixture parameter. If set to 0, then JSE behaves like ASNE. If
 #'  set to 1, then JSE behaves like RASNE.
-#' @param beta Precision parameter of the exponential similarity kernel
+#' @param beta Bandwidth parameter of the exponential similarity kernel
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
@@ -393,7 +435,7 @@ jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
 #'
 #' @param kappa Mixture parameter. If set to 0, then JSE behaves like SSNE. If
 #'  set to 1, then JSE behaves like RSSNE.
-#' @param beta Precision parameter of the exponential similarity kernel
+#' @param beta Bandwidth parameter of the exponential similarity kernel
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
@@ -414,7 +456,7 @@ sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
 #'
 #' @param kappa Mixture parameter. If set to 0, then JSE behaves like SSNE. If
 #'  set to 1, then JSE behaves like RSSNE.
-#' @param beta Precision parameter of the exponential similarity kernel
+#' @param beta Bandwidth parameter of the exponential similarity kernel
 #'  function.
 #' @param alpha Tail heaviness of the weighting function.
 #' @param eps Small floating point value used to prevent numerical problems,
@@ -444,10 +486,18 @@ hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
 #' @return Stiffness matrix.
 plugin_stiffness <- function(method, inp, out) {
   prob_type <- method$prob_type
-  if (is.null(prob_type)) {
-    stop("Embedding method must have a prob type")
+
+  if (prob_type == "joint") {
+    weight_type <- attr(method$kernel$fn, "type")
+    if (is.null(weight_type)) {
+      stop("Kernel function must have type attribute defined")
+    }
+    fn_name <- paste0("plugin_stiffness_", weight_type, "_", prob_type)
   }
-  fn_name <- paste0('plugin_stiffness_', prob_type)
+  else {
+    fn_name <- paste0('plugin_stiffness_', prob_type)
+  }
+
   stiffness_fn <- get(fn_name)
   if (is.null(stiffness_fn)) {
     stop("Unable to find plugin stiffness function for ", prob_type)
@@ -483,11 +533,28 @@ plugin_stiffness_row <- function(method, inp, out) {
 #' @param out Output data.
 #' @param method Embedding method.
 #' @return Stiffness matrix.
-plugin_stiffness_joint <- function(method, inp, out) {
+plugin_stiffness_symm_joint <- function(method, inp, out) {
   wm_sum <- sum(out$wm)
   dc_dq <- method$cost$gr(inp, out, method)
   dw_du <- method$kernel$gr(method$kernel, out$d2m)
   km <- (sum(dc_dq * out$qm) - dc_dq) * (-dw_du / wm_sum)
+  2 * (km + t(km))
+}
+
+#' Plugin Stiffness for Symmetrized Joint Probabilities
+#'
+#' Calculates the stiffness matrix for joint probability based embedding
+#' methods using an asymmetric similarity kernel.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Stiffness matrix.
+plugin_stiffness_asymm_joint <- function(method, inp, out) {
+  wm_sum <- sum(out$wm)
+  dc_dq <- method$cost$gr(inp, out, method)
+  dw_du <- method$kernel$gr(method$kernel, out$d2m)
+  km <- (sum(dc_dq * out$qcm) - dc_dq) * (-dw_du / wm_sum)
   2 * (km + t(km))
 }
 

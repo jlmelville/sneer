@@ -45,7 +45,7 @@ asne_iris <- embed_prob(iris[, 1:4],
                        opt = bold_nag(max_momentum = 0.85))
 expect_equal(asne_iris$report$norm, 0.08479, tolerance = 5e-6, scale = 1)
 
-pca_iris <- embed_prob(iris[, 1:4],
+tsne_iris <- embed_prob(iris[, 1:4],
                       method = tsne(verbose = FALSE),
                       init_inp = inp_from_perp(
                           perplexity = 25,
@@ -57,7 +57,22 @@ pca_iris <- embed_prob(iris[, 1:4],
                       reporter = make_reporter(report_every = 1,
                                                verbose = FALSE),
                       export = c("report"))
-expect_equal(pca_iris$report$cost, 1.598, tolerance = 5e-4, scale = 1)
+expect_equal(tsne_iris$report$cost, 1.598, tolerance = 5e-4, scale = 1)
+
+tasne_iris <- embed_prob(iris[, 1:4],
+                       method = tasne(verbose = FALSE),
+                       init_inp = inp_from_perp(
+                         perplexity = 25,
+                         input_weight_fn = sqrt_exp_weight,
+                         verbose = FALSE),
+                       preprocess = make_preprocess(range_scale_matrix = TRUE,
+                                                    verbose = FALSE),
+                       max_iter = 0, verbose = FALSE,
+                       reporter = make_reporter(report_every = 1,
+                                                verbose = FALSE),
+                       export = c("report"))
+expect_equal(tasne_iris$report$norm, 0.931, tolerance = 5e-4, scale = 1)
+
 
 context("Jacobs")
 tsne_iris_jacobs <- embed_prob(iris[, 1:4],
@@ -83,7 +98,6 @@ jacobs_costs <- tsne_iris_jacobs$report$costs[,"cost"]
 expect_equal(jacobs_costs,  c(1.598, 1.594, 1.589, 1.584, 1.577, 1.57, 1.562,
                               1.553, 1.543, 1.532, 1.52),
              tolerance = 5e-4, scale = 1)
-
 
 test_that("different beta gives different results", {
   ssne_iris <- embed_prob(iris[, 1:4],

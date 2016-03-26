@@ -15,8 +15,9 @@ update_out(keep = c("qm"))
 }}
 }
 \value{
-The output list, with all the matrices specified by \code{keep}
-  added to it.
+The output update function, which, when invoked will return the
+updated, output data with all the matrices specified by \code{keep}
+added to it.
 }
 \description{
 Embedding methods can specify which of the three matrices created as

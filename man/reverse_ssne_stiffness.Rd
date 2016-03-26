@@ -24,4 +24,10 @@ Stiffness matrix.
 Uses the exponential weighting function for similarities, but the
 "reverse" Kullback-Leibler divergence as the cost function.
 }
+\details{
+The precision parameter \code{beta} is normally left at its default value of
+1. Note that unlike the \code{\link{reverse_asne_stiffness}} function, a
+vector of precisions can not be used as input to \code{beta}: an incorrect
+gradient will result.
+}
 

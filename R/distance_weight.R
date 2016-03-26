@@ -124,7 +124,7 @@ attr(heavy_tail_weight, "type") <- "symm"
 #'
 #' Creates a list implementing the exponential kernel function and gradient.
 #'
-#' @param beta exponential parameter.
+#' @param beta Exponential parameter.
 #' @return Exponential function and gradient.
 #' @family sneer similiarity kernels
 #' @export
@@ -132,22 +132,24 @@ exp_kernel <- function(beta = 1) {
   fn <- function(kernel, d2m) {
     exp_weight(d2m, beta = kernel$beta)
   }
-  # if we use a vector of betas we assume the contents are all different
-  # and hence will result in an asymmetric W matrix
-  if (length(beta) > 1) {
-    attr(fn, "type") <- "asymm"
-  }
-  else {
-    attr(fn, "type") <- "symm"
-  }
 
-  list(
+  kernel <- list(
     fn = fn,
     gr = function(kernel, d2m) {
       exp_gr(d2m, beta = kernel$beta)
     },
+    check_symmetry = function(kernel) {
+      if (length(kernel$beta) > 1) {
+        attr(kernel$fn, "type") <- "asymm"
+      }
+      else {
+        attr(kernel$fn, "type") <- "symm"
+      }
+      kernel
+    },
     beta = beta
   )
+  check_symmetry(kernel)
 }
 
 #' Exponential Gradient
@@ -207,9 +209,9 @@ tdist_gr <- function(d2m) {
 #' Creates a list implementing a heavy tailed (compared to an exponential)
 #' function and gradient.
 #'
-#' @param beta The precision of the function. Becomes equivalent to the
-#' precision in the Gaussian distribution of distances as \code{alpha}
-#' approaches zero.
+#' @param beta The bandwidth of the function. Becomes equivalent to the
+#' precision of the exponential distribution of squared distances as
+#' \code{alpha} approaches zero.
 #' @param alpha Tail heaviness. Must be greater than zero.
 #' @return Heavy tailed function and gradient.
 #' @family sneer similiarity kernels
@@ -218,26 +220,29 @@ heavy_tail_kernel <- function(beta = 1, alpha = 0) {
   fn <- function(kernel, d2m) {
     heavy_tail_weight(d2m, beta = kernel$beta, alpha = kernel$alpha)
   }
-  if (length(beta) > 1 || length(alpha) > 1) {
-    attr(fn, "type") <- "asymm"
-  }
-  else {
-    attr(fn, "type") <- "symm"
-  }
 
-  list(
+  kernel <- list(
     fn = fn,
     gr = function(kernel, d2m) {
       heavy_tail_gr(d2m, beta = kernel$beta, alpha = kernel$alpha)
     },
     beta = beta,
-    alpha = clamp(alpha, sqrt(.Machine$double.eps))
+    alpha = clamp(alpha, sqrt(.Machine$double.eps)),
+    check_symmetry = function(kernel) {
+      if (length(kernel$beta) > 1 || length(kernel$alpha) > 1) {
+        attr(kernel$fn, "type") <- "asymm"
+      }
+      else {
+        attr(kernel$fn, "type") <- "symm"
+      }
+      kernel
+    }
   )
+  kernel <- check_symmetry(kernel)
+  kernel
 }
 
-#' Exponential Gradient
-#'
-#' t-Distributed Kernel Gradient.
+#' Heavy Tail Kernel Gradient.
 #'
 #' Calculates the gradient of the Student-t distribution with one degree of
 #' freedom with respect to d2m, the matrix of squared distances.
@@ -269,4 +274,21 @@ kernel_gr_fd <- function(kernel, d2m, diff = 1e-4) {
   back <- kernel$fn(kernel, d2m_back)
 
   (fwd - back) / (2 * diff)
+}
+
+#' Ensure the Kernel has the Correct Symmetry
+#'
+#' This function should be called when the parameters of a kernel (e.g.
+#' the beta parameter of the exponential) are changed from a scalar to
+#' a vector or (vice versa). Such a change may result in the symmetry of
+#' the kernel changing from asymmetric to symmetric (and vice versa again).
+#'
+#' @param kernel A similarity kernel.
+#' @return Kernel with the type attribute of the function correctly set for
+#' its parameters.
+check_symmetry <- function(kernel) {
+  if (!is.null(kernel$check_symmetry)) {
+    kernel <- kernel$check_symmetry(kernel)
+  }
+  kernel
 }

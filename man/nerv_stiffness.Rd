@@ -17,7 +17,7 @@ nerv_stiffness(pm, qm, rev_kl, lambda = 0.5, beta = 1,
 \item{lambda}{NeRV weighting factor controlling the emphasis placed on
 precision versus recall.}
 
-\item{beta}{Precision of the weighting function.}
+\item{beta}{Bandwidth of the weighting function.}
 
 \item{eps}{Small floating point value used to avoid numerical problems.}
 }

@@ -4,17 +4,12 @@
 \alias{hsnerv_plugin}
 \title{An implementation of HSNeRV using the plugin gradient.}
 \usage{
-hsnerv_plugin(lambda = 0.5, beta = 1, alpha = 0,
-  eps = .Machine$double.eps)
+hsnerv_plugin(lambda = 0.5, alpha = 0, eps = .Machine$double.eps)
 }
 \arguments{
 \item{lambda}{Weighting factor controlling the emphasis placed on precision
-(set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.}
-
-\item{beta}{The precision of the function. Becomes equivalent to the
-precision in the Gaussian distribution of distances as \code{alpha}
-approaches zero.}
+(set \code{lambda} to 0), versus recall (set \code{lambda} to 1). Must be
+a value between 0 and 1.}
 
 \item{alpha}{Tail heaviness. Must be greater than zero. When set to a small
 value this method is equivalent to SSNE or SNeRV (depending on the value
@@ -51,7 +46,10 @@ Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne}}, \code{\link{tasne_plugin}},
   \code{\link{tasne}}, \code{\link{tnerv_plugin}},
   \code{\link{tnerv}}, \code{\link{tsne_plugin}},
-  \code{\link{tsne}}
+  \code{\link{tsne}}, \code{\link{uhsnerv_plugin}},
+  \code{\link{uhsnerv}}, \code{\link{unerv_plugin}},
+  \code{\link{unerv}}, \code{\link{usnerv_plugin}},
+  \code{\link{usnerv}}
 
 Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{hsjse_plugin}},
@@ -69,6 +67,9 @@ Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne_plugin}}, \code{\link{ssne}},
   \code{\link{tasne_plugin}}, \code{\link{tasne}},
   \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
-  \code{\link{tsne_plugin}}, \code{\link{tsne}}
+  \code{\link{tsne_plugin}}, \code{\link{tsne}},
+  \code{\link{uhsnerv_plugin}}, \code{\link{uhsnerv}},
+  \code{\link{unerv_plugin}}, \code{\link{unerv}},
+  \code{\link{usnerv_plugin}}, \code{\link{usnerv}}
 }
 

@@ -6,8 +6,8 @@
 \usage{
 plugin(cost = kl_fg(), kernel = exp_kernel(),
   stiffness_fn = plugin_stiffness, update_out_fn = update_out(keep = c("qm",
-  "wm", "d2m")), out_updated_fn = NULL, prob_type = "joint",
-  after_init_fn = NULL, eps = .Machine$double.eps)
+  "wm", "d2m")), inp_updated_fn = NULL, out_updated_fn = NULL,
+  after_init_fn = NULL, prob_type = "joint", eps = .Machine$double.eps)
 }
 \arguments{
 \item{cost}{Cost for this embedding method.}
@@ -18,14 +18,18 @@ plugin(cost = kl_fg(), kernel = exp_kernel(),
 
 \item{update_out_fn}{Function to run when embedding coordinates are updated.}
 
+\item{inp_updated_fn}{Optional custom function to run when the input data
+changes (e.g. if input perplexities have changed).
+ \code{update_out_fn} runs.}
+
 \item{out_updated_fn}{Optional custom function to run after
 \code{update_out_fn} runs.}
 
-\item{prob_type}{Type of probability matrix used by the probability matrix,
-e.g. "joint" or "row".}
-
 \item{after_init_fn}{Optional function to run after initialization has
 occurred.}
+
+\item{prob_type}{Type of probability matrix used by the probability matrix,
+e.g. "joint" or "row".}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
@@ -80,7 +84,10 @@ Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne}}, \code{\link{tasne_plugin}},
   \code{\link{tasne}}, \code{\link{tnerv_plugin}},
   \code{\link{tnerv}}, \code{\link{tsne_plugin}},
-  \code{\link{tsne}}
+  \code{\link{tsne}}, \code{\link{uhsnerv_plugin}},
+  \code{\link{uhsnerv}}, \code{\link{unerv_plugin}},
+  \code{\link{unerv}}, \code{\link{usnerv_plugin}},
+  \code{\link{usnerv}}
 
 Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{hsjse_plugin}},
@@ -98,6 +105,9 @@ Other sneer probability embedding methods: \code{\link{asne_plugin}},
   \code{\link{ssne_plugin}}, \code{\link{ssne}},
   \code{\link{tasne_plugin}}, \code{\link{tasne}},
   \code{\link{tnerv_plugin}}, \code{\link{tnerv}},
-  \code{\link{tsne_plugin}}, \code{\link{tsne}}
+  \code{\link{tsne_plugin}}, \code{\link{tsne}},
+  \code{\link{uhsnerv_plugin}}, \code{\link{uhsnerv}},
+  \code{\link{unerv_plugin}}, \code{\link{unerv}},
+  \code{\link{usnerv_plugin}}, \code{\link{usnerv}}
 }
 

@@ -11,6 +11,10 @@ asymm_weights_to_pjoint(wm)
 }
 \value{
 Joint probability matrix.
+
+List containing:
+\item{pm}{Joint probability matrix.}
+\item{pcm}{Conditional probability matrix}
 }
 \description{
 A weight to probability function.
@@ -18,7 +22,11 @@ A weight to probability function.
 \details{
 Creates a joint probability matrix: the grand sum of the elements are
 one, and the matrix is symmetric. The weight matrix should be asymmetric.
-A symmetric matrix is also a valid input, but it's more  efficient to use
+A symmetric matrix is also a valid input, but it's more efficient to use
 \code{symm_weights_to_pjoint}.
+
+The joint probability matrix is created by averaging \code{p[i, j]} and
+\code{p[j, i]} of the conditional probability matrix formed by normalizing
+the weights matrix over the sum of all elements.
 }
 
