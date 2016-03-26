@@ -3,7 +3,7 @@ make_phi_alpha <- function(opt, inp, out, method, iter, pm) {
   y0 <- out0[[opt$mat_name]]
   function(alpha, calc_gradient = FALSE) {
     y_alpha <- y0 + (alpha * pm)
-    out_alpha <- set_solution(opt, inp, y_alpha, method)
+    out_alpha <- set_solution(inp, y_alpha, method)
     f <- method$cost$fn(inp, out_alpha, method)
 
     step <- list(

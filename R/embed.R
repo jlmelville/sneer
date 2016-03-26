@@ -487,3 +487,24 @@ init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
   )
 }
 
+#' Set Output Data Coordinates
+#'
+#' This function sets the embedded coordinates in the output data, as well as
+#' recalculating any auxiliary output data that is dependent on the coordinates
+#' (e.g. distances and probabilities)
+#'
+#' @param inp Input data.
+#' @param coords Matrix of coordinates.
+#' @param method Embedding method.
+#' @param mat_name Name of the \code{out} entry to store \code{coords} in.
+#'  Defaults to \code{ym}.
+#' @param out Existing output data. Optional.
+#' @return \code{out} list with updated with coords and auxiliary data.
+set_solution <- function(inp, coords, method, mat_name = "ym",
+                         out = NULL) {
+  if (is.null(out)) {
+    out <- list()
+  }
+  out[[mat_name]] <- coords
+  method$update_out_fn(inp, out, method)
+}

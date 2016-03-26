@@ -173,7 +173,7 @@ make_optim_g <- function(opt, inp, method, iter) {
 #' @return Output data with coordinates converted from \code{par}.
 par_to_out <- function(par, opt, inp, method, nrow) {
   ym <- matrix(par, nrow = nrow)
-  set_solution(opt, inp, ym, method)
+  set_solution(inp, ym, method, mat_name = opt$mat_name)
 }
 
 #' Convert Matrix to 1D Parameter Vector

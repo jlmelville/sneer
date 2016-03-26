@@ -628,27 +628,7 @@ optimize_step <- function(opt, method, inp, out, iter) {
 update_solution <- function(opt, inp, out, method) {
   new_out <- out
   new_solution <- new_out[[opt$mat_name]] + opt$update$value
-  set_solution(opt, inp, new_solution, method, out)
-}
-
-#' Set Output Data Coordinates
-#'
-#' This function sets the embedded coordinates in the output data, as well as
-#' recalculating any auxiliary output data that is dependent on the coordinates
-#' (e.g. distances and probabilities)
-#'
-#' @param opt Optimizer.
-#' @param inp Input data.
-#' @param coords Matrix of coordinates.
-#' @param method Embedding method.
-#' @param out Existing output data. Optional.
-#' @return \code{out} list with updated with coords and auxiliary data.
-set_solution <- function(opt, inp, coords, method, out = NULL) {
-  if (is.null(out)) {
-    out <- list()
-  }
-  out[[opt$mat_name]] <- coords
-  method$update_out_fn(inp, out, method)
+  set_solution(inp, new_solution, method, mat_name = opt$mat_name, out = out)
 }
 
 #' Cost Validation
