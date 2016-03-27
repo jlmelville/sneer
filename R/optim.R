@@ -682,13 +682,13 @@ cost_validate <- function(opt, inp, out, proposed_out, method, iter) {
   if (opt$old_cost_dirty) {
     # might have to also re-evaluate other matrices
     out <- update_out(inp, out, method)
-    opt$old_cost <- method$cost$fn(inp, out, method)
+    opt$old_cost <- calculate_cost(method, inp, out)
     opt$old_cost_dirty <- FALSE
   }
   old_cost <- opt$old_cost
 
   if (is.null(opt$cost_iter) || opt$cost_iter != iter) {
-    opt$cost <- method$cost$fn(inp, proposed_out, method)
+    opt$cost <- calculate_cost(method, inp, proposed_out)
     opt$cost_iter <- iter
   }
   cost <- opt$cost

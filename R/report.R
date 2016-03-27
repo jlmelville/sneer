@@ -119,8 +119,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
   reporter <- list()
 
   reporter$cost_log <- function(iter, inp, out, method, opt, result) {
-    cost <- method$cost$fn(inp, out, method)
-
+    cost <- calculate_cost(method, inp, out)
     if (normalize_cost) {
       norm_fn <- make_normalized_cost_fn(method$cost$fn)
       norm_cost <- norm_fn(inp, out, method)

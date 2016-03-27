@@ -242,27 +242,35 @@ cost_gradient_fd <- function(inp, out, method, diff = 1e-4) {
   grad <- matrix(0, nrow = nr, ncol = nc)
   for (i in 1:nr) {
     for (j in 1:nc) {
-      # if (i != j) {
-        old <- qm[i, j]
-        qm[i, j] <- old - diff
-        out$qm <- qm
-        if (!is.null(method$out_updated_fn)) {
-          out <- method$out_updated_fn(inp, out, method)
-        }
-        cost_back <- method$cost$fn(inp, out, method)
-
-        qm[i, j] <- old + diff
-        out$qm <- qm
-        if (!is.null(method$out_updated_fn)) {
-          out <- method$out_updated_fn(inp, out, method)
-        }
-        cost_fwd <- method$cost$fn(inp, out, method)
-
-        fd <- (cost_fwd - cost_back) / (2 * diff)
-        grad[i, j] <- fd
+      old <- qm[i, j]
+      qm[i, j] <- old - diff
+      out$qm <- qm
+      if (!is.null(method$out_updated_fn)) {
+        out <- method$out_updated_fn(inp, out, method)
       }
-    # }
+      cost_back <- calculate_cost(method, inp, out)
+
+      qm[i, j] <- old + diff
+      out$qm <- qm
+      if (!is.null(method$out_updated_fn)) {
+        out <- method$out_updated_fn(inp, out, method)
+      }
+      cost_fwd <- calculate_cost(method, inp, out)
+
+      fd <- (cost_fwd - cost_back) / (2 * diff)
+      grad[i, j] <- fd
+    }
   }
   grad
 }
 
+
+#' Evaluate Cost Function
+#'
+#' @param method Embedding method containing a cost function.
+#' @param inp Input data.
+#' @param out Output data.
+#' @return Scalar cost function value.
+calculate_cost <- function(method, inp, out) {
+  method$cost$fn(inp, out, method)
+}

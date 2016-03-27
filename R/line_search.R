@@ -4,7 +4,7 @@ make_phi_alpha <- function(opt, inp, out, method, iter, pm) {
   function(alpha, calc_gradient = FALSE) {
     y_alpha <- y0 + (alpha * pm)
     out_alpha <- set_solution(inp, y_alpha, method)
-    f <- method$cost$fn(inp, out_alpha, method)
+    f <- calculate_cost(method, inp, out_alpha)
 
     step <- list(
       alpha = alpha,
