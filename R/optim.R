@@ -587,10 +587,8 @@ optimize_step <- function(opt, method, inp, out, iter) {
   # or out in a trick can dirty the gradient.
   if (ok) {
     new_out <- proposed_out
-    new_out$dirty <- TRUE
   } else {
     new_out <- out
-    new_out$dirty <- FALSE
   }
 
   if (!is.null(opt$after_step)) {

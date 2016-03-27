@@ -135,7 +135,7 @@ inp_prob <- function(input_initializer, init_only = TRUE) {
         inp <- update_res$inp
         out <- update_res$out
         method <- update_res$method
-
+        out$dirty <- TRUE
         flush.console()
         # invalidate cached data (e.g. old costs) in optimizer
         opt$old_cost_dirty <- TRUE

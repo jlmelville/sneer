@@ -349,6 +349,8 @@ embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
       opt <- tricks_result$opt
     }
 
+    out <- update_out_if_necessary(inp, out, method)
+
     if (!is.null(reporter)) {
       report <- reporter(iter, inp, out, method, opt, report)
       if (report$stop_early) {
@@ -509,7 +511,66 @@ set_solution <- function(inp, coords, method, mat_name = "ym",
   update_out(inp, out, method)
 }
 
+#' Check if Output Data Needs Updating
+#'
+#' When the coordinates of an embedding are updated via
+#' \code{\link{set_solution}}, the other matrices and values that depend on
+#' those coordinates should be updated automatically. If a change has occurred
+#' to another part of the embedding data (most likely the input probabilities,
+#' or the output kernel parameters), then you may need to call this function to
+#' see if the output data needs updating before calculating the cost or
+#' gradient.
+#'
+#' @param out Output data.
+#' @return \code{TRUE} if the output data matrices need updating.
+should_update <- function(out) {
+  !is.null(out$dirty) && out$dirty
+}
+
+#' Mark Output Data as Up to Date
+#'
+#' This function should be called when the output data has just been updated.
+#' Some parts of the code will avoid unnecessarily repeating the update, but
+#' only if they can detect that there's no change to make.
+#'
+#' @param out Output data.
+#' @return Output data, now marked as being up to date.
+undirty <- function(out) {
+  out$dirty <- FALSE
+  out
+}
+
+#' Update if Something Has Changed
+#'
+#' This function calls \code{\link{update_out}} only if it detects that there
+#' are changes that needs to be made.
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return (Possible) updated output data. Otherwise, \code{out} is returned
+#' unchanged.
+update_out_if_necessary <- function(inp, out, method) {
+  if (should_update(out)) {
+    out <- update_out(inp, out, method)
+  }
+  out
+}
+
+#' Update Output Data
+#'
+#' Updates the output data (matrices dependent on the embedding coordinates,
+#' such as the distance matrix, weight matrix, output probability matrix).
+#'
+#' @param inp Input data.
+#' @param out Output data.
+#' @param method Embedding method.
+#' @return Updated output data.
 update_out <- function(inp, out, method) {
-  method$update_out_fn(inp, out, method)
+  if (!is.null(method$update_out_fn)) {
+    out <- method$update_out_fn(inp, out, method)
+    out <- undirty(out)
+  }
+  out
 }
 

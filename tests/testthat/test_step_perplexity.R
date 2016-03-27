@@ -44,8 +44,8 @@ test_that("use default kernel adjustment, results should be different", {
   )
   expect_equal(ssne_iris$report$costs[,"norm"],
                c(0.9291,  0.9261,  0.9219,  0.9171,  0.9119, # perp 75
-                 0.9359,  0.9028,  0.8968,  0.8907,  0.8843, # perp 50
-                 0.9208,  0.8475,  0.8399,  0.8321,  0.8243, # perp 25
+                 0.9085,  0.9028,  0.8968,  0.8907,  0.8843, # perp 50
+                 0.8550,  0.8475,  0.8399,  0.8321,  0.8243, # perp 25
                  0.8164,  0.8084,  0.8003,  0.7921,  0.784,  0.7757),
                tolerance = 5e-4, scale = 1)
 })

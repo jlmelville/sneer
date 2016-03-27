@@ -78,8 +78,7 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
       jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
                     beta = method$kernel$beta, eps = method$eps)
     },
-    out_updated_fn = klqz_update,
-    inp_updated_fn = jse_inp_update
+    out_updated_fn = klqz_update
   )
 }
 
