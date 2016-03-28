@@ -5,10 +5,9 @@ context("MDS")
 # formatC(smacof::mds(dist(iris[, 1:4]), init = prcomp(iris[, 1:4],
 #         center = TRUE, retx = TRUE)$x[, 1:2], eps = 1.5e-8)$stress)
 # = "0.03272" - close enough
-# on this occasion, turning off linear weighting works better
 mds_iris <- embed_dist(iris[, 1:4],
                        method = mmds(),
-                       opt = bold_nag(linear_weight = FALSE),
+                       opt = bold_nag_adapt(),
                        reporter = make_reporter(
                          extra_costs = c("kruskal_stress"), verbose = FALSE),
                        export = c("report"), verbose = FALSE, max_iter = 40)
@@ -34,3 +33,13 @@ sammon_iris <- embed_dist(iris[c(1:142, 144:150), 1:4],
                           reporter = make_reporter(verbose = FALSE),
                           export = c("report"), verbose = FALSE, max_iter = 40)
 expect_equal(sammon_iris$report$cost, 0.00396, tolerance = 1e-4, scale = 1)
+
+# Nothing to compare the SSTRESS version with, so just characterise it
+smds_iris <- embed_dist(iris[, 1:4],
+                       method = smmds(),
+                       opt = bold_nag_adapt(),
+                       reporter = make_reporter(
+                         extra_costs = c("kruskal_stress"), verbose = FALSE),
+                       export = c("report"), verbose = FALSE, max_iter = 30)
+expect_equal(smds_iris$report$kruskal_stress, 0.0364, tolerance = 1e-4,
+             scale = 1)

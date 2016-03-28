@@ -265,7 +265,10 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
     asne_plugin(eps = eps),
     cost = nerv_fg(lambda = lambda),
     kernel = exp_kernel(),
-    inp_updated_fn = transfer_kernel_bandwidths,
+    inp_updated_fn = function(inp, out, method) {
+      method$kernel <- transfer_kernel_bandwidths(inp, out, method)
+      list(method = method)
+    },
     out_updated_fn = klqp_update
   )
 }

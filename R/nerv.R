@@ -88,7 +88,10 @@ nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
       nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
                      beta = method$kernel$beta, eps = method$eps)
     },
-    inp_updated_fn = transfer_kernel_bandwidths,
+    inp_updated_fn = function(inp, out, method) {
+      method$kernel <- transfer_kernel_bandwidths(inp, out, method)
+      list(method = method)
+    },
     out_updated_fn = klqp_update
   )
 }
@@ -707,12 +710,12 @@ reverse_kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
 #' @param inp Input data.
 #' @param out Output data.
 #' @param method Embedding method.
-#' @return List containing the updated method.
+#' @return Updated kernel.
 #' @family sneer kernel modifiers
 transfer_kernel_bandwidths <- function(inp, out, method) {
   method$kernel$beta <- inp$beta
   method$kernel <- check_symmetry(method$kernel)
-  list(method = method)
+  method$kernel
 }
 
 #' Updates the Kullback Leibler Divergence.

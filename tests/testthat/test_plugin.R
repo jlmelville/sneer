@@ -14,7 +14,7 @@ embed_with <- function(method) {
              reporter = make_reporter(verbose = FALSE),
              export = c("report"),
              verbose = FALSE,
-             opt = bold_nag())
+             opt = bold_nag_adapt())
 }
 
 expect_plugin_equal <- function(method_name, tolerance = .Machine$double.eps) {
@@ -30,10 +30,12 @@ expect_plugin_equal <- function(method_name, tolerance = .Machine$double.eps) {
 }
 
 expect_same_method <- function(method1, method2,
-                               tolerance = .Machine$double.eps, info = NULL) {
+                               tolerance = .Machine$double.eps, info = NULL,
+                               scale = 1) {
   embed1 <- embed_with(method1)
   embed2 <- embed_with(method2)
-  expect_equal(embed1$cost, embed2$cost, tolerance = tolerance, info = info)
+  expect_equal(embed1$cost, embed2$cost, tolerance = tolerance, info = info,
+               scale = 1)
 }
 
 expect_plugin_equal("asne", tolerance = 1e-5)

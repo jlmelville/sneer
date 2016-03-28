@@ -128,7 +128,6 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 ssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
-    kernel = exp_kernel(beta = beta),
     stiffness_fn = function(method, inp, out) {
       ssne_stiffness(inp$pm, out$qm, beta = method$kernel$beta)
     },

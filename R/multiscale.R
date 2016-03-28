@@ -144,11 +144,16 @@ inp_from_perps_multi <- function(perplexities = NULL,
                   " values, calculating every ~", round(step_every), " iters")
         }
         method$num_scales <- 0
-        method$modify_kernel_fn <- modify_kernel_fn
+        if (!is.null(modify_kernel_fn)) {
+          method$inp_updated_fn <- function(inp, out, method) {
+            kernel <- modify_kernel_fn(inp, out, method)
+            method$kernels[[method$num_scales]] <- kernel
+            list(method = method)
+          }
+        }
         method$orig_kernel <- method$kernel
         method$update_out_fn <- make_update_out_ms()
         method$stiffness_fn <- plugin_stiffness_ms
-        method$out_updated_fn <- NULL
       }
       while (method$num_scales * step_every <= iter
              && method$num_scales < max_scales) {
@@ -160,14 +165,13 @@ inp_from_perps_multi <- function(perplexities = NULL,
           message("Iter: ", iter, " setting perplexity to ", formatC(perp))
         }
 
-        if (!is.null(method$modify_kernel_fn)) {
-          method$kernels[[method$num_scales]] <-
-            method$modify_kernel_fn(inp, method, opt, iter, perp, out, verbose)
-        }
 
         inp <- single_perplexity(inp, perplexity = perp,
                                  input_weight_fn = input_weight_fn,
                                  verbose = verbose)$inp
+
+        inp$perp <- perp
+
 
         # initialize or update the running total and mean of
         # pms for each perplexity
@@ -265,7 +269,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
 #' @export
 inp_step_perp <- function(perplexities = NULL,
                           input_weight_fn = exp_weight,
-                          num_scale_iters = NULL,
+                          num_scale_iters = 20,
                           modify_kernel_fn = scale_prec_to_perp,
                           verbose = TRUE) {
   inp_prob(
@@ -273,7 +277,7 @@ inp_step_perp <- function(perplexities = NULL,
 
       if (is.null(perplexities)) {
           max_scales <- 10
-          max_perp <- nrow(out$ym / 2)
+          max_perp <- nrow(out$ym) / 2
           min_perp <- 32
           if (nrow(out$ym) < min_perp) {
             min_perp <- 2
@@ -293,7 +297,12 @@ inp_step_perp <- function(perplexities = NULL,
                   " values, calculating every ~", round(step_every), " iters")
         }
         method$num_scales <- 0
-        method$modify_kernel_fn <- modify_kernel_fn
+        if (!is.null(modify_kernel_fn)) {
+          method$inp_updated_fn <- function(inp, out, method) {
+            method$kernel <- modify_kernel_fn(inp, out, method)
+            list(method = method)
+          }
+        }
         method$orig_kernel <- method$kernel
       }
 
@@ -308,14 +317,10 @@ inp_step_perp <- function(perplexities = NULL,
                   " setting perplexity to ", formatC(perp))
         }
 
-        if (!is.null(method$modify_kernel_fn)) {
-          method$kernel <- method$modify_kernel_fn(inp, method, opt, iter, perp,
-                                                   out, verbose)
-        }
-
         inp <- single_perplexity(inp, perplexity = perp,
                                  input_weight_fn = input_weight_fn,
                                  verbose = verbose)$inp
+        inp$perp <- perp
       }
       list(inp = inp, method = method)
     },
@@ -335,19 +340,18 @@ inp_step_perp <- function(perplexities = NULL,
 #' @param verbose If \code{TRUE} print message about tricks during the
 #' embedding.
 #' @family sneer kernel modifiers
-scale_prec_to_perp <- function(inp, method, opt, iter, perp, out,
-                           verbose = TRUE) {
+scale_prec_to_perp <- function(inp, out, method) {
   # Lee et al (from whence this equation is taken) use prec/2 in their
   # exponential kernel, whereas the one in sneer uses prec directly.
   # just divide by 2 here to be consistent
-  prec <- (perp ^ (-2 / out$dim)) * 0.5
-  if (verbose) {
+  prec <- (inp$perp ^ (-2 / out$dim)) * 0.5
+  if (method$verbose) {
     message("Creating kernel with precision ", formatC(prec),
             " for perplexity ", formatC(perp))
   }
   new_kernel <- method$orig_kernel
   new_kernel$beta <- prec
-  new_kernel
+  method$new_kernel
 }
 
 #' Multiscale Plugin Stiffness
