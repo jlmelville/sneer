@@ -4,7 +4,8 @@
 \alias{sjse_plugin}
 \title{An implementation of SJSE using the plugin gradient.}
 \usage{
-sjse_plugin(kappa = 0.5, beta = 1, eps = .Machine$double.eps)
+sjse_plugin(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
+  verbose = TRUE)
 }
 \arguments{
 \item{kappa}{Mixture parameter. If set to 0, then JSE behaves like SSNE. If
@@ -15,6 +16,8 @@ function.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.

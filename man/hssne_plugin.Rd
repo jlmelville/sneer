@@ -4,7 +4,8 @@
 \alias{hssne_plugin}
 \title{HSSNE Method using Plugin Gradient}
 \usage{
-hssne_plugin(beta = 1, alpha = 0, eps = .Machine$double.eps)
+hssne_plugin(beta = 1, alpha = 0, eps = .Machine$double.eps,
+  verbose = TRUE)
 }
 \arguments{
 \item{beta}{The bandwidth of the kernel similarity function.}
@@ -15,6 +16,8 @@ SSNE. When set to one to one, this method behaves like t-SNE.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.

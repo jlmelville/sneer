@@ -14,7 +14,7 @@ transfer_kernel_bandwidths(inp, out, method)
 \item{method}{Embedding method.}
 }
 \value{
-List containing the updated method.
+Updated kernel.
 }
 \description{
 Updates the output kernel in response to a change in input parameters.

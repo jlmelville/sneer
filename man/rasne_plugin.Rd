@@ -4,7 +4,7 @@
 \alias{rasne_plugin}
 \title{RASNE Method using Plugin Gradient}
 \usage{
-rasne_plugin(beta = 1, eps = .Machine$double.eps)
+rasne_plugin(beta = 1, eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{beta}{Bandwidth of the exponential similarity kernel
@@ -12,6 +12,8 @@ function.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.

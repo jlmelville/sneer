@@ -38,6 +38,7 @@
 #'  occurred.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @references
 #' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
@@ -82,18 +83,20 @@ plugin <- function(cost = kl_fg(),
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{asne}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-asne_plugin <- function(beta = 1, eps = .Machine$double.eps) {
+asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   plugin(
     cost = kl_fg(),
     kernel = exp_kernel(beta = beta),
     eps = eps,
-    prob_type = "row"
+    prob_type = "row",
+    verbose = verbose
   )
 }
 
@@ -107,16 +110,18 @@ asne_plugin <- function(beta = 1, eps = .Machine$double.eps) {
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{ssne}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-ssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
+ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     asne_plugin(eps = eps, beta = beta),
-    prob_type = "joint"
+    prob_type = "joint",
+    verbose = verbose
   )
 }
 
@@ -128,16 +133,18 @@ ssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
 #'
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{tsne}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-tsne_plugin <- function(eps = .Machine$double.eps) {
+tsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     ssne_plugin(eps = eps),
-    kernel = tdist_kernel()
+    kernel = tdist_kernel(),
+    verbose = verbose
   )
 }
 
@@ -147,22 +154,25 @@ tsne_plugin <- function(eps = .Machine$double.eps) {
 #'
 #' An implementation of HSSNE using the plugin gradient.
 #'
+#' @param beta The bandwidth of the kernel similarity function.
 #' @param alpha Tail heaviness of the kernel similarity function. Must be
 #' greater than zero. When set to a small value this method is equivalent to
 #' SSNE. When set to one to one, this method behaves like t-SNE.
-#' @param beta The bandwidth of the kernel similarity function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{hssne}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps) {
+hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
+                         verbose = TRUE) {
   lreplace(
     ssne_plugin(eps = eps),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
+    verbose = verbose
   )
 }
 
@@ -174,16 +184,18 @@ hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps) {
 #'
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{tasne}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-tasne_plugin <- function(eps = .Machine$double.eps) {
+tasne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     tsne_plugin(eps = eps),
-    prob_type = "row"
+    prob_type = "row",
+    verbose = verbose
   )
 }
 
@@ -197,17 +209,19 @@ tasne_plugin <- function(eps = .Machine$double.eps) {
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{rasne}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-rasne_plugin <- function(beta = 1, eps = .Machine$double.eps) {
+rasne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     asne_plugin(beta = beta, eps = eps),
     cost = reverse_kl_fg(),
-    out_updated_fn = klqp_update
+    out_updated_fn = klqp_update,
+    verbose = verbose
   )
 }
 
@@ -216,16 +230,18 @@ rasne_plugin <- function(beta = 1, eps = .Machine$double.eps) {
 #' @param beta Bandwidth of the exponential similarity kernel function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{rssne}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-rssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
+rssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     rasne_plugin(beta = beta, eps = eps),
-    prob_type = "joint"
+    prob_type = "joint",
+    verbose = verbose
   )
 }
 
@@ -237,16 +253,18 @@ rssne_plugin <- function(eps = .Machine$double.eps, beta = 1) {
 #'
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{tsne}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-rtsne_plugin <- function(eps = .Machine$double.eps) {
+rtsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     rssne_plugin(eps = eps),
-    kernel = tdist_kernel()
+    kernel = tdist_kernel(),
+    verbose = verbose
   )
 }
 
@@ -256,13 +274,14 @@ rtsne_plugin <- function(eps = .Machine$double.eps) {
 #'   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1).
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{nerv}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
+nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     asne_plugin(eps = eps),
     cost = nerv_fg(lambda = lambda),
@@ -271,7 +290,8 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
       method$kernel <- transfer_kernel_bandwidths(inp, out, method)
       list(method = method)
     },
-    out_updated_fn = klqp_update
+    out_updated_fn = klqp_update,
+    verbose = verbose
   )
 }
 
@@ -282,17 +302,20 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
 #'   Must be a value between 0 and 1.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{nerv}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
+snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
+                         verbose = TRUE) {
   lreplace(
     nerv_plugin(lambda = lambda, eps = eps),
     update_out_fn = make_update_out(keep = c("qm", "wm", "d2m", "qcm")),
-    prob_type = "joint"
+    prob_type = "joint",
+    verbose = verbose
   )
 }
 
@@ -307,16 +330,19 @@ snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
 #'   t-SNE/t-NeRV.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{hsnerv}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-hsnerv_plugin <- function(lambda = 0.5, alpha = 0, eps = .Machine$double.eps) {
+hsnerv_plugin <- function(lambda = 0.5, alpha = 0, eps = .Machine$double.eps,
+                          verbose = TRUE) {
   lreplace(
     snerv_plugin(lambda = lambda, eps = eps),
-    kernel = heavy_tail_kernel(alpha = alpha)
+    kernel = heavy_tail_kernel(alpha = alpha),
+    verbose = verbose
   )
 }
 
@@ -327,17 +353,20 @@ hsnerv_plugin <- function(lambda = 0.5, alpha = 0, eps = .Machine$double.eps) {
 #'   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{tnerv}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
+tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
+                         verbose = TRUE) {
   lreplace(
     tsne_plugin(eps = eps),
     cost = nerv_fg(lambda = lambda),
-    out_updated_fn = klqp_update
+    out_updated_fn = klqp_update,
+    verbose = verbose
   )
 }
 
@@ -349,18 +378,20 @@ tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps) {
 #' @param beta Bandwidth of the exponential similarity kernel function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{unerv}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
+unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+                         verbose = TRUE) {
   lreplace(
     asne_plugin(beta = beta, eps = eps),
     cost = nerv_fg(lambda = lambda),
-    kernel = exp_kernel(),
-    out_updated_fn = klqp_update
+    out_updated_fn = klqp_update,
+    verbose = verbose
   )
 }
 
@@ -372,16 +403,19 @@ unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
 #' @param beta Bandwidth of the exponential similarity kernel function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{usnerv}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
+usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+                          verbose = TRUE) {
   lreplace(
     unerv_plugin(lambda = lambda, beta = beta, eps = eps),
-    prob_type = "joint"
+    prob_type = "joint",
+    verbose = verbose
   )
 }
 
@@ -396,6 +430,7 @@ usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
 #' SSNE. When set to one to one, this method behaves like t-SNE.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{uhsnerv}} should give equivalent results, but is probably
 #' a bit more efficient.
@@ -403,10 +438,11 @@ usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps) {
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
 uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
-                           eps = .Machine$double.eps) {
+                           eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     tnerv_plugin(lambda = lambda, eps = eps),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
+    verbose = verbose
   )
 }
 
@@ -418,17 +454,20 @@ uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{jse}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
+jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
+                       verbose = TRUE) {
   lreplace(
     asne_plugin(beta = beta, eps = eps),
     cost = jse_fg(kappa = kappa),
-    out_updated_fn = klqz_update
+    out_updated_fn = klqz_update,
+    verbose = verbose
   )
 }
 
@@ -440,16 +479,19 @@ jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
 #'  function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{sjse}} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
-sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
+sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
+                        verbose = TRUE) {
   lreplace(
     jse_plugin(kappa = kappa, beta = beta, eps = eps),
-    prob_type = "joint"
+    prob_type = "joint",
+    verbose = verbose
   )
 }
 
@@ -462,6 +504,7 @@ sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
 #' @param alpha Tail heaviness of the weighting function.
 #' @param eps Small floating point value used to prevent numerical problems,
 #' e.g. in gradients and cost functions.
+#' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
 #' @seealso \code{\link{sjse}} should give equivalent results, but is probably
 #' a bit more efficient.
@@ -469,10 +512,11 @@ sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps) {
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
 hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
-                         eps = .Machine$double.eps) {
+                         eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     sjse_plugin(kappa = kappa, eps = eps),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
+    verbose = verbose
   )
 }
 

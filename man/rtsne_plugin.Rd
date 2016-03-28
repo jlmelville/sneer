@@ -4,11 +4,13 @@
 \alias{rtsne_plugin}
 \title{rt-SNE Method using Plugin Gradient}
 \usage{
-rtsne_plugin(eps = .Machine$double.eps)
+rtsne_plugin(eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.

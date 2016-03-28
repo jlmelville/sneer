@@ -38,10 +38,14 @@ Factory function for creating an optimizer step size method.
 }
 \details{
 This function configures the 'Bold Driver' method for step size selection.
-If the cost decreases after an optimization step occurs, then the step
-size will be increased (normally by a conservative amount). If the cost
-increases, then the step size is decreased (normally by a more drastic
-amount).
+At each iteration, the initial step size tried is a (normally conservative)
+increase of the step size at the previous step. If this step size does not
+result in a decrease in the cost, the step size is progressively reduced
+(normally by a more drastic amount than the increase) until the cost
+does decrease (or the minimum step size is reached).
+
+This implementation is effectively a backtracking line search, but instead
+of a Wolfe condition, a cost decrease is considered sufficient.
 }
 \examples{
 # Use as part of the make_opt function for configuring an optimizer's

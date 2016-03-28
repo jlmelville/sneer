@@ -24,7 +24,8 @@ Input initializers should be passed to the
 \code{\link{embed_prob}} or \code{\link{embed_dist}}.
 
 Other sneer input initializers: \code{\link{inp_from_perps_multi}},
-  \code{\link{inp_from_perp}}, \code{\link{inp_step_perp}}
+  \code{\link{inp_from_perp}},
+  \code{\link{inp_from_step_perp}}
 }
 \keyword{internal}
 

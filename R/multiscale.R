@@ -87,7 +87,7 @@
 #' @seealso \code{\link{embed_prob}} for how to use this function for
 #' configuring an embedding.
 #'
-#' \code{\link{inp_step_perp}} also uses multiple
+#' \code{\link{inp_from_step_perp}} also uses multiple
 #' perplexity values, but replaces the old probability matrix with that of the
 #' new perplexity at each step, rather than averaging.
 #'
@@ -148,6 +148,12 @@ inp_from_perps_multi <- function(perplexities = NULL,
           method$inp_updated_fn <- function(inp, out, method) {
             kernel <- modify_kernel_fn(inp, out, method)
             method$kernels[[method$num_scales]] <- kernel
+            list(method = method)
+          }
+        }
+        else {
+          method$inp_updated_fn <- function(inp, out, method) {
+            method$kernels[[method$num_scales]] <- method$orig_kernel
             list(method = method)
           }
         }
@@ -246,7 +252,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
 #' # Should be passed to the init_inp argument of an embedding function.
 #' # Step the perplexity from 75 to 25 with 6 values inclusive, taking 20
 #' # iterations overall (so 4 iterations per step)
-#'  embed_prob(init_inp = inp_step_perp(
+#'  embed_prob(init_inp = inp_from_step_perp(
 #'    perplexities = seq(75, 25, length.out = 6), num_scale_iters = 20), ...)
 #' }
 #' @references
@@ -267,7 +273,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
 #'
 #' @family sneer input initializers
 #' @export
-inp_step_perp <- function(perplexities = NULL,
+inp_from_step_perp <- function(perplexities = NULL,
                           input_weight_fn = exp_weight,
                           num_scale_iters = 20,
                           modify_kernel_fn = scale_prec_to_perp,
@@ -332,13 +338,8 @@ inp_step_perp <- function(perplexities = NULL,
 #' perplexity, in the context of multiscale embedding.
 #'
 #' @param inp Input data.
-#' @param method Embedding method.
-#' @param opt Optimizer.
-#' @param iter Current iteration.
-#' @param perp Perplexity of the input probability.
 #' @param out Output data.
-#' @param verbose If \code{TRUE} print message about tricks during the
-#' embedding.
+#' @param method Embedding method.
 #' @family sneer kernel modifiers
 scale_prec_to_perp <- function(inp, out, method) {
   # Lee et al (from whence this equation is taken) use prec/2 in their

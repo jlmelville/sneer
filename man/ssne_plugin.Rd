@@ -4,14 +4,16 @@
 \alias{ssne_plugin}
 \title{SSNE Method using Plugin Gradient}
 \usage{
-ssne_plugin(eps = .Machine$double.eps, beta = 1)
+ssne_plugin(beta = 1, eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
+\item{beta}{Bandwidth parameter of the exponential similarity kernel
+function.}
+
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
 
-\item{beta}{Bandwidth parameter of the exponential similarity kernel
-function.}
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.

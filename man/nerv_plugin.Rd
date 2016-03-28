@@ -4,7 +4,7 @@
 \alias{nerv_plugin}
 \title{An implementation of NeRV using the plugin gradient.}
 \usage{
-nerv_plugin(lambda = 0.5, eps = .Machine$double.eps)
+nerv_plugin(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{lambda}{Weighting factor controlling the emphasis placed on precision
@@ -12,6 +12,8 @@ nerv_plugin(lambda = 0.5, eps = .Machine$double.eps)
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.

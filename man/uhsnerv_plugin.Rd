@@ -5,7 +5,7 @@
 \title{An implementation of UHSNeRV using the plugin gradient.}
 \usage{
 uhsnerv_plugin(lambda = 0.5, beta = 1, alpha = 0,
-  eps = .Machine$double.eps)
+  eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{lambda}{Weighting factor controlling the emphasis placed on precision
@@ -20,6 +20,8 @@ SSNE. When set to one to one, this method behaves like t-SNE.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.

@@ -129,12 +129,12 @@ dimensionality while preserving both local and global structure.
 \code{\link{embed_prob}} for how to use this function for
 configuring an embedding.
 
-\code{\link{inp_step_perp}} also uses multiple
+\code{\link{inp_from_step_perp}} also uses multiple
 perplexity values, but replaces the old probability matrix with that of the
 new perplexity at each step, rather than averaging.
 
 Other sneer input initializers: \code{\link{inp_from_perp}},
-  \code{\link{inp_step_perp}},
+  \code{\link{inp_from_step_perp}},
   \code{\link{input_initializers}}
 }
 

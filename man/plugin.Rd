@@ -7,7 +7,8 @@
 plugin(cost = kl_fg(), kernel = exp_kernel(),
   stiffness_fn = plugin_stiffness, update_out_fn = make_update_out(keep =
   c("qm", "wm", "d2m")), inp_updated_fn = NULL, out_updated_fn = NULL,
-  after_init_fn = NULL, prob_type = "joint", eps = .Machine$double.eps)
+  after_init_fn = NULL, prob_type = "joint", eps = .Machine$double.eps,
+  verbose = TRUE)
 }
 \arguments{
 \item{cost}{Cost for this embedding method.}
@@ -33,6 +34,8 @@ e.g. "joint" or "row".}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.

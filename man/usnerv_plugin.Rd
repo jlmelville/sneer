@@ -4,7 +4,8 @@
 \alias{usnerv_plugin}
 \title{An implementation of USNeRV using the plugin gradient.}
 \usage{
-usnerv_plugin(lambda = 0.5, beta = 1, eps = .Machine$double.eps)
+usnerv_plugin(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+  verbose = TRUE)
 }
 \arguments{
 \item{lambda}{Weighting factor controlling the emphasis placed on precision
@@ -15,6 +16,8 @@ Must be a value between 0 and 1.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.

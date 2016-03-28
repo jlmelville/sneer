@@ -5,23 +5,14 @@
 \title{Factory function which creates an output weight function for a given input
 perplexity, in the context of multiscale embedding.}
 \usage{
-scale_prec_to_perp(inp, method, opt, iter, perp, out, verbose = TRUE)
+scale_prec_to_perp(inp, out, method)
 }
 \arguments{
 \item{inp}{Input data.}
 
-\item{method}{Embedding method.}
-
-\item{opt}{Optimizer.}
-
-\item{iter}{Current iteration.}
-
-\item{perp}{Perplexity of the input probability.}
-
 \item{out}{Output data.}
 
-\item{verbose}{If \code{TRUE} print message about tricks during the
-embedding.}
+\item{method}{Embedding method.}
 }
 \description{
 Factory function which creates an output weight function for a given input

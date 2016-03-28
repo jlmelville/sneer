@@ -5,7 +5,7 @@
 \title{An implementation of HSJSE using the plugin gradient.}
 \usage{
 hsjse_plugin(kappa = 0.5, beta = 1, alpha = 0,
-  eps = .Machine$double.eps)
+  eps = .Machine$double.eps, verbose = TRUE)
 }
 \arguments{
 \item{kappa}{Mixture parameter. If set to 0, then JSE behaves like SSNE. If
@@ -18,6 +18,8 @@ function.}
 
 \item{eps}{Small floating point value used to prevent numerical problems,
 e.g. in gradients and cost functions.}
+
+\item{verbose}{If \code{TRUE}, log information about the embedding.}
 }
 \value{
 An embedding method for use by an embedding function.
