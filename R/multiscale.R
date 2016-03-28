@@ -347,11 +347,11 @@ scale_prec_to_perp <- function(inp, out, method) {
   prec <- (inp$perp ^ (-2 / out$dim)) * 0.5
   if (method$verbose) {
     message("Creating kernel with precision ", formatC(prec),
-            " for perplexity ", formatC(perp))
+            " for perplexity ", formatC(inp$perp))
   }
   new_kernel <- method$orig_kernel
   new_kernel$beta <- prec
-  method$new_kernel
+  new_kernel
 }
 
 #' Multiscale Plugin Stiffness

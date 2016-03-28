@@ -55,7 +55,8 @@ plugin <- function(cost = kl_fg(),
                    out_updated_fn = NULL,
                    after_init_fn = NULL,
                    prob_type = "joint",
-                   eps = .Machine$double.eps) {
+                   eps = .Machine$double.eps,
+                   verbose = TRUE) {
   remove_nulls(
     list(
       cost = cost,
@@ -65,7 +66,8 @@ plugin <- function(cost = kl_fg(),
       out_updated_fn = out_updated_fn,
       update_out_fn = update_out_fn,
       prob_type = prob_type,
-      eps = eps
+      eps = eps,
+      verbose = verbose
     )
   )
 }

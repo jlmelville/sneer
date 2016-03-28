@@ -25,7 +25,8 @@ test_that("see three spikes due to perplexity change", {
                  0.08272, 0.0709,  0.06375, 0.06042, 0.05849, # perp 50
                  0.2278,  0.221,   0.2117,  0.2009,  0.1893,  # perp 25
                  0.1776,  0.1662,  0.1556,  0.146,   0.1375, 0.1301),
-               tolerance = 5e-4, scale = 1)
+               tolerance = 5e-4, scale = 1,
+               label = "SSNE step perp no kernel adjustment")
 })
 
 test_that("use default kernel adjustment, results should be different", {
@@ -47,7 +48,7 @@ test_that("use default kernel adjustment, results should be different", {
                  0.9085,  0.9028,  0.8968,  0.8907,  0.8843, # perp 50
                  0.8550,  0.8475,  0.8399,  0.8321,  0.8243, # perp 25
                  0.8164,  0.8084,  0.8003,  0.7921,  0.784,  0.7757),
-               tolerance = 5e-4, scale = 1)
+               tolerance = 5e-4, scale = 1, label = "SSNE step perp")
 })
 
 test_that("first five costs with single perplexity and custom beta", {
@@ -65,5 +66,6 @@ test_that("first five costs with single perplexity and custom beta", {
   )
   expect_equal(ssne_iris$report$costs[,"norm"],
                c(0.9291,  0.9261,  0.9219,  0.9171,  0.9119),
-               tolerance = 5e-4, scale = 1)
+               tolerance = 5e-4, scale = 1,
+               label = "SSNE with single perp but custom beta")
 })

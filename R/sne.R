@@ -73,7 +73,8 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
     },
     update_out_fn = make_update_out(keep = c("qm")),
     prob_type = "row",
-    eps = eps)
+    eps = eps,
+    verbose = verbose)
 }
 
 #' Symmetric Stochastic Neighbor Embedding (SSNE)
