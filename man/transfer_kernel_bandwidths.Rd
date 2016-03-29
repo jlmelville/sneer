@@ -17,13 +17,13 @@ transfer_kernel_bandwidths(inp, out, method)
 Updated kernel.
 }
 \description{
-Updates the output kernel in response to a change in input parameters.
+Updates the output kernel in response to a change in input probability.
 }
 \details{
-This function is called when the input data has changed. It transfers the
-bandwidth parameters from the input data to the output kernel. This is used
-in the NeRV family of embedding routines where the precisions of the output
-exponential kernel are set to those of the input kernel.
+This function is called when the input probability has changed. It transfers
+the bandwidth parameters from the input data to the output kernel. This is
+used in the NeRV family of embedding routines where the precisions of the
+output exponential kernel are set to those of the input kernel.
 
 This function expects:
 \itemize{

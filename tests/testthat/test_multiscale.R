@@ -64,8 +64,11 @@ test_that("multiscaling SSNE with perp scaling", {
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
                              verbose = FALSE),
     max_iter = 20,
-    export = c("report")
+    export = c("report", "method")
   )
+
+  expect_equal(sapply(ssne_iris_ms3$method$kernels, function(k) { k$beta }),
+               c(1/150, 1/100, 1/50), info = "scaled kernels")
 
   expect_equal(ssne_iris_ms3$report$costs[,"norm"],
                c(0.9291,  0.9261,  0.9219,  0.9171,  0.9119, # perp 75
@@ -90,8 +93,11 @@ test_that("ms SSNE with unit scaling", {
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
                              verbose = FALSE),
     max_iter = 20,
-    export = c("report")
+    export = c("report", "method")
   )
+
+  expect_equal(sapply(ssne_iris_ums3$method$kernels, function(k) { k$beta }),
+               c(1, 1, 1), info = "uniform kernels")
 
   expect_equal(ssne_iris_ums3$report$costs[,"norm"],
                c(0.9360,  0.8311,  0.7047,  0.5821,  0.4716, # perp 75
@@ -100,3 +106,124 @@ test_that("ms SSNE with unit scaling", {
                  0.1005,  0.0965,  0.0933,  0.0910,  0.0900,  0.0898),
                tolerance = 5e-4, scale = 1, label = "ms-SSNE unit prec")
 })
+
+
+test_that("Can apply multiple scales in one iteration", {
+  ssne_iris_ums3_s0 <- embed_prob(
+    iris[, 1:4],
+    method = ssne_plugin(verbose = FALSE),
+    opt = back_nag_adapt(),
+    preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
+    init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
+                                    num_scale_iters = 0,
+                                    modify_kernel_fn = NULL,
+                                    verbose = FALSE),
+    init_out = out_from_PCA(verbose = FALSE),
+    reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+                             verbose = FALSE),
+    max_iter = 20,
+    export = c("report", "method")
+  )
+  expect_equal(sapply(ssne_iris_ums3_s0$method$kernels, function(k) { k$beta }),
+               c(1, 1, 1), info = "uniform kernels")
+
+   expect_equal(ssne_iris_ums3_s0$report$costs[,"norm"],
+               c(0.2961,  0.2527,  0.2066,  0.1703,  0.1456,
+                 0.1286,  0.1157,  0.1056,  0.0982,  0.0935,
+                 0.0910,  0.0900,  0.0899,  0.0899,  0.0898,
+                 0.0895,  0.0893,  0.0892,  0.0892,  0.0891,  0.0891),
+               tolerance = 5e-4, scale = 1,
+               label = "ms-SSNE unit prec scale all at once")
+
+  ssne_iris_ms3_s0 <- embed_prob(
+    iris[, 1:4],
+    method = ssne_plugin(verbose = FALSE),
+    opt = back_nag_adapt(),
+    preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
+    init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
+                                    num_scale_iters = 0,
+                                    verbose = FALSE),
+    init_out = out_from_PCA(verbose = FALSE),
+    reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+                             verbose = FALSE),
+    max_iter = 20,
+    export = c("report", "method")
+  )
+
+  expect_equal(sapply(ssne_iris_ms3_s0$method$kernels, function(k) { k$beta }),
+               c(1/150, 1/100, 1/50), info = "scaled kernels")
+
+  expect_equal(ssne_iris_ms3_s0$report$costs[,"norm"],
+               c(0.9180,  0.9143,  0.9092,  0.9035,  0.8973,
+                 0.8907,  0.8839,  0.8769,  0.8696,  0.8622,
+                 0.8545,  0.8467,  0.8388,  0.8307,  0.8225,
+                 0.8141,  0.8057,  0.7971,  0.7884,  0.7796,  0.7708),
+               tolerance = 5e-4, scale = 1,
+               label = "ms-SSNE scaled prec scale all at once")
+})
+
+test_that("Can combine multiscaling with asymmetric weights", {
+  ssne_iris_tms3_s10 <- embed_prob(
+    iris[1:10, 1:4],
+    method = ssne_plugin(verbose = FALSE),
+    opt = back_nag_adapt(),
+    preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
+    init_inp = inp_from_perps_multi(perplexities = seq(9, 3, length.out = 3),
+                                    num_scale_iters = 10,
+                                    modify_kernel_fn =
+                                      transfer_kernel_bandwidths,
+                                    verbose = FALSE),
+    init_out = out_from_PCA(verbose = FALSE),
+    reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+                             verbose = FALSE),
+    max_iter = 10,
+    export = c("report", "method")
+  )
+  all_betas <- sapply(ssne_iris_tms3_s10$method$kernels, function(k) { k$beta })
+  expect_equal(all_betas[, 1],
+               c(0.0004883, 0.0004883, 0.0004883, 0.0004883, 0.0004883,
+                 0.0004883, 0.0004883, 0.0009766, 0.0002441, 0.0004883),
+               info = "precs for perp 9", tolerance = 1e-5, scale = 1)
+  expect_equal(all_betas[, 2],
+               c(0.3431, 1.0787, 0.7401, 0.7476, 0.3432,
+                 0.1717, 0.8990, 0.5226, 0.3159, 0.4832),
+               info = "precs for perp 6", tolerance = 1e-4, scale = 1)
+  expect_equal(all_betas[, 3],
+               c(0.8341, 2.8256, 1.5967, 2.3109, 0.8003,
+                 0.4965, 2.4034, 1.6010, 0.9867, 2.8540),
+               info = "precs for perp 3", tolerance = 1e-4, scale = 1)
+
+  # repeat this test scaling over 0 iterations
+  # should be the same
+  ssne_iris_tms3_s0 <- embed_prob(
+    iris[1:10, 1:4],
+    method = ssne_plugin(verbose = FALSE),
+    opt = back_nag_adapt(),
+    preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
+    init_inp = inp_from_perps_multi(perplexities = seq(9, 3, length.out = 3),
+                                    num_scale_iters = 0,
+                                    modify_kernel_fn =
+                                      transfer_kernel_bandwidths,
+                                    verbose = FALSE),
+    init_out = out_from_PCA(verbose = FALSE),
+    reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+                             verbose = FALSE),
+    max_iter = 1,
+    export = c("report", "method")
+  )
+
+  all_betas_s0 <- sapply(ssne_iris_tms3_s0$method$kernels, function(k) { k$beta })
+  expect_equal(all_betas_s0[, 1],
+               c(0.0004883, 0.0004883, 0.0004883, 0.0004883, 0.0004883,
+                 0.0004883, 0.0004883, 0.0009766, 0.0002441, 0.0004883),
+               info = "0 iter scale precs for perp 9", tolerance = 1e-5, scale = 1)
+  expect_equal(all_betas_s0[, 2],
+               c(0.3431, 1.0787, 0.7401, 0.7476, 0.3432,
+                 0.1717, 0.8990, 0.5226, 0.3159, 0.4832),
+               info = "0 iter scale precs for perp 6", tolerance = 1e-4, scale = 1)
+  expect_equal(all_betas_s0[, 3],
+               c(0.8341, 2.8256, 1.5967, 2.3109, 0.8003,
+                 0.4965, 2.4034, 1.6010, 0.9867, 2.8540),
+               info = "0 iter scale precs for perp 3", tolerance = 1e-4, scale = 1)
+})
+

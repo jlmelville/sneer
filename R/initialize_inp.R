@@ -111,11 +111,20 @@ inp_from_perp <- function(perplexity = 30,
 #' @param input_initializer Input initializer which creates a probability.
 #' @param init_only, if \code{TRUE}, then this initializer is only called once,
 #'  when the iteration number is zero.
+#' @param call_inp_updated, if \code{TRUE}, then the \code{\link{inp_updated}}
+#'  function will be called by this wrapper if \code{inp$dirty} is \code{TRUE}.
+#'  As this deals with calling the function and reassigning any changed data
+#'  for you, there's no reason to change this from its default value
+#'  (\code{TRUE}), unless your input initializer changes the input probability
+#'  more than once per invocation. In which case, you should set this to
+#'  \code{FALSE} and deal with calling \code{inp_updated} yourself inside the
+#'  initializer.
 #' @return Wrapped initializer with the correct signature for use by an
 #'  embedding function.
 #' @seealso \code{\link{probability_matrices}} describe the type of probability
 #'   matrix used by sneer.
-inp_prob <- function(input_initializer, init_only = TRUE) {
+inp_prob <- function(input_initializer, init_only = TRUE,
+                     call_inp_updated = TRUE) {
   function(inp, method, opt, iter, out) {
     if (!init_only || iter == 0) {
       res <- input_initializer(inp, method, opt, iter, out)
@@ -131,10 +140,14 @@ inp_prob <- function(input_initializer, init_only = TRUE) {
       }
       if (inp$dirty) {
         inp$pm <- handle_prob(inp$pm, method)
-        update_res <- inp_updated(inp, out, method)
-        inp <- update_res$inp
-        out <- update_res$out
-        method <- update_res$method
+
+        if (call_inp_updated) {
+          update_res <- inp_updated(inp, out, method)
+          inp <- update_res$inp
+          out <- update_res$out
+          method <- update_res$method
+        }
+
         out$dirty <- TRUE
         flush.console()
         # invalidate cached data (e.g. old costs) in optimizer

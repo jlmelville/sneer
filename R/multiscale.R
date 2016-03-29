@@ -144,23 +144,22 @@ inp_from_perps_multi <- function(perplexities = NULL,
                   " values, calculating every ~", round(step_every), " iters")
         }
         method$num_scales <- 0
-        if (!is.null(modify_kernel_fn)) {
-          method$inp_updated_fn <- function(inp, out, method) {
+        method$inp_updated_fn <- function(inp, out, method) {
+          if (!is.null(modify_kernel_fn)) {
             kernel <- modify_kernel_fn(inp, out, method)
-            method$kernels[[method$num_scales]] <- kernel
-            list(method = method)
           }
-        }
-        else {
-          method$inp_updated_fn <- function(inp, out, method) {
-            method$kernels[[method$num_scales]] <- method$orig_kernel
-            list(method = method)
+          else {
+            kernel <- method$orig_kernel
           }
+          method$kernels[[method$num_scales]] <- kernel
+          list(method = method)
         }
+
         method$orig_kernel <- method$kernel
         method$update_out_fn <- make_update_out_ms()
         method$stiffness_fn <- plugin_stiffness_ms
       }
+
       while (method$num_scales * step_every <= iter
              && method$num_scales < max_scales) {
         method$num_scales <- method$num_scales + 1
@@ -171,13 +170,11 @@ inp_from_perps_multi <- function(perplexities = NULL,
           message("Iter: ", iter, " setting perplexity to ", formatC(perp))
         }
 
-
         inp <- single_perplexity(inp, perplexity = perp,
                                  input_weight_fn = input_weight_fn,
                                  verbose = verbose)$inp
 
         inp$perp <- perp
-
 
         # initialize or update the running total and mean of
         # pms for each perplexity
@@ -191,10 +188,18 @@ inp_from_perps_multi <- function(perplexities = NULL,
         if (verbose) {
           summarize(inp$pm, "msP")
         }
+
+        # because P can change more than once per iteration, we handle calling
+        # inp_updated manually
+        update_res <- inp_updated(inp, out, method)
+        inp <- update_res$inp
+        out <- update_res$out
+        method <- update_res$method
       }
-      list(inp = inp, method = method)
+      list(inp = inp, method = method, out = out)
     },
-    init_only = FALSE
+    init_only = FALSE,
+    call_inp_updated = FALSE
   )
 }
 

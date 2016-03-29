@@ -4,13 +4,22 @@
 \alias{inp_prob}
 \title{Wrap Input Probability Initializer}
 \usage{
-inp_prob(input_initializer, init_only = TRUE)
+inp_prob(input_initializer, init_only = TRUE, call_inp_updated = TRUE)
 }
 \arguments{
 \item{input_initializer}{Input initializer which creates a probability.}
 
 \item{init_only, }{if \code{TRUE}, then this initializer is only called once,
 when the iteration number is zero.}
+
+\item{call_inp_updated, }{if \code{TRUE}, then the \code{\link{inp_updated}}
+function will be called by this wrapper if \code{inp$dirty} is \code{TRUE}.
+As this deals with calling the function and reassigning any changed data
+for you, there's no reason to change this from its default value
+(\code{TRUE}), unless your input initializer changes the input probability
+more than once per invocation. In which case, you should set this to
+\code{FALSE} and deal with calling \code{inp_updated} yourself inside the
+initializer.}
 }
 \value{
 Wrapped initializer with the correct signature for use by an
