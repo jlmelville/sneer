@@ -422,13 +422,14 @@ plugin_stiffness_ms_row <- function(method, inp, out) {
 #' @param out Output data.
 #' @return Stiffness matrix.
 plugin_stiffness_ms_joint <- function(method, inp, out) {
-  cm_grad <- method$cost$gr(inp, out, method)
+  dc_dq <- method$cost$gr(inp, out, method)
 
   for (l in 1:method$num_scales) {
     wm_sum <- sum(out$wms[[l]])
-    wm_grad <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
-    kml <- (sum(cm_grad * out$qms[[l]]) - cm_grad) * (-wm_grad / wm_sum)
+    dw_du <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
+    kml <- (sum(dc_dq * out$qms[[l]]) - dc_dq) * (-dw_du / wm_sum)
     kml <- 2 * (kml + t(kml))
+
     if (l == 1) {
       kml_sum <- kml
     }
@@ -461,16 +462,17 @@ make_update_out_ms <- function() {
 
     out$qms <- list()
     out$wms <- list()
-    for (i in 1:method$num_scales) {
-      method$kernel <- method$kernels[[i]]
+
+    for (l in 1:method$num_scales) {
+      method$kernel <- method$kernels[[l]]
       res <- update_probs(out, method, d2m = out$d2m)
-      out$qms[[i]] <- res$qm
-      out$wms[[i]] <- res$wm
+
+      out$wms[[l]] <- res$wm
+      out$qms[[l]] <- res$qm
     }
 
     # average the probability matrices
     out$qm <- Reduce(`+`, out$qms) / length(out$qms)
-
     if (!is.null(method$out_updated_fn)) {
       out <- method$out_updated_fn(inp, out, method)
     }

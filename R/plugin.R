@@ -529,17 +529,7 @@ hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
 plugin_stiffness <- function(method, inp, out) {
   prob_type <- method$prob_type
 
-  if (prob_type == "joint") {
-    weight_type <- attr(method$kernel$fn, "type")
-    if (is.null(weight_type)) {
-      stop("Kernel function must have type attribute defined")
-    }
-    fn_name <- paste0("plugin_stiffness_", weight_type, "_", prob_type)
-  }
-  else {
-    fn_name <- paste0('plugin_stiffness_', prob_type)
-  }
-
+  fn_name <- paste0('plugin_stiffness_', prob_type)
   stiffness_fn <- get(fn_name)
   if (is.null(stiffness_fn)) {
     stop("Unable to find plugin stiffness function for ", prob_type)
@@ -575,28 +565,10 @@ plugin_stiffness_row <- function(method, inp, out) {
 #' @param out Output data.
 #' @param method Embedding method.
 #' @return Stiffness matrix.
-plugin_stiffness_symm_joint <- function(method, inp, out) {
+plugin_stiffness_joint <- function(method, inp, out) {
   wm_sum <- sum(out$wm)
   dc_dq <- method$cost$gr(inp, out, method)
   dw_du <- method$kernel$gr(method$kernel, out$d2m)
   km <- (sum(dc_dq * out$qm) - dc_dq) * (-dw_du / wm_sum)
   2 * (km + t(km))
 }
-
-#' Plugin Stiffness for Symmetrized Joint Probabilities
-#'
-#' Calculates the stiffness matrix for joint probability based embedding
-#' methods using an asymmetric similarity kernel.
-#'
-#' @param inp Input data.
-#' @param out Output data.
-#' @param method Embedding method.
-#' @return Stiffness matrix.
-plugin_stiffness_asymm_joint <- function(method, inp, out) {
-  wm_sum <- sum(out$wm)
-  dc_dq <- method$cost$gr(inp, out, method)
-  dw_du <- method$kernel$gr(method$kernel, out$d2m)
-  km <- (sum(dc_dq * out$qcm) - dc_dq) * (-dw_du / wm_sum)
-  2 * (km + t(km))
-}
-

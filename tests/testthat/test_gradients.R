@@ -9,14 +9,14 @@ out_init <- out_from_PCA(verbose = FALSE)
 inp_init <- inp_from_perp(perplexity = 20, verbose = FALSE)
 inp_aw <- function() { inp_from_perp(perplexity = 45, verbose = FALSE) }
 inp_ms <- function() { inp_from_perps_multi(perplexities = seq(45, 25, length.out = 3),
-                                num_scale_iters = 0, verbose = T) }
+                                num_scale_iters = 0, verbose = FALSE) }
 inp_ums <- function() { inp_from_perps_multi(perplexities = seq(45, 25, length.out = 3),
                                num_scale_iters = 0, modify_kernel_fn = NULL,
-                               verbose = T) }
+                               verbose = FALSE) }
 inp_tms <- function() { inp_from_perps_multi(perplexities = seq(45, 25, length.out = 3),
                                 num_scale_iters = 0,
                                 modify_kernel_fn = transfer_kernel_bandwidths,
-                                verbose = T) }
+                                verbose = FALSE) }
 
 aw <- function(method) {
   lreplace(method,
@@ -31,6 +31,34 @@ gfd <- function(embedder, diff = 1e-4) {
 
 gan <- function(embedder) {
   gradient(embedder$inp, embedder$out, embedder$method)$gm
+}
+
+# useful for interactive examination of analytical gradients only, diff param is
+# ignored, but means you don't have to delete so much when changing a call to
+# hgfd
+hgan <- function(method, inp_init = inp_from_perp(perplexity = 20,
+                                                  verbose = FALSE),
+                 diff = 1e-5) {
+
+  embedder <- init_embed(iris[1:50, 1:4], method,
+                         preprocess = preprocess,
+                         init_inp = inp_init,
+                         init_out = out_init,
+                         opt = gradient_descent())
+  head(gan(embedder))
+}
+
+# useful for interactive examination of analytical gradients only
+hgfd <- function(method,
+                 inp_init = inp_from_perp(perplexity = 20,
+                                          verbose = FALSE),
+                 diff = 1e-5) {
+  embedder <- init_embed(iris[1:50, 1:4], method,
+                         preprocess = preprocess,
+                         init_inp = inp_init,
+                         init_out = out_init,
+                         opt = gradient_descent())
+  head(gfd(embedder, diff = diff))
 }
 
 expect_grad <- function(method,
@@ -176,8 +204,6 @@ test_that("Multiscale gradients", {
   # The ultimate challenge: multiscale and use non-uniform kernel parameters
   expect_grad(asne_plugin(verbose = FALSE), label = "plugin tms asne",
               inp_init = inp_tms())
-  # really want symmetrized joint methods to fail while we have no ms version
-  # of stiffness_asymm_joint!
   expect_grad(ssne_plugin(verbose = FALSE), label = "plugin tms ssne",
               inp_init = inp_tms())
   expect_grad(nerv_plugin(verbose = FALSE), label = "plugin tms nerv",
