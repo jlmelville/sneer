@@ -5,7 +5,7 @@
 \title{Find Root of Function by Bisection}
 \usage{
 root_bisect(fn, tol = 1e-05, max_iters = 50, x_lower, x_upper,
-  x_init = (x_lower + x_upper)/2)
+  x_init = (x_lower + x_upper)/2, keep_search = FALSE)
 }
 \arguments{
 \item{fn}{Function to optimize. Should take one scalar numeric value and
@@ -23,6 +23,9 @@ terminate.}
 \item{x_upper}{Upper bracket of x.}
 
 \item{x_init}{Initial value of x.}
+
+\item{keep_search}{If \code{TRUE}, then return all the values of \code{x}
+and \code{y} that were tried during the search.}
 }
 \value{
 a list containing:

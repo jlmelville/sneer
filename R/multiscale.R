@@ -10,7 +10,7 @@
 #' perplexities used are decreasing powers of 2, e.g. 16, 8, 4, 2
 #' with the maximum perplexity given by the formula:
 #'
-#' \deqn{\lfloor{\log_{2}(N/4)}\rfloor}{floor(log2(N / 4)}
+#' \deqn{\lfloor{\log_{2}(N/4)}\rceil}{round(log2(N / 4)}
 #'
 #' where N is the number of observations in the data set. The smallest
 #' perplexity value tried is 2.
@@ -29,16 +29,45 @@
 #' be altered. For JSE, which uses an exponential weight function, the value
 #' of the precision parameter, beta, is given by:
 #'
-#' \deqn{\beta = K^{-\frac{2}{P}}}{beta = K ^ (-2 / P)}
+#' \deqn{\beta = K^{-\frac{2U}{P}}}{beta = K ^ (-2U / P)}
 #'
-#' where K is the perplexity and P is the output dimensionality (normally 2
-#' for visualization purposes). The precision, beta, is then used in the
-#' exponential weighting function:
+#' where K is the perplexity, P is the output dimensionality (normally 2
+#' for visualization purposes), and U is a coefficient which, when not equal to
+#' 1, represents a deviation from the assumption of a uniform density around
+#' each point (e.g. due to clustering, edge effects and so on). Empirically,
+#' Lee and co-workers suggested setting U to a value between 1 and 2, which they
+#' quantified as:
 #'
-#' \deqn{W = \exp(-\beta D)}{W = exp(-beta * D)}
+#' \deqn{U = \textup{min}\left [2, \textup{max} \left( 1, \frac{\hat{D}}{P}\right ) \right ]}
+#' {U = min(2, max(1, D_hat / P))}
 #'
-#' where D is the output distance matrix and W is the resulting output weight
-#' matrix.
+#' and \eqn{\hat{D}}{D_hat} is the intrinsic dimensionality of the dataset.
+#'
+#' The intrinsic dimensionality of the dataset is the maximum
+#' intrinsic dimensionality calculated over a set of target perplexities. In
+#' turn, the intrinsic dimensionality for a given perplexity is given by
+#' averaging over the intrinsic dimensionality calculated at each point.
+#' The intrinsic dimensionality for a given data point and perplexity is
+#' calculated by:
+#'
+#' \deqn{\hat{D_{i,K}} = -2 \frac{\Delta H_{i,K}}{\Delta \log_{2}\beta_{i,K}}}
+#' {D_hat_ik = -2 * delta_h_ik / delta_log2b_ik}
+#'
+#' where \eqn{\frac{\Delta H}{\Delta \log_{2}\beta}}{delta_h_ik / delta_log2b_ik}
+#' is an estimate of the gradient of the Shannon Entropy (in bits) of the input
+#' probability i at perplexity K with respect to the log2 of the input
+#' precision. The estimate is made via a one-sided finite difference
+#' calculation, using the betas and perplexity values from the next largest
+#' perplexity in the \code{perplexities} vector.
+#'
+#' Yes, this seems like a lot of work to calculate a value between 1 and 2.
+#'
+#' The precision, beta, is then used in the exponential weighting function:
+#'
+#' \deqn{W = \exp(-\beta D)}{W = exp(-beta * D2)}
+#'
+#' where D2 is the output squared distance matrix and W is the resulting output
+#' weight matrix.
 #'
 #' Like the input probability, these output weight matrices are converted to
 #' individual probability matrices and then averaged to create the final
@@ -189,6 +218,15 @@ inp_from_perps_multi <- function(perplexities = NULL,
           summarize(inp$pm, "msP")
         }
 
+        # Update intrinsic dimensionality
+        d_hat <- mean(inp$dims)
+        if (!is.null(inp$d_hat)) {
+          inp$d_hat <- max(inp$d_hat, d_hat)
+        }
+        else {
+          inp$d_hat <- d_hat
+        }
+
         # because P can change more than once per iteration, we handle calling
         # inp_updated manually
         update_res <- inp_updated(inp, out, method)
@@ -203,6 +241,204 @@ inp_from_perps_multi <- function(perplexities = NULL,
   )
 }
 
+#' Initialize With Multiscale Perplexity (Lower Memory Usage)
+#'
+#' An initialization method for creating input probabilities.
+#'
+#' This function calculates multiple input probability matrices, corresponding
+#' to multiple perplexities, then uses the average of these matrices for the
+#' final probability matrix. It uses the same basic method of
+#' \code{\link{inp_from_perps_multi}}, but saves a bit of memory by not having
+#' to store all the probability matrices in memory at once.
+#'
+#' The requirement to store all the matrices in memory comes from needing
+#' to have calculated intrinsic dimensionalities at all scales to find the
+#' maximum value, which is used as the best estimate in calculating the degree
+#' to which the output precisions are modified to reflect any deviation from
+#' uniform density.
+#'
+#' If this wasn't necessary, it would only be necessary to store two matrices
+#' at any time: the running total of probability sums and the current
+#' probability matrix.
+#'
+#' The downside to this is that the estimate of the intrinsic dimensionality
+#' at a given iteration is only the largest value seen over the number of
+#' scales used in the average probability matrix so far, so that the output
+#' kernels for larger perplexities are slightly different compared to the
+#' full-memory version.
+#'
+#' The other difference between this version and the full-memory version is that
+#' because the perplexity/precision results for the next higher perplexity
+#' are not stored, they can't be used in the finite difference estimate of
+#' the dimensionality. Instead, values used in the initial bisection search
+#' to find the perplexity are used. This doesn't lead to very large differences
+#' in the intrinisic dimensionalities in various test cases (< 2%).
+#'
+#' A list of perplexities may be provided to this function. Otherwise, the
+#' perplexities used are decreasing powers of 2, e.g. 16, 8, 4, 2
+#' with the maximum perplexity given by the formula:
+#'
+#' \deqn{\lfloor{\log_{2}(N/4)}\rceil}{round(log2(N / 4)}
+#'
+#' where N is the number of observations in the data set. The smallest
+#' perplexity value tried is 2.
+#'
+#' If a non-zero value of \code{num_scale_iters} is provided, the perplexities
+#' will be combined over the specified number of iterations, averaging over
+#' an increasing number of perplexities until they are all used to generate
+#' the probability matrix at \code{num_scale_iters}. If using the default
+#' scales, the perplexities are added in decreasing order, otherwise, they
+#' are added in the order provided in \code{scales} list. It is suggested that
+#' the \code{scales} list therefore order the perplexities in decreasing order.
+#'
+#' @param perplexities List of perplexities to use. If not provided, then
+#'   ten equally spaced perplexities will be used, starting at half the size
+#'   of the dataset, and ending at 32.
+#' @param input_weight_fn Weighting function for distances. It should have the
+#'  signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix
+#'  of squared distances and \code{beta} is a real-valued scalar parameter
+#'  which will be varied as part of the search to produce the desired
+#'  perplexity. The function should return a matrix of weights
+#'  corresponding to the transformed squared distances passed in as arguments.
+#' @param num_scale_iters Number of iterations for the perplexity of the input
+#'  probability to change from the start perplexity to the end perplexity.
+#' @param modify_kernel_fn Function to create a new similarity kernel based
+#'  on the new perplexity. Will be called every time a new input probability
+#'  matrix is generated. See the details section for more.
+#' @param verbose If \code{TRUE} print message about initialization during the
+#' embedding.
+#' @return Input initializer for use by an embedding function.
+#' @seealso
+#' \code{\link{inp_from_perps_multi}} for more details on how the intrinsic
+#' dimensionality is calculated.
+#' \code{\link{embed_prob}} for how to use this function for
+#' configuring an embedding.
+inp_from_perps_multil <- function(perplexities = NULL,
+                                 input_weight_fn = exp_weight,
+                                 num_scale_iters = NULL,
+                                 modify_kernel_fn = scale_prec_to_perp,
+                                 verbose = TRUE) {
+  inp_prob(
+    function(inp, method, opt, iter, out) {
+
+      if (is.null(perplexities)) {
+        max_scales <- max(round(log2(nrow(inp$dm) / 4)), 1)
+        perplexities <- vapply(seq_along(1:max_scales),
+                               function(x) { 2 ^ (max_scales - x + 1) }, 0)
+      }
+      else {
+        max_scales = length(perplexities)
+      }
+      method$perplexities <- perplexities
+
+      if (is.null(num_scale_iters)) {
+        num_scale_iters <- (max_scales - 1) * 100
+      }
+      num_steps <- max(max_scales - 1, 1)
+      step_every <- num_scale_iters / num_steps
+
+      if (iter == 0) {
+        if (verbose) {
+          message("Perplexity will be multi-scaled over ", max_scales,
+                  " values, contributing every ~", round(step_every), " iters")
+        }
+        method$num_scales <- 0
+        method$inp_updated_fn <- function(inp, out, method) {
+          if (!is.null(modify_kernel_fn)) {
+            kernel <- modify_kernel_fn(inp, out, method)
+          }
+          else {
+            kernel <- method$orig_kernel
+          }
+          method$kernels[[method$num_scales]] <- kernel
+          list(method = method)
+        }
+
+        method$orig_kernel <- method$kernel
+        method$update_out_fn <- make_update_out_ms()
+        method$stiffness_fn <- plugin_stiffness_ms
+
+        inp$pms <- list()
+        inp$betas <- list()
+        inp$d_hats <- list()
+        for (l in 1:max_scales) {
+          perp <- perplexities[l]
+          if (verbose) {
+            message("Calculating perplexity ", formatC(perp))
+          }
+
+          inpl <- single_perplexity(inp, perplexity = perp,
+                                   input_weight_fn = input_weight_fn,
+                                   verbose = verbose)$inp
+
+          inp$pms[[l]] <- inpl$pm
+          inp$betas[[l]] <- inpl$beta
+        }
+
+        d_hat <- 1
+        # Update intrinsic dimensionality using the method
+        # suggested by Lee and co-workers
+        for (l in 1:max_scales) {
+          if (l != 1) {
+            # need the next largest perplexity for finite difference estimation
+            # so we can't do the calculation for the largest perplexity.
+
+            # perplexities are stored in decreasing order, so the forward
+            # finite difference estimate uses the values from the previous l
+            beta_fwd <- inp$betas[[l - 1]]
+            beta <- inp$betas[[l]]
+            dlog2b <- log2(beta_fwd) - log2(beta)
+
+            h_fwd <- log2(perplexities[l - 1])
+            h <- log2(perplexities[l])
+            dh <- h_fwd - h
+
+            d_hat <- mean(-2 * dh / dlog2b)
+
+            if (!is.null(inp$d_hat)) {
+              inp$d_hat <- max(inp[["d_hat"]], d_hat)
+            }
+            else {
+              inp$d_hat <- d_hat
+            }
+          }
+        }
+      }
+
+      while (method$num_scales * step_every <= iter
+             && method$num_scales < max_scales) {
+        method$num_scales <- method$num_scales + 1
+
+        inp$perp <- perplexities[method$num_scales]
+        # initialize or update the running total and mean of
+        # pms for each perplexity
+        if (is.null(inp$pm_sum)) {
+          inp$pm_sum <- inp$pms[[method$num_scales]]
+        }
+        else {
+          inp$pm_sum <- inp$pm_sum + inp$pm
+        }
+        inp$pm <- inp$pm_sum / method$num_scales
+
+        if (verbose) {
+          message("Iter ", iter, " adding perplexity ",
+                  formatC(inp$perp), " to msP")
+          summarize(inp$pm, "msP")
+        }
+
+        # because P can change more than once per iteration, we handle calling
+        # inp_updated manually
+        update_res <- inp_updated(inp, out, method)
+        inp <- update_res$inp
+        out <- update_res$out
+        method <- update_res$method
+      }
+      list(inp = inp, method = method, out = out)
+    },
+    init_only = FALSE,
+    call_inp_updated = FALSE
+  )
+}
 
 #' Initialize With Step Perplexity
 #'
@@ -331,6 +567,7 @@ inp_from_step_perp <- function(perplexities = NULL,
         inp <- single_perplexity(inp, perplexity = perp,
                                  input_weight_fn = input_weight_fn,
                                  verbose = verbose)$inp
+
         inp$perp <- perp
       }
       list(inp = inp, method = method)
@@ -347,13 +584,21 @@ inp_from_step_perp <- function(perplexities = NULL,
 #' @param method Embedding method.
 #' @family sneer kernel modifiers
 scale_prec_to_perp <- function(inp, out, method) {
+
+  # u differing from 1 allows deviation from assumption of strict uniformity
+  # (e.g. due to clustering, edge effects) - clamping between 1 and 2 is
+  # from an empirical observation made by Lee et al.
+  u <- min(2, max(1, inp$d_hat / out$dim))
+
   # Lee et al (from whence this equation is taken) use prec/2 in their
   # exponential kernel, whereas the one in sneer uses prec directly.
   # just divide by 2 here to be consistent
-  prec <- (inp$perp ^ (-2 / out$dim)) * 0.5
+  prec <- (inp$perp ^ ((-2 * u) / out$dim)) * 0.5
   if (method$verbose) {
     message("Creating kernel with precision ", formatC(prec),
-            " for perplexity ", formatC(inp$perp))
+            " for perplexity ", formatC(inp$perp),
+            " d_intrinsic = ", formatC(inp$d_hat),
+            " u = ", formatC(u))
   }
   new_kernel <- method$orig_kernel
   new_kernel$beta <- prec

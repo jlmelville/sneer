@@ -25,11 +25,47 @@ have the following signature: \code{function(d2m, beta)}}
 List with the following members:
  \item{\code{pm}}{Row probability matrix. Each row is a probability
  distribution with a perplexity within \code{tol} of \code{perplexity}.}
- \item{\code{beta}}{Matrix of beta parameters used with \code{weight_fn} that
+ \item{\code{beta}}{Vector of beta parameters used with \code{weight_fn} that
  generated \code{pm}.}
+ \item{\code{dims}}{Vector of intrinsic dimensionality values calculated
+ for each point using the beta value at the target perplexity.}
 }
 \description{
 For each row, finds the value of beta which generates the probability
 with the desired perplexity.
+}
+\details{
+The intrinsic dimensionality is also calculated for each point. It is
+calculated as the derivative of the Shannon Entropy in bits with respect to
+the log2 of the beta parameter. The value reported is that of a finite
+difference estimate using the value of beta at the target perplexity and the
+values calculated at the previous step of the binary search.
+
+The intrinsic dimensionality is mainly used in multiscale embedding, e.g.
+\code{\link{inp_from_perps_multi}}, but may have some diagnostic value in
+other embeddings, if monitored with respect to different perplexity settings,
+for example. The calculation requires the \code{weight_fn} to be
+exponential in the squared distances (i.e. the usual Gaussian similarity
+kernel used in probability-based embeddings). If using a non-default
+\code{weight_fn}, be very suspicious over attaching any particular meaning
+to the dimensionality values.
+}
+\references{
+Intrinsic dimensionality with a Gaussian similarity kernel was described in:
+Lee, J. A., Peluffo-Ordo'nez, D. H., & Verleysen, M. (2015).
+Multi-scale similarities in stochastic neighbour embedding: Reducing
+dimensionality while preserving both local and global structure.
+
+Note that the procedure described in this paper is slightly different from
+that done here. In the paper, the perplexity search is carried out for
+multiple target perplexities, and the finite different estimate of the
+intrisic dimensionality is carried out by using the \code{beta} values only
+at the target perplexities. The approach used here takes advantage of the
+fact that multiple beta/perplexity values are generated as part of the
+bisection search anyway, so are reported even when only single-scale
+embeddings are used. Comparison of intrinsic dimensionalities calculated
+on the simulation datasets \code{\link{ball}}, \code{\link{helix}}
+and \code{\link{sphere}} with those reported in the paper show similar
+values.
 }
 

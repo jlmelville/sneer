@@ -174,23 +174,27 @@ test_that("Can combine multiscaling with asymmetric weights", {
                                       transfer_kernel_bandwidths,
                                     verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
-    reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+    reporter = make_reporter(keep_costs = TRUE, report_every = 2,
                              verbose = FALSE),
     max_iter = 10,
     export = c("report", "method")
   )
+
   all_betas <- sapply(ssne_iris_tms3_s10$method$kernels, function(k) { k$beta })
-  expect_equal(all_betas[, 1],
-               c(0.0004883, 0.0004883, 0.0004883, 0.0004883, 0.0004883,
-                 0.0004883, 0.0004883, 0.0009766, 0.0002441, 0.0004883),
+
+  expected_betas <- matrix(c(
+    c(0.0004883, 0.0004883, 0.0002441, 0.0004883, 0.0004883,
+      0.0004883, 0.0004883, 0.0004883, 0.0002441, 0.0004883),
+    c(0.3431, 1.0787, 0.7401, 0.7476, 0.3432,
+      0.1717, 0.8990, 0.5226, 0.3159, 0.4832),
+    c(0.8341, 2.8256, 1.5967, 2.3109, 0.8003,
+      0.4965, 2.4034, 1.6010, 0.9867, 2.8540)), ncol = 3)
+
+  expect_equal(all_betas[, 1], expected_betas[, 1],
                info = "precs for perp 9", tolerance = 1e-5, scale = 1)
-  expect_equal(all_betas[, 2],
-               c(0.3431, 1.0787, 0.7401, 0.7476, 0.3432,
-                 0.1717, 0.8990, 0.5226, 0.3159, 0.4832),
+  expect_equal(all_betas[, 2], expected_betas[, 2],
                info = "precs for perp 6", tolerance = 1e-4, scale = 1)
-  expect_equal(all_betas[, 3],
-               c(0.8341, 2.8256, 1.5967, 2.3109, 0.8003,
-                 0.4965, 2.4034, 1.6010, 0.9867, 2.8540),
+  expect_equal(all_betas[, 3], expected_betas[, 3],
                info = "precs for perp 3", tolerance = 1e-4, scale = 1)
 
   # repeat this test scaling over 0 iterations
@@ -213,17 +217,11 @@ test_that("Can combine multiscaling with asymmetric weights", {
   )
 
   all_betas_s0 <- sapply(ssne_iris_tms3_s0$method$kernels, function(k) { k$beta })
-  expect_equal(all_betas_s0[, 1],
-               c(0.0004883, 0.0004883, 0.0004883, 0.0004883, 0.0004883,
-                 0.0004883, 0.0004883, 0.0009766, 0.0002441, 0.0004883),
+  expect_equal(all_betas_s0[, 1], expected_betas[, 1],
                info = "0 iter scale precs for perp 9", tolerance = 1e-5, scale = 1)
-  expect_equal(all_betas_s0[, 2],
-               c(0.3431, 1.0787, 0.7401, 0.7476, 0.3432,
-                 0.1717, 0.8990, 0.5226, 0.3159, 0.4832),
+  expect_equal(all_betas_s0[, 2], expected_betas[, 2],
                info = "0 iter scale precs for perp 6", tolerance = 1e-4, scale = 1)
-  expect_equal(all_betas_s0[, 3],
-               c(0.8341, 2.8256, 1.5967, 2.3109, 0.8003,
-                 0.4965, 2.4034, 1.6010, 0.9867, 2.8540),
+  expect_equal(all_betas_s0[, 3], expected_betas[, 3],
                info = "0 iter scale precs for perp 3", tolerance = 1e-4, scale = 1)
 })
 

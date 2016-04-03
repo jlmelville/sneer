@@ -74,7 +74,7 @@ prec_to_bandwidth <- function(prec) {
 #'  distribution with a perplexity within \code{tol} of \code{perplexity}.}
 #'  \item{\code{beta}}{Vector of beta parameters used with \code{weight_fn} that
 #'  generated \code{pm}.}
-#'  \item{\code{dims}{Vector of intrinsic dimensionality values calculated
+#'  \item{\code{dims}}{Vector of intrinsic dimensionality values calculated
 #'  for each point using the beta value at the target perplexity.}
 #' @references
 #' Intrinsic dimensionality with a Gaussian similarity kernel was described in:
@@ -179,8 +179,8 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
   }
 
   dh <- hs[length(hs)] - hs[length(hs) - 1]
-  dlog2p <- log2(betas[length(betas)]) - log2(betas[length(betas) - 1])
-  d_intr <- -2 * dh / dlog2p
+  dlog2b <- log2(betas[length(betas)]) - log2(betas[length(betas) - 1])
+  d_intr <- -2 * dh / dlog2b
 
 
   list(pr = result$best$pr, perplexity = h_base ^ result$best$h,

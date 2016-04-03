@@ -45,7 +45,7 @@ A list of perplexities may be provided to this function. Otherwise, the
 perplexities used are decreasing powers of 2, e.g. 16, 8, 4, 2
 with the maximum perplexity given by the formula:
 
-\deqn{\lfloor{\log_{2}(N/4)}\rfloor}{floor(log2(N / 4)}
+\deqn{\lfloor{\log_{2}(N/4)}\rceil}{round(log2(N / 4)}
 
 where N is the number of observations in the data set. The smallest
 perplexity value tried is 2.
@@ -64,16 +64,45 @@ a parameter which can control the 'width' of the similarity function should
 be altered. For JSE, which uses an exponential weight function, the value
 of the precision parameter, beta, is given by:
 
-\deqn{\beta = K^{-\frac{2}{P}}}{beta = K ^ (-2 / P)}
+\deqn{\beta = K^{-\frac{2U}{P}}}{beta = K ^ (-2U / P)}
 
-where K is the perplexity and P is the output dimensionality (normally 2
-for visualization purposes). The precision, beta, is then used in the
-exponential weighting function:
+where K is the perplexity, P is the output dimensionality (normally 2
+for visualization purposes), and U is a coefficient which, when not equal to
+1, represents a deviation from the assumption of a uniform density around
+each point (e.g. due to clustering, edge effects and so on). Empirically,
+Lee and co-workers suggested setting U to a value between 1 and 2, which they
+quantified as:
 
-\deqn{W = \exp(-\beta D)}{W = exp(-beta * D)}
+\deqn{U = \textup{min}\left [2, \textup{max} \left( 1, \frac{\hat{D}}{P}\right ) \right ]}
+{U = min(2, max(1, D_hat / P))}
 
-where D is the output distance matrix and W is the resulting output weight
-matrix.
+and \eqn{\hat{D}}{D_hat} is the intrinsic dimensionality of the dataset.
+
+The intrinsic dimensionality of the dataset is the maximum
+intrinsic dimensionality calculated over a set of target perplexities. In
+turn, the intrinsic dimensionality for a given perplexity is given by
+averaging over the intrinsic dimensionality calculated at each point.
+The intrinsic dimensionality for a given data point and perplexity is
+calculated by:
+
+\deqn{\hat{D_{i,K}} = -2 \frac{\Delta H_{i,K}}{\Delta \log_{2}\beta_{i,K}}}
+{D_hat_ik = -2 * delta_h_ik / delta_log2b_ik}
+
+where \eqn{\frac{\Delta H}{\Delta \log_{2}\beta}}{delta_h_ik / delta_log2b_ik}
+is an estimate of the gradient of the Shannon Entropy (in bits) of the input
+probability i at perplexity K with respect to the log2 of the input
+precision. The estimate is made via a one-sided finite difference
+calculation, using the betas and perplexity values from the next largest
+perplexity in the \code{perplexities} vector.
+
+Yes, this seems like a lot of work to calculate a value between 1 and 2.
+
+The precision, beta, is then used in the exponential weighting function:
+
+\deqn{W = \exp(-\beta D)}{W = exp(-beta * D2)}
+
+where D2 is the output squared distance matrix and W is the resulting output
+weight matrix.
 
 Like the input probability, these output weight matrices are converted to
 individual probability matrices and then averaged to create the final
