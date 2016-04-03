@@ -1,7 +1,7 @@
 Package: sneer
 Type: Package
 Title: Stochastic Neighbor Embedding Experiments in R
-Version: 0.0.0.9006
+Version: 0.0.0.9007
 Date: 2015-10-04
 Authors@R: person("Melville", "James", email = "jlmelville@gmail.com",
     role = c("aut", "cre"))
