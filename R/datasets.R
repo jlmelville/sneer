@@ -1,3 +1,4 @@
+# Simulation data sets.
 
 #' Sphere data set.
 #'
@@ -99,4 +100,27 @@ helix <- function(n = 1000, rmajor = 2, rminor = 1, nwinds = 8, nlabels = 5) {
 
   Label <- as.factor(floor(((z + rminor) / (2 * rminor)) * nlabels))
   data.frame(x, y, z, Label)
+}
+
+#' d-Dimensional Gaussian Data Set
+#'
+#' Simulation data.
+#'
+#' Creates a series of points randomly sampled from an d-Dimensional Gaussian
+#' with mean zero and variance 1.
+#'
+#' Labels go from \code{0} to \code{nlabels - 1}. Points are classified into
+#' labels based on their distance from the origin, where that distance is
+#' divided into \code{nlabels} equal lengths. That results in unequal volumes
+#' and hence unequal populations of the labels.
+#'
+#' @param n Number of points to create.
+#' @param d Dimension of the Gaussian.
+#' @param nlabels Number of labels.
+#' @return Data frame.
+gauss <- function(n = 1000, d = 3, nlabels = 6) {
+ m <- matrix(rnorm(n * d), ncol = d)
+ dist <- sqrt(rowSums(m * m))
+ Label <- as.factor(round((nlabels - 1) * (dist / max(dist))))
+ data.frame(m, Label)
 }
