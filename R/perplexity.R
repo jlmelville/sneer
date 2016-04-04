@@ -171,15 +171,21 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 
   # if we got lucky guessing the parameter for the target perplexity immediately
   # generate another beta value close to the current value
+  if (length(hs) == 0) {
+    hs <- c(result$best$h)
+    betas <- c(result$x)
+  }
+
   if (length(hs) == 1) {
     beta_fwd <- min(result$x * 1.01, result$x + 1e-3)
-    h_fwd <- fn(beta_fwd)$value
+    h_fwd <- fn(beta_fwd)$value + log(perplexity, base = h_base)
+
     betas <- c(betas, beta_fwd)
     hs <- c(hs, h_fwd)
   }
 
   dh <- hs[length(hs)] - hs[length(hs) - 1]
-  dlog2b <- log2(betas[length(betas)]) - log2(betas[length(betas) - 1])
+    dlog2b <- log2(betas[length(betas)]) - log2(betas[length(betas) - 1])
   d_intr <- -2 * dh / dlog2b
 
 
@@ -228,8 +234,10 @@ root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_lower,
     result <- fn(bounds$mid)
     value <- result$value
     iter <- iter + 1
-    xs <- c(xs, bounds$mid)
-    ys <- c(ys, value)
+    if (keep_search) {
+      xs <- c(xs, bounds$mid)
+      ys <- c(ys, value)
+    }
   }
 
   result <- list(x = bounds$mid, y = value, best = result, iter = iter)
