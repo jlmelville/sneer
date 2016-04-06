@@ -10,8 +10,9 @@ inp_from_perps_multil(perplexities = NULL, input_weight_fn = exp_weight,
 }
 \arguments{
 \item{perplexities}{List of perplexities to use. If not provided, then
-ten equally spaced perplexities will be used, starting at half the size
-of the dataset, and ending at 32.}
+a series of perplexities in decreasing powers of two are used, starting
+with the power of two closest to the number of observations in the dataset
+divided by four.}
 
 \item{input_weight_fn}{Weighting function for distances. It should have the
 signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix

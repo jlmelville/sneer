@@ -27,7 +27,7 @@ probability to change from the start perplexity to the end perplexity.}
 on the new perplexity. Will be called every time a new input probability
 matrix is generated. See the details section for more.}
 
-\item{verbose}{If \code{TRUE} print message about tricks during the
+\item{verbose}{If \code{TRUE} print message about initialization during the
 embedding.}
 }
 \value{
@@ -90,7 +90,8 @@ exponential similarity kernel to those from the input kernel.
 \code{\link{embed_prob}} for how to use this function for
 configuring an embedding.
 
-Other sneer input initializers: \code{\link{inp_from_perps_multi}},
+Other sneer input initializers: \code{\link{inp_from_dint_max}},
+  \code{\link{inp_from_perps_multi}},
   \code{\link{inp_from_perp}},
   \code{\link{input_initializers}}
 }

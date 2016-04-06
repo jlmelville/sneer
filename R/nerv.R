@@ -81,16 +81,17 @@
 #' embed_prob(method = nerv(lambda = 0), ...)
 #' }
 nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
-  lreplace(
+  method <- lreplace(
     asne(eps = eps, verbose = verbose),
     cost = nerv_fg(lambda = lambda),
     stiffness_fn = function(method, inp, out) {
       nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
                      beta = method$kernel$beta, eps = method$eps)
     },
-    inp_updated_fn = nerv_inp_update,
     out_updated_fn = klqp_update
   )
+  method <- on_inp_updated(method, nerv_inp_update)$method
+  method
 }
 
 #' NeRV with uniform bandwidth (UNeRV)

@@ -97,8 +97,9 @@
 #' \code{method$orig_weight_fn}.
 #'
 #' @param perplexities List of perplexities to use. If not provided, then
-#'   ten equally spaced perplexities will be used, starting at half the size
-#'   of the dataset, and ending at 32.
+#'   a series of perplexities in decreasing powers of two are used, starting
+#'   with the power of two closest to the number of observations in the dataset
+#'   divided by four.
 #' @param input_weight_fn Weighting function for distances. It should have the
 #'  signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix
 #'  of squared distances and \code{beta} is a real-valued scalar parameter
@@ -110,7 +111,7 @@
 #' @param modify_kernel_fn Function to create a new similarity kernel based
 #'  on the new perplexity. Will be called every time a new input probability
 #'  matrix is generated. See the details section for more.
-#' @param verbose If \code{TRUE} print message about tricks during the
+#' @param verbose If \code{TRUE} print message about initialization during the
 #' embedding.
 #' @return Input initializer for use by an embedding function.
 #' @seealso \code{\link{embed_prob}} for how to use this function for
@@ -173,7 +174,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
                   " values, calculating every ~", round(step_every), " iters")
         }
         method$num_scales <- 0
-        method$inp_updated_fn <- function(inp, out, method) {
+        method <- on_inp_updated(method, function(inp, out, method) {
           if (!is.null(modify_kernel_fn)) {
             kernel <- modify_kernel_fn(inp, out, method)
           }
@@ -182,7 +183,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
           }
           method$kernels[[method$num_scales]] <- kernel
           list(method = method)
-        }
+        })$method
 
         method$orig_kernel <- method$kernel
         method$update_out_fn <- make_update_out_ms()
@@ -292,8 +293,9 @@ inp_from_perps_multi <- function(perplexities = NULL,
 #' the \code{scales} list therefore order the perplexities in decreasing order.
 #'
 #' @param perplexities List of perplexities to use. If not provided, then
-#'   ten equally spaced perplexities will be used, starting at half the size
-#'   of the dataset, and ending at 32.
+#'   a series of perplexities in decreasing powers of two are used, starting
+#'   with the power of two closest to the number of observations in the dataset
+#'   divided by four.
 #' @param input_weight_fn Weighting function for distances. It should have the
 #'  signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix
 #'  of squared distances and \code{beta} is a real-valued scalar parameter
@@ -343,7 +345,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
                   " values, contributing every ~", round(step_every), " iters")
         }
         method$num_scales <- 0
-        method$inp_updated_fn <- function(inp, out, method) {
+        method <- on_inp_updated(method, function(inp, out, method) {
           if (!is.null(modify_kernel_fn)) {
             kernel <- modify_kernel_fn(inp, out, method)
           }
@@ -352,7 +354,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
           }
           method$kernels[[method$num_scales]] <- kernel
           list(method = method)
-        }
+        })$method
 
         method$orig_kernel <- method$kernel
         method$update_out_fn <- make_update_out_ms()
@@ -482,7 +484,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
 #' @param modify_kernel_fn Function to create a new similarity kernel based
 #'  on the new perplexity. Will be called every time a new input probability
 #'  matrix is generated. See the details section for more.
-#' @param verbose If \code{TRUE} print message about tricks during the
+#' @param verbose If \code{TRUE} print message about initialization during the
 #' embedding.
 #' @return Input initializer for use by an embedding function.
 #' @seealso \code{\link{embed_prob}} for how to use this function for
@@ -545,10 +547,10 @@ inp_from_step_perp <- function(perplexities = NULL,
         }
         method$num_scales <- 0
         if (!is.null(modify_kernel_fn)) {
-          method$inp_updated_fn <- function(inp, out, method) {
+          method <- on_inp_updated(method, function(inp, out, method) {
             method$kernel <- modify_kernel_fn(inp, out, method)
             list(method = method)
-          }
+          })$method
         }
         method$orig_kernel <- method$kernel
       }
@@ -603,6 +605,101 @@ scale_prec_to_perp <- function(inp, out, method) {
   new_kernel <- method$orig_kernel
   new_kernel$beta <- prec
   new_kernel
+}
+
+#' Initialize With Perplexity that Maximizes Intrinsic Dimensionality
+#'
+#' An initialization method for creating input probabilities.
+#'
+#' This technique uses a lot of the same ideas from multiscale embedding,
+#' except rather than use probabilities from multiple perplexities directly
+#' in the input and output spaces, it selects for the input probability matrix
+#' that which corresponds to the perplexity that gives the maximum intrinsic
+#' dimensionality.
+#'
+#' A list of perplexities may be provided to this function. Otherwise, the
+#' perplexities used are decreasing powers of 2, e.g. 16, 8, 4, 2
+#' with the maximum perplexity given by the formula:
+#'
+#' \deqn{\lfloor{\log_{2}(N/4)}\rceil}{round(log2(N / 4)}
+#'
+#' The perplexities are used in the order they are provided in the
+#' \code{perplexities} vector. As soon as the intrinsic dimensionality begins
+#' to decrease, the procedure is aborted and the probability matrix from the
+#' previously calculated perplexity is used.
+#'
+#' @param perplexities List of perplexities to use. If not provided, then
+#'   a series of perplexities in decreasing powers of two are used, starting
+#'   with the power of two closest to the number of observations in the dataset
+#'   divided by four.
+#' @param input_weight_fn Weighting function for distances. It should have the
+#'  signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix
+#'  of squared distances and \code{beta} is a real-valued scalar parameter
+#'  which will be varied as part of the search to produce the desired
+#'  perplexity. The function should return a matrix of weights
+#'  corresponding to the transformed squared distances passed in as arguments.
+#' @param verbose If \code{TRUE} print message about initialization during the
+#' embedding.
+#' @return Input initializer for use by an embedding function.
+#' @seealso \code{\link{inp_from_perps_multi}} for caveats on using a
+#'  non-default version of \code{input_weight_fn}.
+#' @family sneer input initializers
+#' @export
+inp_from_dint_max <- function(perplexities = NULL,
+                              input_weight_fn = exp_weight,
+                              verbose = TRUE) {
+  inp_prob(
+    function(inp, method, opt, iter, out) {
+
+      if (is.null(perplexities)) {
+        max_scales <- max(round(log2(nrow(inp$dm) / 4)), 1)
+        perplexities <- vapply(seq_along(1:max_scales),
+                               function(x) { 2 ^ (max_scales - x + 1) }, 0)
+      }
+      else {
+        max_scales = length(perplexities)
+      }
+      method$perplexities <- perplexities
+
+      modify_kernel_fn <- scale_prec_to_perp
+      if (!is.null(modify_kernel_fn)) {
+        method <- on_inp_updated(method, function(inp, out, method) {
+          method$kernel <- modify_kernel_fn(inp, out, method)
+          list(method = method)
+        })$method
+      }
+      method$orig_kernel <- method$kernel
+
+      for (l in 1:max_scales) {
+        perp <- perplexities[l]
+        if (verbose) {
+          message("Calculating intrinsic dim for perplexity ", formatC(perp))
+        }
+        inpl <- single_perplexity(inp, perplexity = perp,
+                                 input_weight_fn = input_weight_fn,
+                                 verbose = verbose)$inp
+
+        d_hat <- median(inpl$dims)
+        if (is.null(inp$d_hat)) {
+          inp$d_hat <- d_hat
+        }
+        else {
+          if (d_hat > inp$d_hat) {
+            inp <- inpl
+            inp$d_hat <- d_hat
+            inp$perp <- perp
+          }
+          else {
+            if (verbose) {
+              message("Max intrinsic dim = ", formatC(inp$d_hat),
+                      " found at perp ", formatC(perplexities[l - 1]))
+            }
+            break
+          }
+        }
+      }
+      list(inp = inp, method = method)
+    })
 }
 
 #' Multiscale Plugin Stiffness

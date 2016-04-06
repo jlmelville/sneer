@@ -10,8 +10,9 @@ inp_from_perps_multi(perplexities = NULL, input_weight_fn = exp_weight,
 }
 \arguments{
 \item{perplexities}{List of perplexities to use. If not provided, then
-ten equally spaced perplexities will be used, starting at half the size
-of the dataset, and ending at 32.}
+a series of perplexities in decreasing powers of two are used, starting
+with the power of two closest to the number of observations in the dataset
+divided by four.}
 
 \item{input_weight_fn}{Weighting function for distances. It should have the
 signature \code{input_weight_fn(d2m, beta)}, where \code{d2m} is a matrix
@@ -27,7 +28,7 @@ probability to change from the start perplexity to the end perplexity.}
 on the new perplexity. Will be called every time a new input probability
 matrix is generated. See the details section for more.}
 
-\item{verbose}{If \code{TRUE} print message about tricks during the
+\item{verbose}{If \code{TRUE} print message about initialization during the
 embedding.}
 }
 \value{
@@ -162,7 +163,8 @@ configuring an embedding.
 perplexity values, but replaces the old probability matrix with that of the
 new perplexity at each step, rather than averaging.
 
-Other sneer input initializers: \code{\link{inp_from_perp}},
+Other sneer input initializers: \code{\link{inp_from_dint_max}},
+  \code{\link{inp_from_perp}},
   \code{\link{inp_from_step_perp}},
   \code{\link{input_initializers}}
 }

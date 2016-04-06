@@ -202,17 +202,73 @@ single_perplexity <- function(inp, perplexity = 30,
 #' \item{out}{Updated output data.}
 #' \item{method}{Updated embedding method.}
 inp_updated <- function(inp, out, method) {
-  if (!is.null(method$inp_updated_fn)) {
-    update_result <- method$inp_updated_fn(inp, out, method)
-    if (!is.null(update_result$inp)) {
-      inp <- update_result$inp
-    }
-    if (!is.null(update_result$out)) {
-      out <- update_result$out
-    }
-    if (!is.null(update_result$method)) {
-      method <- update_result$method
+  if (!is.null(method$num_inp_updated_fn)) {
+    for (i in 1:method$num_inp_updated_fn) {
+      if (!is.null(method$inp_updated_fns[[i]])) {
+        update_result <- method$inp_updated_fns[[i]](inp, out, method)
+        if (!is.null(update_result$inp)) {
+          inp <- update_result$inp
+        }
+        if (!is.null(update_result$out)) {
+          out <- update_result$out
+        }
+        if (!is.null(update_result$method)) {
+          method <- update_result$method
+        }
+      }
     }
   }
   list(inp = inp, out = out, method = method)
+}
+
+#' Register a Function to Run When Input Data Changes
+#'
+#' Call this function to register a callback to run when the input data changes.
+#'
+#' For example, in \code{\link{nerv}}, the output kernel precisions are the
+#' same as those of the input kernel. Hence, it registers a function to transfer
+#' those value from the input data to the output kernel. This may be called
+#' multiple times if the probability is recalculated (e.g. due to multiple
+#' perplexity calculations).
+#'
+#' Similarly, the importance-weighted modifications of an embedding uses the
+#' input probability to generate a further weighting of the output kernels.
+#'
+#' The above two examples, although they both modify the kernel, can co-exist
+#' peacefully, because they affect two different parameters. However, the
+#' approach suggested in the multiscaling approach involves choosing a single
+#' precision value for the output kernel which is scaled compared to those
+#' used with the input kernel. This is in direct conflict with the NeRV
+#' approach.
+#'
+#' Ideally, we would be able to detect which update functions interfere with
+#' each other, and then ensure that only the most recently registered function
+#' was retained in the list of callbacks. But that sounds horrifically complex.
+#' Instead, when a function is registered here, it runs after previously
+#' registered callbacks. So if NeRV is modified to use multiscaling, the
+#' multiscale approach will "win" because it will run after the NeRV update
+#' function, and then overwrite the precision argument set by the NeRV update
+#' with its own value. This is only practical because pointlessly running
+#' the original NeRV update isn't very time consuming relative to the rest of
+#' the embedding.
+#'
+#' The function to register should have the signature
+#' \code{fn(inp, out, method)} and return a list containing any of the modified
+#' arguments.
+#'
+#' @param method Embedding method to register the function with.
+#' @param fn Function to run when the input data changes.
+#' @return List containing the updated method.
+on_inp_updated <- function(method, fn) {
+  if (!is.null(fn)) {
+    if (is.null(method$num_inp_updated_fn)) {
+      method$num_inp_updated_fn <- 0
+      method$inp_updated_fns <- list()
+    }
+    method$num_inp_updated_fn <- method$num_inp_updated_fn + 1
+
+    method$inp_updated_fns[[method$num_inp_updated_fn]] <- fn
+  }
+
+  list(method = method)
 }

@@ -23,7 +23,8 @@ Input initializers should be passed to the
 \code{init_inp} parameter of embedding functions such as
 \code{\link{embed_prob}} or \code{\link{embed_dist}}.
 
-Other sneer input initializers: \code{\link{inp_from_perps_multi}},
+Other sneer input initializers: \code{\link{inp_from_dint_max}},
+  \code{\link{inp_from_perps_multi}},
   \code{\link{inp_from_perp}},
   \code{\link{inp_from_step_perp}}
 }

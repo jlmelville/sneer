@@ -58,12 +58,11 @@ plugin <- function(cost = kl_fg(),
                    prob_type = "joint",
                    eps = .Machine$double.eps,
                    verbose = TRUE) {
-  remove_nulls(
+  method <- remove_nulls(
     list(
       cost = cost,
       kernel = kernel,
       stiffness_fn = stiffness_fn,
-      inp_updated_fn = inp_updated_fn,
       out_updated_fn = out_updated_fn,
       update_out_fn = update_out_fn,
       prob_type = prob_type,
@@ -71,6 +70,8 @@ plugin <- function(cost = kl_fg(),
       verbose = verbose
     )
   )
+  method <- on_inp_updated(method, inp_updated_fn)$method
+  method
 }
 
 #' ASNE Method using Plugin Gradient
@@ -282,14 +283,15 @@ rtsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
 nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
-  lreplace(
+  method <- lreplace(
     asne_plugin(eps = eps),
     cost = nerv_fg(lambda = lambda),
     kernel = exp_kernel(),
-    inp_updated_fn = nerv_inp_update,
     out_updated_fn = klqp_update,
     verbose = verbose
   )
+  method <- on_inp_updated(method, nerv_inp_update)$method
+  method
 }
 
 #' An implementation of SNeRV using the plugin gradient.
