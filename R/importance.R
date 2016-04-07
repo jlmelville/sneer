@@ -69,7 +69,7 @@ degree_centrality <- function(inp, out, method) {
 #' (pp. 460-468).
 importance_weight <- function(method) {
   method$kernel <- imp_kernel(method$kernel)
-  method$inp_updated_fn <- degree_centrality
+  method <- on_inp_updated(method, degree_centrality)$method
   method
 }
 
@@ -94,5 +94,3 @@ imp_kernel <- function(kernel) {
 
   kernel
 }
-
-
