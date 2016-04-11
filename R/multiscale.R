@@ -145,17 +145,17 @@
 #' @family sneer input initializers
 #' @export
 inp_from_perps_multi <- function(perplexities = NULL,
-                                 input_weight_fn = exp_weight,
-                                 num_scale_iters = NULL,
-                                 modify_kernel_fn = scale_prec_to_perp,
-                                 verbose = TRUE) {
+                                  input_weight_fn = exp_weight,
+                                  num_scale_iters = NULL,
+                                  modify_kernel_fn = scale_prec_to_perp,
+                                  verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
 
       if (is.null(perplexities)) {
-          max_scales <- max(round(log2(nrow(inp$dm) / 4)), 1)
-          perplexities <- vapply(seq_along(1:max_scales),
-                                 function(x) { 2 ^ (max_scales - x + 1) }, 0)
+        max_scales <- max(round(log2(nrow(inp$dm) / 4)), 1)
+        perplexities <- vapply(seq_along(1:max_scales),
+                               function(x) { 2 ^ (max_scales - x + 1) }, 0)
       }
       else {
         max_scales = length(perplexities)
@@ -171,15 +171,24 @@ inp_from_perps_multi <- function(perplexities = NULL,
       if (iter == 0) {
         if (verbose) {
           message("Perplexity will be multi-scaled over ", max_scales,
-                  " values, calculating every ~", round(step_every), " iters")
+                  " values, contributing every ~", round(step_every), " iters")
         }
         method$num_scales <- 0
+
+        method <- ms_wrap_in_updated(method)
+
         method <- on_inp_updated(method, function(inp, out, method) {
           if (!is.null(modify_kernel_fn)) {
+            if (!is.null(inp$pm)) {
+              inp$pmtmp <- inp$pm
+            }
+            inp$pm <- inp$pms[[method$num_scales]]
+
+            inp$beta <- inp$betas[[method$num_scales]]
             kernel <- modify_kernel_fn(inp, out, method)
           }
           else {
-            kernel <- method$orig_kernel
+            kernel <- method$kernel
           }
           method$kernels[[method$num_scales]] <- kernel
           list(method = method)
@@ -188,44 +197,76 @@ inp_from_perps_multi <- function(perplexities = NULL,
         method$orig_kernel <- method$kernel
         method$update_out_fn <- make_update_out_ms()
         method$stiffness_fn <- plugin_stiffness_ms
+
+        inp$pms <- list()
+        inp$betas <- list()
+        for (l in 1:max_scales) {
+          perp <- perplexities[l]
+          if (verbose) {
+            message("Calculating perplexity ", formatC(perp))
+          }
+
+          inpl <- single_perplexity(inp, perplexity = perp,
+                                    input_weight_fn = input_weight_fn,
+                                    verbose = verbose)$inp
+          inpl$pm <- handle_prob(inpl$pm, method)
+          inp$pms[[l]] <- inpl$pm
+          inp$betas[[l]] <- inpl$beta
+        }
+
+        d_hat <- 1
+        # Update intrinsic dimensionality using the method
+        # suggested by Lee and co-workers
+        for (l in 1:max_scales) {
+          if (l != 1) {
+            # need the next largest perplexity for finite difference estimation
+            # so we can't do the calculation for the largest perplexity.
+
+            # perplexities are stored in decreasing order, so the forward
+            # finite difference estimate uses the values from the previous l
+            beta_fwd <- inp$betas[[l - 1]]
+            beta <- inp$betas[[l]]
+            dlog2b <- log2(beta_fwd) - log2(beta)
+
+            h_fwd <- log2(perplexities[l - 1])
+            h <- log2(perplexities[l])
+            dh <- h_fwd - h
+
+
+            d_hat <- mean(-2 * dh / dlog2b)
+
+            if (!is.null(inp$d_hat)) {
+              inp$d_hat <- max(inp[["d_hat"]], d_hat)
+            }
+            else {
+              inp$d_hat <- d_hat
+            }
+          }
+        }
       }
 
       while (method$num_scales * step_every <= iter
              && method$num_scales < max_scales) {
         method$num_scales <- method$num_scales + 1
 
-        perp <- perplexities[method$num_scales]
-
-        if (verbose) {
-          message("Iter: ", iter, " setting perplexity to ", formatC(perp))
-        }
-
-        inp <- single_perplexity(inp, perplexity = perp,
-                                 input_weight_fn = input_weight_fn,
-                                 verbose = verbose)$inp
-
-        inp$perp <- perp
+        inp$perp <- perplexities[method$num_scales]
+        summarize(inp$pms[[method$num_scales]], paste0("P", method$num_scales))
 
         # initialize or update the running total and mean of
         # pms for each perplexity
         if (is.null(inp$pm_sum)) {
-          inp$pm_sum <- inp$pm
+          inp$pm_sum <- inp$pms[[method$num_scales]]
         }
         else {
-          inp$pm_sum <- inp$pm_sum + inp$pm
-          inp$pm <- inp$pm_sum / method$num_scales
+          inp$pm_sum <- inp$pm_sum + inp$pms[[method$num_scales]]
         }
-        if (verbose) {
-          summarize(inp$pm, "msP")
-        }
+        inp$pm <- inp$pm_sum / method$num_scales
+        attr(inp$pm, 'type') <- attr(inp$pms[[method$num_scales]], 'type')
 
-        # Update intrinsic dimensionality
-        d_hat <- mean(inp$dims)
-        if (!is.null(inp$d_hat)) {
-          inp$d_hat <- max(inp$d_hat, d_hat)
-        }
-        else {
-          inp$d_hat <- d_hat
+        if (verbose) {
+          message("Iter ", iter, " scale ", method$num_scales, " adding perplexity ",
+                  formatC(inp$perp), " to msP")
+          summarize(inp$pm, "msP")
         }
 
         # because P can change more than once per iteration, we handle calling
@@ -234,8 +275,12 @@ inp_from_perps_multi <- function(perplexities = NULL,
         inp <- update_res$inp
         out <- update_res$out
         method <- update_res$method
+
+        out$dirty <- TRUE
+        opt$old_cost_dirty <- TRUE
+        flush.console()
       }
-      list(inp = inp, method = method, out = out)
+      list(inp = inp, method = method, out = out, opt = opt)
     },
     init_only = FALSE,
     call_inp_updated = FALSE
@@ -342,7 +387,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
       if (iter == 0) {
         if (verbose) {
           message("Perplexity will be multi-scaled over ", max_scales,
-                  " values, contributing every ~", round(step_every), " iters")
+                  " values, calculating every ~", round(step_every), " iters")
         }
         method$num_scales <- 0
         method <- on_inp_updated(method, function(inp, out, method) {
@@ -350,7 +395,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
             kernel <- modify_kernel_fn(inp, out, method)
           }
           else {
-            kernel <- method$orig_kernel
+            kernel <- method$kernel
           }
           method$kernels[[method$num_scales]] <- kernel
           list(method = method)
@@ -359,73 +404,45 @@ inp_from_perps_multil <- function(perplexities = NULL,
         method$orig_kernel <- method$kernel
         method$update_out_fn <- make_update_out_ms()
         method$stiffness_fn <- plugin_stiffness_ms
-
-        inp$pms <- list()
-        inp$betas <- list()
-        inp$d_hats <- list()
-        for (l in 1:max_scales) {
-          perp <- perplexities[l]
-          if (verbose) {
-            message("Calculating perplexity ", formatC(perp))
-          }
-
-          inpl <- single_perplexity(inp, perplexity = perp,
-                                   input_weight_fn = input_weight_fn,
-                                   verbose = verbose)$inp
-
-          inp$pms[[l]] <- inpl$pm
-          inp$betas[[l]] <- inpl$beta
-        }
-
-        d_hat <- 1
-        # Update intrinsic dimensionality using the method
-        # suggested by Lee and co-workers
-        for (l in 1:max_scales) {
-          if (l != 1) {
-            # need the next largest perplexity for finite difference estimation
-            # so we can't do the calculation for the largest perplexity.
-
-            # perplexities are stored in decreasing order, so the forward
-            # finite difference estimate uses the values from the previous l
-            beta_fwd <- inp$betas[[l - 1]]
-            beta <- inp$betas[[l]]
-            dlog2b <- log2(beta_fwd) - log2(beta)
-
-            h_fwd <- log2(perplexities[l - 1])
-            h <- log2(perplexities[l])
-            dh <- h_fwd - h
-
-            d_hat <- mean(-2 * dh / dlog2b)
-
-            if (!is.null(inp$d_hat)) {
-              inp$d_hat <- max(inp[["d_hat"]], d_hat)
-            }
-            else {
-              inp$d_hat <- d_hat
-            }
-          }
-        }
       }
 
       while (method$num_scales * step_every <= iter
              && method$num_scales < max_scales) {
         method$num_scales <- method$num_scales + 1
 
-        inp$perp <- perplexities[method$num_scales]
+        perp <- perplexities[method$num_scales]
+
+        if (verbose) {
+          message("Iter: ", iter, " setting perplexity to ", formatC(perp))
+        }
+
+        inp <- single_perplexity(inp, perplexity = perp,
+                                 input_weight_fn = input_weight_fn,
+                                 verbose = verbose)$inp
+        inp$perp <- perp
+        inp$pr <- inp$pm
+        inp$pm <- handle_prob(inp$pm, method)
+
         # initialize or update the running total and mean of
         # pms for each perplexity
         if (is.null(inp$pm_sum)) {
-          inp$pm_sum <- inp$pms[[method$num_scales]]
+          inp$pm_sum <- inp$pm
         }
         else {
           inp$pm_sum <- inp$pm_sum + inp$pm
+          inp$pm <- inp$pm_sum / method$num_scales
         }
-        inp$pm <- inp$pm_sum / method$num_scales
-
         if (verbose) {
-          message("Iter ", iter, " adding perplexity ",
-                  formatC(inp$perp), " to msP")
           summarize(inp$pm, "msP")
+        }
+
+        # Update intrinsic dimensionality
+        d_hat <- mean(inp$dims)
+        if (!is.null(inp$d_hat)) {
+          inp$d_hat <- max(inp$d_hat, d_hat)
+        }
+        else {
+          inp$d_hat <- d_hat
         }
 
         # because P can change more than once per iteration, we handle calling
@@ -434,6 +451,10 @@ inp_from_perps_multil <- function(perplexities = NULL,
         inp <- update_res$inp
         out <- update_res$out
         method <- update_res$method
+
+        out$dirty <- TRUE
+        opt$old_cost_dirty <- TRUE
+        flush.console()
       }
       list(inp = inp, method = method, out = out)
     },
@@ -571,10 +592,25 @@ inp_from_step_perp <- function(perplexities = NULL,
                                  verbose = verbose)$inp
 
         inp$perp <- perp
+        inp$pr <- inp$pm
+        inp$pm <- handle_prob(inp$pm, method)
+
+        # because P can change more than once per iteration, we handle calling
+        # inp_updated manually
+        update_res <- inp_updated(inp, out, method)
+        inp <- update_res$inp
+        out <- update_res$out
+        method <- update_res$method
+
+        out$dirty <- TRUE
+        opt$old_cost_dirty <- TRUE
+        flush.console()
+
       }
       list(inp = inp, method = method)
     },
-    init_only = FALSE
+    init_only = FALSE,
+    call_inp_updated = FALSE
   )
 }
 
@@ -602,7 +638,7 @@ scale_prec_to_perp <- function(inp, out, method) {
             " d_intrinsic = ", formatC(inp$d_hat),
             " u = ", formatC(u))
   }
-  new_kernel <- method$orig_kernel
+  new_kernel <- method$kernel
   new_kernel$beta <- prec
   new_kernel
 }
@@ -820,4 +856,32 @@ make_update_out_ms <- function() {
     }
     out
   }
+}
+
+# Takes existing inp_updated listeners and wraps them so that they receive
+# inp$pm and inp$beta from from the current scale
+ms_wrap_in_updated <- function(method) {
+  if (!is.null(method$num_inp_updated_fn)) {
+    for (i in 1:method$num_inp_updated_fn) {
+      if (!is.null(method$inp_updated_fns[[i]])) {
+        unwrapped_fn <- method$inp_updated_fns[[i]]
+        method$inp_updated_fns[[i]] <- function(inp, out, method) {
+          inp$pm <- inp$pms[[method$num_scales]]
+          inp$beta <- inp$betas[[method$num_scales]]
+          update_result <- unwrapped_fn(inp, out, method)
+          if (!is.null(update_result$inp)) {
+            inp <- update_result$inp
+          }
+          if (!is.null(update_result$out)) {
+            out <- update_result$out
+          }
+          if (!is.null(update_result$method)) {
+            method <- update_result$method
+          }
+          list(inp = inp, out = out, method = method)
+        }
+      }
+    }
+  }
+  method
 }
