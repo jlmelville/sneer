@@ -177,6 +177,7 @@ single_perplexity <- function(inp, perplexity = 30,
   else {
     inp$pm <- d_to_p_result$pm
   }
+  inp$perp <- perplexity
   inp$dirty <- TRUE
   list(inp = inp)
 }
