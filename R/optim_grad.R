@@ -35,9 +35,6 @@ classical_gradient <- function() {
     calculate_position = classical_position,
     calculate = calculate_gradient,
     is_dirty = function(opt, inp, out, method, iter) {
-      # iter == 0 ||
-      # is.null(inp$dirty) || inp$dirty ||
-      # is.null(out$dirty) || out$dirty
       TRUE
     }
   )
@@ -73,10 +70,6 @@ nesterov_gradient <- function() {
     calculate_position = nesterov_position,
     calculate = calculate_gradient,
     is_dirty = function(opt, inp, out, method, iter) {
-      # iter == 0 ||
-      # is.null(inp$dirty) || inp$dirty ||
-      # is.null(out$dirty) || out$dirty ||
-      # is.null(opt$update$dirty) || opt$update$
       TRUE
     }
   )
