@@ -34,12 +34,16 @@ test_that("multiscaling with equal perplexities is the same as single scale", {
                tolerance = 5e-4, scale = 1,
                label = "ms-SSNE with 1 scale")
 
+  # can't have two identical perplexities without causing the d_int
+  # finite difference estimate to blow up, but a difference of 0.01
+  # gives a cost within tolerance
   ssne_iris_m2 <- embed_prob(
     iris[, 1:4],
     method = ssne_plugin(verbose = FALSE),
     opt = back_nag_adapt(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
-    init_inp = inp_from_perps_multi(perplexities = c(25, 25)),
+    init_inp = inp_from_perps_multi(perplexities = c(25, 25.01),
+                                    num_scale_iters = 0),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(verbose = FALSE, report_every = 5),
     max_iter = 20,
@@ -49,7 +53,7 @@ test_that("multiscaling with equal perplexities is the same as single scale", {
   expect_equal(ssne_iris_m2$report$cost,
                ssne_iris$report$cost,
                tolerance = 5e-4, scale = 1,
-               label = "ms-SSNE with 2 equal scales")
+               label = "ms-SSNE with 2 nearly-equal scales")
 })
 
 test_that("multiscaling SSNE with perp scaling", {
