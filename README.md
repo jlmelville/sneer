@@ -60,7 +60,8 @@ Currently sneer offers:
 * Heavy-Tailed Symmetric SNE (HSSNE).
 * Neighbor Retrieval Visualizer (NeRV).
 * Jensen-Shannon Embedding (JSE).
-* Multiscale SNE.
+* Multiscale SNE (msSNE).
+* Weighted SNE using degree centrality (wSSNE).
 * Nesterov Accelerated Gradient method for optimization.
 * The usual t-SNE Steepest descent with momentum and Jacobs adaptive step size
 if NAG is too racy for you.
