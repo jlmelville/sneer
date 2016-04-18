@@ -5,7 +5,7 @@
 \title{Find Root of Function by Bisection}
 \usage{
 root_bisect(fn, tol = 1e-05, max_iters = 50, x_lower, x_upper,
-  x_init = (x_lower + x_upper)/2, keep_search = FALSE)
+  x_init = (x_lower + x_upper)/2, keep_search = FALSE, verbose = FALSE)
 }
 \arguments{
 \item{fn}{Function to optimize. Should take one scalar numeric value and
@@ -26,6 +26,8 @@ terminate.}
 
 \item{keep_search}{If \code{TRUE}, then return all the values of \code{x}
 and \code{y} that were tried during the search.}
+
+\item{verbose}{If \code{TRUE}, logs information about the bisection search.}
 }
 \value{
 a list containing:

@@ -27,6 +27,6 @@ The weight matrix, \eqn{W} is generated from the squared distances matrix,
 \seealso{
 Other sneer weight functions: \code{\link{exp_weight}},
   \code{\link{heavy_tail_weight}},
-  \code{\link{sqrt_exp_weight}}
+  \code{\link{sqrt_exp_weight}}, \code{\link{step_weight}}
 }
 

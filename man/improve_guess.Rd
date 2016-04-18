@@ -4,14 +4,16 @@
 \alias{improve_guess}
 \title{Narrows Bisection Bracket Range}
 \usage{
-improve_guess(bracket, sgn)
+improve_guess(bracket, lower_equal_signs)
 }
 \arguments{
 \item{bracket}{List representing the bounds of the parameter search.
 Contains three elements: \code{lower}: lower value, \code{upper}: upper
 value, \code{mid}: the midpoint.}
 
-\item{sgn}{Sign of the value of the function evaluted at \code{bracket$mid}.}
+\item{lower_equal_signs}{If \code{TRUE}, the sign of the value of the
+function evaluted at \code{bracket$mid} is the same as that of
+\code{bracket$lower}.}
 }
 \value{
 Updated \code{bracket} list.

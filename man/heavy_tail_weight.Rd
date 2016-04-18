@@ -58,6 +58,7 @@ In \emph{Advances in neural information processing systems} (pp. 2169-2177).
 }
 \seealso{
 Other sneer weight functions: \code{\link{exp_weight}},
-  \code{\link{sqrt_exp_weight}}, \code{\link{tdist_weight}}
+  \code{\link{sqrt_exp_weight}}, \code{\link{step_weight}},
+  \code{\link{tdist_weight}}
 }
 

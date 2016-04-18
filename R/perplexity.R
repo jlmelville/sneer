@@ -101,12 +101,16 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
   pm <- matrix(0, n, n)
   beta <- rep(1, n)
   dims <- rep(0, n)
+  num_failures <- 0
   for (i in 1:n) {
     d2mi <- d2m[i, , drop = FALSE]
     result <- find_beta(d2mi, i, perplexity, beta[i], weight_fn, tol, max_iters)
     pm[i,] <- result$pr
     beta[i] <- result$beta
     dims[i] <- result$d_intr
+    if (!result$ok) {
+      num_failures <- num_failures + 1
+    }
   }
 
   attr(pm, 'type') <- "row"
@@ -114,6 +118,10 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
     summarize_betas(beta)
     summarize(pm, "P")
     summarize(dims, "dims")
+    if (num_failures > 0) {
+      warning(paste0(num_failures, " failures to find the target perplexity ",
+                     formatC(perplexity)))
+    }
   }
   list(pm = pm, beta = beta, dims = dims)
 }
@@ -164,6 +172,12 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
                         x_lower = 0, x_upper = Inf, x_init = beta_init,
                         keep_search = TRUE)
 
+  if (result$iter == max_iters) {
+    ok <- FALSE
+  }
+  else {
+    ok <- TRUE
+  }
 
   # Calculate the intrisic dimensionality at this perplexity
   hs <- result$ys
@@ -190,7 +204,7 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 
 
   list(pr = result$best$pr, perplexity = h_base ^ result$best$h,
-       beta = result$x, d_intr = d_intr)
+       beta = result$x, d_intr = d_intr, ok = ok)
 }
 
 #' Find Root of Function by Bisection
@@ -210,6 +224,7 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 #' @param x_init Initial value of x.
 #' @param keep_search If \code{TRUE}, then return all the values of \code{x}
 #'  and \code{y} that were tried during the search.
+#' @param verbose If \code{TRUE}, logs information about the bisection search.
 #' @return a list containing:
 #'  \item{\code{x}}{Optimized value of x.}
 #'  \item{\code{y}}{Value of y at convergence or \code{max_iters}}
@@ -218,9 +233,13 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 #'  value of \code{x}.}
 root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_lower,
                         x_upper, x_init = (x_lower + x_upper) / 2,
-                        keep_search = FALSE) {
+                        keep_search = FALSE, verbose = FALSE) {
+
+  sign_lower <- sign(fn(x_lower)$value)
+
   result <- fn(x_init)
   value <- result$value
+
   bounds <- list(lower = min(x_lower, x_upper), upper = max(x_lower, x_upper),
                  mid = x_init)
   iter <- 0
@@ -230,13 +249,16 @@ root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_lower,
   }
 
   while (abs(value) > tol && iter < max_iters) {
-    bounds <- improve_guess(bounds, sign(value))
+    bounds <- improve_guess(bounds, sign(value) == sign_lower)
     result <- fn(bounds$mid)
     value <- result$value
     iter <- iter + 1
     if (keep_search) {
       xs <- c(xs, bounds$mid)
       ys <- c(ys, value)
+    }
+    if (verbose) {
+      message("iter ", iter, " x ", formatC(bounds$mid), " y ", formatC(value))
     }
   }
 
@@ -253,11 +275,13 @@ root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_lower,
 #' @param bracket List representing the bounds of the parameter search.
 #' Contains three elements: \code{lower}: lower value, \code{upper}: upper
 #' value, \code{mid}: the midpoint.
-#' @param sgn Sign of the value of the function evaluted at \code{bracket$mid}.
+#' @param lower_equal_signs If \code{TRUE}, the sign of the value of the
+#'  function evaluted at \code{bracket$mid} is the same as that of
+#'  \code{bracket$lower}.
 #' @return Updated \code{bracket} list.
-improve_guess <- function(bracket, sgn) {
+improve_guess <- function(bracket, lower_equal_signs) {
   mid <- bracket$mid
-  if (sgn > 0) {
+  if (lower_equal_signs) {
     bracket$lower <- mid
     if (is.infinite(bracket$upper)) {
       mid <- mid * 2

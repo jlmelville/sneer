@@ -292,3 +292,40 @@ check_symmetry <- function(kernel) {
   }
   kernel
 }
+
+#' Step Weight
+#'
+#' A similarity function for probability-based embedding.
+#'
+#' This function returns a value of one for input data less than or equal to
+#' the beta parameter, and zero otherwise.
+#'
+#' Useful for emulating a k-nearest neighbor style of weighting, as favored by
+#' Yang and co-workers (see the publication list). Note that the value of beta
+#' of beta is clamped so that it can't be smaller than the smallest value in the
+#' input matrix. This is to stop the output weights all being zero, which
+#' results in a uniform probability and hence a large perplexity. This can
+#' cause problems for the bisection search used to find the target perplexity.
+#'
+#' @param d2m Matrix of squared distances.
+#' @param beta step cutoff parameter.
+#' @return Weight matrix.
+#' @family sneer weight functions
+#' @export
+#'
+#' @references
+#' Yang, Z., Peltonen, J., & Kaski, S. (2014).
+#' Optimization equivalence of divergences improves neighbor embedding.
+#' In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
+#' (pp. 460-468).
+#'
+#' Yang, Z., Peltonen, J., & Kaski, S. (2015).
+#' Majorization-Minimization for Manifold Embedding.
+#' In \emph{AISTATS}.
+step_weight <- function(d2m, beta = 1) {
+  # make the zero self-distances enormous
+  d2m[d2m < .Machine$double.eps] <- .Machine$double.xmax
+  # beta is not allowed to be smaller than the smallest value in the distance
+  # matrix
+  (d2m <= max(beta, min(d2m))) * 1
+}

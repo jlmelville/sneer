@@ -4,16 +4,10 @@
 #'
 #' Calculates the degree centrality of a probability matrix.
 #'
-#' The probability matrix is interpreted as an adjacency matrix of a fully
-#' connected graph, with the probability pij being the weight of the edge
-#' connecting node i and j. The degree centrality is then the sum of the
-#' edges incident to that node. The paper by Yang and co-workers only considers
-#' the joint probability matrix used by SSNE and related methods: in order to
-#' account for ASNE, where pij != pji, and hence is effectively a directed
-#' graph, the degree centrality is scaled by averaging over the indegree
-#' centrality and outdegree centrality and then normalizing over the sum of the
-#' matrix. This leaves the joint probability results unchanged, and makes the
-#' row or conditional probability values identical to the joint probabilities.
+#' The input probability matrix is weighted to create the symmetrized nearest
+#' neighbor graph. The degree centrality of node i is then the sum of row
+#' and column i, where the element \code{m[i, j]} of matrix \code{m} can be
+#' interpreted as the value of the weighted edge from point i to j.
 #'
 #' @param inp Input data
 #' @param out Output data
@@ -25,13 +19,60 @@
 #' Optimization equivalence of divergences improves neighbor embedding.
 #' In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
 #' (pp. 460-468).
-degree_centrality <- function(inp, out, method) {
-  deg <- (colSums(inp$pm) + rowSums(inp$pm)) / (2 * sum(inp$pm))
+calculate_importance <- function(inp, out, method) {
+
+  deg <- centrality(inp, method)
   if (method$verbose) {
-    summarize(deg, "degC")
+    summarize(deg, "centrality")
   }
+
   method$kernel$im <- outer(deg, deg)
   list(method = method)
+}
+
+#' Indegree Centrality
+#'
+#' A node importance measure for directed graphs.
+#'
+#' Sums the (possibly weighted) edges that are directed towards each node. For
+#' probability matrices, column i is interpreted as containing the weighted
+#' edges that are directed to node i.
+#'
+#' @param m Nearest neighbor graph matrix.
+#' @return Indegree centrality of \code{m}.
+#' @export
+indegree_centrality <- function(m) {
+  colSums(m)
+}
+
+#' Outdegree Centrality
+#'
+#' A node centrality measure for graphs.
+#'
+#' Sums the (possibly weighted) edges that are directed from each node. For
+#' probability matrices, row i is interpreted as containing the weighted
+#' edges that are directed from node i.
+#'
+#' @param m Nearest neighbor graph matrix.
+#' @return Outdegree centrality of \code{m}.
+#' @export
+outdegree_centrality <- function(m) {
+  rowSums(m)
+}
+
+#' Degree Centrality
+#'
+#' A node centrality measure for graphs.
+#'
+#' Sums the (possibly weighted) edges that are incident to each node. For
+#' probability matrices, row and column i is interpreted as containing the
+#' weighted edges that are connected to and from node i.
+#'
+#' @param m Nearest neighbor graph matrix.
+#' @return Degree centrality of \code{m}.
+#' @export
+degree_centrality <- function(m) {
+  indegree_centrality(m) + outdegree_centrality(m)
 }
 
 #' Convert an Embedding Method to a Weighted Version
@@ -60,6 +101,12 @@ degree_centrality <- function(inp, out, method) {
 #'
 #' @param method Embedding method to convert into an importance weighted
 #' version.
+#' @param centrality_fn The importance function. By default, the
+#' degree centrality. Must be a function with the signature
+#' \code{centrality_fn(m)} where \code{m} is the nearest neighbour graph based
+#' on the input probabilities, and returning a vector with the same length
+#' as the number of rows of the matrix, where the ith element represent the
+#' centrality measure of the ith observation.
 #' @return Converted embedding method.
 #'
 #' @references
@@ -67,9 +114,11 @@ degree_centrality <- function(inp, out, method) {
 #' Optimization equivalence of divergences improves neighbor embedding.
 #' In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
 #' (pp. 460-468).
-importance_weight <- function(method) {
+#' @export
+importance_weight <- function(method, centrality_fn = degree_centrality) {
   method$kernel <- imp_kernel(method$kernel)
-  method <- on_inp_updated(method, degree_centrality)$method
+  method$centrality_fn <- centrality_fn
+  method <- on_inp_updated(method, calculate_importance)$method
   method
 }
 
@@ -94,3 +143,40 @@ imp_kernel <- function(kernel) {
 
   kernel
 }
+
+#' Convert a Probability Matrix to a Nearest Neighbor Adjacency Graph.
+#'
+#' Weights a probability matrix so that it approximates a (possibly symmetrized)
+#' nearest neighbor graph. In the context of probability-based embedding, the
+#' nearest neighbor adjancency graph is the same as the weight matrix that would
+#' result if a step function was used, rather than the usual exponential
+#' weighting. Given a row probability matrix we can then map back to the nearest
+#' neighbor graph by multiplying each probability by the number of neighbours
+#' required, which is equivalent to the perplexity.
+#'
+#' If the matrix is already normalized and symmetrized then the resulting
+#' neighbor graph is also symmetrized.
+#'
+#' @param m Probability matrix.
+#' @param k The number of neighbors.
+#' @return Nearest neighbor graph.
+nn_graph <- function(m, k) {
+  # this weighting ensures we get the correct (symmetrized) NN graph
+  # whether the probabilities are row-based or matrix-based
+  m * k * (nrow(m) / sum(m))
+}
+
+#' Centrality Measure for Input Probability
+#'
+#' Converts the input probability to a nearest neighbour adjacency matrix
+#' and then calculates a centrality measure.
+#'
+#' @param inp Input method
+#' @param method Embedding method.
+#' @return Vector containing the centrality measure for each observation in the
+#' data set.
+centrality <- function(inp, method) {
+  m <- nn_graph(inp$pm, inp$perp)
+  method$centrality_fn(m)
+}
+

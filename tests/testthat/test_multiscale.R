@@ -172,7 +172,7 @@ test_that("Can combine multiscaling with asymmetric weights", {
     method = ssne_plugin(verbose = FALSE),
     opt = back_nag_adapt(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
-    init_inp = inp_from_perps_multi(perplexities = seq(9, 3, length.out = 3),
+    init_inp = inp_from_perps_multi(perplexities = seq(8, 4, length.out = 3),
                                     num_scale_iters = 10,
                                     modify_kernel_fn =
                                       transfer_kernel_bandwidths,
@@ -187,19 +187,19 @@ test_that("Can combine multiscaling with asymmetric weights", {
   all_betas <- sapply(ssne_iris_tms3_s10$method$kernels, function(k) { k$beta })
 
   expected_betas <- matrix(c(
-    c(0.0004883, 0.0004883, 0.0002441, 0.0004883, 0.0004883,
-      0.0004883, 0.0004883, 0.0004883, 0.0002441, 0.0004883),
+    c( 0.1359, 0.1792, 0.1418, 0.1577,  0.1374,
+      0.07737, 0.1729, 0.1759, 0.08813, 0.1215),
     c(0.3431, 1.0787, 0.7401, 0.7476, 0.3432,
       0.1717, 0.8990, 0.5226, 0.3159, 0.4832),
-    c(0.8341, 2.8256, 1.5967, 2.3109, 0.8003,
-      0.4965, 2.4034, 1.6010, 0.9867, 2.8540)), ncol = 3)
+    c(0.6140, 2.0297, 1.2530, 1.5626, 0.6007,
+      0.3288, 1.7873, 1.0821, 0.6475, 1.0703)), ncol = 3)
 
   expect_equal(all_betas[, 1], expected_betas[, 1],
-               info = "precs for perp 9", tolerance = 1e-5, scale = 1)
+               info = "precs for perp 8", tolerance = 1e-4, scale = 1)
   expect_equal(all_betas[, 2], expected_betas[, 2],
                info = "precs for perp 6", tolerance = 1e-4, scale = 1)
   expect_equal(all_betas[, 3], expected_betas[, 3],
-               info = "precs for perp 3", tolerance = 1e-4, scale = 1)
+               info = "precs for perp 4", tolerance = 1e-4, scale = 1)
 
   # repeat this test scaling over 0 iterations
   # should be the same
@@ -208,7 +208,7 @@ test_that("Can combine multiscaling with asymmetric weights", {
     method = ssne_plugin(verbose = FALSE),
     opt = back_nag_adapt(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
-    init_inp = inp_from_perps_multi(perplexities = seq(9, 3, length.out = 3),
+    init_inp = inp_from_perps_multi(perplexities = seq(8, 4, length.out = 3),
                                     num_scale_iters = 0,
                                     modify_kernel_fn =
                                       transfer_kernel_bandwidths,
@@ -216,16 +216,16 @@ test_that("Can combine multiscaling with asymmetric weights", {
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
                              verbose = FALSE),
-    max_iter = 1,
+    max_iter = 10,
     export = c("report", "method")
   )
 
   all_betas_s0 <- sapply(ssne_iris_tms3_s0$method$kernels, function(k) { k$beta })
   expect_equal(all_betas_s0[, 1], expected_betas[, 1],
-               info = "0 iter scale precs for perp 9", tolerance = 1e-5, scale = 1)
+               info = "0 iter scale precs for perp 8", tolerance = 1e-4, scale = 1)
   expect_equal(all_betas_s0[, 2], expected_betas[, 2],
                info = "0 iter scale precs for perp 6", tolerance = 1e-4, scale = 1)
   expect_equal(all_betas_s0[, 3], expected_betas[, 3],
-               info = "0 iter scale precs for perp 3", tolerance = 1e-4, scale = 1)
+               info = "0 iter scale precs for perp 4", tolerance = 1e-4, scale = 1)
 })
 

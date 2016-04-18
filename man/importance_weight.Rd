@@ -4,11 +4,18 @@
 \alias{importance_weight}
 \title{Convert an Embedding Method to a Weighted Version}
 \usage{
-importance_weight(method)
+importance_weight(method, centrality_fn = degree_centrality)
 }
 \arguments{
 \item{method}{Embedding method to convert into an importance weighted
 version.}
+
+\item{centrality_fn}{The importance function. By default, the
+degree centrality. Must be a function with the signature
+\code{centrality_fn(m)} where \code{m} is the nearest neighbour graph based
+on the input probabilities, and returning a vector with the same length
+as the number of rows of the matrix, where the ith element represent the
+centrality measure of the ith observation.}
 }
 \value{
 Converted embedding method.

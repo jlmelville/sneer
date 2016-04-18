@@ -209,8 +209,8 @@ inp_from_perps_multi <- function(perplexities = NULL,
           inpl <- single_perplexity(inp, perplexity = perp,
                                     input_weight_fn = input_weight_fn,
                                     verbose = verbose)$inp
-          inpl$pm <- handle_prob(inpl$pm, method)
-          inp$pms[[l]] <- inpl$pm
+
+          inp$pms[[l]] <- handle_prob(inpl$pm, method)
           inp$betas[[l]] <- inpl$beta
         }
 
@@ -250,7 +250,6 @@ inp_from_perps_multi <- function(perplexities = NULL,
         method$num_scales <- method$num_scales + 1
 
         inp$perp <- perplexities[method$num_scales]
-        summarize(inp$pms[[method$num_scales]], paste0("P", method$num_scales))
 
         # initialize or update the running total and mean of
         # pms for each perplexity
@@ -607,7 +606,7 @@ inp_from_step_perp <- function(perplexities = NULL,
         flush.console()
 
       }
-      list(inp = inp, method = method)
+      list(inp = inp, method = method, opt = opt)
     },
     init_only = FALSE,
     call_inp_updated = FALSE
@@ -771,13 +770,12 @@ plugin_stiffness_ms <- function(method, inp, out) {
 #' @return Stiffness matrix.
 plugin_stiffness_ms_row <- function(method, inp, out) {
   cm_grad <- method$cost$gr(inp, out, method)
-
   for (l in 1:method$num_scales) {
     wm_sum <-  apply(out$wms[[l]], 1, sum)
     wm_grad <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
     kml <- apply(cm_grad * out$qms[[l]], 1, sum) # row sums
     kml <- sweep(-cm_grad, 1, -kml) # subtract row sum from each row element
-    kml <- kml * (-wm_grad / wm_sum)
+    kml <- kml * (-wm_grad / (wm_sum + method$eps))
     kml <- 2 * (kml + t(kml))
     if (l == 1) {
       kml_sum <- kml
@@ -786,7 +784,6 @@ plugin_stiffness_ms_row <- function(method, inp, out) {
       kml_sum <- kml_sum + kml
     }
   }
-
   kml_sum / method$num_scales
 }
 
@@ -805,7 +802,8 @@ plugin_stiffness_ms_joint <- function(method, inp, out) {
   for (l in 1:method$num_scales) {
     wm_sum <- sum(out$wms[[l]])
     dw_du <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
-    kml <- (sum(dc_dq * out$qms[[l]]) - dc_dq) * (-dw_du / wm_sum)
+    kml <- (sum(dc_dq * out$qms[[l]]) - dc_dq) *
+      (-dw_du / (wm_sum + method$eps))
     kml <- 2 * (kml + t(kml))
 
     if (l == 1) {

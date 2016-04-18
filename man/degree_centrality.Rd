@@ -4,37 +4,20 @@
 \alias{degree_centrality}
 \title{Degree Centrality}
 \usage{
-degree_centrality(inp, out, method)
+degree_centrality(m)
 }
 \arguments{
-\item{inp}{Input data}
-
-\item{out}{Output data}
-
-\item{method}{Embedding method}
+\item{m}{Nearest neighbor graph matrix.}
 }
 \value{
-list containing the updated method.
+Degree centrality of \code{m}.
 }
 \description{
-Calculates the degree centrality of a probability matrix.
+A node centrality measure for graphs.
 }
 \details{
-The probability matrix is interpreted as an adjacency matrix of a fully
-connected graph, with the probability pij being the weight of the edge
-connecting node i and j. The degree centrality is then the sum of the
-edges incident to that node. The paper by Yang and co-workers only considers
-the joint probability matrix used by SSNE and related methods: in order to
-account for ASNE, where pij != pji, and hence is effectively a directed
-graph, the degree centrality is scaled by averaging over the indegree
-centrality and outdegree centrality and then normalizing over the sum of the
-matrix. This leaves the joint probability results unchanged, and makes the
-row or conditional probability values identical to the joint probabilities.
-}
-\references{
-Yang, Z., Peltonen, J., & Kaski, S. (2014).
-Optimization equivalence of divergences improves neighbor embedding.
-In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
-(pp. 460-468).
+Sums the (possibly weighted) edges that are incident to each node. For
+probability matrices, row and column i is interpreted as containing the
+weighted edges that are connected to and from node i.
 }
 

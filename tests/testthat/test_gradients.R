@@ -215,3 +215,8 @@ test_that("Multiscale gradients", {
   expect_grad(sjse_plugin(verbose = FALSE), label = "plugin tms sjse",
               inp_init = inp_tms())
 })
+
+test_that("importance weighting", {
+  expect_grad(importance_weight(ssne()), label = "wssne")
+  expect_grad(importance_weight(ssne_plugin()), label = "plugin wssne")
+})
