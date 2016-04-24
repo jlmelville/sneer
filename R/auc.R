@@ -41,7 +41,8 @@ pr_auc <- function(inp, out) {
   if (is.null(out$dm)) {
     out$dm <- distance_matrix(out$ym)
   }
-  list(name = "av_pr_auc", value = auc_mat(out$dm, labels, pr_auc_row)$av_auc)
+  list(name = "av_pr_auc",
+       value = auc_mat(out$dm, inp$labels, pr_auc_row)$av_auc)
 }
 
 #' Average Area Under the ROC Curve
@@ -72,7 +73,8 @@ roc_auc <- function(inp, out) {
   if (is.null(out$dm)) {
     out$dm <- distance_matrix(out$ym)
   }
-  list(name = "av_roc_auc", value = auc_mat(out$dm, labels, roc_auc_row)$av_auc)
+  list(name = "av_roc_auc",
+       value = auc_mat(out$dm, inp$labels, roc_auc_row)$av_auc)
 }
 
 #' Area Under the PR Curve of an Observation
