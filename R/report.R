@@ -264,3 +264,43 @@ make_reporter <- function(report_every = 100, min_cost = 0,
     report
   }
 }
+
+#' Report Embedding Quality Metrics After Embedding Terminates
+#'
+#' Calculates the AUC of the log RNX metric, the scaled neighbor retrieval
+#' calculated for multiple neighbor values, with a logarithmic weighting to
+#' favour smaller neighbor values.
+#'
+#' Additionally, if a set of labels are provided for the dataset, the average
+#' ROC AUC and PR AUC will be calculated for each observation in the dataset,
+#' using its label as the positive class. If there are more than two labels
+#' in the dataset, then the other classes are all treated as negative.
+#'
+#' @param labels Vector of labels associated with the dataset, one for each
+#' observation, in the same order that the data is presented to the embedding
+#' algorithm.
+#' @return The output data, with the quality metrics appended in a list called
+#' \code{quality}.
+#' @seealso \code{\link{pr_auc}}, \code{\link{roc_auc}} and
+#' \code{\link{rnx_auc}} for definitions of these metrics.
+make_final_reporter <- function(labels = NULL) {
+  fs <- c(rnx_auc)
+  if (!is.null(labels)) {
+    fs <- c(roc_auc, pr_auc, fs)
+  }
+
+  function(inp, out) {
+    if (is.null(out$dm)) {
+      out$dm <- distance_matrix(out$ym)
+    }
+    out$quality <- list()
+    inp$labels <- labels
+    for (f in fs) {
+      res <- f(inp, out)
+      message(res$name, " ", formatC(res$value))
+      out$quality[[res$name]] <- res$value
+    }
+    out
+  }
+}
+

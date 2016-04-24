@@ -13,7 +13,8 @@ License: GPL-2 | GPL-3
 LazyData: TRUE
 Suggests:
     testthat,
-    ggplot2
+    ggplot2,
+    PRROC
 URL: http://github.com/jlmelville/sneer
 BugReports: http://github.com/jlmelville/sneer/issues
 RoxygenNote: 5.0.1
