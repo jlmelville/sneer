@@ -256,10 +256,8 @@ weights_to_probs <- function(wm, method) {
 #' @return A list containing
 #'  \item{pm}{Row probability matrix.}
 weights_to_prow <- function(wm) {
-  row_sums <- apply(wm, 1, sum)
+  row_sums <- apply(wm, 1, sum) + .Machine$double.eps
   pm <- sweep(wm, 1, row_sums, "/")
-  pm[is.nan(pm)] <- 1 / ncol(pm)
-  pm
   list(pm = pm)
 }
 
@@ -275,9 +273,7 @@ weights_to_prow <- function(wm) {
 #' @return A list containing
 #'  \item{pm}{Conditional probability matrix.}
 weights_to_pcond <- function(wm) {
-  pm <- wm / sum(wm)
-  pm[is.nan(pm)] <- 1 / (ncol(wm) ^ 2)
-  pm
+  pm <- wm / sum(wm) + .Machine$double.eps
   list(pm = pm)
 }
 
