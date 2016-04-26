@@ -32,7 +32,7 @@ List with the following members:
  \item{\code{perp}}{Final perplexity of the probability, differing from
  \code{perplexity} only if \code{max_iters} was exceeded.}
  \item{\code{d_intr}}{The intrinsic dimensionality for this perplexity,
- estimated using the final wo guesses in the bisection procedure.}
+ estimated using the final two guesses in the bisection procedure.}
 }
 \description{
 Find the value of beta that produces a specific perplexity when a row of
