@@ -59,6 +59,9 @@ make_plot <- function(x, attr_name,
 #' \code{labels} is a vector of labels for each point in the data set. The
 #' function should return a vector of labels suitable for displaying in the
 #' plot.
+#' @param cex Numeric \strong{c}haracter \strong{ex}pansion factor;
+#'   multiplied by \code{\link[graphics]{par}("cex")} yields the final
+#'   character size of the labels.
 #' @return Function which will take an output list, and produce a 2D plot of
 #' the embedding.
 #' @seealso \code{\link{make_label}} for an example of a suitable
@@ -78,8 +81,11 @@ make_plot <- function(x, attr_name,
 #' tsne_iris <- embed_prob(iris[, 1:4])
 #' # view the TSNE embedding
 #' iris_plot(tsne_iris$ym)
+#'
+#' # Same plot, with smaller labels
+#' make_embedding_plot(iris, "Species", cex = 0.5)(tsne_iris$ym)
 #'}
-make_embedding_plot <- function(x, attr_name, label_fn) {
+make_embedding_plot <- function(x, attr_name, label_fn, cex = 1) {
   attr <- x[[attr_name]]
   uniq_attr <- sort(unique(attr))
   colors <- rainbow(length(uniq_attr))
@@ -91,7 +97,7 @@ make_embedding_plot <- function(x, attr_name, label_fn) {
   }
   function(ym) {
     plot(ym, type = "n", xlab = "D1", ylab = "D2")
-    text(ym, labels = labels, col = colors[attr])
+    text(ym, labels = labels, col = colors[attr], cex = cex)
   }
 }
 

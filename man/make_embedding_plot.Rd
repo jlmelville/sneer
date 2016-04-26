@@ -4,7 +4,7 @@
 \alias{make_embedding_plot}
 \title{Embedding Plot Using \code{graphics} Library}
 \usage{
-make_embedding_plot(x, attr_name, label_fn)
+make_embedding_plot(x, attr_name, label_fn, cex = 1)
 }
 \arguments{
 \item{x}{Data frame containing label information for the embedded data.}
@@ -15,6 +15,10 @@ make_embedding_plot(x, attr_name, label_fn)
 \code{labels} is a vector of labels for each point in the data set. The
 function should return a vector of labels suitable for displaying in the
 plot.}
+
+\item{cex}{Numeric \strong{c}haracter \strong{ex}pansion factor;
+multiplied by \code{\link[graphics]{par}("cex")} yields the final
+character size of the labels.}
 }
 \value{
 Function which will take an output list, and produce a 2D plot of
@@ -38,6 +42,9 @@ iris_plot(pca_iris$x[, 1:2])
 tsne_iris <- embed_prob(iris[, 1:4])
 # view the TSNE embedding
 iris_plot(tsne_iris$ym)
+
+# Same plot, with smaller labels
+make_embedding_plot(iris, "Species", cex = 0.5)(tsne_iris$ym)
 }
 }
 \seealso{
