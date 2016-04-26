@@ -160,7 +160,7 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
 #'  \item{\code{perp}}{Final perplexity of the probability, differing from
 #'  \code{perplexity} only if \code{max_iters} was exceeded.}
 #'  \item{\code{d_intr}}{The intrinsic dimensionality for this perplexity,
-#'  estimated using the final wo guesses in the bisection procedure.}
+#'  estimated using the final two guesses in the bisection procedure.}
 find_beta <- function(d2mi, i, perplexity, beta_init = 1,
                       weight_fn, tol = 1e-05, max_iters = 50) {
 
