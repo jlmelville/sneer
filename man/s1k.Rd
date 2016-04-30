@@ -3,8 +3,8 @@
 \docType{data}
 \name{s1k}
 \alias{s1k}
-\title{Nine-dimensional simplex data set.}
-\format{An object of class \code{data.frame} with 1000 rows and 10 columns.}
+\title{Nine-dimensional "fuzzy" simplex}
+\format{A data frame with 1000 rows and 10 variables}
 \usage{
 data(s1k)
 }
@@ -22,18 +22,26 @@ nine-dimensional dataset with 1000 instances and ten classes.
 
 This data set is intended to fulfil the following criteria:
 \enumerate{
- \item not impossibly difficult: there's reasonable overlap of the
+ \item Not impossibly difficult: there's reasonable overlap of the
 ten clusters of points, but the variance is isotropic and identical for each
 cluster.
- \item have an obvious right answer by visual inspection of the output map:
+ \item Have an obvious right answer by visual inspection of the output map:
  do we see ten reasonably well separated blobs?
- \item to be sufficiently complex so that the "crowding problem" will
+ \item Be sufficiently complex so that the "crowding problem" will
  manifest: in the original nine-dimensional input space, the ten classes are
  by definition equidistant from each other, so it's impossible for the input
  to be perfectly reproduced in the two-dimensional output map.
- \item traditional distance-preserving mapping methods (e.g. PCA, MDS,
+ \item Traditional distance-preserving mapping methods (e.g. PCA, MDS,
  Sammon mapping) shouldn't do a very good job, otherwise there's no point
  using a probability-based method.
+}
+
+The variables are as follows:
+\itemize{
+\item \code{D0}, \code{D1}, \code{D2} ... \code{D8} Real values, ranging
+from -2.51 to 3.27.
+\item \code{Label} The id of the simplex vertex that this point is
+associated with, in the range 0-9. Stored as a factor.
 }
 }
 \keyword{datasets}
