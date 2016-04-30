@@ -14,7 +14,8 @@ LazyData: TRUE
 Suggests:
     testthat,
     ggplot2,
-    PRROC
+    PRROC,
+    RnavGraphImageData
 URL: http://github.com/jlmelville/sneer
 BugReports: http://github.com/jlmelville/sneer/issues
 RoxygenNote: 5.0.1
