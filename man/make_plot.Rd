@@ -5,7 +5,7 @@
 \title{Embedding Plots}
 \usage{
 make_plot(x, attr_name, label_fn = function(labels) {     labels },
-  mat_name = "ym")
+  mat_name = "ym", cex = 1)
 }
 \arguments{
 \item{x}{Data frame containing label information for the embedded data.}
@@ -20,6 +20,10 @@ will be used.}
 
 \item{mat_name}{The name of the matrix containing the embedded data in the
 output list \code{out} which will be passed to the plot function.}
+
+\item{cex}{Numeric \strong{c}haracter \strong{ex}pansion factor;
+multiplied by \code{\link[graphics]{par}("cex")} yields the final
+character size of the labels.}
 }
 \value{
 Function which will take an output list, and produce a 2D plot of

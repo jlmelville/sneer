@@ -15,6 +15,9 @@
 #' will be used.
 #' @param mat_name The name of the matrix containing the embedded data in the
 #' output list \code{out} which will be passed to the plot function.
+#' @param cex Numeric \strong{c}haracter \strong{ex}pansion factor;
+#'   multiplied by \code{\link[graphics]{par}("cex")} yields the final
+#'   character size of the labels.
 #' @return Function which will take an output list, and produce a 2D plot of
 #' the embedding.
 #' @seealso \code{\link{make_reporter}} for how to use this function for
@@ -41,8 +44,8 @@ make_plot <- function(x, attr_name,
                       label_fn = function(labels) {
                         labels
                       },
-                      mat_name = "ym") {
-  embedding_plot <- make_embedding_plot(x, attr_name, label_fn)
+                      mat_name = "ym", cex = 1) {
+  embedding_plot <- make_embedding_plot(x, attr_name, label_fn, cex = cex)
   function(out) {
     embedding_plot(out[[mat_name]])
   }
