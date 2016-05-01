@@ -14,6 +14,7 @@ LazyData: TRUE
 Suggests:
     testthat,
     ggplot2,
+    RColorBrewer,
     PRROC,
     RnavGraphImageData
 URL: http://github.com/jlmelville/sneer
