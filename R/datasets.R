@@ -193,6 +193,7 @@ frey_faces <- function() {
                         warn.conflicts = FALSE)) {
     stop("frey_faces function requires 'RnavGraphImageData' package")
   }
+  frey <- NULL
   data("frey", envir = environment())
 
   df <- data.frame(t(frey))
@@ -252,6 +253,7 @@ olivetti_faces <- function() {
                         warn.conflicts = FALSE)) {
     stop("olivetti_faces function requires 'RnavGraphImageData' package")
   }
+  faces <- NULL
   data("faces", envir = environment())
 
   df <- as.data.frame(t(faces))
