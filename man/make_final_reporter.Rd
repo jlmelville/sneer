@@ -2,7 +2,7 @@
 % Please edit documentation in R/report.R
 \name{make_final_reporter}
 \alias{make_final_reporter}
-\title{Report Embedding Quality Metrics After Embedding Terminates}
+\title{Report Embedding Quality After Embedding Terminates}
 \usage{
 make_final_reporter(labels = NULL)
 }
@@ -12,7 +12,8 @@ observation, in the same order that the data is presented to the embedding
 algorithm.}
 }
 \value{
-The output data, with the quality metrics appended in a list called
+A function suitable for calling after embedding, which will in turn
+return the output data, with the quality metrics appended in a list called
 \code{quality}.
 }
 \description{

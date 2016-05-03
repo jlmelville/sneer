@@ -265,7 +265,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
   }
 }
 
-#' Report Embedding Quality Metrics After Embedding Terminates
+#' Report Embedding Quality After Embedding Terminates
 #'
 #' Calculates the AUC of the log RNX metric, the scaled neighbor retrieval
 #' calculated for multiple neighbor values, with a logarithmic weighting to
@@ -279,16 +279,36 @@ make_reporter <- function(report_every = 100, min_cost = 0,
 #' @param labels Vector of labels associated with the dataset, one for each
 #' observation, in the same order that the data is presented to the embedding
 #' algorithm.
-#' @return The output data, with the quality metrics appended in a list called
+#' @return A function suitable for calling after embedding, which will in turn
+#' return the output data, with the quality metrics appended in a list called
 #' \code{quality}.
 #' @seealso \code{\link{pr_auc}}, \code{\link{roc_auc}} and
 #' \code{\link{rnx_auc}} for definitions of these metrics.
 make_final_reporter <- function(labels = NULL) {
   fs <- c(rnx_auc)
   if (!is.null(labels)) {
+    if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
+      stop("ROC and PR AUC calculations requires 'PRROC' package")
+    }
     fs <- c(roc_auc, pr_auc, fs)
   }
 
+  make_quality_reporter(fs, labels)
+}
+
+#' Create Embedding Quality Reporter
+#'
+#' Quality functions should have the signature \code{f(inp, out)} where
+#' \code{inp} is the input data and \code{out} is the output data, and return
+#' a list consisting of: \code{name}, the name of the quality measure; and
+#' \code{value}, the value of the quality measure.
+#'
+#' @param fs Vector of quality functions.
+#' @param labels Vector of labels to apply to the data.
+#' @return A function suitable for calling after embedding, which will in turn
+#' return the output data, with the quality metrics appended in a list called
+#' \code{quality}.
+make_quality_reporter <- function(fs, labels) {
   function(inp, out) {
     if (is.null(out$dm)) {
       out$dm <- distance_matrix(out$ym)
