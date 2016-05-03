@@ -4,7 +4,7 @@
 \alias{gauss}
 \title{d-Dimensional Gaussian Data Set}
 \usage{
-gauss(n = 1000, d = 3, nlabels = 6)
+gauss(n = 1000, d = 3, nlabels = 5)
 }
 \arguments{
 \item{n}{Number of points to create.}

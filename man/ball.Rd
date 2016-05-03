@@ -22,10 +22,8 @@ Simulation data.
 \details{
 Creates a series of points sampled from a 3D spherical volume.
 
-Labels go from \code{0} to \code{nlabels - 1}. Points are classified into
-labels based on their distance from the origin, where that distance is
-divided into \code{nlabels} equal lengths. That results in unequal
-volumes and hence unequal populations of the labels.
+Labels go from \code{1} to \code{nlabels}. Points are classified into
+equally populated labels based on their distance from the origin.
 }
 \references{
 A dataset like this was used in:

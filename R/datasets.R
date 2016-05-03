@@ -36,10 +36,8 @@ sphere <- function(n = 1000, nlabels = 5) {
 #'
 #' Creates a series of points sampled from a 3D spherical volume.
 #'
-#' Labels go from \code{0} to \code{nlabels - 1}. Points are classified into
-#' labels based on their distance from the origin, where that distance is
-#' divided into \code{nlabels} equal lengths. That results in unequal
-#' volumes and hence unequal populations of the labels.
+#' Labels go from \code{1} to \code{nlabels}. Points are classified into
+#' equally populated labels based on their distance from the origin.
 #'
 #' @param n Number of points to create.
 #' @param rad Radius of the ball.
@@ -57,7 +55,7 @@ ball <- function(n = 1000, rad = 1, nlabels = 5) {
   xyz <- matrix(rnorm(3 * n), nrow = n,
                 dimnames = list(NULL, c("x", "y", "z")))
   df <- data.frame((xyz * rad * u ^ (1 / 3)) / sqrt(rowSums(xyz ^ 2)))
-  df$Label <- as.factor(round(sqrt(rowSums(df ^ 2)) * nlabels))
+  df$Label <- equal_factors(sqrt(rowSums(df ^ 2)), nlabels)
   df
 }
 
@@ -71,10 +69,8 @@ ball <- function(n = 1000, rad = 1, nlabels = 5) {
 #' Unlike \code{\link{ball}} and \code{\link{sphere}}, this data set is not
 #' randomly sampled.
 #'
-#' Labels go from \code{0} to \code{nlabels - 1}. Points are classified into
-#' labels based on their z-coordinate, where that distance is divided into
-#' \code{nlabels} equal lengths. That results in unequal volumes and hence
-#' unequal populations of the labels.
+#' Labels go from \code{1} to \code{nlabels}. Points are classified into
+#' equally-populated labels based on their z-coordinate.
 #'
 #' @param n Number of points to create.
 #' @param rmajor Major radius.
@@ -96,7 +92,7 @@ helix <- function(n = 1000, rmajor = 2, rminor = 1, nwinds = 8, nlabels = 5) {
   y <- w * sin(u)
   z <- rminor * sin(nwinds * u)
 
-  Label <- as.factor(floor(((z + rminor) / (2 * rminor)) * nlabels))
+  Label <- equal_factors(z, nlabels)
   data.frame(x, y, z, Label)
 }
 
@@ -116,11 +112,13 @@ helix <- function(n = 1000, rmajor = 2, rminor = 1, nwinds = 8, nlabels = 5) {
 #' @param d Dimension of the Gaussian.
 #' @param nlabels Number of labels.
 #' @return Data frame.
-gauss <- function(n = 1000, d = 3, nlabels = 6) {
- m <- matrix(rnorm(n * d), ncol = d)
- dist <- sqrt(rowSums(m * m))
- Label <- as.factor(round((nlabels - 1) * (dist / max(dist))))
- data.frame(m, Label)
+gauss <- function(n = 1000, d = 3, nlabels = 5) {
+  m <- matrix(rnorm(n * d), ncol = d)
+  dist <- sqrt(rowSums(m * m))
+
+  Label <- equal_factors(dist, nlabels)
+
+  data.frame(m, Label)
 }
 
 #' Swiss Roll Data Set
@@ -288,4 +286,20 @@ show_olivetti_face <- function(df, face, pose, col = gray(1 / 12:1)) {
   n <- paste(face, pose, sep = "_")
   im <- t(matrix(as.numeric(df[n, 4096:1]), ncol = 64, nrow = 64))
   image(1:nrow(im), 1:nrow(im), im, xlab = "", ylab = "", col = col)
+}
+
+#' Split A Vector Into Equally Populated Factors
+#'
+#' Assigns each member of a vector to a factor, based on the quantiles of the
+#' distribution, so that each factor is equal populated. Levels range from
+#' one to \code{nfactors}.
+#'
+#' @param x Numeric vector
+#' @param nfactors Number of factors required.
+#' @return factor-encoded vector specifying the level for each item in the
+#' vector.
+equal_factors <- function(x, nfactors) {
+  breaks <- quantile(x, probs = seq(0, 1, length.out = nfactors + 1))
+  cuts <- cut(x, breaks = breaks, include.lowest = TRUE, labels = FALSE)
+  as.factor(cuts)
 }
