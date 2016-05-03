@@ -38,6 +38,9 @@
 #' learning}
 #' (pp. 233-240). ACM.
 pr_auc <- function(inp, out) {
+  if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
+    stop("pr_auc function requires 'PRROC' package")
+  }
   if (is.null(out$dm)) {
     out$dm <- distance_matrix(out$ym)
   }
@@ -70,6 +73,9 @@ pr_auc <- function(inp, out) {
 #' \code{out$dm}, it will be calculated.
 #' @return Area Under the ROC curve, averaged over each observation.
 roc_auc <- function(inp, out) {
+  if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
+    stop("roc_auc function requires 'PRROC' package")
+  }
   if (is.null(out$dm)) {
     out$dm <- distance_matrix(out$ym)
   }
@@ -204,7 +210,9 @@ auc_mat <- function(dm, labels, auc_row_fn) {
   label_av <- list()
   for (i in 1:n) {
     auc <- auc_row_fn(dm, labels, i)
-    av_auc <- av_auc + auc
+    if (!is.nan(auc)) {
+      av_auc <- av_auc + auc
+    }
     label <- as.character(labels[[i]])
     if (is.null(label_av[[label]])) {
       label_av[[label]] <- auc
@@ -216,7 +224,12 @@ auc_mat <- function(dm, labels, auc_row_fn) {
     }
   }
   for (label in names(ns)) {
-    label_av[[label]] <- label_av[[label]] / ns[[label]]
+    if (ns[[label]] == 0) {
+      label_av[[label]] <- 0
+    }
+    else {
+      label_av[[label]] <- label_av[[label]] / ns[[label]]
+    }
   }
   result$av_auc <- av_auc / n
   result$label_av <- label_av
