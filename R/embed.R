@@ -16,6 +16,223 @@
 #' @family sneer embedding methods
 NULL
 
+#' Wrapper
+embed <- function(df,
+                  indexes = NULL,
+                  method,
+                  alpha = 1,
+                  lambda = 0.5,
+                  kappa = 0.5,
+                  preprocess = NULL,
+                  max_iter = 1000,
+                  scale_type = "",
+                  perplexity = NULL,
+                  init = "p",
+                  init_config = NULL,
+                  report_every = 50,
+                  normalize_cost = TRUE,
+                  extra_costs = NULL,
+                  plot_type = "p",
+                  label_name = NULL,
+                  label_chars = NULL,
+                  label_size = 1,
+                  palette = "Set1",
+                  legend = TRUE,
+                  legend_rows = NULL,
+                  quality_assess = NULL,
+                  quality_measures = c('r', 'p', 'n')) {
+  if (is.null(indexes)) {
+    indexes <- sapply(df, is.numeric)
+  }
+
+  if (is.null(label_name)) {
+    factor_names <- names(df)[(sapply(df, is.factor))]
+    if (length(factor_names) == 0) {
+      stop("Couldn't find a factor column in data frame to use for label")
+    }
+    else {
+      label_name <- factor_names[1]
+    }
+  }
+
+  if (is.null(df[[label_name]])) {
+    stop("Data frame does not have a '",
+         label_name,
+         "' column for use as a label")
+  }
+
+  embed_methods <- list(
+    pca = function() { mmds() },
+    mmds = function() { mmds() },
+    sammon = function() { sammon_map() },
+    tsne = function() { tsne() },
+    ssne = function() { ssne() },
+    asne = function() { asne() },
+    wtsne = function() { importance_weight(tsne()) },
+    hssne = function() { hssne(alpha = alpha) },
+    nerv = function() { nerv(lambda = lambda) },
+    jse = function() { jse(kappa = kappa) }
+  )
+
+  if (!method %in% names(embed_methods)) {
+    stop("Unknown embedding method '",
+         method,
+         "', should be one of: ",
+         paste(names(embed_methods), collapse = ", "))
+  }
+
+  embed_method <- embed_methods[[method]]()
+
+  # special casing for different methods
+  if (method == "pca") {
+    max_iter <- 0
+    if (is.null(extra_costs)) {
+      extra_costs <- c("kruskal_stress")
+    }
+  }
+  else if (method == "mmds") {
+    if (is.null(extra_costs)) {
+      extra_costs <- c("kruskal_stress")
+    }
+  }
+  else if (method == "sammon") {
+    if (is.null(extra_costs)) {
+      extra_costs <- c("kruskal_stress")
+    }
+    normalize_cost <- FALSE
+  }
+
+  preprocess <- make_preprocess()
+  if (!is.null(scale_type)) {
+    if (scale_type == "m") {
+      preprocess <- make_preprocess(range_scale_matrix = TRUE)
+    }
+    else if (scale_type == "r") {
+      preprocess <- make_preprocess(range_scale = TRUE)
+    }
+    else if (scale_type == "a") {
+      preprocess <- make_preprocess(auto_scale = TRUE)
+    }
+  }
+
+  init_inp <- NULL
+  if (!is.null(perplexity)) {
+    init_inp <- inp_from_perp(perplexity = perplexity)
+  }
+
+  init_out <- NULL
+  if (init == "p") {
+    init_out <- out_from_PCA()
+  }
+  else if (init == "r") {
+    init_out <- out_from_rnorm()
+  }
+  else if (init == "u") {
+    init_out <- out_from_runif()
+  }
+  else if (init == "m") {
+    init_out <- out_from_matrix(init_config = init_config)
+  }
+
+  if (plot_type == "g") {
+    if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
+      stop("plot type 'g' requires 'ggplot2' package")
+    }
+    if (!requireNamespace("RColorBrewer",
+                          quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("plot type 'g' requires 'RColorBrewer' package")
+    }
+    embed_plot <-
+      make_qplot(
+        df,
+        attr_name = label_name,
+        size = label_size,
+        palette = palette,
+        legend = legend,
+        legend_rows = legend_rows
+      )
+  }
+  else {
+    if (!is.null(label_chars)) {
+      embed_plot <- make_plot(df,
+                              label_name,
+                              cex = label_size,
+                              label_fn = make_label(label_chars))
+    }
+    else {
+      embed_plot <- make_plot(df, label_name, cex = label_size)
+    }
+  }
+
+  after_embed <- NULL
+  # quality assessment measures are slow - if > 1000 observations, user must
+  # explicitly ask for them
+  if (((is.null(quality_assess) && nrow(df) <= 1000) || quality_assess) &&
+      !is.null(quality_measures)) {
+    qs <- c()
+    if ('r' %in% quality_measures) {
+      if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
+        stop("Calculating ROC AUC requires 'PRROC' package")
+      }
+      qs <- c(qs, roc_auc)
+    }
+    if ('p' %in% quality_measures) {
+      if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
+        stop("Calculating PR AUC requires 'PRROC' package")
+      }
+      qs <- c(qs, pr_auc)
+    }
+    if ('n' %in% quality_measures) {
+      qs <- c(qs, rnx_auc)
+    }
+    if (length(qs) > 0) {
+      after_embed <- make_quality_reporter(qs, df[[label_name]])
+    }
+  }
+
+  embed_result <- embed_main(
+    df[, indexes],
+    method = embed_method,
+    opt = bold_nag_adapt(),
+    preprocess = preprocess,
+    init_inp = init_inp,
+    init_out = init_out,
+    reporter = make_reporter(
+      normalize_cost = normalize_cost,
+      report_every = report_every,
+      extra_costs = extra_costs,
+      plot = embed_plot
+    ),
+    after_embed = after_embed,
+    max_iter = max_iter,
+    export = c("report")
+  )
+
+  result <- list(coords = embed_result$ym,
+                 cost = embed_result$cost,
+                 method = method)
+  if (!is.null(embed_result$quality)) {
+    result$quality <- embed_result$quality
+  }
+  for (extra_cost in extra_costs) {
+    if (!is.null(embed_result$report[[extra_cost]])) {
+      result[[extra_cost]] <- embed_result$report[[extra_cost]]
+    }
+  }
+
+  if (!is.null(embed_result$report$norm)) {
+    result$norm_cost <- embed_result$report$norm
+  }
+
+  result
+}
+
+
+
+
+
+
 #' Probability-Based Embedding
 #'
 #' Carry out an embedding of a dataset using a probability-based method
@@ -150,7 +367,7 @@ embed_prob <- function(xm,
                       export = NULL,
                       after_embed = NULL,
                       verbose = TRUE) {
-  embed(xm, method, init_inp, init_out, opt, max_iter, tricks,
+  embed_main(xm, method, init_inp, init_out, opt, max_iter, tricks,
         reporter, preprocess, export, after_embed)
 }
 
@@ -258,7 +475,7 @@ embed_dist <- function(xm,
                        export = NULL,
                        after_embed = NULL,
                        verbose = TRUE) {
-  embed(xm, method, init_inp, init_out, opt, max_iter, tricks,
+  embed_main(xm, method, init_inp, init_out, opt, max_iter, tricks,
         reporter, preprocess, export, after_embed)
 }
 
@@ -317,7 +534,7 @@ embed_dist <- function(xm,
 #' \item{\code{\link{make_tricks}}} for configuring \code{tricks}
 #' \item{\code{\link{make_reporter}}} for configuring \code{reporter}
 #' }
-embed <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
+embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
                   tricks = NULL, reporter = NULL,
                   preprocess = make_preprocess(),
                   export = NULL, after_embed = NULL) {
