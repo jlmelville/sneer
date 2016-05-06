@@ -281,9 +281,11 @@ make_embedding_qplot <- function(df, attr_name = "Label", size = 1,
 #'
 #' @param df Data frame.
 #' @param pca_indexes Numeric vector containing the column indexes in the
-#'  data frame which should be used for the PCA calculation.
+#'  data frame which should be used for the PCA calculation. Default is
+#'  \code{NULL}, in which case all numeric columns will be used.
 #' @param label_name name of the column that contains a value to be used
-#'  to color each point.
+#'  to color each point. Default is \code{NULL}, in which case the first
+#'  encountered factor column will be used.
 #' @param center If \code{TRUE}, mean-center the columns.
 #' @param scale If \code{TRUE}, scale the columns to have unit variance.
 #' @param cex Numeric \strong{c}haracter \strong{ex}pansion factor;
@@ -294,12 +296,30 @@ make_embedding_qplot <- function(df, attr_name = "Label", size = 1,
 #'  # PCA on the scaled iris dataset, use the "Species" column to display
 #'  scores_plot(iris, 1:4, "Species", scale = TRUE)
 #'
-#'  # PCA on the s1k dataset, use default "Label" column and change label size
-#'  # to 1.
-#'  scores_plot(s1k, 1:9, cex = 1)
+#'  # PCA on the s1k dataset, use all numeric values, and color by the only
+#'  # factor ("Label"). Change text size.
+#'  scores_plot(s1k, cex = 1)
 #' }
-scores_plot <- function(df, pca_indexes, label_name = "Label",
+scores_plot <- function(df, pca_indexes = NULL, label_name = NULL,
                         center = TRUE, scale = FALSE,  cex = 0.5) {
+  if (is.null(pca_indexes)) {
+    pca_indexes <- sapply(df, is.numeric)
+  }
+
+  if (is.null(label_name)) {
+    factor_names <- names(df)[(sapply(df, is.factor))]
+    if (length(factor_names) == 0) {
+      stop("Couldn't find a factor column in data frame to use for label")
+    }
+    else {
+      label_name <- factor_names[1]
+    }
+  }
+
+  if (is.null(df[[label_name]])) {
+    stop("Data frame does not have a '",label_name,
+         "' column for use as a label")
+  }
   pca <- prcomp(df[, pca_indexes], retx = TRUE, center = center, scale. = scale)
   plot(pca$x[, 1:2], type = 'n')
   text(pca$x[, 1:2], labels = df[[label_name]], cex = cex,
@@ -316,9 +336,11 @@ scores_plot <- function(df, pca_indexes, label_name = "Label",
 #'
 #' @param df Data frame.
 #' @param pca_indexes Numeric vector containing the column indexes in the
-#'  data frame which should be used for the PCA calculation.
+#'  data frame which should be used for the PCA calculation. Default is
+#'  \code{NULL}, in which case all numeric columns will be used.
 #' @param label_name name of the column that contains a value to be used
-#'  to color each point.
+#'  to color each point. Default is \code{NULL}, in which case the first
+#'  encountered factor column will be used.
 #' @param center If \code{TRUE}, mean-center the columns.
 #' @param scale If \code{TRUE}, scale the columns to have unit variance.
 #' @param size Size of the points.
@@ -350,11 +372,12 @@ scores_plot <- function(df, pca_indexes, label_name = "Label",
 #'  # PCA on the scaled iris dataset, use the "Species" column to display
 #'  scores_qplot(iris, 1:4, "Species", scale = TRUE)
 #'
-#'  # PCA on s1k dataset, use default "Label" column, set point size to 2,
-#'  # use the "Set3" palette, and display three rows in the legend
-#'  scores_qplot(s1k, 1:9, size = 2, palette = "Set3", legend_rows = 3)
+#'  # PCA on s1k dataset, use all numeric indices and first factor (defaults)
+#'  # for coloring with the "Set3" palette, set point size to 2,
+#'  # and display three rows in the legend
+#'  scores_qplot(s1k, size = 2, palette = "Set3", legend_rows = 3)
 #' }
-scores_qplot <- function(df, pca_indexes, label_name = "Label",
+scores_qplot <- function(df, pca_indexes = NULL, label_name = NULL,
                          center = TRUE, scale = FALSE,
                          size = 1,
                          palette = "Set1",
@@ -366,6 +389,26 @@ scores_qplot <- function(df, pca_indexes, label_name = "Label",
                         warn.conflicts = FALSE)) {
     stop("scores_qplot function requires 'RColorBrewer' package")
   }
+
+  if (is.null(pca_indexes)) {
+    pca_indexes <- sapply(df, is.numeric)
+  }
+
+  if (is.null(label_name)) {
+    factor_names <- names(df)[(sapply(df, is.factor))]
+    if (length(factor_names) == 0) {
+      stop("Couldn't find a factor column in data frame to use for label")
+    }
+    else {
+      label_name <- factor_names[1]
+    }
+  }
+
+  if (is.null(df[[label_name]])) {
+    stop("Data frame does not have a '",label_name,
+         "' column for use as a label")
+  }
+
   pca <- prcomp(df[, pca_indexes], retx = TRUE, center = center, scale. = scale)
   scatterqplot(df, x = pca$x[, 1], y = pca$x[, 2],
                label_name = label_name, size = size, palette = palette,
@@ -385,7 +428,8 @@ scores_qplot <- function(df, pca_indexes, label_name = "Label",
 #' @param x Vector of x values to plot for the x-coordinate.
 #' @param y Vector of y values to plot for the y-coordinate.
 #' @param label_name name of the column that contains a value to be used
-#'  to color each point.
+#'  to color each point. Default is \code{NULL}, in which case the first
+#'  encountered factor column will be used.
 #' @param size Size of the points.
 #' @param palette String giving the name of a ColorBrewer Palette. To see the
 #'  available palettes run the function
@@ -412,7 +456,7 @@ scores_qplot <- function(df, pca_indexes, label_name = "Label",
 #' @seealso
 #' More information on ColorBrewer is available at its website,
 #' \url{http://www.colorbrewer2.org}.
-scatterqplot <- function(df, x, y, label_name = "Label", size = 1,
+scatterqplot <- function(df, x, y, label_name = NULL, size = 1,
                          palette = "Set1", x_label = "x", y_label = "y",
                          legend = TRUE, legend_rows = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
@@ -422,16 +466,28 @@ scatterqplot <- function(df, x, y, label_name = "Label", size = 1,
                         warn.conflicts = FALSE)) {
     stop("scatterqplot function requires 'RColorBrewer' package")
   }
+
+  if (is.null(label_name)) {
+    factor_names <- names(df)[(sapply(df, is.factor))]
+    if (length(factor_names) == 0) {
+      stop("Couldn't find a factor column in data frame to use for label")
+    }
+    else {
+      label_name <- factor_names[1]
+    }
+  }
+
+  if (is.null(df[[label_name]])) {
+    stop("Data frame does not have a '",label_name,
+         "' column for use as a label")
+  }
+
   ncolors <- length(unique(df[[label_name]]))
-  colorPalette <- colorRampPalette(
-    RColorBrewer::brewer.pal(
-      RColorBrewer::brewer.pal.info[palette,]$maxcolors, palette))
+  colorPalette <- colorBrewerPalette(palette, ncolors)
 
   score_plot <-
-    ggplot2::qplot(x, y, data = df,
-                   colour = df[[label_name]], size = I(size)) +
-    ggplot2::scale_color_manual(values = colorPalette(ncolors),
-                                name = label_name) +
+    ggplot2::qplot(x, y, data = df, colour = df[[label_name]], size = I(size)) +
+    ggplot2::scale_color_manual(values = colorPalette, name = label_name) +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::labs(x = x_label, y = y_label)
 
@@ -443,5 +499,80 @@ scatterqplot <- function(df, x, y, label_name = "Label", size = 1,
     score_plot <- score_plot + ggplot2::theme(legend.position = "none")
   }
   print(score_plot)
+}
+
+#' Interpolated Color Brewer Palette
+#'
+#' Returns a vector of colors from the specified palette, interpolated if the
+#' number of requested colors is larger than the number of colors in the
+#' palette. Sequential and Diverging palettes are suitable for numerical scales.
+#' The Qualitiative palettes are intended for categorical values.
+#'
+#' Sequential palettes names:
+#'  Blues BuGn BuPu GnBu Greens Greys Oranges OrRd PuBu PuBuGn PuRd Purples
+#'  RdPu Reds YlGn YlGnBu YlOrBr YlOrRd
+#' Diverging palette names:
+#'  BrBG PiYG PRGn PuOr RdBu RdGy RdYlBu RdYlGn Spectral
+#' Qualitative:
+#'  Accent Dark2 Paired	Pastel1 Pastel2	Set1 Set2	Set3
+#' @param name Name of the palette.
+#' @param n Number of colors desired.
+#' @return Vector of \code{n} colors from the palette.
+#' @seealso
+#' More information on ColorBrewer is available at its website,
+#' \url{http://www.colorbrewer2.org}.
+colorBrewerPalette <- function(name, n) {
+  if (!requireNamespace("RColorBrewer", quietly = TRUE,
+                        warn.conflicts = FALSE)) {
+    stop("colorBrewerPalette function requires 'RColorBrewer' package")
+  }
+  colorRampPalette(
+    RColorBrewer::brewer.pal(
+      RColorBrewer::brewer.pal.info[name,]$maxcolors, name))(n)
+}
+
+#' Map Numbers to Colors
+#'
+#' Maps a numeric vector to an equivalent set of colors based on the specified
+#' ColorBrewer palette. Use the diverging or sequential.
+#'
+#' Sequential palettes names:
+#'  Blues BuGn BuPu GnBu Greens Greys Oranges OrRd PuBu PuBuGn PuRd Purples
+#'  RdPu Reds YlGn YlGnBu YlOrBr YlOrRd
+#' Diverging palette names:
+#'  BrBG PiYG PRGn PuOr RdBu RdGy RdYlBu RdYlGn Spectral
+#'
+#' @note Use of this function requires that the \code{RColorBrewer} packages be
+#'  installed.
+#' @note This function is based off a Stack Overflow answer by user "Dave X":
+#'  \url{http://stackoverflow.com/a/18749392}
+#'
+#' @param x Numeric vector.
+#' @param name Name of the ColorBrewer palette.
+#' @param n Number of unique colors to map values in \code{x} to.
+#' @param limits The range that the colors should map over. If not specified,
+#'  then the range of \code{x}. This is useful if there is some external
+#'  absolute scale that should be used.
+#' @seealso
+#' More information on ColorBrewer is available at its website,
+#' \url{http://www.colorbrewer2.org}.
+#' @example:
+#' \dontrun{
+#' # Plot Iris dataset sepal width vs length, colored by petal length, using
+#' # 20 colors ranging from Purple to Green (PRGn):
+#' plot(iris[, c("Sepal.Length", "Sepal.Width")],
+#'  col = map2color(iris$Petal.Length, "PRGn", 20), pch = 20, cex = 1.5)
+#' }
+map2color <- function(x, name = "Blues", n, limits = NULL) {
+  if (!requireNamespace("RColorBrewer", quietly = TRUE,
+                        warn.conflicts = FALSE)) {
+    stop("map2color function requires 'RColorBrewer' package")
+  }
+  if (is.null(limits)) {
+    limits <- range(x)
+  }
+  pal <- colorBrewerPalette(name, n)
+  pal[findInterval(x, seq(limits[1], limits[2], length.out = length(pal) + 1),
+                   all.inside = TRUE)]
 }
 
