@@ -711,6 +711,9 @@ reverse_kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
 #' @return Updated kernel.
 #' @family sneer kernel modifiers
 transfer_kernel_bandwidths <- function(inp, out, method) {
+  if (method$verbose) {
+    message("Transferring input beta parameters to output kernel")
+  }
   method$kernel$beta <- inp[["beta"]]
   method$kernel <- check_symmetry(method$kernel)
   method$kernel
