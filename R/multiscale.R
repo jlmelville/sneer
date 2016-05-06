@@ -73,28 +73,20 @@
 #' individual probability matrices and then averaged to create the final
 #' output probability matrix.
 #'
-#' If the parameter \code{multiscale_out_fn} is not provided, then the scheme
+#' If the parameter \code{modify_kernel_fn} is not provided, then the scheme
 #' above is used to create output functions. Any function with a parameter
 #' called \code{beta} can be used, so for example embedding methods which use
 #' the \code{\link{exp_weight}} and \code{\link{heavy_tail_weight}} weighting
 #' functions can be used with the default function. The signature of
-#' \code{multiscale_out_fn} is:
+#' \code{modify_kernel_fn} must be:
 #'
-#' \code{multiscale_out_fn(out, method, perplexity)}
+#' \code{modify_kernel_fn(inp, out, method)}
 #'
-#' where \code{out} is the current output data, \code{method} is the embedding
-#' method, and \code{perplexity} is a perplexity value used in the multiscaling
-#' of the input probability.
+#' where \code{inp} is the input data, \code{out} is the current output data,
+#' \code{method} is the embedding method.
 #'
-#' This function will be called once for each perplexity, and an updated method
-#' should be returned, with a new \code{weight_fn} function member with the
-#' signature:
-#'
-#' \code{weight_fn(D)}
-#'
-#' where D is the output distance matrix, and the return value is a weight
-#' matrix. The original weight function is stored as
-#' \code{method$orig_weight_fn}.
+#' This function will be called once for each perplexity, and an updated
+#' kernel should be returned.
 #'
 #' @param perplexities List of perplexities to use. If not provided, then
 #'   a series of perplexities in decreasing powers of two are used, starting
@@ -335,6 +327,18 @@ inp_from_perps_multi <- function(perplexities = NULL,
 #' scales, the perplexities are added in decreasing order, otherwise, they
 #' are added in the order provided in \code{scales} list. It is suggested that
 #' the \code{scales} list therefore order the perplexities in decreasing order.
+#'
+#' The parameter \code{modify_kernel_fn} can be used to modify the output kernel
+#' based on the results of the perplexity calculation. If provided, then the
+#' signature of \code{modify_kernel_fn} must be:
+#'
+#' \code{modify_kernel_fn(inp, out, method)}
+#'
+#' where \code{inp} is the input data, \code{out} is the current output data,
+#' \code{method} is the embedding method.
+#'
+#' This function will be called once for each perplexity, and an updated
+#' kernel should be returned.
 #'
 #' @param perplexities List of perplexities to use. If not provided, then
 #'   a series of perplexities in decreasing powers of two are used, starting
@@ -613,8 +617,7 @@ inp_from_step_perp <- function(perplexities = NULL,
   )
 }
 
-#' Factory function which creates an output weight function for a given input
-#' perplexity, in the context of multiscale embedding.
+#' Scale Output Kernel Precision Based on Intrinsic Dimensionality
 #'
 #' @param inp Input data.
 #' @param out Output data.
@@ -663,6 +666,18 @@ scale_prec_to_perp <- function(inp, out, method) {
 #' to decrease, the procedure is aborted and the probability matrix from the
 #' previously calculated perplexity is used.
 #'
+#' The parameter \code{modify_kernel_fn} can be used to modify the output kernel
+#' based on the results of the perplexity calculation. If provided, then the
+#' signature of \code{modify_kernel_fn} must be:
+#'
+#' \code{modify_kernel_fn(inp, out, method)}
+#'
+#' where \code{inp} is the input data, \code{out} is the current output data,
+#' \code{method} is the embedding method.
+#'
+#' This function will be called once for each perplexity, and an updated
+#' kernel should be returned.
+#'
 #' @param perplexities List of perplexities to use. If not provided, then
 #'   a series of perplexities in decreasing powers of two are used, starting
 #'   with the power of two closest to the number of observations in the dataset
@@ -673,8 +688,11 @@ scale_prec_to_perp <- function(inp, out, method) {
 #'  which will be varied as part of the search to produce the desired
 #'  perplexity. The function should return a matrix of weights
 #'  corresponding to the transformed squared distances passed in as arguments.
+#' @param modify_kernel_fn Function to create a new similarity kernel based
+#'  on the new perplexity. Will be called every time a new input probability
+#'  matrix is generated.
 #' @param verbose If \code{TRUE} print message about initialization during the
-#' embedding.
+#'  embedding.
 #' @return Input initializer for use by an embedding function.
 #' @seealso \code{\link{inp_from_perps_multi}} for caveats on using a
 #'  non-default version of \code{input_weight_fn}.
@@ -682,6 +700,7 @@ scale_prec_to_perp <- function(inp, out, method) {
 #' @export
 inp_from_dint_max <- function(perplexities = NULL,
                               input_weight_fn = exp_weight,
+                              modify_kernel_fn = NULL,
                               verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
@@ -696,7 +715,6 @@ inp_from_dint_max <- function(perplexities = NULL,
       }
       method$perplexities <- perplexities
 
-      modify_kernel_fn <- scale_prec_to_perp
       if (!is.null(modify_kernel_fn)) {
         method <- on_inp_updated(method, function(inp, out, method) {
           method$kernel <- modify_kernel_fn(inp, out, method)
@@ -717,6 +735,8 @@ inp_from_dint_max <- function(perplexities = NULL,
         d_hat <- median(inpl$dims)
         if (is.null(inp$d_hat)) {
           inp$d_hat <- d_hat
+          inp$perp <- perp
+          inp$dims <- inpl$dims
         }
         else {
           if (d_hat > inp$d_hat) {
