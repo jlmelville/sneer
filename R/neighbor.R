@@ -8,6 +8,12 @@
 #' neighborhoods. An AUC of 1 indicates perfect neighborhood preservation, an
 #' AUC of 0 is due to random results.
 #'
+#' @note Calculating the RNX curve requires calculating a co-ranking matrix,
+#'  which is not a very efficient operation, because it requires iterating
+#'  over every element of the distance matrix, the size of which scales with
+#'  the square of the number of observations. Be sure you really want to
+#'  calculate this for datasets with more than approximately 1,000 observations.
+#'
 #' @param inp Input data. The input distance matrix will be calculated if it's
 #' not present.
 #' @param out Output data. The output distance matrix will be calculated if
@@ -183,3 +189,96 @@ bnx_crm <- function(crm, k) {
   extrusions <- sum(kcrm[upper.tri(kcrm)])
   (intrusions - extrusions) / (k * nrow(crm))
 }
+
+#' Indexes of the k-largest numbers.
+#'
+#' Given a vector of numbers, return the indexes of the k-largest
+#' values.
+#'
+#' @param x Vector of numbers.
+#' @param k Top k results to return
+#' @return Vector of the indexes of the \code{k} largest values in \code{x}.
+k_largest_ind <- function(x, k) {
+  which(k >= sort(k, decreasing = TRUE)[k], arr.ind = TRUE)
+}
+
+#' Indexes of the k-smallest numbers in a vector.
+#'
+#' Given a vector of numbers, return the indexes of the k-smallest
+#' values.
+#'
+#' @param x Vector of numbers.
+#' @param k Top k results to return
+#' @return Vector of the indexes of the \code{k} smallest values in \code{x}.
+k_smallest_ind <- function(x, k) {
+  k_largest_ind(-x, k)
+}
+
+#' Indexes of the shared neighbors between two distance vectors
+#'
+#' Return the indexes of shared k-closest neighbors in two lists of distances.
+#'
+#' @param di list of distances
+#' @param dj list of distances
+#' @param n The size of the shared neighborhood
+#' @return Vector of the indexes of the elements which are among both the
+#' \code{k}-smallest values of \code{di} and the \code{k}-smallest
+#' values of \code{dj}.
+k_shared_nbrs_ind <- function(di, dj, k) {
+  nindi <- k_smallest_ind(di, k)
+  nindj <- k_smallest_ind(dj, k)
+
+  Reduce(intersect, list(nindi, nindj))
+}
+
+#' Neighborhood Preservation
+#'
+#' For the K nearest neighbors in one set of distances, returns the number of
+#' those neighbors which are also K nearest neighbors in another list,
+#' normalized with respect to K.
+#'
+#' The neighborhood preservation can vary between 0 (no neighbors in common)
+#' and 1 (perfect preservation). However, random performance gives an
+#' approximate value of K / K - 1.
+#'
+#' @param di Vector of distances.
+#' @param dj Vector of distances.
+#' @param k Size of the neighborhood to consider.
+#' @return The number of shared neighbors in the equivalent neighbor lists of
+#' \code{di} and \code{dj}.
+nbr_pres_i <- function(di, dj, k) {
+  length(k_shared_nbrs_ind(di, dj, k)) / k
+}
+
+#' Neighborhood Preservation Between Distance Matrices
+#'
+#' Calculates the neighborhood preservation for each observation in a dataset,
+#' represented by two distance matrices. The first matrix is the "ground truth",
+#' the second being the estimation or approximation.
+#' The neighborhood preservation is calculated for each row where each element
+#' d[i, j] is taken to be the distance between observation i and j.
+#'
+#' The neighborhood preservation can vary between 0 (no neighbors in common)
+#' and 1 (perfect preservation). However, random performance gives an
+#' approximate value of K / K - 1.
+#'
+#' @note This is not a very efficient way to calculate the preservation if you
+#'  want to calculate the value for multiple values of \code{k}. For more
+#'  global measures of preservation, see \code{\link{rnx_auc}}.
+#'
+#' @param din Distance matrix. The "ground truth" or reference distances.
+#' @param dout Distance matrix. A set of distances to compare to the reference
+#'  distances.
+#' @param k The size of the neighborhood, where k is the number of neighbors to
+#'  include in the neighborhood.
+#' @return Vector of preservation values, one for each row of the distance
+#'  matrix.
+#' @export
+nbr_pres <- function(din, dout, k) {
+  preservations <- vector(mode = "numeric", length = nrow(din))
+  for (i in 1:nrow(din)) {
+    preservations[i] <- nbr_pres_i(din[i,], dout[i,], k)
+  }
+  preservations
+}
+
