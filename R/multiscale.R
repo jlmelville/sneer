@@ -145,13 +145,9 @@ inp_from_perps_multi <- function(perplexities = NULL,
     function(inp, method, opt, iter, out) {
 
       if (is.null(perplexities)) {
-        max_scales <- max(round(log2(nrow(inp$dm) / 4)), 1)
-        perplexities <- vapply(seq_along(1:max_scales),
-                               function(x) { 2 ^ (max_scales - x + 1) }, 0)
+        perplexities <- ms_perps(inp$dm)
       }
-      else {
-        max_scales = length(perplexities)
-      }
+      max_scales <- length(perplexities)
       method$perplexities <- perplexities
 
       if (is.null(num_scale_iters)) {
@@ -194,9 +190,6 @@ inp_from_perps_multi <- function(perplexities = NULL,
         inp$betas <- list()
         for (l in 1:max_scales) {
           perp <- perplexities[l]
-          if (verbose) {
-            message("Calculating perplexity ", formatC(perp))
-          }
 
           inpl <- single_perplexity(inp, perplexity = perp,
                                     input_weight_fn = input_weight_fn,
@@ -372,13 +365,10 @@ inp_from_perps_multil <- function(perplexities = NULL,
     function(inp, method, opt, iter, out) {
 
       if (is.null(perplexities)) {
-        max_scales <- max(round(log2(nrow(inp$dm) / 4)), 1)
-        perplexities <- vapply(seq_along(1:max_scales),
-                               function(x) { 2 ^ (max_scales - x + 1) }, 0)
+        perplexities <- ms_perps(inp$dm)
       }
-      else {
-        max_scales = length(perplexities)
-      }
+
+      max_scales <- length(perplexities)
       method$perplexities <- perplexities
 
       if (is.null(num_scale_iters)) {
@@ -549,18 +539,12 @@ inp_from_step_perp <- function(perplexities = NULL,
     function(inp, method, opt, iter, out) {
 
       if (is.null(perplexities)) {
-          max_scales <- 10
-          max_perp <- nrow(out$ym) / 2
-          min_perp <- 32
-          if (nrow(out$ym) < min_perp) {
-            min_perp <- 2
-          }
-          perplexities <- seq(max_perp, min_perp, length.out = max_scales)
+        perplexities <- step_perps(inp$dm)
       }
-      else {
-        max_scales = length(perplexities)
-      }
+
+      max_scales <- length(perplexities)
       method$perplexities <- perplexities
+
       num_steps <- max(max_scales - 1, 1)
       step_every <- num_scale_iters / num_steps
 
@@ -706,13 +690,10 @@ inp_from_dint_max <- function(perplexities = NULL,
     function(inp, method, opt, iter, out) {
 
       if (is.null(perplexities)) {
-        max_scales <- max(round(log2(nrow(inp$dm) / 4)), 1)
-        perplexities <- vapply(seq_along(1:max_scales),
-                               function(x) { 2 ^ (max_scales - x + 1) }, 0)
+        perplexities <- ms_perps(inp$dm)
       }
-      else {
-        max_scales = length(perplexities)
-      }
+
+      max_scales <- length(perplexities)
       method$perplexities <- perplexities
 
       if (!is.null(modify_kernel_fn)) {
@@ -725,9 +706,7 @@ inp_from_dint_max <- function(perplexities = NULL,
 
       for (l in 1:max_scales) {
         perp <- perplexities[l]
-        if (verbose) {
-          message("Calculating intrinsic dim for perplexity ", formatC(perp))
-        }
+
         inpl <- single_perplexity(inp, perplexity = perp,
                                  input_weight_fn = input_weight_fn,
                                  verbose = verbose)$inp
@@ -902,4 +881,44 @@ ms_wrap_in_updated <- function(method) {
     }
   }
   method
+}
+
+#' Perplexity Values for Multiscale Embedding
+#'
+#' Returns a vector of perplexity values scaled according to the size of the
+#' data frame or matrix suitable for use in a step wise scaling of perplexity.
+#'
+#' The perplexities will be returned in descending order, starting at the power
+#' of two closest to N/4, where N is the number of observations in the data set,
+#' and ending at 2, with the perplexities in taking up decreasing powers of 2.
+#'
+#' @param x Data frame or matrix.
+#' @param num_perps Number of perplexities.
+#' @return Vector containing \code{num_perps} perplexities.
+ms_perps <- function(x, num_perps = max(round(log2(nrow(x) / 4)), 1)) {
+  Filter(function(e) { e < nrow(x) },
+         vapply(seq_along(1:num_perps),
+                function(x) { 2 ^ (num_perps - x + 1) }, 0))
+}
+
+#' Perplexity Values for Step Embedding
+#'
+#' Returns a vector of perplexity values scaled according to the size of the
+#' data frame or matrix suitable for use in a step wise scaling of perplexity.
+#'
+#' The perplexities will be returned in descending order, starting at N/2,
+#' where N is the number of observations in the data set, and ending at 32
+#' (or N/4, if there are less than 64 observations in the dataset), with
+#' the perplexities in between equally spaced.
+#'
+#' @param x Data frame or matrix.
+#' @param num_perps Number of perplexities.
+#' @return Vector containing \code{num_perps} perplexities.
+step_perps <- function(x, num_perps = 5) {
+  max_perp <- nrow(x) / 2
+  min_perp <- 32
+  if (max_perp <= min_perp || nrow(x) <= min_perp) {
+    min_perp <- nrow(x) / 4
+  }
+  seq(max_perp, min_perp, length.out = num_perps)
 }
