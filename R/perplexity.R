@@ -172,12 +172,7 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
                         x_lower = 0, x_upper = Inf, x_init = beta_init,
                         keep_search = TRUE)
 
-  if (result$iter == max_iters) {
-    ok <- FALSE
-  }
-  else {
-    ok <- TRUE
-  }
+  ok <- result$iter != max_iters
 
   # Calculate the intrisic dimensionality at this perplexity
   hs <- result$ys
