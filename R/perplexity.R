@@ -174,29 +174,7 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 
   ok <- result$iter != max_iters
 
-  # Calculate the intrisic dimensionality at this perplexity
-  hs <- result$ys
-  betas <- result$xs
-
-  # if we got lucky guessing the parameter for the target perplexity immediately
-  # generate another beta value close to the current value
-  if (length(hs) == 0) {
-    hs <- c(result$best$h)
-    betas <- c(result$x)
-  }
-
-  if (length(hs) == 1) {
-    beta_fwd <- min(result$x * 1.01, result$x + 1e-3)
-    h_fwd <- fn(beta_fwd)$value + log(perplexity, base = h_base)
-
-    betas <- c(betas, beta_fwd)
-    hs <- c(hs, h_fwd)
-  }
-
-  dh <- hs[length(hs)] - hs[length(hs) - 1]
-    dlog2b <- log2(betas[length(betas)]) - log2(betas[length(betas) - 1])
-  d_intr <- -2 * dh / dlog2b
-
+  d_intr <- initrinsic_dimensionality(result, fn)
 
   list(pr = result$best$pr, perplexity = h_base ^ result$best$h,
        beta = result$x, d_intr = d_intr, ok = ok)
@@ -357,4 +335,29 @@ shannon_entropy_rows <- function(pm, base = 2, eps = .Machine$double.eps) {
 #' @return Vector of perplexities, one per row of the matrix.
 perplexity_rows <- function(pm, eps = .Machine$double.eps) {
   exp(shannon_entropy_rows(pm, base = exp(1), eps = eps))
+}
+
+# Intrinsic Dimensionality
+initrinsic_dimensionality <- function(bisection_result, fn) {
+  hs <- bisection_result$ys
+  betas <- bisection_result$xs
+
+  if (length(hs) == 0) {
+    hs <- c(bisection_result$best$h)
+    betas <- c(bisection_result$x)
+  }
+
+  # if we got lucky guessing the parameter for the target perplexity immediately
+  # generate another beta value close to the current value
+  if (length(hs) == 1) {
+    beta_fwd <- min(bisection_result$x * 1.01, bisection_result$x + 1e-3)
+    h_fwd <- fn(beta_fwd)$h
+
+    betas <- c(betas, beta_fwd)
+    hs <- c(hs, h_fwd)
+  }
+
+  dh <- hs[length(hs)] - hs[length(hs) - 1]
+  dlog2b <- log2(betas[length(betas)]) - log2(betas[length(betas) - 1])
+  (-2 * dh) / dlog2b
 }
