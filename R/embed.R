@@ -16,22 +16,242 @@
 #' @family sneer embedding methods
 NULL
 
-#' Wrapper
+#' Probability-based Embedding
+#'
+#' Carries out an embedding of a high-dimensional dataset into a two dimensional
+#' scatter plot, based on distance-based methods (e.g. Sammon maps) and
+#' probability-based methods (e.g. t-distributed Stochastic Neighbor Embedding).
+#'
+#' @details
+#'
+#' The embedding methods available are:
+#' \itemize{
+#'  \item{\code{"pca"}}{The first two principal components.}
+#'  \item{\code{"mmds"}}{Metric multidimensional scaling.}
+#'  \item{\code{"sammon"}}{Sammon map.}
+#'  \item{\code{"tsne"}}{t-Distributed Stochastic Neighbor Embedding of van der
+#'   Maaten and Hinton (2008).}
+#'  \item{\code{"asne"}}{Asymmetric Stochastic Neighbor Embedding of Hinton and
+#'   Roweis (2002)}
+#'  \item{\code{"ssne"}}{Symetric Stochastic Neighbor Embedding of Cook et al
+#'   (2007).}
+#'  \item{\code{"wssne"}}{Weighted Symmetric Stochastic Neighbor Embedding of
+#'   Yang et al (2014). Note that despite its name this version is a
+#'   modification of t-SNE, not SSNE.}
+#'  \item{\code{"hssne"}}{Heavy-tailed Symmetric Stochastic Neighbor Embedding of
+#'   Yang et al (2009).}
+#'  \item{\code{"nerv"}}{Neighbor Retrieval Visualizer of Venna et al (2010).}
+#'  \item{\code{"jse"}}{Jensen-Shannon Embedding of Lee at al (2013).}
+#' }
+#'
+#' The following scaling options can be applied via the \code{scale_type}
+#' parameter:
+#' \itemize{
+#'  \item{\code{"m"}}{Range scale the entire data so that the maximum value is
+#'   1 and the minimum 0.}
+#'  \item{\code{"r"}}{Range scale each column that the maximum value in each
+#'   column is 1 and the minimum 0.}
+#'  \item{\code{"a"}}{Scale each column so that its mean is 0 and variance is
+#'   1.}
+#' }
+#' Default is to do no scaling. Zero variance columns will be removed even if no
+#' preprocessing is carried out.
+#'
+#' The \code{perplexity} parameter is used in combination with the
+#' \code{perp_scale} parameter, which can take the following values:
+#' \itemize{\item{"single"}}{\code{perplexity} should be a single value, which
+#' will be used over the entire course of the embedding.}
+#' \itemize{\item{"step"}}{\code{perplexity} should be a vector of
+#' perplexity values. Each perplexity will be used in turn over the course of
+#' the embedding, in sequential order. By starting with a large perplexity, and
+#' ending with the desired perplexity, it has been suggested by some
+#' researchers that local minima can be avoided.}
+#' \itemize{\item{"ms"}}{The multiscaling method suggested by Lee et al. (2015).
+#' \code{perplexity} should be a vector of  perplexity values. Each perplexity
+#' will be used in turn over the course of the embedding, in sequential order.
+#' Unlike with the \code{"step"} method, probability matrices from earlier
+#' perplexities are retained and combined by averaging.}
+#'
+#' The \code{prec_scale} parameter determines if the input weighting kernel
+#' parameters should be used to modify the output kernel parameter after the
+#' input probability calculation for a given perplexity value completes.
+#' values are:
+#' \itemize{
+#'  \item{"n"}{Do nothing. Most embedding methods follow this strategy, leaving
+#'  the output similarity kernels to all have unit precision parameters.}
+#'  \item{"t"}{Transfer the input similarity kernel parameters to the
+#'  output similarity kernel. This method was suggesed by Venna et al (2010).}
+#'  \item{"s"}{Scale the output kernel precisions based on the target
+#'  \code{perplexity} and the intrinsic dimensionality of the input data. This
+#'  method is part of the multiscaling technique proposed by Lee et al (2015).}
+#' }
+#'
+#' The \code{prec_scale} parameter will be ignored if the \code{method} used
+#' does not use an output similarity kernel with a free parameter, e.g.
+#' \code{tsne} or \code{wtsne}.
+#'
+#' For initializing the output coordinates, the options for the
+#' \code{init} parameter are:
+#' \itemize{
+#'  \item{\code{"p"}}{Initialize using the first two scores of the PCA.
+#'  Data will be centered, but not scaled unless the \code{scale_type} parameter
+#'  is used.}
+#' \code{"r"}{Initialize each coordinate vlaue from a normal random
+#' distribution with a standard deviation of 1e-4, as suggested by van der Maaten
+#' and Hinton (2008).}
+#' \code{"u"}{Initialize each coordinate value from a uniform random
+#' distribution between 0 and 1 as suggested by Venna et al (2010).}
+#'   init_out <- NULL
+#' \code{"u"}{Initialize the coordinates from a user-supplied matrix. Supply
+#' the coordinates as the \code{init_config} parameter.}
+#'}
+#'
+#' For the \code{quality_measures} argument, a vector with one or more of the
+#' following options can be supplied:
+#' \itemize{
+#'  \item{\code{"r"}}{Calculate the area under the ROC curve, averaged over
+#'  each observation, using the output distance matrix to rank each
+#'  observation. Observations are partitioned into the positive and negative
+#'  class depending upon the value of the label determined by the
+#'  \code{label_name} argument. Only calculated if the \code{label_name}
+#'  parameter is supplied.}
+#'  \item{\code{"p"}}{Calculate the area under the Precision-Recall curve.
+#'   Only calculated if the \code{label_name} parameter is supplied.}
+#'  \item{\code{"n"}}{Calculate the area under the RNX curve, using the
+#'  method of Lee et al (2015).}
+#' }
+#'
+#' For the \code{ret} argument, a vector with one or more of the
+#' following options can be supplied:
+#' \itemize{
+#'  \item{\code{"x"}}{The input coordinates after scaling and column filtering.}
+#'  \item{\code{"dx"}}{The input distance matrix.}
+#'  \item{\code{"dy"}}{The output distance matrix.}
+#'  \item{\code{"p"}}{The input probability matrix.}
+#'  \item{\code{"q"}}{The output probability matrix.}
+#'  \item{\code{"beta}}{The input similarity kernel parameters.}
+#'  \item{\code{"dims}}{The intrinsic dimensionality for each observation,
+#'  calculated according to the method of Lee et al (2015).}
+#' }
+#'
+#' @param df Data frame to embed.
+#' @param indexes Indexes of the columns of the numerical variables to use in
+#'  the embedding. The default of \code{NULL} will use all the numeric
+#'  variables.
+#' @param method Embedding method. See 'Details'.
+#' @param alpha Heavy tailedness parameter. Used only if the method is
+#'  \code{"hssne"}.
+#' @param lambda NeRV parameter. Used only if the method is \code{"nerv"}.
+#' @param kappa JSE parameter. Used only if the method is \code{"jse"}.
+#' @param scale_type Type of scaling to carry out on the input data. See
+#'  'Details'.
+#' @param perplexity Target perplexity or vector of trial perplexities. Applies
+#'  to probabilit-based embedding methods only (i.e. anything that isn't PCA,
+#'  MDS or Sammon mapping).
+#' @param perp_scale Type of perplexity scaling to apply. See 'Details'. Ignored
+#'  by non-probability based methods.
+#' @param prec_scale Whether to scale the output kernel precision based on
+#'  perplexity results. See 'Details'. Ignored by non-probability based methods.
+#' @param init Type of initialization of the output coordinates. See 'Details'.
+#' @param init_config Coordinates to use for initial configuration. Used only
+#'  if \code{init} is \code{"m"}.
+#' @param max_iter Maximum number of iterations to carry out optimization of
+#'  the embedding. Ignored if the \code{method} is \code{"pca"}.
+#' @param report_every Frequency (in terms of iteration number) with which to
+#'  update plot and report the cost function.
+#' @param tol Tolerance for comparing cost change (calculated according to the
+#'  interval determined by \code{report_every}). If the change falls below this
+#'  value, the optimization stops early.
+#' @param plot_type String code indicating the type of plot of the embedding
+#'  to display: \code{"p"} to use the usual \code{\link[graphics]{plot}}
+#'  function; \code{"g"} to use the \code{ggplot2} package, with the
+#'  \code{RColorBrewer} palettes. You are responsible for installing and
+#'  loading these packages yourself.
+#' @param label_name Name of factor-typed column in \code{df} to be used to
+#'  color the points in the embedding plot (for \code{plot_type}
+#'  \code{"g"}) or to color the text associated with each plotted observation
+#'  {\code{plot_type "p"}}. If not specified, then the first factor column
+#'  will be used. If no suitable column can be found, then no plotting
+#'  is carried out.
+#' @param label_chars Number of characters to use for the labels in the
+#'  embedding plot. Applies only when \code{plot_type} is set to \code{"p"}.
+#' @param label_size Size of the points in the embedding plot.
+#' @param Color Brewer palette name to use for coloring points in embedding
+#'  plot. Applies to \code{plot_type} type \code{"g"} only.
+#' @param legend if \code{TRUE}, display the legend in the embedding plot.
+#'  Applies when \code{plot_type} is \code{"g"} only.
+#' @param legend_rows Number of rows to use for displaying the legend in
+#'  an embedding plot.
+#' @param quality_measures Vector of names of quality measures to apply to the
+#'  finished embedding. See 'Details'. Values of the quality measures will
+#'  be printed to screen after embedding and retained in the list that is
+#'  returned from this function.
+#' @param ret Vector of names of extra data to return from the embedding. See
+#'  'Details',
+#' @return List with the following elements:
+#' \itemize{
+#' \item{\code{coords}}{Embedded coordinates}
+#' \item{\code{cost}}{Cost function value for the embedded coordinates. The
+#' type of the cost depends on the method, but the lower the better.}
+#' \item{\code{norm_cost}}{\code{cost}, normalized so that a perfect embedding
+#' gives a value of 0 and one where all the distances were equal would have
+#' a value of 1.}
+#' \item{\code{method}}{String giving the method used for the embedding.}
+#' }
+#' Additional elements will be in the list if \code{ret} or
+#' \code{quality_measures} are non-empty.
+#' @references
+#'
+#' Hinton, G. E., & Roweis, S. T. (2002).
+#' Stochastic neighbor embedding.
+#' In \emph{Advances in neural information processing systems} (pp. 833-840).
+#'
+#' Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
+#' Visualizing similarity data with a mixture of maps.
+#' In \emph{International Conference on Artificial Intelligence and Statistics} (pp. 67-74).
+#'
+#' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
+#' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
+#' dimensionality reduction based on similarity preservation.
+#' \emph{Neurocomputing}, \emph{112}, 92-108.
+#'
+##' Lee, J. A., Peluffo-Ordo'nez, D. H., & Verleysen, M. (2015).
+#' Multi-scale similarities in stochastic neighbour embedding: Reducing
+#' dimensionality while preserving both local and global structure.
+#' \emph{Neurocomputing}, \emph{169}, 246-261.
+#'
+#' Van der Maaten, L., & Hinton, G. (2008).
+#' Visualizing data using t-SNE.
+#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
+#'
+#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+#' Information retrieval perspective to nonlinear dimensionality reduction for
+#' data visualization.
+#' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+#'
+#' Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
+#' Heavy-tailed symmetric stochastic neighbor embedding.
+#' In \emph{Advances in neural information processing systems} (pp. 2169-2177).
+#'
+#' Yang, Z., Peltonen, J., & Kaski, S. (2014).
+#' Optimization equivalence of divergences improves neighbor embedding.
+#' In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
+#' (pp. 460-468).
+#'
+#' @export
 embed <- function(df,
                   indexes = NULL,
                   method,
                   alpha = 1,
                   lambda = 0.5,
                   kappa = 0.5,
-                  preprocess = NULL,
-                  max_iter = 1000,
                   scale_type = "",
-                  perplexity = NULL,
+                  perplexity = 32, perp_scale = "", prec_scale = NULL,
                   init = "p",
                   init_config = NULL,
+                  max_iter = 1000,
                   report_every = 50,
-                  normalize_cost = TRUE,
-                  extra_costs = NULL,
+                  tol = 1e-4,
                   plot_type = "p",
                   label_name = NULL,
                   label_chars = NULL,
@@ -39,27 +259,25 @@ embed <- function(df,
                   palette = "Set1",
                   legend = TRUE,
                   legend_rows = NULL,
-                  quality_assess = NULL,
-                  quality_measures = c('r', 'p', 'n')) {
+                  quality_measures = NULL,
+                  ret = c()) {
   if (is.null(indexes)) {
     indexes <- sapply(df, is.numeric)
   }
 
   if (is.null(label_name)) {
     factor_names <- names(df)[(sapply(df, is.factor))]
-    if (length(factor_names) == 0) {
-      stop("Couldn't find a factor column in data frame to use for label")
-    }
-    else {
+    if (length(factor_names) > 0) {
       label_name <- factor_names[1]
     }
   }
 
   if (is.null(df[[label_name]])) {
-    stop("Data frame does not have a '",
-         label_name,
+    stop("Data frame does not have a '",label_name,
          "' column for use as a label")
   }
+
+  normalize_cost <- TRUE
 
   embed_methods <- list(
     pca = function() { mmds() },
@@ -69,9 +287,14 @@ embed <- function(df,
     ssne = function() { ssne() },
     asne = function() { asne() },
     wtsne = function() { importance_weight(tsne()) },
-    hssne = function() { hssne(alpha = alpha) },
-    nerv = function() { nerv(lambda = lambda) },
-    jse = function() { jse(kappa = kappa) }
+    hssne = function() { hssne_plugin(alpha = alpha) },
+    nerv = function() { unerv(lambda = lambda) },
+    jse = function() { jse(kappa = kappa) },
+    ssne_plugin = function() { ssne_plugin() },
+    asne_plugin = function() { asne_plugin() },
+    hssne_plugin = function() { hssne_plugin(alpha = alpha) },
+    nerv_plugin = function() { nerv_plugin(lambda = lambda) },
+    jse_plugin = function() { jse_plugin(kappa = kappa) }
   )
 
   if (!method %in% names(embed_methods)) {
@@ -81,21 +304,35 @@ embed <- function(df,
          paste(names(embed_methods), collapse = ", "))
   }
 
-  embed_method <- embed_methods[[method]]()
+  # Need to use plugin method if precisions can be non-uniform
+  if (!is.null(prec_scale) && prec_scale == "t") {
+    new_method <- paste0(method, "_plugin")
+    if (!new_method %in% names(embed_methods)) {
+      stop("Method '", method, "' is not compatible with prec_scale option 't'")
+    }
+    embed_method <- embed_methods[[new_method]]()
+  }
+  else {
+    embed_method <- embed_methods[[method]]()
+  }
 
+  extra_costs <- NULL
   # special casing for different methods
   if (method == "pca") {
     max_iter <- 0
+    perplexity <- NULL
     if (is.null(extra_costs)) {
       extra_costs <- c("kruskal_stress")
     }
   }
   else if (method == "mmds") {
+    perplexity <- NULL
     if (is.null(extra_costs)) {
       extra_costs <- c("kruskal_stress")
     }
   }
   else if (method == "sammon") {
+    perplexity <- NULL
     if (is.null(extra_costs)) {
       extra_costs <- c("kruskal_stress")
     }
@@ -117,7 +354,51 @@ embed <- function(df,
 
   init_inp <- NULL
   if (!is.null(perplexity)) {
-    init_inp <- inp_from_perp(perplexity = perplexity)
+    modify_kernel_fn <- NULL
+    if (!is.null(prec_scale)) {
+      if (prec_scale == "s") {
+        modify_kernel_fn <- scale_prec_to_perp
+      }
+      else if (prec_scale == "t") {
+        modify_kernel_fn <- transfer_kernel_bandwidths
+      }
+      else {
+        stop("Unknown prec_scale value: '", prec_scale, "'")
+      }
+    }
+    if (length(perplexity) == 1) {
+      init_inp <- inp_from_perp(perplexity = perplexity,
+                                modify_kernel_fn = modify_kernel_fn)
+    }
+    else {
+
+      if (perp_scale == "max") {
+        init_inp <- inp_from_dint_max(perplexities = perplexity,
+                                      modify_kernel_fn = modify_kernel_fn)
+      }
+      else if (perp_scale == "ms") {
+        init_inp <- inp_from_perps_multi(perplexities = perplexity,
+                                         num_scale_iters =
+                                           ceiling(max_iter / 5),
+                                         modify_kernel_fn = modify_kernel_fn)
+      }
+      else if (perp_scale == "msl") {
+        init_inp <- inp_from_perps_multil(perplexities = perplexity,
+                                         num_scale_iters =
+                                           ceiling(max_iter / 5),
+                                         modify_kernel_fn = modify_kernel_fn)
+      }
+      else if (perp_scale == "step") {
+        init_inp <- inp_from_step_perp(perplexities = perplexity,
+                                          num_scale_iters =
+                                            ceiling(max_iter / 5),
+                                          modify_kernel_fn = modify_kernel_fn)
+      }
+      else {
+        stop("Must provide 'perp_scale' argument if using multiple perplexity ",
+             "values")
+      }
+    }
   }
 
   init_out <- NULL
@@ -134,42 +415,42 @@ embed <- function(df,
     init_out <- out_from_matrix(init_config = init_config)
   }
 
-  if (plot_type == "g") {
-    if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
-      stop("plot type 'g' requires 'ggplot2' package")
+  embed_plot <- NULL
+  if (!is.null(label_name)) {
+    if (plot_type == "g") {
+      if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
+        stop("plot type 'g' requires 'ggplot2' package")
+      }
+      if (!requireNamespace("RColorBrewer",
+                            quietly = TRUE,
+                            warn.conflicts = FALSE)) {
+        stop("plot type 'g' requires 'RColorBrewer' package")
+      }
+      embed_plot <-
+        make_qplot(
+          df,
+          attr_name = label_name,
+          size = label_size,
+          palette = palette,
+          legend = legend,
+          legend_rows = legend_rows
+        )
     }
-    if (!requireNamespace("RColorBrewer",
-                          quietly = TRUE,
-                          warn.conflicts = FALSE)) {
-      stop("plot type 'g' requires 'RColorBrewer' package")
-    }
-    embed_plot <-
-      make_qplot(
-        df,
-        attr_name = label_name,
-        size = label_size,
-        palette = palette,
-        legend = legend,
-        legend_rows = legend_rows
-      )
-  }
-  else {
-    if (!is.null(label_chars)) {
-      embed_plot <- make_plot(df,
-                              label_name,
-                              cex = label_size,
-                              label_fn = make_label(label_chars))
-    }
-    else {
-      embed_plot <- make_plot(df, label_name, cex = label_size)
+    else if (plot_type == 'p') {
+      if (!is.null(label_chars)) {
+        embed_plot <- make_plot(df,
+                                label_name,
+                                cex = label_size,
+                                label_fn = make_label(label_chars))
+      }
+      else {
+        embed_plot <- make_plot(df, label_name, cex = label_size)
+      }
     }
   }
 
   after_embed <- NULL
-  # quality assessment measures are slow - if > 1000 observations, user must
-  # explicitly ask for them
-  if (((is.null(quality_assess) && nrow(df) <= 1000) || quality_assess) &&
-      !is.null(quality_measures)) {
+  if (!is.null(quality_measures)) {
     qs <- c()
     if ('r' %in% quality_measures) {
       if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
@@ -202,18 +483,21 @@ embed <- function(df,
       normalize_cost = normalize_cost,
       report_every = report_every,
       extra_costs = extra_costs,
-      plot = embed_plot
+      plot = embed_plot,
+      reltol = tol
     ),
     after_embed = after_embed,
     max_iter = max_iter,
-    export = c("report")
+    export = c("report", "inp", "out")
   )
 
   result <- list(coords = embed_result$ym,
                  cost = embed_result$cost,
                  method = method)
   if (!is.null(embed_result$quality)) {
-    result$quality <- embed_result$quality
+    for (qual_name in names(embed_result$quality)) {
+      result[[qual_name]] <- embed_result$quality[[qual_name]]
+    }
   }
   for (extra_cost in extra_costs) {
     if (!is.null(embed_result$report[[extra_cost]])) {
@@ -225,13 +509,55 @@ embed <- function(df,
     result$norm_cost <- embed_result$report$norm
   }
 
+  inp <- embed_result$inp
+  out <- embed_result$out
+  result$inp <- inp
+  for (r in ret) {
+    if (r == "x") {
+      if (!is.null(inp$xm)) {
+        result$x <- inp$xm
+      }
+    }
+    else if (r == "dx") {
+      if (!is.null(inp$dm)) {
+        result$dx <- inp$dm
+      }
+      else if (is.null(inp$dm) && !is.null(inp$xm)) {
+        result$dx <- distance_matrix(inp$xm)
+      }
+    }
+    else if (r == "dy") {
+      if (!is.null(out$dm)) {
+        result$dy <- out$dm
+      }
+      else if (is.null(out$dm) && !is.null(out$ym)) {
+        result$dy <- distance_matrix(out$ym)
+      }
+    }
+    else if (r == "p") {
+      if (!is.null(inp$pm)) {
+        result$p <- inp$pm
+      }
+    }
+    else if (r == "q") {
+      if (!is.null(out$qm)) {
+        result$q <- out$qm
+      }
+    }
+    else if (r == "beta") {
+      if (!is.null(inp$beta)) {
+        result$beta <- inp$beta
+      }
+    }
+    else if (r == "dims") {
+      if (!is.null(inp$dims)) {
+        result$dims  <- inp$dims
+      }
+    }
+  }
+
   result
 }
-
-
-
-
-
 
 #' Probability-Based Embedding
 #'
