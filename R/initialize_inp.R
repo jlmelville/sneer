@@ -120,6 +120,9 @@ inp_from_perp <- function(perplexity = 30,
                         input_weight_fn = input_weight_fn,
                         keep_all_results = keep_all_results,
                         verbose = verbose)$inp
+
+      inp$d_hat <- median(inp$dims)
+
       list(inp = inp, method = method)
 
     }
