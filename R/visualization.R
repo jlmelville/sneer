@@ -556,7 +556,7 @@ colorBrewerPalette <- function(name, n) {
 #' @seealso
 #' More information on ColorBrewer is available at its website,
 #' \url{http://www.colorbrewer2.org}.
-#' @example:
+#' @examples
 #' \dontrun{
 #' # Plot Iris dataset sepal width vs length, colored by petal length, using
 #' # 20 colors ranging from Purple to Green (PRGn):

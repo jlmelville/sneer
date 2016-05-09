@@ -5,7 +5,7 @@
 \title{Initialize With Perplexity that Maximizes Intrinsic Dimensionality}
 \usage{
 inp_from_dint_max(perplexities = NULL, input_weight_fn = exp_weight,
-  verbose = TRUE)
+  modify_kernel_fn = NULL, verbose = TRUE)
 }
 \arguments{
 \item{perplexities}{List of perplexities to use. If not provided, then
@@ -19,6 +19,10 @@ of squared distances and \code{beta} is a real-valued scalar parameter
 which will be varied as part of the search to produce the desired
 perplexity. The function should return a matrix of weights
 corresponding to the transformed squared distances passed in as arguments.}
+
+\item{modify_kernel_fn}{Function to create a new similarity kernel based
+on the new perplexity. Will be called every time a new input probability
+matrix is generated.}
 
 \item{verbose}{If \code{TRUE} print message about initialization during the
 embedding.}
@@ -46,6 +50,18 @@ The perplexities are used in the order they are provided in the
 \code{perplexities} vector. As soon as the intrinsic dimensionality begins
 to decrease, the procedure is aborted and the probability matrix from the
 previously calculated perplexity is used.
+
+The parameter \code{modify_kernel_fn} can be used to modify the output kernel
+based on the results of the perplexity calculation. If provided, then the
+signature of \code{modify_kernel_fn} must be:
+
+\code{modify_kernel_fn(inp, out, method)}
+
+where \code{inp} is the input data, \code{out} is the current output data,
+\code{method} is the embedding method.
+
+This function will be called once for each perplexity, and an updated
+kernel should be returned.
 }
 \seealso{
 \code{\link{inp_from_perps_multi}} for caveats on using a

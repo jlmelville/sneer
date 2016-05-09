@@ -5,7 +5,7 @@
 \title{Input Probability Initialization By Bisection Search on Perplexity}
 \usage{
 inp_from_perp(perplexity = 30, input_weight_fn = exp_weight,
-  keep_all_results = TRUE, verbose = TRUE)
+  modify_kernel_fn = NULL, keep_all_results = TRUE, verbose = TRUE)
 }
 \arguments{
 \item{perplexity}{Target perplexity value for the probability distributions.}
@@ -16,6 +16,9 @@ of squared distances and \code{beta} is a real-valued scalar parameter
 which will be varied as part of the search to produce the desired
 \code{perplexity}. The function should return a matrix of weights
 corresponding to the transformed squared distances passed in as arguments.}
+
+\item{modify_kernel_fn}{Function to create a new similarity kernel based
+on the perplexity.}
 
 \item{keep_all_results}{If \code{true} then the list returned by the callback
 will also contain a vector of \code{beta} parameters that generated the
@@ -40,6 +43,18 @@ This is the method described in the original SNE paper, and few methods
 deviate very strongly from it, although they may do further processing
 on the resulting probability matrix. For example, SSNE and t-SNE convert
 this matrix into a single joint probability distribution.
+
+The parameter \code{modify_kernel_fn} can be used to modify the output kernel
+based on the results of the perplexity calculation. If provided, then the
+signature of \code{modify_kernel_fn} must be:
+
+\code{modify_kernel_fn(inp, out, method)}
+
+where \code{inp} is the input data, \code{out} is the current output data,
+\code{method} is the embedding method.
+
+This function will be called once for each perplexity, and an updated
+kernel should be returned.
 }
 \section{Exported data}{
 

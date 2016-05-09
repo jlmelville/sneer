@@ -83,6 +83,18 @@ the probability matrix at \code{num_scale_iters}. If using the default
 scales, the perplexities are added in decreasing order, otherwise, they
 are added in the order provided in \code{scales} list. It is suggested that
 the \code{scales} list therefore order the perplexities in decreasing order.
+
+The parameter \code{modify_kernel_fn} can be used to modify the output kernel
+based on the results of the perplexity calculation. If provided, then the
+signature of \code{modify_kernel_fn} must be:
+
+\code{modify_kernel_fn(inp, out, method)}
+
+where \code{inp} is the input data, \code{out} is the current output data,
+\code{method} is the embedding method.
+
+This function will be called once for each perplexity, and an updated
+kernel should be returned.
 }
 \seealso{
 \code{\link{inp_from_perps_multi}} for more details on how the intrinsic

@@ -23,6 +23,13 @@ the natural log of the neighborhood size, to give a higher weight to smaller
 neighborhoods. An AUC of 1 indicates perfect neighborhood preservation, an
 AUC of 0 is due to random results.
 }
+\note{
+Calculating the RNX curve requires calculating a co-ranking matrix,
+ which is not a very efficient operation, because it requires iterating
+ over every element of the distance matrix, the size of which scales with
+ the square of the number of observations. Be sure you really want to
+ calculate this for datasets with more than approximately 1,000 observations.
+}
 \references{
 Lee, J. A., Peluffo-Ordo'nez, D. H., & Verleysen, M. (2015).
 Multi-scale similarities in stochastic neighbour embedding: Reducing

@@ -4,17 +4,19 @@
 \alias{scores_plot}
 \title{PCA Scores Plot}
 \usage{
-scores_plot(df, pca_indexes, label_name = "Label", center = TRUE,
+scores_plot(df, pca_indexes = NULL, label_name = NULL, center = TRUE,
   scale = FALSE, cex = 0.5)
 }
 \arguments{
 \item{df}{Data frame.}
 
 \item{pca_indexes}{Numeric vector containing the column indexes in the
-data frame which should be used for the PCA calculation.}
+data frame which should be used for the PCA calculation. Default is
+\code{NULL}, in which case all numeric columns will be used.}
 
 \item{label_name}{name of the column that contains a value to be used
-to color each point.}
+to color each point. Default is \code{NULL}, in which case the first
+encountered factor column will be used.}
 
 \item{center}{If \code{TRUE}, mean-center the columns.}
 
@@ -34,9 +36,9 @@ label.
  # PCA on the scaled iris dataset, use the "Species" column to display
  scores_plot(iris, 1:4, "Species", scale = TRUE)
 
- # PCA on the s1k dataset, use default "Label" column and change label size
- # to 1.
- scores_plot(s1k, 1:9, cex = 1)
+ # PCA on the s1k dataset, use all numeric values, and color by the only
+ # factor ("Label"). Change text size.
+ scores_plot(s1k, cex = 1)
 }
 }
 

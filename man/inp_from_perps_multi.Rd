@@ -109,28 +109,20 @@ Like the input probability, these output weight matrices are converted to
 individual probability matrices and then averaged to create the final
 output probability matrix.
 
-If the parameter \code{multiscale_out_fn} is not provided, then the scheme
+If the parameter \code{modify_kernel_fn} is not provided, then the scheme
 above is used to create output functions. Any function with a parameter
 called \code{beta} can be used, so for example embedding methods which use
 the \code{\link{exp_weight}} and \code{\link{heavy_tail_weight}} weighting
 functions can be used with the default function. The signature of
-\code{multiscale_out_fn} is:
+\code{modify_kernel_fn} must be:
 
-\code{multiscale_out_fn(out, method, perplexity)}
+\code{modify_kernel_fn(inp, out, method)}
 
-where \code{out} is the current output data, \code{method} is the embedding
-method, and \code{perplexity} is a perplexity value used in the multiscaling
-of the input probability.
+where \code{inp} is the input data, \code{out} is the current output data,
+\code{method} is the embedding method.
 
-This function will be called once for each perplexity, and an updated method
-should be returned, with a new \code{weight_fn} function member with the
-signature:
-
-\code{weight_fn(D)}
-
-where D is the output distance matrix, and the return value is a weight
-matrix. The original weight function is stored as
-\code{method$orig_weight_fn}.
+This function will be called once for each perplexity, and an updated
+kernel should be returned.
 }
 \examples{
 \dontrun{

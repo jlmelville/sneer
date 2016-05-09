@@ -2,8 +2,7 @@
 % Please edit documentation in R/multiscale.R
 \name{scale_prec_to_perp}
 \alias{scale_prec_to_perp}
-\title{Factory function which creates an output weight function for a given input
-perplexity, in the context of multiscale embedding.}
+\title{Scale Output Kernel Precision Based on Intrinsic Dimensionality}
 \usage{
 scale_prec_to_perp(inp, out, method)
 }
@@ -15,8 +14,7 @@ scale_prec_to_perp(inp, out, method)
 \item{method}{Embedding method.}
 }
 \description{
-Factory function which creates an output weight function for a given input
-perplexity, in the context of multiscale embedding.
+Scale Output Kernel Precision Based on Intrinsic Dimensionality
 }
 \seealso{
 Other sneer kernel modifiers: \code{\link{transfer_kernel_bandwidths}}

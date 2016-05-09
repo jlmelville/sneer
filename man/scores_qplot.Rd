@@ -4,7 +4,7 @@
 \alias{scores_qplot}
 \title{PCA Scores Plot Using ggplot2 and ColorBrewer Palettes}
 \usage{
-scores_qplot(df, pca_indexes, label_name = "Label", center = TRUE,
+scores_qplot(df, pca_indexes = NULL, label_name = NULL, center = TRUE,
   scale = FALSE, size = 1, palette = "Set1", legend = TRUE,
   legend_rows = NULL)
 }
@@ -12,10 +12,12 @@ scores_qplot(df, pca_indexes, label_name = "Label", center = TRUE,
 \item{df}{Data frame.}
 
 \item{pca_indexes}{Numeric vector containing the column indexes in the
-data frame which should be used for the PCA calculation.}
+data frame which should be used for the PCA calculation. Default is
+\code{NULL}, in which case all numeric columns will be used.}
 
 \item{label_name}{name of the column that contains a value to be used
-to color each point.}
+to color each point. Default is \code{NULL}, in which case the first
+encountered factor column will be used.}
 
 \item{center}{If \code{TRUE}, mean-center the columns.}
 
@@ -59,9 +61,10 @@ Use of this function requires that the \code{ggplot2} and
  # PCA on the scaled iris dataset, use the "Species" column to display
  scores_qplot(iris, 1:4, "Species", scale = TRUE)
 
- # PCA on s1k dataset, use default "Label" column, set point size to 2,
- # use the "Set3" palette, and display three rows in the legend
- scores_qplot(s1k, 1:9, size = 2, palette = "Set3", legend_rows = 3)
+ # PCA on s1k dataset, use all numeric indices and first factor (defaults)
+ # for coloring with the "Set3" palette, set point size to 2,
+ # and display three rows in the legend
+ scores_qplot(s1k, size = 2, palette = "Set3", legend_rows = 3)
 }
 }
 \seealso{

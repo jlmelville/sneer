@@ -176,7 +176,7 @@ NULL
 #' @param label_chars Number of characters to use for the labels in the
 #'  embedding plot. Applies only when \code{plot_type} is set to \code{"p"}.
 #' @param label_size Size of the points in the embedding plot.
-#' @param Color Brewer palette name to use for coloring points in embedding
+#' @param palette Color Brewer palette name to use for coloring points in embedding
 #'  plot. Applies to \code{plot_type} type \code{"g"} only.
 #' @param legend if \code{TRUE}, display the legend in the embedding plot.
 #'  Applies when \code{plot_type} is \code{"g"} only.

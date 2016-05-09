@@ -2,78 +2,259 @@
 % Please edit documentation in R/embed.R
 \name{embed}
 \alias{embed}
-\title{Generic Embedding}
+\title{Probability-based Embedding}
 \usage{
-embed(xm, method, init_inp, init_out, opt, max_iter = 1000, tricks = NULL,
-  reporter = NULL, preprocess = make_preprocess(), export = NULL,
-  after_embed = NULL)
+embed(df, indexes = NULL, method, alpha = 1, lambda = 0.5, kappa = 0.5,
+  scale_type = "", perplexity = 32, perp_scale = "", prec_scale = NULL,
+  init = "p", init_config = NULL, max_iter = 1000, report_every = 50,
+  tol = 1e-04, plot_type = "p", label_name = NULL, label_chars = NULL,
+  label_size = 1, palette = "Set1", legend = TRUE, legend_rows = NULL,
+  quality_measures = NULL, ret = c())
 }
 \arguments{
-\item{xm}{A matrix or data frame to embed.}
+\item{df}{Data frame to embed.}
 
-\item{method}{Embedding method. Set by assigning the result value of one of
-the configuration functions listed in
-\code{\link{embedding_methods}}.}
+\item{indexes}{Indexes of the columns of the numerical variables to use in
+the embedding. The default of \code{NULL} will use all the numeric
+variables.}
 
-\item{init_inp}{Input initializer. Set by assigning the result value of
-calling one of the available \code{\link{input_initializers}}.}
+\item{method}{Embedding method. See 'Details'.}
 
-\item{init_out}{Output initializer. Set by assigning the result value of
-calling one of the available \code{\link{output_initializers}}.}
+\item{alpha}{Heavy tailedness parameter. Used only if the method is
+\code{"hssne"}.}
 
-\item{opt}{Optimization method. Set by assigning the result of value of one
-of the configuration functions listed in
-\code{\link{optimization_methods}}.}
+\item{lambda}{NeRV parameter. Used only if the method is \code{"nerv"}.}
 
-\item{max_iter}{Maximum number of optimization steps to take.}
+\item{kappa}{JSE parameter. Used only if the method is \code{"jse"}.}
 
-\item{tricks}{Optional collection of heuristics. Set by assigning the result
-value of \code{\link{make_tricks}} or a related wrapper. See
-\code{\link{tricks}} for the available tricks.}
+\item{scale_type}{Type of scaling to carry out on the input data. See
+'Details'.}
 
-\item{reporter}{Reporter callback. Set by assigning the result value of
-\code{\link{make_reporter}}.}
+\item{perplexity}{Target perplexity or vector of trial perplexities. Applies
+to probabilit-based embedding methods only (i.e. anything that isn't PCA,
+MDS or Sammon mapping).}
 
-\item{preprocess}{Input data preprocess callback. Set by assigning the
-result value of \code{\link{make_preprocess}}.}
+\item{perp_scale}{Type of perplexity scaling to apply. See 'Details'. Ignored
+by non-probability based methods.}
 
-\item{export}{Vector of names, specifying data in addition to of the output
-data to export provide in the return value. Possible names are:
-\describe{
-  \item{"\code{inp}"}{The input data, based on the argument passed to
-    \code{init_inp}. See the help text for the specific
-    \code{\link{input_initializers}} for details.}
-  \item{"\code{report}"}{The result of the last report. See the help
-    text for \code{\link{make_reporter}} for details.}
-  \item{"\code{opt}"}{The optimizer. See the help text for the optimizer
-  passed to \code{opt} for details.}
-}}
+\item{prec_scale}{Whether to scale the output kernel precision based on
+perplexity results. See 'Details'. Ignored by non-probability based methods.}
 
-\item{after_embed}{Callback to run on input and output data before output
-data is returned.}
+\item{init}{Type of initialization of the output coordinates. See 'Details'.}
+
+\item{init_config}{Coordinates to use for initial configuration. Used only
+if \code{init} is \code{"m"}.}
+
+\item{max_iter}{Maximum number of iterations to carry out optimization of
+the embedding. Ignored if the \code{method} is \code{"pca"}.}
+
+\item{report_every}{Frequency (in terms of iteration number) with which to
+update plot and report the cost function.}
+
+\item{tol}{Tolerance for comparing cost change (calculated according to the
+interval determined by \code{report_every}). If the change falls below this
+value, the optimization stops early.}
+
+\item{plot_type}{String code indicating the type of plot of the embedding
+to display: \code{"p"} to use the usual \code{\link[graphics]{plot}}
+function; \code{"g"} to use the \code{ggplot2} package, with the
+\code{RColorBrewer} palettes. You are responsible for installing and
+loading these packages yourself.}
+
+\item{label_name}{Name of factor-typed column in \code{df} to be used to
+color the points in the embedding plot (for \code{plot_type}
+\code{"g"}) or to color the text associated with each plotted observation
+{\code{plot_type "p"}}. If not specified, then the first factor column
+will be used. If no suitable column can be found, then no plotting
+is carried out.}
+
+\item{label_chars}{Number of characters to use for the labels in the
+embedding plot. Applies only when \code{plot_type} is set to \code{"p"}.}
+
+\item{label_size}{Size of the points in the embedding plot.}
+
+\item{palette}{Color Brewer palette name to use for coloring points in embedding
+plot. Applies to \code{plot_type} type \code{"g"} only.}
+
+\item{legend}{if \code{TRUE}, display the legend in the embedding plot.
+Applies when \code{plot_type} is \code{"g"} only.}
+
+\item{legend_rows}{Number of rows to use for displaying the legend in
+an embedding plot.}
+
+\item{quality_measures}{Vector of names of quality measures to apply to the
+finished embedding. See 'Details'. Values of the quality measures will
+be printed to screen after embedding and retained in the list that is
+returned from this function.}
+
+\item{ret}{Vector of names of extra data to return from the embedding. See
+'Details',}
 }
 \value{
-The output data. A list containing:
-  \item{\code{ym}}{Embedded coordinates.}
-  \item{\code{cost}}{The cost value associated with \code{ym}.}
-  If the parameter \code{export} was used, additional elements will be
-  present. See the help text for the \code{export} parameter for more
-  details.
+List with the following elements:
+\itemize{
+\item{\code{coords}}{Embedded coordinates}
+\item{\code{cost}}{Cost function value for the embedded coordinates. The
+type of the cost depends on the method, but the lower the better.}
+\item{\code{norm_cost}}{\code{cost}, normalized so that a perfect embedding
+gives a value of 0 and one where all the distances were equal would have
+a value of 1.}
+\item{\code{method}}{String giving the method used for the embedding.}
+}
+Additional elements will be in the list if \code{ret} or
+\code{quality_measures} are non-empty.
 }
 \description{
-Carry out an embedding of a dataset using any embedding method. The most
-generic embedding function, and conversely the one with the fewest helpful
-defaults.
+Carries out an embedding of a high-dimensional dataset into a two dimensional
+scatter plot, based on distance-based methods (e.g. Sammon maps) and
+probability-based methods (e.g. t-distributed Stochastic Neighbor Embedding).
 }
-\seealso{
+\details{
+The embedding methods available are:
 \itemize{
-\item{\code{\link{embedding_methods}}} for configuring \code{method}
-\item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
-\item{\code{\link{input_initializers}}} for configuring \code{init_inp}
-\item{\code{\link{output_initializers}}} for configuring \code{init_out}
-\item{\code{\link{optimization_methods}}} for configuring \code{opt}
-\item{\code{\link{make_tricks}}} for configuring \code{tricks}
-\item{\code{\link{make_reporter}}} for configuring \code{reporter}
+ \item{\code{"pca"}}{The first two principal components.}
+ \item{\code{"mmds"}}{Metric multidimensional scaling.}
+ \item{\code{"sammon"}}{Sammon map.}
+ \item{\code{"tsne"}}{t-Distributed Stochastic Neighbor Embedding of van der
+  Maaten and Hinton (2008).}
+ \item{\code{"asne"}}{Asymmetric Stochastic Neighbor Embedding of Hinton and
+  Roweis (2002)}
+ \item{\code{"ssne"}}{Symetric Stochastic Neighbor Embedding of Cook et al
+  (2007).}
+ \item{\code{"wssne"}}{Weighted Symmetric Stochastic Neighbor Embedding of
+  Yang et al (2014). Note that despite its name this version is a
+  modification of t-SNE, not SSNE.}
+ \item{\code{"hssne"}}{Heavy-tailed Symmetric Stochastic Neighbor Embedding of
+  Yang et al (2009).}
+ \item{\code{"nerv"}}{Neighbor Retrieval Visualizer of Venna et al (2010).}
+ \item{\code{"jse"}}{Jensen-Shannon Embedding of Lee at al (2013).}
 }
+
+The following scaling options can be applied via the \code{scale_type}
+parameter:
+\itemize{
+ \item{\code{"m"}}{Range scale the entire data so that the maximum value is
+  1 and the minimum 0.}
+ \item{\code{"r"}}{Range scale each column that the maximum value in each
+  column is 1 and the minimum 0.}
+ \item{\code{"a"}}{Scale each column so that its mean is 0 and variance is
+  1.}
+}
+Default is to do no scaling. Zero variance columns will be removed even if no
+preprocessing is carried out.
+
+The \code{perplexity} parameter is used in combination with the
+\code{perp_scale} parameter, which can take the following values:
+\itemize{\item{"single"}}{\code{perplexity} should be a single value, which
+will be used over the entire course of the embedding.}
+\itemize{\item{"step"}}{\code{perplexity} should be a vector of
+perplexity values. Each perplexity will be used in turn over the course of
+the embedding, in sequential order. By starting with a large perplexity, and
+ending with the desired perplexity, it has been suggested by some
+researchers that local minima can be avoided.}
+\itemize{\item{"ms"}}{The multiscaling method suggested by Lee et al. (2015).
+\code{perplexity} should be a vector of  perplexity values. Each perplexity
+will be used in turn over the course of the embedding, in sequential order.
+Unlike with the \code{"step"} method, probability matrices from earlier
+perplexities are retained and combined by averaging.}
+
+The \code{prec_scale} parameter determines if the input weighting kernel
+parameters should be used to modify the output kernel parameter after the
+input probability calculation for a given perplexity value completes.
+values are:
+\itemize{
+ \item{"n"}{Do nothing. Most embedding methods follow this strategy, leaving
+ the output similarity kernels to all have unit precision parameters.}
+ \item{"t"}{Transfer the input similarity kernel parameters to the
+ output similarity kernel. This method was suggesed by Venna et al (2010).}
+ \item{"s"}{Scale the output kernel precisions based on the target
+ \code{perplexity} and the intrinsic dimensionality of the input data. This
+ method is part of the multiscaling technique proposed by Lee et al (2015).}
+}
+
+The \code{prec_scale} parameter will be ignored if the \code{method} used
+does not use an output similarity kernel with a free parameter, e.g.
+\code{tsne} or \code{wtsne}.
+
+For initializing the output coordinates, the options for the
+\code{init} parameter are:
+\itemize{
+ \item{\code{"p"}}{Initialize using the first two scores of the PCA.
+ Data will be centered, but not scaled unless the \code{scale_type} parameter
+ is used.}
+\code{"r"}{Initialize each coordinate vlaue from a normal random
+distribution with a standard deviation of 1e-4, as suggested by van der Maaten
+and Hinton (2008).}
+\code{"u"}{Initialize each coordinate value from a uniform random
+distribution between 0 and 1 as suggested by Venna et al (2010).}
+  init_out <- NULL
+\code{"u"}{Initialize the coordinates from a user-supplied matrix. Supply
+the coordinates as the \code{init_config} parameter.}
+}
+
+For the \code{quality_measures} argument, a vector with one or more of the
+following options can be supplied:
+\itemize{
+ \item{\code{"r"}}{Calculate the area under the ROC curve, averaged over
+ each observation, using the output distance matrix to rank each
+ observation. Observations are partitioned into the positive and negative
+ class depending upon the value of the label determined by the
+ \code{label_name} argument. Only calculated if the \code{label_name}
+ parameter is supplied.}
+ \item{\code{"p"}}{Calculate the area under the Precision-Recall curve.
+  Only calculated if the \code{label_name} parameter is supplied.}
+ \item{\code{"n"}}{Calculate the area under the RNX curve, using the
+ method of Lee et al (2015).}
+}
+
+For the \code{ret} argument, a vector with one or more of the
+following options can be supplied:
+\itemize{
+ \item{\code{"x"}}{The input coordinates after scaling and column filtering.}
+ \item{\code{"dx"}}{The input distance matrix.}
+ \item{\code{"dy"}}{The output distance matrix.}
+ \item{\code{"p"}}{The input probability matrix.}
+ \item{\code{"q"}}{The output probability matrix.}
+ \item{\code{"beta}}{The input similarity kernel parameters.}
+ \item{\code{"dims}}{The intrinsic dimensionality for each observation,
+ calculated according to the method of Lee et al (2015).}
+}
+}
+\references{
+Hinton, G. E., & Roweis, S. T. (2002).
+Stochastic neighbor embedding.
+In \emph{Advances in neural information processing systems} (pp. 833-840).
+
+Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
+Visualizing similarity data with a mixture of maps.
+In \emph{International Conference on Artificial Intelligence and Statistics} (pp. 67-74).
+
+Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
+Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
+dimensionality reduction based on similarity preservation.
+\emph{Neurocomputing}, \emph{112}, 92-108.
+
+Lee, J. A., Peluffo-Ordo'nez, D. H., & Verleysen, M. (2015).
+Multi-scale similarities in stochastic neighbour embedding: Reducing
+dimensionality while preserving both local and global structure.
+\emph{Neurocomputing}, \emph{169}, 246-261.
+
+Van der Maaten, L., & Hinton, G. (2008).
+Visualizing data using t-SNE.
+\emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
+
+Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
+Information retrieval perspective to nonlinear dimensionality reduction for
+data visualization.
+\emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
+
+Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
+Heavy-tailed symmetric stochastic neighbor embedding.
+In \emph{Advances in neural information processing systems} (pp. 2169-2177).
+
+Yang, Z., Peltonen, J., & Kaski, S. (2014).
+Optimization equivalence of divergences improves neighbor embedding.
+In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
+(pp. 460-468).
 }
 

@@ -4,7 +4,7 @@
 \alias{scatterqplot}
 \title{Scatterplot Using ggplot2 and ColorBrewer Palettes}
 \usage{
-scatterqplot(df, x, y, label_name = "Label", size = 1, palette = "Set1",
+scatterqplot(df, x, y, label_name = NULL, size = 1, palette = "Set1",
   x_label = "x", y_label = "y", legend = TRUE, legend_rows = NULL)
 }
 \arguments{
@@ -15,7 +15,8 @@ scatterqplot(df, x, y, label_name = "Label", size = 1, palette = "Set1",
 \item{y}{Vector of y values to plot for the y-coordinate.}
 
 \item{label_name}{name of the column that contains a value to be used
-to color each point.}
+to color each point. Default is \code{NULL}, in which case the first
+encountered factor column will be used.}
 
 \item{size}{Size of the points.}
 

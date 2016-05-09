@@ -220,7 +220,7 @@ k_smallest_ind <- function(x, k) {
 #'
 #' @param di list of distances
 #' @param dj list of distances
-#' @param n The size of the shared neighborhood
+#' @param k The size of the shared neighborhood
 #' @return Vector of the indexes of the elements which are among both the
 #' \code{k}-smallest values of \code{di} and the \code{k}-smallest
 #' values of \code{dj}.
