@@ -172,6 +172,7 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
                         x_lower = 0, x_upper = Inf, x_init = beta_init,
                         keep_search = TRUE)
 
+
   ok <- result$iter != max_iters
 
   d_intr <- initrinsic_dimensionality(result, fn)
@@ -217,8 +218,8 @@ root_bisect <- function(fn, tol = 1.e-5, max_iters = 50, x_lower,
                  mid = x_init)
   iter <- 0
   if (keep_search) {
-    xs <- c()
-    ys <- c()
+    xs <- c(x_init)
+    ys <- c(value)
   }
 
   while (abs(value) > tol && iter < max_iters) {
@@ -341,11 +342,6 @@ perplexity_rows <- function(pm, eps = .Machine$double.eps) {
 initrinsic_dimensionality <- function(bisection_result, fn) {
   hs <- bisection_result$ys
   betas <- bisection_result$xs
-
-  if (length(hs) == 0) {
-    hs <- c(bisection_result$best$h)
-    betas <- c(bisection_result$x)
-  }
 
   # if we got lucky guessing the parameter for the target perplexity immediately
   # generate another beta value close to the current value

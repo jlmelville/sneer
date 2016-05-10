@@ -105,7 +105,6 @@ inp_from_perp <- function(perplexity = 30,
                           input_weight_fn = exp_weight,
                           modify_kernel_fn = NULL,
                           keep_all_results = TRUE,
-
                           verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
