@@ -323,8 +323,6 @@ check_symmetry <- function(kernel) {
 #' Majorization-Minimization for Manifold Embedding.
 #' In \emph{AISTATS}.
 step_weight <- function(d2m, beta = 1) {
-  # make the zero self-distances enormous
-  d2m[d2m < .Machine$double.eps] <- .Machine$double.xmax
   # beta is not allowed to be smaller than the smallest value in the distance
   # matrix
   (d2m <= max(beta, min(d2m))) * 1
