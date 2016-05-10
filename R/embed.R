@@ -376,7 +376,6 @@ NULL
 #'        cex = 1.5)
 #'   plot(res$coords, col = map2color(res$prec, name = "Spectral"), pch = 20,
 #'        cex = 1.5)
-#'
 #' }
 #' @export
 embed <- function(df,
