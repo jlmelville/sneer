@@ -140,8 +140,8 @@ NULL
 #'  \item{\code{"dy"}}{The output distance matrix. Calculated if not present.}
 #'  \item{\code{"p"}}{The input probability matrix.}
 #'  \item{\code{"q"}}{The output probability matrix.}
-#'  \item{\code{"beta}}{The input similarity kernel parameters.}
-#'  \item{\code{"dims}}{The intrinsic dimensionality for each observation,
+#'  \item{\code{"prec"}}{The input similarity kernel precisions.}
+#'  \item{\code{"dim"}}{The intrinsic dimensionality for each observation,
 #'  calculated according to the method of Lee et al (2015). These are
 #'  meaningless if not using the default exponential \code{perp_kernel_fun}}.
 #'  \item{\code{"deg"}}{Degree centrality of the input probability. Calculated
@@ -260,7 +260,124 @@ NULL
 #' Optimization equivalence of divergences improves neighbor embedding.
 #' In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
 #' (pp. 460-468).
+#' @examples
+#' \dontrun{
+#'   # PCA on iris dataset and plot result using Species label name
+#'   res <- embed(iris, indexes = 1:4, label_name = "Species", method = "pca")
+#'   # Same as above, but with sensible defaults (use all numeric columns, plot
+#'   # with first factor column found)
+#'   res <- embed(iris, method = "pca")
+#'   # scale columns so each one has mean 0 and variance 1
+#'   res <- embed(iris, method = "pca", scale_type = "a")
+#'   # full species name on plot is cluttered, so just use the first two
+#'   # letters and half size
+#'   res <- embed(iris, method = "pca", scale_type = "a", label_chars = 2,
+#'                label_size = 0.5)
 #'
+#'   library(ggplot2)
+#'   library(RColorBrewer)
+#'   # Use ggplot2 and RColorBrewer palettes for the plot
+#'   res <- embed(iris, method = "pca", scale_type = "a", plot_type = "g")
+#'   # Use a different ColorBrewer palette, bigger points, and range scale each
+#'   # column
+#'   res <- embed(iris, method = "pca", scale_type = "r", plot_type = "g",
+#'                palette = "Dark2", label_size = 2)
+#'
+#'   # metric MDS starting from the PCA
+#'   res <- embed(iris, method = "mmds", scale_type = "a", init = "p")
+#'   # Sammon map starting from random distribution
+#'   res <- embed(iris, method = "sammon", scale_type = "a", init = "r")
+#'
+#'   # TSNE with a perplexity of 32, initialize from PCA
+#'   res <- embed(iris, method = "tsne", scale_type = "a", init = "p",
+#'                perplexity = 32)
+#'   # default settings are to use TSNE with perplexity 32 and initialization
+#'   # from PCA so the following is the equivalent of the above
+#'   res <- embed(iris, scale_type = "a")
+#'
+#'   # NeRV method, starting at a more global perplexity and slowly stepping
+#'   # towards a value of 32 (might help avoid local optima)
+#'   res <- embed(iris, scale_type = "a", method = "nerv", perp_scale = "step")
+#'
+#'   # NeRV method has a lambda parameter - closer to 1 it gets, the more it
+#'   # tries to avoid false positives (close points in the map that aren't close
+#'   # in the input space):
+#'   res <- embed(iris, scale_type = "a", method = "nerv", perp_scale = "step",
+#'                lambda = 1)
+#'
+#'   # Original NeRV paper transferred input exponential similarity kernel
+#'   # precisions to the output kernel, and initialized from a uniform random
+#'   # distribution
+#'   res <- embed(iris, scale_type = "a", method = "nerv", perp_scale = "step",
+#'                lambda = 1, prec_scale = "t", init = "u")
+#'
+#'   # Like NeRV, the JSE method also has a controllable parameter that goes
+#'   # between 0 and 1, called kappa. It gives similar results to NeRV at 0 and
+#'   # 1 but unfortunately the opposite way round! The following gives similar
+#'   # results to the NeRV embedding above:
+#'   res <- embed(iris, scale_type = "a", method = "jse", perp_scale = "step",
+#'                kappa = 0)
+#'
+#'   # Rather than step perplexities, use multiscaling to combine and average
+#'   # probabilities across multiple perplexities. Output kernel precisions
+#'   # can be scaled based on the perplexity value (compare to NeRV example
+#'   # which transferred the precision directly from the input kernel)
+#'   res <- embed(iris, scale_type = "a", method = "jse", perp_scale = "multi",
+#'                prec_scale = "s")
+#'
+#'   # HSSNE has a controllable parameter, alpha, that lets you control how
+#'   # much extra space to give points compared to the input distances.
+#'   # Setting it to 1 is equivalent to TSNE, so 1.1 is a bit of an extra push:
+#'   res <- embed(iris, scale_type = "a", method = "hssne", alpha = 1.1)
+#'
+#'   # wTSNE treats the input probability like a graph where the probabilities
+#'   # are weighted edges and adds extra repulsion to nodes with higher degrees
+#'   res <- embed(iris, scale_type = "a", method = "wtsne")
+#'
+#'   # can use a step-function input kernel to make input probability more like
+#'   # a k-nearest neighbor graph (but note that we don't take advantage of the
+#'   # sparsity for performance purposes, sadly)
+#'   res <- embed(iris, scale_type = "a", method = "wtsne",
+#'                perp_kernel_fun = "step")
+#'
+#'   # Some quality measures are available to quantify embeddings
+#'   # The area under the RNX curve measures whether neighbors in the input
+#'   # are still neighors in the output space
+#'   res <- embed(iris, scale_type = "a", method = "wtsne",
+#'                quality_measures =  c("n"))
+#'
+#'   # If your dataset labels divide the data into natural classes, can
+#'   # calculate average area under the ROC and/or precision-recall curve too,
+#'   # but you need to have installed the PRROC package.
+#'   # All these techniques can be slow (scale with the square of the number of
+#'   # observations).
+#'   library(PRROC)
+#'   res <- embed(iris, scale_type = "a", method = "wtsne",
+#'                quality_measures =  c("n", "r", "p"))
+#'
+#'   # export the distance matrices and do whatever quality measures we
+#'   # want at our leisure
+#'   res <- embed(iris, scale_type = "a", method = "wtsne", ret = c("dx", "dy"))
+#'
+#'   # calculate the 32-nearest neighbor preservation for each observation
+#'   # 0 means no neighbors preserved, 1 means all of them
+#'   pres32 <- nbr_pres(res$dx, res$dy, 32)
+#'
+#'   # use map2color helper function with diverging or sequential color palettes
+#'   # to map values onto the embedded points
+#'   plot(res$coords, col = map2color(pres32), pch = 20, cex = 1.5)
+#'
+#'   # export degree centrality, input beta values and intrinsic dimensionality
+#'   res <- embed(iris, scale_type = "a", method = "wtsne",
+#'                ret = c("deg", "prec", "dim"))
+#'
+#'   plot(res$coords, col = map2color(res$deg), pch = 20, cex = 1.5)
+#'   plot(res$coords, col = map2color(res$dim, name = "PRGn"), pch = 20,
+#'        cex = 1.5)
+#'   plot(res$coords, col = map2color(res$prec, name = "Spectral"), pch = 20,
+#'        cex = 1.5)
+#'
+#' }
 #' @export
 embed <- function(df,
                   indexes = NULL,
@@ -312,13 +429,13 @@ embed <- function(df,
     ssne = function() { ssne() },
     asne = function() { asne() },
     wtsne = function() { importance_weight(tsne()) },
-    hssne = function() { hssne_plugin(alpha = alpha) },
+    hssne = function() { hssne(alpha = alpha) },
     nerv = function() { unerv(lambda = lambda) },
     jse = function() { jse(kappa = kappa) },
     ssne_plugin = function() { ssne_plugin() },
     asne_plugin = function() { asne_plugin() },
     hssne_plugin = function() { hssne_plugin(alpha = alpha) },
-    nerv_plugin = function() { nerv_plugin(lambda = lambda) },
+    nerv_plugin = function() { unerv_plugin(lambda = lambda) },
     jse_plugin = function() { jse_plugin(kappa = kappa) }
   )
 
@@ -411,24 +528,24 @@ embed <- function(df,
       }
       if (perp_scale == "max") {
         if (length(perplexity) == 1) {
-          perplexity = ms_perps(df)
+          perplexity <- ms_perps(df)
         }
         init_inp <- inp_from_dint_max(perplexities = perplexity,
                                       modify_kernel_fn = modify_kernel_fn,
                                       input_weight_fn = weight_fn)
       }
-      else if (perp_scale == "ms") {
+      else if (perp_scale == "multi") {
         if (length(perplexity) == 1) {
-          perplexity = ms_perps(df)
+          perplexity <- ms_perps(df)
         }
         init_inp <- inp_from_perps_multi(perplexities = perplexity,
                                          num_scale_iters = perp_scale_iter,
                                          modify_kernel_fn = modify_kernel_fn,
                                          input_weight_fn = weight_fn)
       }
-      else if (perp_scale == "msl") {
+      else if (perp_scale == "multil") {
         if (length(perplexity) == 1) {
-          perplexity = ms_perps(df)
+          perplexity <- ms_perps(df)
         }
         init_inp <- inp_from_perps_multil(perplexities = perplexity,
                                           num_scale_iters = perp_scale_iter,
@@ -443,6 +560,9 @@ embed <- function(df,
                                        num_scale_iters = perp_scale_iter,
                                        modify_kernel_fn = modify_kernel_fn,
                                        input_weight_fn = weight_fn)
+      }
+      else {
+        stop("No perplexity scaling method '", perp_scale, "'")
       }
     }
     else {
@@ -471,6 +591,9 @@ embed <- function(df,
   }
   else if (init == "m") {
     init_out <- out_from_matrix(init_config = init_config)
+  }
+  else {
+    stop("No initialization method '", init, "'")
   }
 
   embed_plot <- NULL
@@ -510,23 +633,37 @@ embed <- function(df,
   after_embed <- NULL
   if (!is.null(quality_measures)) {
     qs <- c()
-    if ('r' %in% quality_measures) {
-      if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
-        stop("Calculating ROC AUC requires 'PRROC' package")
+
+    for (name in unique(quality_measures)) {
+      if (name == 'r') {
+        if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
+          stop("Calculating ROC AUC requires 'PRROC' package")
+        }
+        qs <- c(qs, roc_auc)
       }
-      qs <- c(qs, roc_auc)
-    }
-    if ('p' %in% quality_measures) {
-      if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
-        stop("Calculating PR AUC requires 'PRROC' package")
+      else if (name == 'p') {
+        if (!requireNamespace("PRROC", quietly = TRUE, warn.conflicts = FALSE)) {
+          stop("Calculating PR AUC requires 'PRROC' package")
+        }
+        qs <- c(qs, pr_auc)
       }
-      qs <- c(qs, pr_auc)
-    }
-    if ('n' %in% quality_measures) {
-      qs <- c(qs, rnx_auc)
+      else if (name == 'n') {
+        qs <- c(qs, rnx_auc)
+      }
+      else {
+        stop("No quality measure '", name,"'")
+      }
     }
     if (length(qs) > 0) {
       after_embed <- make_quality_reporter(qs, df[[label_name]])
+    }
+  }
+
+  ok_rets <- c("x", "dx", "dy", "p", "q", "prec", "dim", "deg")
+  ret <- unique(ret)
+  for (r in (ret)) {
+    if (!r %in% ok_rets) {
+      stop("Invalid return name: '", r,"'")
     }
   }
 
@@ -552,6 +689,8 @@ embed <- function(df,
   result <- list(coords = embed_result$ym,
                  cost = embed_result$cost,
                  method = method)
+  colnames(result$coords) <- c("X", "Y")
+
   if (!is.null(embed_result$quality)) {
     for (qual_name in names(embed_result$quality)) {
       result[[qual_name]] <- embed_result$quality[[qual_name]]
@@ -570,7 +709,7 @@ embed <- function(df,
   inp <- embed_result$inp
   out <- embed_result$out
   result$inp <- inp
-  for (r in ret) {
+  for (r in unique(ret)) {
     if (r == "x") {
       if (!is.null(inp$xm)) {
         result$x <- inp$xm
@@ -602,14 +741,14 @@ embed <- function(df,
         result$q <- out$qm
       }
     }
-    else if (r == "beta") {
+    else if (r == "prec") {
       if (!is.null(inp$beta)) {
-        result$beta <- inp$beta
+        result$prec <- inp$beta
       }
     }
-    else if (r == "dims") {
+    else if (r == "dim") {
       if (!is.null(inp$dims)) {
-        result$dims  <- inp$dims
+        result$dim <- inp$dims
       }
     }
     else if (r == "deg") {
