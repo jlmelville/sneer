@@ -27,7 +27,8 @@ calculate_importance <- function(inp, out, method) {
   }
 
   method$kernel$im <- outer(deg, deg)
-  list(method = method)
+  inp$deg <- deg
+  list(method = method, inp = inp)
 }
 
 #' Indegree Centrality
@@ -177,6 +178,9 @@ nn_graph <- function(m, k) {
 #' data set.
 centrality <- function(inp, method) {
   m <- nn_graph(inp$pm, inp$perp)
+  if (is.null(method$centrality_fn)) {
+    method$centrality_fn <- degree_centrality
+  }
   method$centrality_fn(m)
 }
 
