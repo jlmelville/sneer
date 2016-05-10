@@ -199,7 +199,7 @@ bnx_crm <- function(crm, k) {
 #' @param k Top k results to return
 #' @return Vector of the indexes of the \code{k} largest values in \code{x}.
 k_largest_ind <- function(x, k) {
-  which(k >= sort(k, decreasing = TRUE)[k], arr.ind = TRUE)
+  which(x >= sort(x, decreasing = TRUE)[k])
 }
 
 #' Indexes of the k-smallest numbers in a vector.
