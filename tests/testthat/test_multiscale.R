@@ -1,6 +1,31 @@
 library(sneer)
 context("Multiscaling")
 
+test_that("default multiscale perplexities make sense", {
+  expect_equal(ms_perps(matrix(nrow = 100000)),
+               c(32768, 16384, 8192, 4096, 2048, 1024, 512, 256, 128, 64, 32,
+                 16, 8, 4, 2))
+  expect_equal(ms_perps(matrix(nrow = 100000), 10),
+               c(1024, 512, 256, 128, 64, 32, 16, 8, 4, 2))
+  expect_equal(ms_perps(matrix(nrow = 100), 10),
+               c(64, 32, 16, 8, 4, 2))
+})
+
+test_that("default step perplexities make sense", {
+  expect_equal(step_perps(matrix(nrow = 100000)),
+               c(50000, 37508, 25016, 12524, 32),
+               info = "default 5 equally spaced perplexities, from N/2 to 32")
+  expect_equal(step_perps(matrix(nrow = 100000), 10),
+               c(50000, 44448, 38896, 33344, 27792, 22240, 16688, 11136, 5584,
+                 32),
+               info = "can specify number of steps")
+  expect_equal(step_perps(matrix(nrow = 60), 4),
+               c(30, 25, 20, 15),
+               info = "scale down to N/4 if max perp would be <= 32")
+  expect_equal(step_perps(matrix(nrow = 28), 8),
+               c(14, 13, 12, 11, 10, 9, 8, 7),
+               info = "scale down to N/4 if data set size <= 32")
+})
 # Test that the cost shows three spikes due to the perplexity change
 # but that the optimizer is able to reduce the cost after each spike
 # does not change the output kernel precision as perplexity changes
