@@ -105,6 +105,7 @@ inp_from_perp <- function(perplexity = 30,
                           input_weight_fn = exp_weight,
                           modify_kernel_fn = NULL,
                           keep_all_results = TRUE,
+
                           verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
@@ -193,6 +194,9 @@ single_perplexity <- function(inp, perplexity = 30,
                               input_weight_fn = exp_weight,
                               keep_all_results = TRUE,
                               verbose = TRUE) {
+  if (verbose) {
+    message("Parameter search for perplexity = ", formatC(perplexity))
+  }
   d_to_p_result <- d_to_p_perp_bisect(inp$dm, perplexity = perplexity,
                                       weight_fn = input_weight_fn,
                                       verbose = verbose)
