@@ -568,9 +568,9 @@ plugin_stiffness_row <- function(method, inp, out) {
 #' @param method Embedding method.
 #' @return Stiffness matrix.
 plugin_stiffness_joint <- function(method, inp, out) {
-  wm_sum <- sum(out$wm)
   dc_dq <- method$cost$gr(inp, out, method)
   dw_du <- method$kernel$gr(method$kernel, out$d2m)
+  wm_sum <- sum(out$wm)
   km <- (sum(dc_dq * out$qm) - dc_dq) * (-dw_du / wm_sum)
   2 * (km + t(km))
 }
