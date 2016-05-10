@@ -563,7 +563,7 @@ colorBrewerPalette <- function(name, n) {
 #' plot(iris[, c("Sepal.Length", "Sepal.Width")],
 #'  col = map2color(iris$Petal.Length, "PRGn", 20), pch = 20, cex = 1.5)
 #' }
-map2color <- function(x, name = "Blues", n, limits = NULL) {
+map2color <- function(x, name = "Blues", n = 15, limits = NULL) {
   if (!requireNamespace("RColorBrewer", quietly = TRUE,
                         warn.conflicts = FALSE)) {
     stop("map2color function requires 'RColorBrewer' package")

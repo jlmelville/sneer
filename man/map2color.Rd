@@ -4,7 +4,7 @@
 \alias{map2color}
 \title{Map Numbers to Colors}
 \usage{
-map2color(x, name = "Blues", n, limits = NULL)
+map2color(x, name = "Blues", n = 15, limits = NULL)
 }
 \arguments{
 \item{x}{Numeric vector.}
