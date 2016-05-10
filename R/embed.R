@@ -66,11 +66,20 @@ NULL
 #' the embedding, in sequential order. By starting with a large perplexity, and
 #' ending with the desired perplexity, it has been suggested by some
 #' researchers that local minima can be avoided.}
-#' \itemize{\item{"ms"}}{The multiscaling method suggested by Lee et al. (2015).
+#' \itemize{\item{"multi"}}{The multiscaling method of Lee et al (2015).
 #' \code{perplexity} should be a vector of  perplexity values. Each perplexity
 #' will be used in turn over the course of the embedding, in sequential order.
 #' Unlike with the \code{"step"} method, probability matrices from earlier
 #' perplexities are retained and combined by averaging.}
+#'
+#' For \code{perp_scale} values that aren't \code{"single"}, if a non-vector
+#' argument is suppied to the \code{perplexity} argument, it will be ignored,
+#' and a suitable vector of perplexity values will be used instead. For
+#' \code{"multi"} these will range from the the number of observations in the
+#' dataset divided by four down to 2, in descending powers of 2. For
+#' \code{"step"}, 5 equally spaced values ranging from the number of
+#' observations divided by 2 down to 32 (or the number of observations divided
+#' by 4, if the dataset is smaller than 65 observations.)
 #'
 #' The \code{prec_scale} parameter determines if the input weighting kernel
 #' parameters should be used to modify the output kernel parameter after the
@@ -88,7 +97,9 @@ NULL
 #'
 #' The \code{prec_scale} parameter will be ignored if the \code{method} used
 #' does not use an output similarity kernel with a free parameter, e.g.
-#' \code{tsne} or \code{wtsne}.
+#' \code{tsne} or \code{wtsne}. Also, because the input and output similarity
+#' kernels must be of the same type, \code{prec_scale} is incompatible with
+#' setting \code{perp_kernel_fun} to "step".
 #'
 #' For initializing the output coordinates, the options for the
 #' \code{init} parameter are:
@@ -125,13 +136,16 @@ NULL
 #' following options can be supplied:
 #' \itemize{
 #'  \item{\code{"x"}}{The input coordinates after scaling and column filtering.}
-#'  \item{\code{"dx"}}{The input distance matrix.}
-#'  \item{\code{"dy"}}{The output distance matrix.}
+#'  \item{\code{"dx"}}{The input distance matrix. Calculated if not present.}
+#'  \item{\code{"dy"}}{The output distance matrix. Calculated if not present.}
 #'  \item{\code{"p"}}{The input probability matrix.}
 #'  \item{\code{"q"}}{The output probability matrix.}
 #'  \item{\code{"beta}}{The input similarity kernel parameters.}
 #'  \item{\code{"dims}}{The intrinsic dimensionality for each observation,
-#'  calculated according to the method of Lee et al (2015).}
+#'  calculated according to the method of Lee et al (2015). These are
+#'  meaningless if not using the default exponential \code{perp_kernel_fun}}.
+#'  \item{\code{"deg"}}{Degree centrality of the input probability. Calculated
+#'  if not present.}
 #' }
 #'
 #' @param df Data frame to embed.
@@ -145,13 +159,22 @@ NULL
 #' @param kappa JSE parameter. Used only if the method is \code{"jse"}.
 #' @param scale_type Type of scaling to carry out on the input data. See
 #'  'Details'.
-#' @param perplexity Target perplexity or vector of trial perplexities. Applies
-#'  to probabilit-based embedding methods only (i.e. anything that isn't PCA,
-#'  MDS or Sammon mapping).
+#' @param perplexity Target perplexity or vector of trial perplexities (if
+#'  \code{perp_scale} is set). Applies to probability-based embedding methods
+#'  only (i.e. anything that isn't PCA, MDS or Sammon mapping).
 #' @param perp_scale Type of perplexity scaling to apply. See 'Details'. Ignored
 #'  by non-probability based methods.
+#' @param perp_scale_iter Number of iterations to scale perplexity values over.
+#'  Must be smaller than the \code{max_iter} parameter. Default is to use
+#'  \code{max_iter / 5}. Ignored by non-probability based methods or if
+#'  \code{perp_scale} is not set.
+#' @param perp_kernel_fun The input data weight function. Either \code{"exp"}
+#'  to use exponential function (the default) or \code{"step"} to use a step
+#'  function. The latter emulates a k-nearest neighbor graph, but does not
+#'  provide any of the efficiency advantages of a sparse matrix.
 #' @param prec_scale Whether to scale the output kernel precision based on
 #'  perplexity results. See 'Details'. Ignored by non-probability based methods.
+#'  Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.
 #' @param init Type of initialization of the output coordinates. See 'Details'.
 #' @param init_config Coordinates to use for initial configuration. Used only
 #'  if \code{init} is \code{"m"}.
@@ -241,14 +264,16 @@ NULL
 #' @export
 embed <- function(df,
                   indexes = NULL,
-                  method,
+                  method = "tsne",
                   alpha = 1,
                   lambda = 0.5,
                   kappa = 0.5,
                   scale_type = "",
-                  perplexity = 32, perp_scale = "", prec_scale = NULL,
-                  init = "p",
-                  init_config = NULL,
+                  perplexity = 32, perp_scale = "single",
+                  perp_scale_iter = NULL,
+                  perp_kernel_fun = "exp",
+                  prec_scale = NULL,
+                  init = "p", init_config = NULL,
                   max_iter = 1000,
                   report_every = 50,
                   tol = 1e-4,
@@ -354,8 +379,16 @@ embed <- function(df,
 
   init_inp <- NULL
   if (!is.null(perplexity)) {
+    weight_fn <- exp_weight
+    if (!is.null(perp_kernel_fun) && perp_kernel_fun == "step") {
+      weight_fn <- step_weight
+    }
+
     modify_kernel_fn <- NULL
     if (!is.null(prec_scale)) {
+      if (perp_kernel_fun == "step") {
+        stop("Can't use precision scaling with step input weight function")
+      }
       if (prec_scale == "s") {
         modify_kernel_fn <- scale_prec_to_perp
       }
@@ -366,33 +399,58 @@ embed <- function(df,
         stop("Unknown prec_scale value: '", prec_scale, "'")
       }
     }
-    if (length(perplexity) == 1) {
-      init_inp <- inp_from_perp(perplexity = perplexity,
-                                modify_kernel_fn = modify_kernel_fn)
-    }
-    else {
 
+    if (!is.null(perp_scale) && perp_scale != "single") {
+      if (is.null(perp_scale_iter)) {
+        perp_scale_iter <- ceiling(max_iter / 5)
+      }
+      else {
+        if (perp_scale_iter > max_iter) {
+          stop("Parameter perp_scale_iter must be <= max_iter")
+        }
+      }
       if (perp_scale == "max") {
+        if (length(perplexity) == 1) {
+          perplexity = ms_perps(df)
+        }
         init_inp <- inp_from_dint_max(perplexities = perplexity,
-                                      modify_kernel_fn = modify_kernel_fn)
+                                      modify_kernel_fn = modify_kernel_fn,
+                                      input_weight_fn = weight_fn)
       }
       else if (perp_scale == "ms") {
+        if (length(perplexity) == 1) {
+          perplexity = ms_perps(df)
+        }
         init_inp <- inp_from_perps_multi(perplexities = perplexity,
-                                         num_scale_iters =
-                                           ceiling(max_iter / 5),
-                                         modify_kernel_fn = modify_kernel_fn)
+                                         num_scale_iters = perp_scale_iter,
+                                         modify_kernel_fn = modify_kernel_fn,
+                                         input_weight_fn = weight_fn)
       }
       else if (perp_scale == "msl") {
+        if (length(perplexity) == 1) {
+          perplexity = ms_perps(df)
+        }
         init_inp <- inp_from_perps_multil(perplexities = perplexity,
-                                         num_scale_iters =
-                                           ceiling(max_iter / 5),
-                                         modify_kernel_fn = modify_kernel_fn)
+                                          num_scale_iters = perp_scale_iter,
+                                          modify_kernel_fn = modify_kernel_fn,
+                                          input_weight_fn = weight_fn)
       }
       else if (perp_scale == "step") {
+        if (length(perplexity) == 1) {
+          perplexity = step_perps(df)
+        }
         init_inp <- inp_from_step_perp(perplexities = perplexity,
-                                          num_scale_iters =
-                                            ceiling(max_iter / 5),
-                                          modify_kernel_fn = modify_kernel_fn)
+                                       num_scale_iters = perp_scale_iter,
+                                       modify_kernel_fn = modify_kernel_fn,
+                                       input_weight_fn = weight_fn)
+      }
+    }
+    else {
+      # no perplexity scaling asked for
+      if (length(perplexity) == 1) {
+        init_inp <- inp_from_perp(perplexity = perplexity,
+                                  modify_kernel_fn = modify_kernel_fn,
+                                  input_weight_fn = weight_fn)
       }
       else {
         stop("Must provide 'perp_scale' argument if using multiple perplexity ",
@@ -488,7 +546,7 @@ embed <- function(df,
     ),
     after_embed = after_embed,
     max_iter = max_iter,
-    export = c("report", "inp", "out")
+    export = c("report", "inp", "out", "method")
   )
 
   result <- list(coords = embed_result$ym,
@@ -552,6 +610,14 @@ embed <- function(df,
     else if (r == "dims") {
       if (!is.null(inp$dims)) {
         result$dims  <- inp$dims
+      }
+    }
+    else if (r == "deg") {
+      if (!is.null(inp$deg)) {
+        result$deg  <- inp$deg
+      }
+      else {
+        result$deg <- centrality(inp, embed_result$method)
       }
     }
   }

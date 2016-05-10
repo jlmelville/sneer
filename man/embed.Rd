@@ -4,8 +4,9 @@
 \alias{embed}
 \title{Probability-based Embedding}
 \usage{
-embed(df, indexes = NULL, method, alpha = 1, lambda = 0.5, kappa = 0.5,
-  scale_type = "", perplexity = 32, perp_scale = "", prec_scale = NULL,
+embed(df, indexes = NULL, method = "tsne", alpha = 1, lambda = 0.5,
+  kappa = 0.5, scale_type = "", perplexity = 32, perp_scale = "single",
+  perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = NULL,
   init = "p", init_config = NULL, max_iter = 1000, report_every = 50,
   tol = 1e-04, plot_type = "p", label_name = NULL, label_chars = NULL,
   label_size = 1, palette = "Set1", legend = TRUE, legend_rows = NULL,
@@ -30,15 +31,26 @@ variables.}
 \item{scale_type}{Type of scaling to carry out on the input data. See
 'Details'.}
 
-\item{perplexity}{Target perplexity or vector of trial perplexities. Applies
-to probabilit-based embedding methods only (i.e. anything that isn't PCA,
-MDS or Sammon mapping).}
+\item{perplexity}{Target perplexity or vector of trial perplexities (if
+\code{perp_scale} is set). Applies to probability-based embedding methods
+only (i.e. anything that isn't PCA, MDS or Sammon mapping).}
 
 \item{perp_scale}{Type of perplexity scaling to apply. See 'Details'. Ignored
 by non-probability based methods.}
 
+\item{perp_scale_iter}{Number of iterations to scale perplexity values over.
+Must be smaller than the \code{max_iter} parameter. Default is to use
+\code{max_iter / 5}. Ignored by non-probability based methods or if
+\code{perp_scale} is not set.}
+
+\item{perp_kernel_fun}{The input data weight function. Either \code{"exp"}
+to use exponential function (the default) or \code{"step"} to use a step
+function. The latter emulates a k-nearest neighbor graph, but does not
+provide any of the efficiency advantages of a sparse matrix.}
+
 \item{prec_scale}{Whether to scale the output kernel precision based on
-perplexity results. See 'Details'. Ignored by non-probability based methods.}
+perplexity results. See 'Details'. Ignored by non-probability based methods.
+Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.}
 
 \item{init}{Type of initialization of the output coordinates. See 'Details'.}
 
@@ -152,11 +164,20 @@ perplexity values. Each perplexity will be used in turn over the course of
 the embedding, in sequential order. By starting with a large perplexity, and
 ending with the desired perplexity, it has been suggested by some
 researchers that local minima can be avoided.}
-\itemize{\item{"ms"}}{The multiscaling method suggested by Lee et al. (2015).
+\itemize{\item{"multi"}}{The multiscaling method of Lee et al (2015).
 \code{perplexity} should be a vector of  perplexity values. Each perplexity
 will be used in turn over the course of the embedding, in sequential order.
 Unlike with the \code{"step"} method, probability matrices from earlier
 perplexities are retained and combined by averaging.}
+
+For \code{perp_scale} values that aren't \code{"single"}, if a non-vector
+argument is suppied to the \code{perplexity} argument, it will be ignored,
+and a suitable vector of perplexity values will be used instead. For
+\code{"multi"} these will range from the the number of observations in the
+dataset divided by four down to 2, in descending powers of 2. For
+\code{"step"}, 5 equally spaced values ranging from the number of
+observations divided by 2 down to 32 (or the number of observations divided
+by 4, if the dataset is smaller than 65 observations.)
 
 The \code{prec_scale} parameter determines if the input weighting kernel
 parameters should be used to modify the output kernel parameter after the
@@ -174,7 +195,9 @@ values are:
 
 The \code{prec_scale} parameter will be ignored if the \code{method} used
 does not use an output similarity kernel with a free parameter, e.g.
-\code{tsne} or \code{wtsne}.
+\code{tsne} or \code{wtsne}. Also, because the input and output similarity
+kernels must be of the same type, \code{prec_scale} is incompatible with
+setting \code{perp_kernel_fun} to "step".
 
 For initializing the output coordinates, the options for the
 \code{init} parameter are:
@@ -211,13 +234,16 @@ For the \code{ret} argument, a vector with one or more of the
 following options can be supplied:
 \itemize{
  \item{\code{"x"}}{The input coordinates after scaling and column filtering.}
- \item{\code{"dx"}}{The input distance matrix.}
- \item{\code{"dy"}}{The output distance matrix.}
+ \item{\code{"dx"}}{The input distance matrix. Calculated if not present.}
+ \item{\code{"dy"}}{The output distance matrix. Calculated if not present.}
  \item{\code{"p"}}{The input probability matrix.}
  \item{\code{"q"}}{The output probability matrix.}
  \item{\code{"beta}}{The input similarity kernel parameters.}
  \item{\code{"dims}}{The intrinsic dimensionality for each observation,
- calculated according to the method of Lee et al (2015).}
+ calculated according to the method of Lee et al (2015). These are
+ meaningless if not using the default exponential \code{perp_kernel_fun}}.
+ \item{\code{"deg"}}{Degree centrality of the input probability. Calculated
+ if not present.}
 }
 }
 \references{
