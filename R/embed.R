@@ -567,7 +567,7 @@ embed <- function(df,
     else {
       # no perplexity scaling asked for
       if (length(perplexity) == 1) {
-        if (perplexity > nrow(df)) {
+        if (perplexity >= nrow(df)) {
           perplexity <- nrow(df) / 4
           message("Setting perplexity to ", perplexity)
         }
