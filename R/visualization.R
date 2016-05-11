@@ -88,7 +88,7 @@ make_plot <- function(x, attr_name,
 #' # Same plot, with smaller labels
 #' make_embedding_plot(iris, "Species", cex = 0.5)(tsne_iris$ym)
 #'}
-make_embedding_plot <- function(x, attr_name, label_fn, cex = 1) {
+make_embedding_plot <- function(x, attr_name, label_fn = NULL, cex = 1) {
   attr <- x[[attr_name]]
   uniq_attr <- sort(unique(attr))
   colors <- rainbow(length(uniq_attr))

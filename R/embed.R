@@ -409,7 +409,7 @@ embed <- function(df,
   if (is.null(label_name)) {
     factor_names <- names(df)[(sapply(df, is.factor))]
     if (length(factor_names) > 0) {
-      label_name <- factor_names[1]
+      label_name <- factor_names[length(factor_names)]
     }
   }
 
@@ -567,6 +567,10 @@ embed <- function(df,
     else {
       # no perplexity scaling asked for
       if (length(perplexity) == 1) {
+        if (perplexity > nrow(df)) {
+          perplexity <- nrow(df) / 4
+          message("Setting perplexity to ", perplexity)
+        }
         init_inp <- inp_from_perp(perplexity = perplexity,
                                   modify_kernel_fn = modify_kernel_fn,
                                   input_weight_fn = weight_fn)
@@ -596,6 +600,7 @@ embed <- function(df,
   }
 
   embed_plot <- NULL
+  if (is.null(plot_type)) { plot_type <- "n" }
   if (!is.null(label_name)) {
     if (plot_type == "g") {
       if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
