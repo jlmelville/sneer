@@ -10,8 +10,6 @@ including the popular t-Distributed Stochastic Neighbor Embedding (t-SNE).
 devtools::install_github("jlmelville/sneer")
 ```
 
-The `embed` function is pretty much all you want or need.
-
 ### Documentation:
 ```R
 ?embed
