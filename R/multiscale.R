@@ -713,9 +713,9 @@ inp_from_dint_max <- function(perplexities = NULL,
 
         d_hat <- median(inpl$dims)
         if (is.null(inp$d_hat)) {
+          inp <- inpl
           inp$d_hat <- d_hat
           inp$perp <- perp
-          inp$dims <- inpl$dims
         }
         else {
           if (d_hat > inp$d_hat) {
