@@ -410,6 +410,10 @@ embed <- function(df,
     factor_names <- names(df)[(sapply(df, is.factor))]
     if (length(factor_names) > 0) {
       label_name <- factor_names[length(factor_names)]
+      message("Using '", label_name, "' as the label")
+    }
+    else {
+      message("No label found")
     }
   }
 
@@ -462,6 +466,7 @@ embed <- function(df,
   if (method == "pca") {
     max_iter <- 0
     perplexity <- NULL
+    init <- "p"
     if (is.null(extra_costs)) {
       extra_costs <- c("kruskal_stress")
     }
