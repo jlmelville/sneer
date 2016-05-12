@@ -15,9 +15,9 @@ after_init(inp, out, method)
 }
 \value{
 List consisting of:
-  \item{\code{inp}}{Updated input data.}
-  \item{\code{out}}{Updated output data.}
-  \item{\code{method}}{Updated embedding method.}
+  \item \code{inp} Updated input data.
+  \item \code{out} Updated output data.
+  \item \code{method} Updated embedding method.
 }
 \description{
 Function called after input and output data have been initialized. Useful for

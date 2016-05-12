@@ -61,8 +61,8 @@ data is returned.}
 }
 \value{
 The output data. A list containing:
-  \item{\code{ym}}{Embedded coordinates.}
-  \item{\code{cost}}{The cost value associated with \code{ym}.}
+  \item \code{ym} Embedded coordinates.
+  \item \code{cost} The cost value associated with \code{ym}.
   If the parameter \code{export} was used, additional elements will be
   present. See the help text for the \code{export} parameter for more
   details.
@@ -134,14 +134,14 @@ asne_s1k <- embed_prob(s1k[, 1:9], method = asne(),
 }
 \seealso{
 \itemize{
-\item{\code{\link{probability_embedding_methods}}} for configuring
+\item \code{\link{probability_embedding_methods}} for configuring
   \code{method}
-\item{\code{\link{make_preprocess}}} for configuring \code{preprocess}
-\item{\code{\link{input_initializers}}} for configuring \code{init_inp}
-\item{\code{\link{output_initializers}}} for configuring \code{init_out}
-\item{\code{\link{optimization_methods}}} for configuring \code{opt}
-\item{\code{\link{make_tricks}}} for configuring \code{tricks}
-\item{\code{\link{make_reporter}}} for configuring \code{reporter}
+\item \code{\link{make_preprocess}} for configuring \code{preprocess}
+\item \code{\link{input_initializers}} for configuring \code{init_inp}
+\item \code{\link{output_initializers}} for configuring \code{init_out}
+\item \code{\link{optimization_methods}} for configuring \code{opt}
+\item \code{\link{make_tricks}} for configuring \code{tricks}
+\item \code{\link{make_reporter}} for configuring \code{reporter}
 }
 
 Other sneer embedding functions: \code{\link{embed_dist}}

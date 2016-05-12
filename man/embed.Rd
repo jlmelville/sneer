@@ -105,13 +105,13 @@ returned from this function.}
 \value{
 List with the following elements:
 \itemize{
-\item{\code{coords}}{Embedded coordinates}
-\item{\code{cost}}{Cost function value for the embedded coordinates. The
-type of the cost depends on the method, but the lower the better.}
-\item{\code{norm_cost}}{\code{cost}, normalized so that a perfect embedding
-gives a value of 0 and one where all the distances were equal would have
-a value of 1.}
-\item{\code{method}}{String giving the method used for the embedding.}
+\item \code{coords} Embedded coordinates.
+\item \code{cost} Cost function value for the embedded coordinates. The
+ type of the cost depends on the method, but the lower the better.
+\item \code{norm_cost} \code{cost}, normalized so that a perfect embedding
+ gives a value of 0 and one where all the distances were equal would have
+ a value of 1.
+\item \code{method} String giving the method used for the embedding.
 }
 Additional elements will be in the list if \code{ret} or
 \code{quality_measures} are non-empty.
@@ -124,51 +124,54 @@ probability-based methods (e.g. t-distributed Stochastic Neighbor Embedding).
 \details{
 The embedding methods available are:
 \itemize{
- \item{\code{"pca"}}{The first two principal components.}
- \item{\code{"mmds"}}{Metric multidimensional scaling.}
- \item{\code{"sammon"}}{Sammon map.}
- \item{\code{"tsne"}}{t-Distributed Stochastic Neighbor Embedding of van der
-  Maaten and Hinton (2008).}
- \item{\code{"asne"}}{Asymmetric Stochastic Neighbor Embedding of Hinton and
-  Roweis (2002)}
- \item{\code{"ssne"}}{Symetric Stochastic Neighbor Embedding of Cook et al
-  (2007).}
- \item{\code{"wssne"}}{Weighted Symmetric Stochastic Neighbor Embedding of
+ \item \code{"pca"} The first two principal components.
+ \item \code{"mmds"} Metric multidimensional scaling.
+ \item \code{"sammon"} Sammon map.
+ \item \code{"tsne"} t-Distributed Stochastic Neighbor Embedding of van der
+  Maaten and Hinton (2008).
+ \item \code{"asne"} Asymmetric Stochastic Neighbor Embedding of Hinton and
+  Roweis (2002).
+ \item \code{"ssne"} Symetric Stochastic Neighbor Embedding of Cook et al
+  (2007).
+ \item \code{"wssne"} Weighted Symmetric Stochastic Neighbor Embedding of
   Yang et al (2014). Note that despite its name this version is a
-  modification of t-SNE, not SSNE.}
- \item{\code{"hssne"}}{Heavy-tailed Symmetric Stochastic Neighbor Embedding of
-  Yang et al (2009).}
- \item{\code{"nerv"}}{Neighbor Retrieval Visualizer of Venna et al (2010).}
- \item{\code{"jse"}}{Jensen-Shannon Embedding of Lee at al (2013).}
+  modification of t-SNE, not SSNE.
+ \item \code{"hssne"} Heavy-tailed Symmetric Stochastic Neighbor Embedding of
+  Yang et al (2009).
+ \item \code{"nerv"} Neighbor Retrieval Visualizer of Venna et al (2010).
+ \item \code{"jse"} Jensen-Shannon Embedding of Lee at al (2013).
 }
 
 The following scaling options can be applied via the \code{scale_type}
 parameter:
 \itemize{
- \item{\code{"m"}}{Range scale the entire data so that the maximum value is
-  1 and the minimum 0.}
- \item{\code{"r"}}{Range scale each column that the maximum value in each
-  column is 1 and the minimum 0.}
- \item{\code{"a"}}{Scale each column so that its mean is 0 and variance is
-  1.}
+ \item \code{"m"} Range scale the entire data so that the maximum value is
+  1 and the minimum 0.
+ \item \code{"r"} Range scale each column that the maximum value in each
+  column is 1 and the minimum 0.
+ \item \code{"a"} Scale each column so that its mean is 0 and variance is
+  1.
 }
 Default is to do no scaling. Zero variance columns will be removed even if no
 preprocessing is carried out.
 
 The \code{perplexity} parameter is used in combination with the
 \code{perp_scale} parameter, which can take the following values:
-\itemize{\item{"single"}}{\code{perplexity} should be a single value, which
-will be used over the entire course of the embedding.}
-\itemize{\item{"step"}}{\code{perplexity} should be a vector of
-perplexity values. Each perplexity will be used in turn over the course of
-the embedding, in sequential order. By starting with a large perplexity, and
-ending with the desired perplexity, it has been suggested by some
-researchers that local minima can be avoided.}
-\itemize{\item{"multi"}}{The multiscaling method of Lee et al (2015).
-\code{perplexity} should be a vector of  perplexity values. Each perplexity
-will be used in turn over the course of the embedding, in sequential order.
-Unlike with the \code{"step"} method, probability matrices from earlier
-perplexities are retained and combined by averaging.}
+\itemize{
+ \item \code{"single"} \code{perplexity} should be a single value, which
+   will be used over the entire course of the embedding.
+ \item \code{"step"} \code{perplexity} should be a vector of
+    perplexity values. Each perplexity will be used in turn over the course
+    of the embedding, in sequential order. By starting with a large
+    perplexity, and ending with the desired perplexity, it has been
+    suggested by some researchers that local minima can be avoided.
+\item \code{"multi"} The multiscaling method of Lee et al (2015).
+    \code{perplexity} should be a vector of perplexity values. Each
+    perplexity will be used in turn over the course of the embedding, in
+    sequential order. Unlike with the \code{"step"} method, probability
+    matrices from earlier perplexities are retained and combined by
+    averaging.
+}
 
 For \code{perp_scale} values that aren't \code{"single"}, if a non-vector
 argument is suppied to the \code{perplexity} argument, it will be ignored,
@@ -184,13 +187,14 @@ parameters should be used to modify the output kernel parameter after the
 input probability calculation for a given perplexity value completes.
 values are:
 \itemize{
- \item{"n"}{Do nothing. Most embedding methods follow this strategy, leaving
- the output similarity kernels to all have unit precision parameters.}
- \item{"t"}{Transfer the input similarity kernel parameters to the
- output similarity kernel. This method was suggesed by Venna et al (2010).}
- \item{"s"}{Scale the output kernel precisions based on the target
- \code{perplexity} and the intrinsic dimensionality of the input data. This
- method is part of the multiscaling technique proposed by Lee et al (2015).}
+ \item \code{"n"} Do nothing. Most embedding methods follow this strategy,
+   leaving the output similarity kernels to all have unit precision
+   parameters.
+ \item \code{"t"} Transfer the input similarity kernel parameters to the
+   output similarity kernel. This method was suggesed by Venna et al (2010).
+ \item \code{"s"} Scale the output kernel precisions based on the target
+   \code{perplexity} and the intrinsic dimensionality of the input data. This
+   method is part of the multiscaling technique proposed by Lee et al (2015).
 }
 
 The \code{prec_scale} parameter will be ignored if the \code{method} used
@@ -202,48 +206,47 @@ setting \code{perp_kernel_fun} to "step".
 For initializing the output coordinates, the options for the
 \code{init} parameter are:
 \itemize{
- \item{\code{"p"}}{Initialize using the first two scores of the PCA.
+ \item \code{"p"} Initialize using the first two scores of the PCA.
  Data will be centered, but not scaled unless the \code{scale_type} parameter
- is used.}
-\code{"r"}{Initialize each coordinate vlaue from a normal random
-distribution with a standard deviation of 1e-4, as suggested by van der Maaten
-and Hinton (2008).}
-\code{"u"}{Initialize each coordinate value from a uniform random
-distribution between 0 and 1 as suggested by Venna et al (2010).}
-  init_out <- NULL
-\code{"u"}{Initialize the coordinates from a user-supplied matrix. Supply
-the coordinates as the \code{init_config} parameter.}
+ is used.
+ \item \code{"r"} Initialize each coordinate vlaue from a normal random
+ distribution with a standard deviation of 1e-4, as suggested by van der
+ Maaten and Hinton (2008).
+ \item \code{"u"} Initialize each coordinate value from a uniform random
+ distribution between 0 and 1 as suggested by Venna et al (2010).
+ \item \code{"u"} Initialize the coordinates from a user-supplied matrix.
+  Supply the coordinates as the \code{init_config} parameter.
 }
 
 For the \code{quality_measures} argument, a vector with one or more of the
 following options can be supplied:
 \itemize{
- \item{\code{"r"}}{Calculate the area under the ROC curve, averaged over
- each observation, using the output distance matrix to rank each
- observation. Observations are partitioned into the positive and negative
- class depending upon the value of the label determined by the
- \code{label_name} argument. Only calculated if the \code{label_name}
- parameter is supplied.}
- \item{\code{"p"}}{Calculate the area under the Precision-Recall curve.
-  Only calculated if the \code{label_name} parameter is supplied.}
- \item{\code{"n"}}{Calculate the area under the RNX curve, using the
- method of Lee et al (2015).}
+ \item \code{"r"} Calculate the area under the ROC curve, averaged over
+  each observation, using the output distance matrix to rank each
+  observation. Observations are partitioned into the positive and negative
+  class depending upon the value of the label determined by the
+  \code{label_name} argument. Only calculated if the \code{label_name}
+  parameter is supplied.
+ \item \code{"p"} Calculate the area under the Precision-Recall curve.
+  Only calculated if the \code{label_name} parameter is supplied.
+ \item \code{"n"} Calculate the area under the RNX curve, using the
+  method of Lee et al (2015).
 }
 
 For the \code{ret} argument, a vector with one or more of the
 following options can be supplied:
 \itemize{
- \item{\code{"x"}}{The input coordinates after scaling and column filtering.}
- \item{\code{"dx"}}{The input distance matrix. Calculated if not present.}
- \item{\code{"dy"}}{The output distance matrix. Calculated if not present.}
- \item{\code{"p"}}{The input probability matrix.}
- \item{\code{"q"}}{The output probability matrix.}
- \item{\code{"prec"}}{The input similarity kernel precisions.}
- \item{\code{"dim"}}{The intrinsic dimensionality for each observation,
+ \item \code{"x"} The input coordinates after scaling and column filtering.
+ \item \code{"dx"} The input distance matrix. Calculated if not present.
+ \item \code{"dy"} The output distance matrix. Calculated if not present.
+ \item \code{"p"} The input probability matrix.
+ \item \code{"q"} The output probability matrix.
+ \item \code{"prec"} The input similarity kernel precisions.
+ \item \code{"dim"} The intrinsic dimensionality for each observation,
  calculated according to the method of Lee et al (2015). These are
- meaningless if not using the default exponential \code{perp_kernel_fun}}.
- \item{\code{"deg"}}{Degree centrality of the input probability. Calculated
- if not present.}
+ meaningless if not using the default exponential \code{perp_kernel_fun}.
+ \item \code{"deg"} Degree centrality of the input probability. Calculated
+ if not present.
 }
 }
 \examples{
@@ -365,13 +368,13 @@ following options can be supplied:
 }
 }
 \references{
-Hinton, G. E., & Roweis, S. T. (2002).
-Stochastic neighbor embedding.
-In \emph{Advances in neural information processing systems} (pp. 833-840).
-
 Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
 Visualizing similarity data with a mixture of maps.
 In \emph{International Conference on Artificial Intelligence and Statistics} (pp. 67-74).
+
+Hinton, G. E., & Roweis, S. T. (2002).
+Stochastic neighbor embedding.
+In \emph{Advances in neural information processing systems} (pp. 833-840).
 
 Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
 Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in

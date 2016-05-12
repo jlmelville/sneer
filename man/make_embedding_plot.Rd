@@ -4,7 +4,7 @@
 \alias{make_embedding_plot}
 \title{Embedding Plot Using \code{graphics} Library}
 \usage{
-make_embedding_plot(x, attr_name, label_fn, cex = 1)
+make_embedding_plot(x, attr_name, label_fn = NULL, cex = 1)
 }
 \arguments{
 \item{x}{Data frame containing label information for the embedded data.}
