@@ -94,7 +94,8 @@ summarize <- function(vals, msg = "") {
 #' @return Distance matrix.
 distance_matrix <- function(xm, min_dist = .Machine$double.eps) {
   if (class(xm) != "dist") {
-    dm <- as.matrix(dist(xm))
+    # a lot faster than as.matrix(dist(x)) - no effect on unit test results
+    dm <- sqrt(clamp(coords_to_dist2(as.matrix(xm))))
   } else {
     dm <- as.matrix(xm)
   }
