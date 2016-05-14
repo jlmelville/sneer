@@ -576,3 +576,53 @@ map2color <- function(x, name = "Blues", n = 15, limits = NULL) {
                    all.inside = TRUE)]
 }
 
+#' Embedding Plot With Points Colored By A Specific Property
+#'
+#' Plots the embedded coordinates, using a ColorBrewer palette to color each
+#' point according to a numerical vector.
+#'
+#' @note Use of this function requires that the \code{RColorBrewer} packages be
+#'  installed.
+#' @param coords Matrix of embedded coordinates, with as many rows as
+#'  observations, and 2 columns.
+#' @param quant_vec Vector containing quantitative information which will
+#'  be converted to a color. Each value will be applied to the equivalent
+#'  row in \code{coords}.
+#' @param name Name of the ColorBrewer palette to use for visualizing
+#'  \code{quant_vec}.
+#' @param num_colors Number of unique colors to map values in \code{quant_vec}
+#'  to.
+#' @param limits The range that the colors should map over. If not specified,
+#'  then the range of \code{x}. This is useful if there is some external
+#'  absolute scale that should be used.
+#' @param cex Size of the points.
+#' @param top If not \code{NULL}, only the specified number of points will be
+#'  displayed, corresponding to those with the highest values in \code{vec},
+#'  after sorting by decreasing order.
+#' @seealso
+#' More information on ColorBrewer is available at its website,
+#' \url{http://www.colorbrewer2.org}.
+#' @export
+#' @examples
+#' \dontrun{
+#' tsne_iris <- embed(iris, method = "pca", scale_method = "a",
+#'  export = c("dx", "dy", "deg"))
+#' # how well is the 32 nearest neighborhood preserved for each point?
+#' nbr_pres_32 <- nbr_pres(tsne_iris$dx, tsne_iris$dy, 32)
+#' # visualize preservation, use absolute scale of 0-1 for colors.
+#' embed_quant_plot(tsne_iris$coords, nbr_pres_32, limits = c(0, 1))
+#'
+#' # visualize 10 points with the hightest degree centrality
+#' embed_quant_plot(tsne_iris$coords, tsne_iris$deg, top = 10)
+#' }
+embed_quant_plot <- function(coords, quant_vec, name = "Blues", num_colors = 15,
+                             limits = NULL, cex = 0.5, top = NULL) {
+  if (!is.null(top)) {
+    svec <- sort(quant_vec, decreasing = TRUE)
+    quant_vec[quant_vec < svec[top]] <- 0
+  }
+
+  plot(coords, col = map2color(quant_vec, name = name, n = num_colors,
+                               limits = limits),
+       pch = 20, cex = 0.75)
+}
