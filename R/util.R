@@ -204,7 +204,7 @@ iembed <- function(method,
                    opt = gradient_descent()
 ) {
 
-  init_embed(iris[1:50, 1:4], method, preprocess = preprocess,
+  init_embed(xm, method, preprocess = preprocess,
              init_inp = init_inp,
              init_out = init_out,
              opt = opt)
