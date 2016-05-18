@@ -394,7 +394,7 @@ embed <- function(df,
                   perplexity = 32, perp_scale = "single",
                   perp_scale_iter = NULL,
                   perp_kernel_fun = "exp",
-                  prec_scale = NULL,
+                  prec_scale = "",
                   init = "p", init_config = NULL,
                   max_iter = 1000,
                   report_every = 50,
@@ -512,7 +512,7 @@ embed <- function(df,
     }
 
     modify_kernel_fn <- NULL
-    if (!is.null(prec_scale)) {
+    if ((prec_scale) != "") {
       if (perp_kernel_fun == "step") {
         stop("Can't use precision scaling with step input weight function")
       }
