@@ -821,11 +821,13 @@ embed <- function(df,
 #'   data is returned.
 #' @param verbose If \code{TRUE} display messages about the embedding progress.
 #' @return The output data. A list containing:
+#'  \itemize{
 #'   \item \code{ym} Embedded coordinates.
 #'   \item \code{cost} The cost value associated with \code{ym}.
 #'   If the parameter \code{export} was used, additional elements will be
 #'   present. See the help text for the \code{export} parameter for more
 #'   details.
+#'   }
 #' @seealso
 #' \itemize{
 #' \item \code{\link{probability_embedding_methods}} for configuring
@@ -957,11 +959,13 @@ embed_prob <- function(xm,
 #'   data is returned.
 #' @param verbose If \code{TRUE} display messages about the embedding progress.
 #' @return The output data. A list containing:
+#'  \itemize{
 #'   \item \code{ym} Embedded coordinates.
 #'   \item \code{cost} The cost value associated with \code{ym}.
 #'   If the parameter \code{export} was used, additional elements will be
 #'   present. See the help text for the \code{export} parameter for more
 #'   details.
+#'  }
 #' @seealso
 #' \itemize{
 #' \item \code{\link{distance_embedding_methods}} for configuring
@@ -1066,11 +1070,13 @@ embed_dist <- function(xm,
 #' @param after_embed Callback to run on input and output data before output
 #'   data is returned.
 #' @return The output data. A list containing:
+#'  \itemize{
 #'   \item \code{ym} Embedded coordinates.
 #'   \item \code{cost} The cost value associated with \code{ym}.
 #'   If the parameter \code{export} was used, additional elements will be
 #'   present. See the help text for the \code{export} parameter for more
 #'   details.
+#' }
 #' @seealso
 #' \itemize{
 #' \item \code{\link{embedding_methods}} for configuring \code{method}
@@ -1170,9 +1176,11 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
 #' @param out Output data.
 #' @param method Embedding method.
 #' @return List consisting of:
+#'  \itemize{
 #'   \item \code{inp} Updated input data.
 #'   \item \code{out} Updated output data.
 #'   \item \code{method} Updated embedding method.
+#'  }
 after_init <- function(inp, out, method) {
   if (!is.null(method$after_init_fn)) {
     result <- method$after_init_fn(inp, out, method)
@@ -1205,11 +1213,13 @@ after_init <- function(inp, out, method) {
 #'  coordinates.
 #' @param opt Optimization method.
 #' @return A list containing:
+#'  \itemize{
 #'   \item \code{inp} Initialized input.
 #'   \item \code{out} Initialized output.
 #'   \item \code{method} Initialized embedding method.
 #'   \item \code{opt} Initialized optimizer.
 #'   \item \code{report} Initialized report.
+#'  }
 init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
   inp <- preprocess(xm)
 

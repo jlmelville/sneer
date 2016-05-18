@@ -28,7 +28,7 @@ using its label as the positive class. If there are more than two labels
 in the dataset, then the other classes are all treated as negative.
 }
 \seealso{
-\code{\link{pr_auc}}, \code{\link{roc_auc}} and
+\code{\link{pr_auc_embed}}, \code{\link{roc_auc_embed}} and
 \code{\link{rnx_auc}} for definitions of these metrics.
 }
 

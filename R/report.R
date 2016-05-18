@@ -282,7 +282,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
 #' @return A function suitable for calling after embedding, which will in turn
 #' return the output data, with the quality metrics appended in a list called
 #' \code{quality}.
-#' @seealso \code{\link{pr_auc}}, \code{\link{roc_auc}} and
+#' @seealso \code{\link{pr_auc_embed}}, \code{\link{roc_auc_embed}} and
 #' \code{\link{rnx_auc}} for definitions of these metrics.
 make_final_reporter <- function(labels = NULL) {
   fs <- c(rnx_auc)

@@ -54,11 +54,13 @@ data is returned.}
 }
 \value{
 The output data. A list containing:
+ \itemize{
   \item \code{ym} Embedded coordinates.
   \item \code{cost} The cost value associated with \code{ym}.
   If the parameter \code{export} was used, additional elements will be
   present. See the help text for the \code{export} parameter for more
   details.
+}
 }
 \description{
 Carry out an embedding of a dataset using any embedding method. The most

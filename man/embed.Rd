@@ -6,7 +6,7 @@
 \usage{
 embed(df, indexes = NULL, method = "tsne", alpha = 1, lambda = 0.5,
   kappa = 0.5, scale_type = "", perplexity = 32, perp_scale = "single",
-  perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = NULL,
+  perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
   init = "p", init_config = NULL, max_iter = 1000, report_every = 50,
   tol = 1e-04, plot_type = "p", label_name = NULL, label_chars = NULL,
   label_size = 1, palette = "Set1", legend = TRUE, legend_rows = NULL,
@@ -347,6 +347,12 @@ following options can be supplied:
   # export the distance matrices and do whatever quality measures we
   # want at our leisure
   res <- embed(iris, scale_type = "a", method = "wtsne", ret = c("dx", "dy"))
+
+  # Calculate the Area Under the Precision Recall Curve for the embedding
+  pr <- pr_auc_embed(res$dy, iris$Species)
+
+  # Similarly, for the ROC curve:
+  roc <- roc_auc_embed(res$dy, iris$Species)
 
   # calculate the 32-nearest neighbor preservation for each observation
   # 0 means no neighbors preserved, 1 means all of them
