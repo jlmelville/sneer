@@ -359,6 +359,12 @@ NULL
 #'   # want at our leisure
 #'   res <- embed(iris, scale_type = "a", method = "wtsne", ret = c("dx", "dy"))
 #'
+#'   # Calculate the Area Under the Precision Recall Curve for the embedding
+#'   pr <- pr_auc_embed(res$dy, iris$Species)
+#'
+#'   # Similarly, for the ROC curve:
+#'   roc <- roc_auc_embed(res$dy, iris$Species)
+#'
 #'   # calculate the 32-nearest neighbor preservation for each observation
 #'   # 0 means no neighbors preserved, 1 means all of them
 #'   pres32 <- nbr_pres(res$dx, res$dy, 32)
