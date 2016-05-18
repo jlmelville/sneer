@@ -456,11 +456,12 @@ embed <- function(df,
   }
 
   # Need to use plugin method if precisions can be non-uniform
-  if (!is.null(prec_scale) && prec_scale == "t") {
+  if (prec_scale == "t") {
     new_method <- paste0(method, "_plugin")
     if (!new_method %in% names(embed_methods)) {
       stop("Method '", method, "' is not compatible with prec_scale option 't'")
     }
+    message("Switching to plugin method for non-uniform output precisions")
     embed_method <- embed_methods[[new_method]]()
   }
   else {
