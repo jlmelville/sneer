@@ -22,8 +22,8 @@ a constant value.
 make_opt(step_size = constant_step_size(0.1))
 }
 \seealso{
-Other sneer optimization step size methods: \code{\link{backtracking}},
-  \code{\link{bold_driver}}, \code{\link{jacobs}},
+Other sneer optimization step size methods: \code{\link{bold_driver}},
+  \code{\link{jacobs}},
   \code{\link{optimization_step_size}},
   \code{\link{tsne_jacobs}}
 }

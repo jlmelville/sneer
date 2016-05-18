@@ -12,8 +12,7 @@ make_opt(step_size = bold_driver())
 make_opt(step_size = jacobs())
 }
 \seealso{
-Other sneer optimization step size methods: \code{\link{backtracking}},
-  \code{\link{bold_driver}},
+Other sneer optimization step size methods: \code{\link{bold_driver}},
   \code{\link{constant_step_size}}, \code{\link{jacobs}},
   \code{\link{tsne_jacobs}}
 }

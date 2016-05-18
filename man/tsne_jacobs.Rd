@@ -31,8 +31,7 @@ The return value of this function is intended for internal use of
 the sneer framework only. See \code{\link{optimization_step_size_interface}}
 for details on the functions and values defined for this method.
 
-Other sneer optimization step size methods: \code{\link{backtracking}},
-  \code{\link{bold_driver}},
+Other sneer optimization step size methods: \code{\link{bold_driver}},
   \code{\link{constant_step_size}}, \code{\link{jacobs}},
   \code{\link{optimization_step_size}}
 }
