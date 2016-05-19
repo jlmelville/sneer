@@ -31,7 +31,7 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-UHSNeRV is a hybrid of \code{\link{usnerv}} and \code{\link{hssne}}. It has
+UHSNeRV is a hybrid of \code{usnerv} and \code{hssne}. It has
 the \code{lambda} parameter of USNeRV, allowing for the control of precision
 versus recall, and the \code{alpha} and \code{beta} parameters of HSSNE which
 give the behavior of SSNE/SNeRV when \code{alpha} is close to zero,
@@ -82,12 +82,12 @@ Heavy-tailed symmetric stochastic neighbor embedding.
 In \emph{Advances in neural information processing systems} (pp. 2169-2177).
 }
 \seealso{
-HSNeRV uses the \code{\link{nerv_cost}} cost function and the
-  \code{\link{heavy_tail_weight}} similarity function for converting
+HSNeRV uses the \code{nerv_cost} cost function and the
+  \code{heavy_tail_weight} similarity function for converting
   distances to probabilities.
 
 The return value of this function should be used with the
-  \code{\link{embed_prob}} embedding function.
+  \code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

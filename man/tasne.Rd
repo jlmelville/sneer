@@ -51,9 +51,9 @@ embed_prob(method = tasne(), ...)
 }
 }
 \seealso{
-t-ASNE uses the \code{\link{kl_cost}} cost function and the
-  \code{\link{exp_weight}} similarity function. The return value of this
-  function should be used with the \code{\link{embed_prob}} embedding
+t-ASNE uses the \code{kl_cost} cost function and the
+  \code{kl_cost} similarity function. The return value of this
+  function should be used with the \code{embed_prob} embedding
   function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

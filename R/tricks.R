@@ -40,17 +40,17 @@ NULL
 #' The input to this function can be zero, one or multiple independent tricks,
 #' each of which is created by their own factory function. As a result, the
 #' signature of this function is not informative. For information on the tricks
-#' available, see \code{\link{tricks}}.
+#' available, see \code{tricks}.
 #'
 #' Some wrappers around this function which apply sets of tricks from the
 #' literature are available. See the links under the 'See Also' section.
 #'
-#' @param ... Zero or more \code{\link{tricks}}.
+#' @param ... Zero or more \code{tricks}.
 #' @return Callback collecting all the supplied tricks, to be invoked by the
 #' embedding routine.
 #' @seealso The result value of this function should be passed to the
-#' \code{\link{tricks}} parameter of embedding routines like
-#' \code{\link{embed_prob}} and \code{\link{embed_dist}}.
+#' \code{tricks} parameter of embedding routines like
+#' \code{embed_prob} and \code{embed_dist}.
 #' @examples
 #' # Use early exaggeration as described in the t-SNE paper
 #' make_tricks(early_exaggeration(exaggeration = 4, off_iter = 50))
@@ -100,7 +100,7 @@ make_tricks <- function(...) {
 #' to their original values.
 #' @param verbose If \code{TRUE} report a message when exaggeration is turned
 #' off.
-#' @return Trick callback. Should be passed to \code{\link{make_tricks}} when
+#' @return Trick callback. Should be passed to \code{make_tricks} when
 #' configuring an embedding.
 #' @examples
 #' \dontrun{
@@ -149,7 +149,7 @@ early_exaggeration <- function(exaggeration = 4, off_iter = 50,
 #' @param on_iter Iteration step at which to apply the new momentum value.
 #' @param verbose If \code{TRUE} report a message when the new momentum is
 #' applied.
-#' @return Trick callback. Should be passed to \code{\link{make_tricks}} when
+#' @return Trick callback. Should be passed to \code{make_tricks} when
 #' configuring an embedding.
 #' @examples
 #' \dontrun{
@@ -187,7 +187,7 @@ late_momentum <- function(momentum = 0.9, on_iter = 900, verbose = TRUE) {
 #' @param verbose If \code{TRUE} print message about tricks during the
 #' embedding.
 #' @return tricks callback parameterized to behave like the t-SNE paper.
-#' @seealso \code{\link{embed_prob}} for how to use this function for
+#' @seealso \code{embed_prob} for how to use this function for
 #' configuring an embedding.
 #' @examples
 #' # Should be passed to the tricks argument of an embedding function:

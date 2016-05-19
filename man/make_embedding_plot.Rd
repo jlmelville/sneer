@@ -48,7 +48,7 @@ make_embedding_plot(iris, "Species", cex = 0.5)(tsne_iris$ym)
 }
 }
 \seealso{
-\code{\link{make_label}} for an example of a suitable
+\code{make_label} for an example of a suitable
 argument to \code{label_fn}.
 }
 

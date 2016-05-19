@@ -9,7 +9,7 @@
 #' @seealso
 #' The return value of the initializers should be assigned to the
 #' \code{init_out} parameter of an embedding function such as
-#' \code{\link{embed_dist}} and \code{\link{embed_prob}}.
+#' \code{embed_dist} and \code{embed_prob}.
 #'
 #' @examples
 #'
@@ -43,7 +43,7 @@ NULL
 #' @return Output initializer.
 #' @export
 #' @family sneer output intializers
-#' @seealso \code{\link{embed_dist}} and \code{\link{embed_prob}}
+#' @seealso \code{embed_dist} and \code{embed_prob}
 #'   for how to use this function to configure an embedding.
 #' @examples
 #' \dontrun{
@@ -73,7 +73,7 @@ out_from_PCA <- function(k = 2, verbose = TRUE) {
 #' @return Output initializer.
 #' @export
 #' @family sneer output intializers
-#' @seealso \code{\link{embed_dist}} and \code{\link{embed_prob}}
+#' @seealso \code{embed_dist} and \code{embed_prob}
 #'   for how to use this function to configure an embedding.
 #'
 #' @examples
@@ -111,7 +111,7 @@ out_from_matrix <- function(init_config, k = 2, verbose = TRUE) {
 #' @return Output initializer.
 #' @export
 #' @family sneer output intializers
-#' @seealso \code{\link{embed_dist}} and \code{\link{embed_prob}}
+#' @seealso \code{embed_dist} and \code{embed_prob}
 #'   for how to use this function to configure an embedding.
 #'
 #' @examples
@@ -135,7 +135,7 @@ out_from_rnorm <- function(k = 2, sd = 1e-4, verbose = TRUE) {
 #'
 #' Creates output data and initializes embedding coordinates from a random
 #' uniform distribution. This is the initialization method suggested for use
-#' by the authors of the \code{\link{nerv}} method.
+#' by the authors of the \code{nerv} method.
 #'
 #' @param k Number of output dimensions. For 2D visualization this is always 2.
 #' @param min Lower limit of the distribution.
@@ -149,7 +149,7 @@ out_from_rnorm <- function(k = 2, sd = 1e-4, verbose = TRUE) {
 #' data visualization.
 #' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
 #' @family sneer output intializers
-#' @seealso \code{\link{embed_dist}} and \code{\link{embed_prob}}
+#' @seealso \code{embed_dist} and \code{embed_prob}
 #'   for how to use this function to configure an embedding.
 #'
 #' @examples

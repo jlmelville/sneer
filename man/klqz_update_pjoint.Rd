@@ -21,7 +21,7 @@ klqz_update_pjoint(inp, out, method)
 Calculates and stores the mixture probability Z and calculates the KL
 divergence from Q (output probabilities) to Z on the output data. Used by
 those embedding methods where this KL divergence is used to calculate the
-stiffness matrix in a gradient calculation (e.g. \code{\link{sjse}}).
+stiffness matrix in a gradient calculation (e.g. \code{sjse}).
 }
 \details{
 Only appropriate for embedding methods that use joint probabilities.

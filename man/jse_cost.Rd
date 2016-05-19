@@ -53,10 +53,9 @@ dimensionality reduction based on similarity preservation.
 \seealso{
 To use \code{out$qm} as the reference probability and calculate the
   divergence of \code{inp$pm} from \code{out$qm}, see
-  \code{\link{reverse_kl_cost}}.
+  \code{reverse_kl_cost}.
 
-Other sneer cost functions: \code{\link{kl_cost}},
-  \code{\link{kruskal_stress_cost}},
+Other sneer cost functions: \code{\link{kruskal_stress_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},

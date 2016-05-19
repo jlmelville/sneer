@@ -22,7 +22,7 @@ a list containing:
 \description{
 Called when the input data changes, normally when the input probability
 matrix is calculated. Some embedding method's output has an explicit
-dependency on such data: for example, the JSE (\code{\link{jse}}) cost
+dependency on such data: for example, the JSE (\code{jse}) cost
 function uses a mixture matrix of the input and output probability matrices.
 }
 \details{

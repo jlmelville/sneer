@@ -20,15 +20,15 @@ Normalized stress.
 A measure of embedding quality between input and output distance matrices.
 }
 \details{
-A normalized version of the \code{\link{metric_stress}}:
+A normalized version of the \code{metric_stress}:
 
 \deqn{STRESS_{RN} = \frac{STRESS}{\sum_{i<j} dxm_{ij}^2}}{STRESS/sum(dxm^2)}
 
 where \eqn{dxm} is the input distance matrix and \eqn{STRESS} is the
-\code{\link{metric_stress}} between the input and output distances.
-This gives a dimensionless value similar to the \code{\link{kruskal_stress}},
+\code{metric_stress} between the input and output distances.
+This gives a dimensionless value similar to the \code{kruskal_stress},
 except the normalization uses the input distances, not the output distances,
-much like the \code{\link{sammon_stress}}. It can be interpreted as the
+much like the \code{sammon_stress}. It can be interpreted as the
 proportion of the sum of squares of the input distances unaccounted for by
 the output distances. Borg and Groenen defined this in their book on MDS.
 }

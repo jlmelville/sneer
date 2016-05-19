@@ -102,8 +102,8 @@ NULL
 #' want to keep. The squared distances (\code{d2m}) are not always useful,
 #' except if the plugin gradient is being used to calculate the stiffness
 #' matrix. The weight matrix (\code{wm}) is used by the plugin gradient method
-#' and by some non-plugin method stiffness functions (e.g. \code{\link{tsne}}
-#' or \code{\link{hssne}}). The output probability (\code{qm}) is an integral
+#' and by some non-plugin method stiffness functions (e.g. \code{tsne}
+#' or \code{hssne}). The output probability (\code{qm}) is an integral
 #' part of all cost functions and gradients so should always be retained.
 #'
 #' @param keep List containing any or all of the following matrix names:
@@ -335,7 +335,7 @@ prow_to_pcond <- function(prow) {
 #' the entire matrix sum to one, and that the matrix is symmetric, i.e.
 #' \code{p[i, j] = p[j, i]}.
 #'
-#' Used in \code{\link{ssne}}, \code{\link{tsne}} and related methods to convert
+#' Used in \code{ssne}, \code{tsne} and related methods to convert
 #' input probabilities.
 #'
 #' @param prow Row probability matrix.
@@ -374,7 +374,7 @@ symmetrize_matrix <- function(pm) {
 #'   \item{"joint"}{A joint probability matrix where the grand sum of the entire
 #'   matrix is 1, and \code{pm[i, j]} = \code{pm[j, i]} for all pairs i and j.}
 #'   }
-#'   See \code{\link{probability_matrices}} for more details.
+#'   See \code{probability_matrices} for more details.
 #' @param method Embedding method, which must have a "type" attribute with one
 #'   of the values described for \code{pm}. This represents the type of
 #'   probability matrix that \code{pm} will be converted into.

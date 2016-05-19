@@ -29,8 +29,8 @@ Validation function for assessing a proposed solution from the optimizer.
 \details{
 This function validates a solution by looking for a non-increasing cost
 function between iterations. Used by adaptive schemes, e.g. the
-\code{\link{bold_driver}} step size method and the
-\code{\link{adaptive_restart}} momentum scheme.
+\code{bold_driver} step size method and the
+\code{adaptive_restart} momentum scheme.
 
 Because multiple methods may use this function, some caching is carried out
 to prevent wasteful recalculation of the cost function. This function will

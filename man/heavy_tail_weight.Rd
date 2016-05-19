@@ -30,12 +30,12 @@ The weight matrix, \eqn{W} is generated from the squared distances matrix,
 \deqn{W  = [(\alpha \beta D^2) + 1]^{-\frac{1}{\alpha}}}{W = ((alpha * beta * D2) + 1) ^ (-1 / alpha)}
 
 \eqn{\alpha \to 0}{alpha approaches 0}, the weighting function becomes
-exponential, and behaves like \code{\link{exp_weight}}. At
+exponential, and behaves like \code{exp_weight}. At
 \eqn{\alpha = 1}{alpha = 1}, the weighting function is the t-distribution
-with one degree of freedom, \code{\link{tdist_weight}}. Intermediate
+with one degree of freedom, \code{tdist_weight}. Intermediate
 values provide an intermediate degree of tail heaviness.
 The \eqn{\beta}{beta} parameter is equivalent to that in the
-\code{\link{exp_weight}} function. This is set to one in methods suchs as
+\code{exp_weight} function. This is set to one in methods suchs as
 SSNE and t-SNE.
 }
 \examples{

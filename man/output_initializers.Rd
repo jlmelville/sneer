@@ -23,7 +23,7 @@ embed_prob(init_out = out_from_rnorm(sd = 1e-4), ...)
 \seealso{
 The return value of the initializers should be assigned to the
 \code{init_out} parameter of an embedding function such as
-\code{\link{embed_dist}} and \code{\link{embed_prob}}.
+\code{embed_dist} and \code{embed_prob}.
 }
 \keyword{internal}
 

@@ -35,7 +35,7 @@
 #' such that the mean distance is 1.
 #' @param verbose If \code{TRUE}, log information about preprocessing.
 #' @return A preprocessor for use by the embedding routine.
-#' @seealso \code{\link{embed_prob}} for how to use this function for
+#' @seealso \code{embed_prob} for how to use this function for
 #'   configuring an embedding.
 #' @examples
 #' # Scale the input data so the smallest element is 0, and the largest is 1.
@@ -279,7 +279,7 @@ varfilter <- function(xm, minvar = 0.0) {
 #' Preprocess function for distance matrix.
 #'
 #' Scales the input distances so that the mean distance is 1. This preprocessing
-#' step is recommended as part of the \code{\link{nerv}} embedding method.
+#' step is recommended as part of the \code{nerv} embedding method.
 #'
 #' @param dm Distance matrix
 #' @param verbose If \code{TRUE}, information about the scaled distances will be

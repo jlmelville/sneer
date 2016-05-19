@@ -20,7 +20,7 @@ Preprocess function for distance matrix.
 }
 \details{
 Scales the input distances so that the mean distance is 1. This preprocessing
-step is recommended as part of the \code{\link{nerv}} embedding method.
+step is recommended as part of the \code{nerv} embedding method.
 }
 \references{
 Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).

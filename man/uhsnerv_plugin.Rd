@@ -30,7 +30,7 @@ An embedding method for use by an embedding function.
 An implementation of UHSNeRV using the plugin gradient.
 }
 \seealso{
-\code{\link{uhsnerv}} should give equivalent results, but is probably
+\code{uhsnerv} should give equivalent results, but is probably
 a bit more efficient.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

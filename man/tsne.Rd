@@ -19,7 +19,7 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-t-SNE is a variant of \code{\link{ssne}} where the similarity function used
+t-SNE is a variant of \code{ssne} where the similarity function used
 to generate output probabilities is the Student t-Distribution with one
 degree of freedom.
 
@@ -54,9 +54,9 @@ Visualizing data using t-SNE.
 \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 }
 \seealso{
-t-SNE uses the \code{\link{kl_cost}} cost function and the
-  \code{\link{tdist_weight}} similarity function. The return value of this
-  function should be used with the \code{\link{embed_prob}} embedding
+t-SNE uses the \code{kl_cost} cost function and the
+  \code{tdist_weight} similarity function. The return value of this
+  function should be used with the \code{embed_prob} embedding
   function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

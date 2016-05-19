@@ -29,6 +29,6 @@ in the dataset, then the other classes are all treated as negative.
 }
 \seealso{
 \code{\link{pr_auc_embed}}, \code{\link{roc_auc_embed}} and
-\code{\link{rnx_auc}} for definitions of these metrics.
+\code{\link{rnx_auc_embed}} for definitions of these metrics.
 }
 

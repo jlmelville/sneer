@@ -23,9 +23,9 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-SNeRV is a "symmetric" variant of \code{\link{nerv}}. Rather than use the
-conditional point-based probabilities of \code{\link{asne}}, it uses the
-joint pair-based probabilities of \code{\link{ssne}}. However, it uses a
+SNeRV is a "symmetric" variant of \code{nerv}. Rather than use the
+conditional point-based probabilities of \code{asne}, it uses the
+joint pair-based probabilities of \code{ssne}. However, it uses a
 non-uniform exponential kernel in its output space (the bandwidth parameter
 \code{beta} is allowed to vary per point by using the value calculated
 from the input data). As a result, there is an extra step required to
@@ -62,11 +62,11 @@ Information retrieval perspective to nonlinear dimensionality reduction for
 data visualization.
 }
 \seealso{
-SNeRV uses the \code{\link{nerv_cost}} cost function and the
-  \code{\link{exp_weight}} similarity function for converting distances to
+SNeRV uses the \code{nerv_cost} cost function and the
+  \code{exp_weight} similarity function for converting distances to
   probabilities.
 The return value of this function should be used with the
-  \code{\link{embed_prob}} embedding function.
+  \code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

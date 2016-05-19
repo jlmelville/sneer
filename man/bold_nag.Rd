@@ -27,14 +27,14 @@ Optimizer with NAG parameters and bold driver step size.
 Optimizer factory function.
 }
 \details{
-Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+Wrapper around \code{make_opt} which mixes the NAG descent method and
 momentum for non-strongly convex problems formulated by Sutskever et al.,
 along with the bold driver method for step size.
 }
 \note{
 This optimizer is prone to converge prematurely in the face of sudden
 changes to the solution landscape, such as can happen when certain
-\code{\link{tricks}} are applied. In these cases, substantially increasing
+\code{tricks} are applied. In these cases, substantially increasing
 the \code{min_step_size} parameter so that the bold driver doesn't reduce
 the step size is highly recommended.
 }
@@ -45,7 +45,7 @@ the step size is highly recommended.
 }
 }
 \seealso{
-\code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+\code{embed_prob} and \code{embed_dist} for how to use
  this function for configuring an embedding.
 
 Other sneer optimization methods: \code{\link{back_nag_adapt}},

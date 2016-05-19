@@ -27,7 +27,7 @@ Uses the exponential weighting function for similarities, but the
 \details{
 The precision parameter \code{beta} is normally a scalar, but it can also
 work with a vector, as long as the length of the vector is equal to the
-number of rows  in the probability matrices. The \code{\link{nerv}} method
+number of rows  in the probability matrices. The \code{nerv} method
 makes use of this property.
 }
 

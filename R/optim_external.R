@@ -17,7 +17,7 @@
 #' However, each call to the R optimizer is only treated as one step of
 #' optimization from the point of view of the embedding algorithm. As a result,
 #' you should be aware that if you swap a home-grown optimizer
-#' created by \code{\link{make_opt}} with one using \code{ropt} and
+#' created by \code{make_opt} with one using \code{ropt} and
 #' \code{batch_iter = 10}, if you don't change any of the other parameters,
 #' (most pertinently, the value of \code{max_iter}), your optimizer may run for
 #' much longer (maybe ten times longer) than you were expecting.

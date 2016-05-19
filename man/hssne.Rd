@@ -28,8 +28,8 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-HSSNE is a generalization of \code{\link{ssne}} and \code{\link{tsne}},
-which uses the \code{\link{heavy_tail_weight}} similarity function to
+HSSNE is a generalization of \code{ssne} and \code{tsne},
+which uses the \code{heavy_tail_weight} similarity function to
 generate its probabilities.
 
 The heavy tailedness of the weighting function is controlled by the parameter
@@ -78,9 +78,9 @@ Heavy-tailed symmetric stochastic neighbor embedding.
 In \emph{Advances in neural information processing systems} (pp. 2169-2177).
 }
 \seealso{
-HSSNE uses the \code{\link{heavy_tail_weight}} similarity function.
+HSSNE uses the \code{heavy_tail_weight} similarity function.
 The return value of this function should be used with the
-\code{\link{embed_prob}} embedding function.
+\code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

@@ -25,7 +25,7 @@ A probability-based embedding method.
 }
 \details{
 JSE is a variant of Asymmetric Stochastic Neighbor Embedding
-(see \code{\link{asne}}), with a modified cost function that uses the
+(see \code{asne}), with a modified cost function that uses the
 a slightly modified version of the Generalized Jensen-Shannon Divergence,
 rather than the Kullback-Leibler divergence. The JS divergence can be
 considered a symmetrized and smoothed version of the KL divergence.
@@ -37,7 +37,7 @@ be controlled by a parameter, kappa, which takes a value between 0 and 1
 JS divergence. As kappa approaches zero, its behavior approaches that of the
 KL divergence, KL(P||Q) (and hence ASNE). As kappa aproaches one, its
 behaviour approaches that of the "reverse" KL divergence, KL(Q||P)
-(and hence like \code{\link{rasne}}). You won't get exactly identical results
+(and hence like \code{rasne}). You won't get exactly identical results
 to RASNE and ASNE, because of numerical issues.
 
 The probability matrix used in JSE:
@@ -78,14 +78,14 @@ dimensionality reduction based on similarity preservation.
 \emph{Neurocomputing}, \emph{112}, 92-108.
 }
 \seealso{
-JSE uses the \code{\link{jse_cost}} cost function and the
-  \code{\link{exp_weight}} similarity function for converting distances to
-  probabilities. The \code{\link{nerv}} embedding method also uses a cost
+JSE uses the \code{jse_cost} cost function and the
+  \code{exp_weight} similarity function for converting distances to
+  probabilities. The \code{nerv} embedding method also uses a cost
   function which is the sum of KL divergences, controlled by a parameter,
   and which also reduces to ASNE at one extreme, and to "reverse" ASNE at
   another.
 The return value of this function should be used with the
-\code{\link{embed_prob}} embedding function.
+\code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

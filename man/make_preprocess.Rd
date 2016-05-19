@@ -82,7 +82,7 @@ make_preprocess(range_scale_matrix = TRUE, zwhiten = TRUE, whiten_dims = 10)
 }
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for
+\code{embed_prob} for how to use this function for
   configuring an embedding.
 }
 

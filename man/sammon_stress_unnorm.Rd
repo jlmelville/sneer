@@ -37,6 +37,6 @@ the function dispenses with that part of the calculation:
 {S = sum(((rij-dij)/rij)^2)}
 
 This is marginally faster, and is consistent with the analytical gradient
-calculation in \code{\link{sammon_map}}.
+calculation in \code{sammon_map}.
 }
 

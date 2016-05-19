@@ -13,7 +13,7 @@ optimizer with parameters from the t-SNE paper.
 Optimizer factory function.
 }
 \details{
-Wrapper around \code{\link{make_opt}} which sets the optimizer parameters to
+Wrapper around \code{make_opt} which sets the optimizer parameters to
 that from the t-SNE paper.
 }
 \examples{
@@ -23,7 +23,7 @@ that from the t-SNE paper.
 }
 }
 \seealso{
-\code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+\code{embed_prob} and \code{embed_dist} for how to use
  this function for configuring an embedding.
 
 Other sneer optimization methods: \code{\link{back_nag_adapt}},

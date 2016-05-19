@@ -23,7 +23,7 @@ make_opt(direction = steepest_descent())
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimization_direction_interface}}
+the sneer framework only. See \code{optimization_direction_interface}
 for details on the functions and values defined for this method.
 
 Other sneer optimization direction methods: \code{\link{optimization_direction}}

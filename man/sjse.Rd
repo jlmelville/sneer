@@ -25,10 +25,10 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-SJSE is a variant of \code{\link{jse}} which uses a symmetrized, normalized
-probability distribution like \code{\link{ssne}}, rather than the that used
+SJSE is a variant of \code{jse} which uses a symmetrized, normalized
+probability distribution like \code{ssne}, rather than the that used
 by the original JSE method, which used the unnormalized distributions of
-\code{\link{asne}}.
+\code{asne}.
 
 The probability matrix used in SJSE:
 
@@ -67,12 +67,12 @@ dimensionality reduction based on similarity preservation.
 \emph{Neurocomputing}, \emph{112}, 92-108.
 }
 \seealso{
-SJSE uses the \code{\link{jse_cost}} cost function and the
-  \code{\link{exp_weight}} similarity function for converting
-  distances to probabilities. The \code{\link{snerv}} embedding method is
+SJSE uses the \code{jse_cost} cost function and the
+  \code{exp_weight} similarity function for converting
+  distances to probabilities. The \code{snerv} embedding method is
   similar.
 The return value of this function should be used with the
-\code{\link{embed_prob}} embedding function.
+\code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

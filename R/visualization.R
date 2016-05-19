@@ -20,7 +20,7 @@
 #'   character size of the labels.
 #' @return Function which will take an output list, and produce a 2D plot of
 #' the embedding.
-#' @seealso \code{\link{make_reporter}} for how to use this function for
+#' @seealso \code{make_reporter} for how to use this function for
 #' configuring visualization of the progress of an embedding.
 #' @examples
 #' # For s1k dataset, plot 2D embedding with "Label" factor to identify each
@@ -67,7 +67,7 @@ make_plot <- function(x, attr_name,
 #'   character size of the labels.
 #' @return Function which will take an output list, and produce a 2D plot of
 #' the embedding.
-#' @seealso \code{\link{make_label}} for an example of a suitable
+#' @seealso \code{make_label} for an example of a suitable
 #' argument to \code{label_fn}.
 #'
 #' @examples

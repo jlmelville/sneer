@@ -29,7 +29,7 @@ An embedding method for use by an embedding function.
 An implementation of HSNeRV using the plugin gradient.
 }
 \seealso{
-\code{\link{hsnerv}} should give equivalent results, but is probably
+\code{hsnerv} should give equivalent results, but is probably
 a bit more efficient.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

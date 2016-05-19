@@ -39,15 +39,15 @@ reporter callback.}
 \item{extra_costs}{List containing the names of cost functions to be
 reported, in addition to the cost associated with the embedding method,
 which will always be logged. Possible cost functions include:
-\describe{
-  \item{\code{"kl"}}{\code{\link{kl_cost}}.}
-  \item{\code{"kruskal_stress"}}{\code{\link{kruskal_stress_cost}}.}
-  \item{\code{"mean_relative_error"}}{\code{\link{mean_relative_error_cost}}.}
-  \item{\code{"metric_sstress"}}{\code{\link{metric_sstress_cost}}.}
-  \item{\code{"metric_stress"}}{\code{\link{metric_stress_cost}}.}
-  \item{\code{"normalized_stress"}}{\code{\link{normalized_stress_cost}}.}
-  \item{\code{"rms_metric_stress"}}{\code{\link{rms_metric_stress_cost}}.}
-  \item{\code{"sammon_stress"}}{\code{\link{sammon_stress_cost}}.}
+\itemize{
+  \item \code{"kl"} (Kullback Leibler Divergence).
+  \item \code{"kruskal_stress"}.
+  \item \code{"mean_relative_error"}.
+  \item \code{"metric_sstress"}.
+  \item \code{"metric_stress"}.
+  \item \code{"normalized_stress"}.
+  \item \code{"rms_metric_stress"}.
+  \item \code{"sammon_stress"}.
 }
 Note that not all costs are compatible with all embedding methods, because
 they may require specific matrices or other values to be precalculated in
@@ -130,7 +130,7 @@ make_reporter(extra_costs =
 }
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for configuring
-an embedding, and \code{\link{make_plot}} for 2D plot generation.
+\code{embed_prob} for how to use this function for configuring
+an embedding, and \code{make_plot} for 2D plot generation.
 }
 

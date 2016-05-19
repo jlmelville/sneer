@@ -27,7 +27,7 @@ Stiffness matrix.
 }
 \description{
 The precision parameter \code{beta} is normally left at its default value of
-1. Note that unlike the \code{\link{reverse_asne_stiffness}} function, a
+1. Note that unlike the \code{reverse_asne_stiffness} function, a
 vector of precisions can not be used as input to \code{beta}: an incorrect
 gradient will result.
 }

@@ -31,7 +31,7 @@ position. In standard gradient descent optimization, this is the location
 where the gradient would be calculated.
 }
 \seealso{
-\code{\link{nesterov_position}} for an alternative location to
+\code{nesterov_position} for an alternative location to
 calculate the gradient at.
 }
 

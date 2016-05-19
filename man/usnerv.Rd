@@ -27,10 +27,10 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-USNeRV is a "symmetric" variant of \code{\link{unerv}}. Rather than use the
-conditional point-based probabilities of \code{\link{asne}}, it uses the
-joint pair-based probabilities of \code{\link{ssne}}. It differs from
-\code{\link{snerv}} by only using a uniform bandwidth parameter to generate
+USNeRV is a "symmetric" variant of \code{unerv}. Rather than use the
+conditional point-based probabilities of \code{asne}, it uses the
+joint pair-based probabilities of \code{ssne}. It differs from
+\code{snerv} by only using a uniform bandwidth parameter to generate
 the output weight matrix.
 
 When \code{lambda = 1}, this method is equivalent to SSNE.
@@ -66,12 +66,12 @@ embed_prob(method = usnerv(lambda = 0), ...)
 }
 }
 \seealso{
-\code{\link{snerv}} is a version of this algorithm which relaxes
+\code{snerv} is a version of this algorithm which relaxes
 the requirement for uniform precisions in the output weight kernel (at
 the cost of being somewhat less efficient).
 
 The return value of this function should be used with the
-  \code{\link{embed_prob}} embedding function.
+  \code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

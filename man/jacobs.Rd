@@ -77,9 +77,9 @@ In \emph{1998 IEEE International Joint Conference on Neural Networks Proceedings
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimization_step_size_interface}}
+the sneer framework only. See \code{optimization_step_size_interface}
 for details on the functions and values defined for this method.
-\code{\link{tsne_jacobs}} provides a wrapper around for this method to use
+\code{tsne_jacobs} provides a wrapper around for this method to use
 the settings as given in the t-SNE paper.
 
 Other sneer optimization step size methods: \code{\link{bold_driver}},

@@ -19,7 +19,7 @@ A measure of embedding quality between distance matrices.
 }
 \details{
 The RMS stress is the square root of the normalized
-\code{\link{metric_stress}}:
+\code{metric_stress}:
 
 \deqn{STRESS_{RMS} = \sqrt{\frac{2\times STRESS}{n(n-1)}}}{stress_rms = sqrt[(2*STRESS)/(n*(n-1))]}
 

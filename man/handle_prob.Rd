@@ -16,7 +16,7 @@ entire matrix is 1.}
 \item{"joint"}{A joint probability matrix where the grand sum of the entire
 matrix is 1, and \code{pm[i, j]} = \code{pm[j, i]} for all pairs i and j.}
 }
-See \code{\link{probability_matrices}} for more details.}
+See \code{probability_matrices} for more details.}
 
 \item{method}{Embedding method, which must have a "type" attribute with one
 of the values described for \code{pm}. This represents the type of

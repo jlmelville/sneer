@@ -17,7 +17,7 @@ it's not present.}
 Area under the RNX curve.
 }
 \description{
-The RNX curve is formed by calculating the \code{\link{rnx_crm}} metric for
+The RNX curve is formed by calculating the \code{rnx_crm} metric for
 different sizes of neighborhood. Each value of RNX is scaled according to
 the natural log of the neighborhood size, to give a higher weight to smaller
 neighborhoods. An AUC of 1 indicates perfect neighborhood preservation, an

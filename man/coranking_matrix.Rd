@@ -19,8 +19,8 @@ Calculates the co-ranking matrix for an embedding.
 }
 \details{
 The co-ranking matrix is the basic data structure used for calculating
-various quality metrics, such as \code{\link{qnx_crm}},
-\code{\link{rnx_crm}} and \code{\link{bnx_crm}}.
+various quality metrics, such as \code{qnx_crm},
+\code{rnx_crm} and \code{bnx_crm}.
 
 The co-ranking matrix is an N x N matrix where N is the number of
 observations (so it's the same size as the distance matrices its

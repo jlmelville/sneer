@@ -26,7 +26,7 @@ be defined for metric embeddings:
 \deqn{K = \sqrt{\frac{STRESS}{\sum_{i<j} dym_{ij}^2}}}{K = sqrt(STRESS/sum(dym^2))}
 
 where \eqn{dym} is the input distance matrix and \eqn{STRESS} is the
-\code{\link{metric_stress_cost}} between the input and output distances. It
+\code{metric_stress_cost} between the input and output distances. It
 is dimensionless.
 }
 

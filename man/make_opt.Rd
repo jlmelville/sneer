@@ -11,19 +11,19 @@ make_opt(gradient = classical_gradient(), direction = steepest_descent(),
 \arguments{
 \item{gradient}{Method to calculate the gradient at a solution
 position. Set by calling one of the configuration functions listed in
-\code{\link{optimization_gradient}}.}
+\code{optimization_gradient}.}
 
 \item{direction}{Method to calculate the direction to move. Set
 by calling one of the configuration functions listed in
-\code{\link{optimization_direction}}.}
+\code{optimization_direction}.}
 
 \item{step_size}{Method to calculate the step size of the direction. Set
 by calling one of the configuration functions listed in
-\code{\link{optimization_step_size}}.}
+\code{optimization_step_size}.}
 
 \item{update}{Method to combine a gradient descent with other terms (e.g.
 momentum) to produce the final update. Set by calling one of the
-configuration functions listed in \code{\link{optimization_update}}.}
+configuration functions listed in \code{optimization_update}.}
 
 \item{normalize_direction}{If \code{TRUE} the gradient matrix is normalized to
 a length of one before step size calculation.}
@@ -97,7 +97,7 @@ make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
 }
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for configuring
+\code{embed_prob} for how to use this function for configuring
   an embedding.
 
 Other sneer optimization methods: \code{\link{back_nag_adapt}},

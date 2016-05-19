@@ -20,6 +20,6 @@ Provides the cost function and its gradient (with respect to Q).
 }
 \seealso{
 Other sneer cost wrappers: \code{\link{jse_fg}},
-  \code{\link{kl_fg}}, \code{\link{nerv_fg}}
+  \code{\link{nerv_fg}}
 }
 

@@ -22,7 +22,7 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-Like \code{\link{ssne}}, but with the cost function using the "reverse" form
+Like \code{ssne}, but with the cost function using the "reverse" form
 of the Kullback-Leibler divergence, i.e. KL(Q||P).
 
 The probability matrix in RSSNE:
@@ -48,9 +48,9 @@ embed_prob(method = rssne(), ...)
 }
 }
 \seealso{
-SSNE uses the \code{\link{reverse_kl_cost}} cost function and the
-  \code{\link{exp_weight}} similarity function. The return value of this
-  function should be used with the \code{\link{embed_prob}} embedding
+SSNE uses the \code{reverse_kl_cost} cost function and the
+  \code{exp_weight} similarity function. The return value of this
+  function should be used with the \code{embed_prob} embedding
   function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

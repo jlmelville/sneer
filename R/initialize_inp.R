@@ -9,7 +9,7 @@
 #'
 #' @seealso Input initializers should be passed to the
 #' \code{init_inp} parameter of embedding functions such as
-#' \code{\link{embed_prob}} or \code{\link{embed_dist}}.
+#' \code{embed_prob} or \code{embed_dist}.
 #'
 #' @examples
 #'
@@ -78,7 +78,7 @@ NULL
 #' @param verbose If \code{TRUE} display messages about progress of
 #'   initialization.
 #' @return Input initializer for use by an embedding function.
-#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for more
+#' @seealso \code{embed_prob} and \code{embed_dist} for more
 #'   information on exporting initializer data.
 #' @examples
 #' # Set target perplexity of each probability distribution to 30
@@ -139,7 +139,7 @@ inp_from_perp <- function(perplexity = 30,
 #' @param input_initializer Input initializer which creates a probability.
 #' @param init_only, if \code{TRUE}, then this initializer is only called once,
 #'  when the iteration number is zero.
-#' @param call_inp_updated, if \code{TRUE}, then the \code{\link{inp_updated}}
+#' @param call_inp_updated, if \code{TRUE}, then the \code{inp_updated}
 #'  function will be called by this wrapper if \code{inp$dirty} is \code{TRUE}.
 #'  As this deals with calling the function and reassigning any changed data
 #'  for you, there's no reason to change this from its default value
@@ -149,7 +149,7 @@ inp_from_perp <- function(perplexity = 30,
 #'  initializer.
 #' @return Wrapped initializer with the correct signature for use by an
 #'  embedding function.
-#' @seealso \code{\link{probability_matrices}} describe the type of probability
+#' @seealso \code{probability_matrices} describe the type of probability
 #'   matrix used by sneer.
 inp_prob <- function(input_initializer, init_only = TRUE,
                      call_inp_updated = TRUE) {
@@ -218,7 +218,7 @@ single_perplexity <- function(inp, perplexity = 30,
 #'
 #' Called when the input data changes, normally when the input probability
 #' matrix is calculated. Some embedding method's output has an explicit
-#' dependency on such data: for example, the JSE (\code{\link{jse}}) cost
+#' dependency on such data: for example, the JSE (\code{jse}) cost
 #' function uses a mixture matrix of the input and output probability matrices.
 #'
 #' Normally this will only be called once when the input data is first
@@ -257,7 +257,7 @@ inp_updated <- function(inp, out, method) {
 #'
 #' Call this function to register a callback to run when the input data changes.
 #'
-#' For example, in \code{\link{nerv}}, the output kernel precisions are the
+#' For example, in \code{nerv}, the output kernel precisions are the
 #' same as those of the input kernel. Hence, it registers a function to transfer
 #' those value from the input data to the output kernel. This may be called
 #' multiple times if the probability is recalculated (e.g. due to multiple

@@ -17,7 +17,7 @@ to their original values.}
 off.}
 }
 \value{
-Trick callback. Should be passed to \code{\link{make_tricks}} when
+Trick callback. Should be passed to \code{make_tricks} when
 configuring an embedding.
 }
 \description{

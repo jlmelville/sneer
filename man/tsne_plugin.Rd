@@ -22,7 +22,7 @@ A probability-based embedding method.
 An implementation of t-SNE using the plugin gradient.
 }
 \seealso{
-\code{\link{tsne}} should give equivalent results, but is probably
+\code{tsne} should give equivalent results, but is probably
 a bit more efficient.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

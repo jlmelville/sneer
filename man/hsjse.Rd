@@ -31,13 +31,13 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-HSJSE is a variant of \code{\link{jse}} which uses a symmetrized, normalized
-probability distribution like \code{\link{ssne}}, rather than the that used
+HSJSE is a variant of \code{jse} which uses a symmetrized, normalized
+probability distribution like \code{ssne}, rather than the that used
 by the original JSE method, which used the unnormalized distributions of
-\code{\link{asne}}.
+\code{asne}.
 
 Additionally, it uses the heavy-tailed kernel function of
-\code{\link{hssne}}, to generalize exponential and t-distributed weighting.
+\code{hssne}, to generalize exponential and t-distributed weighting.
 By modifying the \code{alpha} and \code{kappa} parameters, this embedding
 method can reproduce multiple embedding methods (see the examples section).
 
@@ -88,12 +88,12 @@ Heavy-tailed symmetric stochastic neighbor embedding.
 In \emph{Advances in neural information processing systems} (pp. 2169-2177).
 }
 \seealso{
-HSJSE uses the \code{\link{jse_cost}} cost function and the
-  \code{\link{heavy_tail_weight}} similarity function for converting
-  distances to probabilities. The \code{\link{hsnerv}} embedding method is
+HSJSE uses the \code{jse_cost} cost function and the
+  \code{heavy_tail_weight} similarity function for converting
+  distances to probabilities. The \code{hsnerv} embedding method is
   similar.
 The return value of this function should be used with the
-\code{\link{embed_prob}} embedding function.
+\code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

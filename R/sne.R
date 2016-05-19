@@ -20,7 +20,7 @@ NULL
 #' A probability-based embedding method.
 #'
 #' The original SNE method, this uses exponential weighting for both the input
-#' and output probabilities. Unlike \code{\link{ssne}} and \code{\link{tsne}},
+#' and output probabilities. Unlike \code{ssne} and \code{tsne},
 #' the probabilities are defined with respect to points, not pairs: an element
 #' Pij from the NxN probability matrix P should be thought of as a conditional
 #' probabilty, pj|i, the probability that point j would be chosen as a close
@@ -53,9 +53,9 @@ NULL
 #' Hinton, G. E., & Roweis, S. T. (2002).
 #' Stochastic neighbor embedding.
 #' In \emph{Advances in neural information processing systems} (pp. 833-840).
-#' @seealso ASNE uses the \code{\link{kl_cost}} cost function and the
-#'   \code{\link{exp_weight}} similarity function. The return value of this
-#'   function should be used with the \code{\link{embed_prob}} embedding
+#' @seealso ASNE uses the \code{kl_cost} cost function and the
+#'   \code{exp_weight} similarity function. The return value of this
+#'   function should be used with the \code{embed_prob} embedding
 #'   function.
 #' @export
 #' @family sneer embedding methods
@@ -81,7 +81,7 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #'
 #' A probability-based embedding method.
 #'
-#' SSNE is a variant of \code{\link{asne}} where the probabilities are with
+#' SSNE is a variant of \code{asne} where the probabilities are with
 #' respect to pairs of points, not individual points. The element
 #' \code{P[i, j]} in matrix P should be thought of as the probability of
 #' selecting a pair of points i and j as close neighbours. As a result, unlike
@@ -115,9 +115,9 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #' Van der Maaten, L., & Hinton, G. (2008).
 #' Visualizing data using t-SNE.
 #' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
-#' @seealso SSNE uses the \code{\link{kl_cost}} cost function and the
-#'   \code{\link{exp_weight}} similarity function. The return value of this
-#'   function should be used with the \code{\link{embed_prob}} embedding
+#' @seealso SSNE uses the \code{kl_cost} cost function and the
+#'   \code{exp_weight} similarity function. The return value of this
+#'   function should be used with the \code{embed_prob} embedding
 #'   function.
 #' @export
 #' @family sneer embedding methods
@@ -139,7 +139,7 @@ ssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #'
 #' A probability-based embedding method.
 #'
-#' t-SNE is a variant of \code{\link{ssne}} where the similarity function used
+#' t-SNE is a variant of \code{ssne} where the similarity function used
 #' to generate output probabilities is the Student t-Distribution with one
 #' degree of freedom.
 #'
@@ -170,9 +170,9 @@ ssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #' Van der Maaten, L., & Hinton, G. (2008).
 #' Visualizing data using t-SNE.
 #' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
-#' @seealso t-SNE uses the \code{\link{kl_cost}} cost function and the
-#'   \code{\link{tdist_weight}} similarity function. The return value of this
-#'   function should be used with the \code{\link{embed_prob}} embedding
+#' @seealso t-SNE uses the \code{kl_cost} cost function and the
+#'   \code{tdist_weight} similarity function. The return value of this
+#'   function should be used with the \code{embed_prob} embedding
 #'   function.
 #' @export
 #' @family sneer embedding methods
@@ -224,9 +224,9 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso t-ASNE uses the \code{\link{kl_cost}} cost function and the
-#'   \code{\link{exp_weight}} similarity function. The return value of this
-#'   function should be used with the \code{\link{embed_prob}} embedding
+#' @seealso t-ASNE uses the \code{kl_cost} cost function and the
+#'   \code{kl_cost} similarity function. The return value of this
+#'   function should be used with the \code{embed_prob} embedding
 #'   function.
 #' @export
 #' @family sneer embedding methods
@@ -248,8 +248,8 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #'
 #' A probability-based embedding method.
 #'
-#' HSSNE is a generalization of \code{\link{ssne}} and \code{\link{tsne}},
-#' which uses the \code{\link{heavy_tail_weight}} similarity function to
+#' HSSNE is a generalization of \code{ssne} and \code{tsne},
+#' which uses the \code{heavy_tail_weight} similarity function to
 #' generate its probabilities.
 #'
 #' The heavy tailedness of the weighting function is controlled by the parameter
@@ -297,9 +297,9 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
 #' Heavy-tailed symmetric stochastic neighbor embedding.
 #' In \emph{Advances in neural information processing systems} (pp. 2169-2177).
-#' @seealso HSSNE uses the \code{\link{heavy_tail_weight}} similarity function.
+#' @seealso HSSNE uses the \code{heavy_tail_weight} similarity function.
 #' The return value of this function should be used with the
-#' \code{\link{embed_prob}} embedding function.
+#' \code{embed_prob} embedding function.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
@@ -328,7 +328,7 @@ hssne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
 #'
 #' A probability-based embedding method.
 #'
-#' Like \code{\link{asne}}, but with the cost function using the "reverse" form
+#' Like \code{asne}, but with the cost function using the "reverse" form
 #' of the Kullback-Leibler divergence, i.e. KL(Q||P).
 #'
 #' The probability matrix in RASNE:
@@ -354,9 +354,9 @@ hssne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso RASNE uses the \code{\link{kl_cost}} cost function and the
-#'   \code{\link{exp_weight}} similarity function. The return value of this
-#'   function should be used with the \code{\link{embed_prob}} embedding
+#' @seealso RASNE uses the \code{kl_cost} cost function and the
+#'   \code{exp_weight} similarity function. The return value of this
+#'   function should be used with the \code{embed_prob} embedding
 #'   function.
 #' @export
 #' @family sneer embedding methods
@@ -380,7 +380,7 @@ rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #'
 #' A probability-based embedding method.
 #'
-#' Like \code{\link{ssne}}, but with the cost function using the "reverse" form
+#' Like \code{ssne}, but with the cost function using the "reverse" form
 #' of the Kullback-Leibler divergence, i.e. KL(Q||P).
 #'
 #' The probability matrix in RSSNE:
@@ -405,9 +405,9 @@ rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso SSNE uses the \code{\link{reverse_kl_cost}} cost function and the
-#'   \code{\link{exp_weight}} similarity function. The return value of this
-#'   function should be used with the \code{\link{embed_prob}} embedding
+#' @seealso SSNE uses the \code{reverse_kl_cost} cost function and the
+#'   \code{exp_weight} similarity function. The return value of this
+#'   function should be used with the \code{embed_prob} embedding
 #'   function.
 #' @export
 #' @family sneer embedding methods
@@ -430,7 +430,7 @@ rssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #'
 #' A probability-based embedding method.
 #'
-#' Like \code{\link{tsne}}, but with the cost function using the "reverse" form
+#' Like \code{tsne}, but with the cost function using the "reverse" form
 #' of the Kullback-Leibler divergence, i.e. KL(Q||P).
 #'
 #' The probability matrix in RTSNE:
@@ -456,9 +456,9 @@ rssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso RTSNE uses the \code{\link{reverse_kl_cost}} cost function and the
-#'   \code{\link{tdist_weight}} similarity function. The return value of this
-#'   function should be used with the \code{\link{embed_prob}} embedding
+#' @seealso RTSNE uses the \code{reverse_kl_cost} cost function and the
+#'   \code{tdist_weight} similarity function. The return value of this
+#'   function should be used with the \code{embed_prob} embedding
 #'   function.
 #' @export
 #' @family sneer embedding methods

@@ -86,7 +86,7 @@ plugin <- function(cost = kl_fg(),
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{asne}} should give equivalent results, but is probably
+#' @seealso \code{asne} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -113,7 +113,7 @@ asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{ssne}} should give equivalent results, but is probably
+#' @seealso \code{ssne} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -136,7 +136,7 @@ ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{tsne}} should give equivalent results, but is probably
+#' @seealso \code{tsne} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -163,7 +163,7 @@ tsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{hssne}} should give equivalent results, but is probably
+#' @seealso \code{hssne} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -187,7 +187,7 @@ hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{tasne}} should give equivalent results, but is probably
+#' @seealso \code{tasne} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -212,7 +212,7 @@ tasne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{rasne}} should give equivalent results, but is probably
+#' @seealso \code{rasne} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -233,7 +233,7 @@ rasne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{rssne}} should give equivalent results, but is probably
+#' @seealso \code{rssne} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -256,7 +256,7 @@ rssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{tsne}} should give equivalent results, but is probably
+#' @seealso \code{tsne} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -277,7 +277,7 @@ rtsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{nerv}} should give equivalent results, but is probably
+#' @seealso \code{nerv} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -303,7 +303,7 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE)
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{nerv}} should give equivalent results, but is probably
+#' @seealso \code{nerv} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -331,7 +331,7 @@ snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{hsnerv}} should give equivalent results, but is probably
+#' @seealso \code{hsnerv} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -354,7 +354,7 @@ hsnerv_plugin <- function(lambda = 0.5, alpha = 0, eps = .Machine$double.eps,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{tnerv}} should give equivalent results, but is probably
+#' @seealso \code{tnerv} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -379,7 +379,7 @@ tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{unerv}} should give equivalent results, but is probably
+#' @seealso \code{unerv} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -404,7 +404,7 @@ unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{usnerv}} should give equivalent results, but is probably
+#' @seealso \code{usnerv} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -431,7 +431,7 @@ usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{uhsnerv}} should give equivalent results, but is probably
+#' @seealso \code{uhsnerv} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -455,7 +455,7 @@ uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{jse}} should give equivalent results, but is probably
+#' @seealso \code{jse} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -480,7 +480,7 @@ jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{sjse}} should give equivalent results, but is probably
+#' @seealso \code{sjse} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods
@@ -505,7 +505,7 @@ sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 #' e.g. in gradients and cost functions.
 #' @param verbose If \code{TRUE}, log information about the embedding.
 #' @return An embedding method for use by an embedding function.
-#' @seealso \code{\link{sjse}} should give equivalent results, but is probably
+#' @seealso \code{sjse} should give equivalent results, but is probably
 #' a bit more efficient.
 #' @export
 #' @family sneer embedding methods

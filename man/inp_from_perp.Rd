@@ -91,7 +91,7 @@ embed_prob(init_inp = inp_from_perp(perplexity = 30,
 }
 }
 \seealso{
-\code{\link{embed_prob}} and \code{\link{embed_dist}} for more
+\code{embed_prob} and \code{embed_dist} for more
   information on exporting initializer data.
 
 Other sneer input initializers: \code{\link{inp_from_dint_max}},

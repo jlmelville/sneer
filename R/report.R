@@ -26,15 +26,15 @@
 #' @param extra_costs List containing the names of cost functions to be
 #'  reported, in addition to the cost associated with the embedding method,
 #'  which will always be logged. Possible cost functions include:
-#'  \describe{
-#'    \item{\code{"kl"}}{\code{\link{kl_cost}}.}
-#'    \item{\code{"kruskal_stress"}}{\code{\link{kruskal_stress_cost}}.}
-#'    \item{\code{"mean_relative_error"}}{\code{\link{mean_relative_error_cost}}.}
-#'    \item{\code{"metric_sstress"}}{\code{\link{metric_sstress_cost}}.}
-#'    \item{\code{"metric_stress"}}{\code{\link{metric_stress_cost}}.}
-#'    \item{\code{"normalized_stress"}}{\code{\link{normalized_stress_cost}}.}
-#'    \item{\code{"rms_metric_stress"}}{\code{\link{rms_metric_stress_cost}}.}
-#'    \item{\code{"sammon_stress"}}{\code{\link{sammon_stress_cost}}.}
+#'  \itemize{
+#'    \item \code{"kl"} (Kullback Leibler Divergence).
+#'    \item \code{"kruskal_stress"}.
+#'    \item \code{"mean_relative_error"}.
+#'    \item \code{"metric_sstress"}.
+#'    \item \code{"metric_stress"}.
+#'    \item \code{"normalized_stress"}.
+#'    \item \code{"rms_metric_stress"}.
+#'    \item \code{"sammon_stress"}.
 #'  }
 #'  Note that not all costs are compatible with all embedding methods, because
 #'  they may require specific matrices or other values to be precalculated in
@@ -73,8 +73,8 @@
 #' from the previous report can be compared with that of the current report,
 #' allowing for relative convergence early stopping, and appending of costs
 #' if \code{keep_costs} is \code{TRUE}.
-#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
-#' an embedding, and \code{\link{make_plot}} for 2D plot generation.
+#' @seealso \code{embed_prob} for how to use this function for configuring
+#' an embedding, and \code{make_plot} for 2D plot generation.
 #' @examples
 #' # reporter calculation every 100 steps of optimization, log cost and also the
 #' # normalized cost
@@ -283,7 +283,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
 #' return the output data, with the quality metrics appended in a list called
 #' \code{quality}.
 #' @seealso \code{\link{pr_auc_embed}}, \code{\link{roc_auc_embed}} and
-#' \code{\link{rnx_auc}} for definitions of these metrics.
+#' \code{\link{rnx_auc_embed}} for definitions of these metrics.
 make_final_reporter <- function(labels = NULL) {
   fs <- c(rnx_auc)
   if (!is.null(labels)) {

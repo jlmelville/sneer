@@ -29,7 +29,7 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-HSNeRV is a hybrid of \code{\link{snerv}} and \code{\link{hssne}}. It has
+HSNeRV is a hybrid of \code{snerv} and \code{hssne}. It has
 the \code{lambda} parameter of SNeRV, allowing for the control of precision
 versus recall, and the \code{alpha} parameter of HSSNE which
 give the behavior of SNeRV when \code{alpha} is close to zero,
@@ -74,12 +74,12 @@ Heavy-tailed symmetric stochastic neighbor embedding.
 In \emph{Advances in neural information processing systems} (pp. 2169-2177).
 }
 \seealso{
-HSNeRV uses the \code{\link{nerv_cost}} cost function and the
-  \code{\link{heavy_tail_weight}} similarity function for converting
+HSNeRV uses the \code{nerv_cost} cost function and the
+  \code{heavy_tail_weight} similarity function for converting
   distances to probabilities.
 
 The return value of this function should be used with the
-  \code{\link{embed_prob}} embedding function.
+  \code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

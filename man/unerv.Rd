@@ -23,18 +23,18 @@ e.g. in gradients and cost functions.}
 An embedding method for use by an embedding function.
 }
 \description{
-This method behaves like \code{\link{nerv}} in terms of its cost function,
-but treats the output weighting function like \code{\link{asne}} and
-\code{\link{ssne}} by setting the weight function bandwidth parameter
+This method behaves like \code{nerv} in terms of its cost function,
+but treats the output weighting function like \code{asne} and
+\code{ssne} by setting the weight function bandwidth parameter
 \code{beta} to 1. If you want to compare the NeRV cost function with the ASNE
 cost function directly, UNeRV is a better method to use than NeRV.
 }
 \seealso{
-\code{\link{nerv}} uses the precisions that generated the input
+\code{nerv} uses the precisions that generated the input
 probability as a way to reflect the differences in the local density of
 points in the input space in the output embedding.
 The return value of this function should be used with the
-\code{\link{embed_prob}} embedding function.
+\code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

@@ -19,7 +19,7 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-Like \code{\link{tsne}}, but with the cost function using the "reverse" form
+Like \code{tsne}, but with the cost function using the "reverse" form
 of the Kullback-Leibler divergence, i.e. KL(Q||P).
 
 The probability matrix in RTSNE:
@@ -48,9 +48,9 @@ embed_prob(method = tsne(), ...)
 }
 }
 \seealso{
-RTSNE uses the \code{\link{reverse_kl_cost}} cost function and the
-  \code{\link{tdist_weight}} similarity function. The return value of this
-  function should be used with the \code{\link{embed_prob}} embedding
+RTSNE uses the \code{reverse_kl_cost} cost function and the
+  \code{tdist_weight} similarity function. The return value of this
+  function should be used with the \code{embed_prob} embedding
   function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

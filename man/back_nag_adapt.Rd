@@ -29,7 +29,7 @@ Optimizer with NAG parameters and backstepping step size.
 Optimizer factory function.
 }
 \details{
-Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+Wrapper around \code{make_opt} which mixes the NAG descent method and
 momentum for non-strongly convex problems formulated by Sutskever et al.,
 along with a backstepping method for step size.
 }
@@ -40,7 +40,7 @@ along with a backstepping method for step size.
 }
 }
 \seealso{
-\code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+\code{embed_prob} and \code{embed_dist} for how to use
  this function for configuring an embedding.
 
 Other sneer optimization methods: \code{\link{back_nag}},

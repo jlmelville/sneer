@@ -118,10 +118,10 @@ momentum_scheme <- function(mu_fn = NULL,
 #' @param switch_iter Iteration number at which to switch from
 #'  \code{init_momentum} to \code{final_momentum}.
 #' @param ... Base momentum parameters to pass to the
-#'  \code{\link{momentum_scheme}} factory function.
+#'  \code{momentum_scheme} factory function.
 #' @return Step momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' the sneer framework only. See \code{optimization_update_interface}
 #' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
@@ -164,10 +164,10 @@ step_momentum <- function(init_momentum = 0.5, final_momentum = 0.8,
 #' iterations.
 #' @param final_momentum Momentum value after \code{switch_iter} iterations.
 #' @param ... Base momentum parameters to pass to the
-#'  \code{\link{momentum_scheme}} factory function.
+#'  \code{momentum_scheme} factory function.
 #' @return Linear momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' the sneer framework only. See \code{optimization_update_interface}
 #' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
@@ -198,10 +198,10 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 #' where \eqn{t} is the iteration number.
 #'
 #' @param ... Base momentum parameters to pass to the
-#'  \code{\link{momentum_scheme}} factory function.
+#'  \code{momentum_scheme} factory function.
 #' @return Nesterov momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' the sneer framework only. See \code{optimization_update_interface}
 #' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
@@ -235,10 +235,10 @@ nesterov_nsc_momentum <- function(...) {
 #'
 #' @param momentum Momentum value to use.
 #' @param ... Base momentum parameters to pass to the
-#'  \code{\link{momentum_scheme}} factory function.
+#'  \code{momentum_scheme} factory function.
 #' @return Constant momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' the sneer framework only. See \code{optimization_update_interface}
 #' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
@@ -261,10 +261,10 @@ constant_momentum <- function(momentum, ...) {
 #' descent with no momentum term.
 #'
 #' @param ... Base momentum parameters to pass to the
-#'  \code{\link{momentum_scheme}} factory function.
+#'  \code{momentum_scheme} factory function.
 #' @return Zero-momentum update method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_update_interface}}
+#' the sneer framework only. See \code{optimization_update_interface}
 #' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's

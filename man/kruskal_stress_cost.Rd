@@ -26,7 +26,7 @@ be defined for metric embeddings:
 \deqn{K = \sqrt{\frac{STRESS}{\sum_{i<j} d_{ij}^2}}}{K = sqrt(STRESS/sum(dij^2))}
 
 where \eqn{d_{ij}}{dij} is the output distance between points \eqn{i} and
-\eqn{j}, and \eqn{STRESS} is the \code{\link{metric_stress}} between the
+\eqn{j}, and \eqn{STRESS} is the \code{metric_stress} between the
 input and output distance matrices. Unlike the raw STRESS, it is
 dimensionless.
 
@@ -38,7 +38,6 @@ This cost function requires the following matrices to be defined:
 }
 \seealso{
 Other sneer cost functions: \code{\link{jse_cost}},
-  \code{\link{kl_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},

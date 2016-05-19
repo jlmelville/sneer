@@ -7,7 +7,7 @@
 #'
 #' The precision parameter \code{beta} is normally a scalar, but it can also
 #' work with a vector, as long as the length of the vector is equal to the
-#' number of rows  in the probability matrices. The \code{\link{nerv}} method
+#' number of rows  in the probability matrices. The \code{nerv} method
 #' makes use of this property.
 #'
 #' @param pm Input probability matrix.
@@ -23,7 +23,7 @@ asne_stiffness <- function(pm, qm, beta = 1) {
 #' SSNE Stiffness Function
 #'
 #' The precision parameter \code{beta} is normally left at its default value of
-#' 1. Note that unlike the \code{\link{asne_stiffness}} function, a vector of
+#' 1. Note that unlike the \code{asne_stiffness} function, a vector of
 #' precisions can not be used as input to \code{beta}: an incorrect gradient
 #' will result.
 #'
@@ -58,7 +58,7 @@ tasne_stiffness <- function(pm, qm, wm) {
 
 #' HSSNE Stiffness Function
 #'
-#' Note that unlike the \code{\link{asne_stiffness}} function, a vector of
+#' Note that unlike the \code{asne_stiffness} function, a vector of
 #' precisions can not be used as input to \code{beta}: an incorrect gradient
 #' will result.
 #'
@@ -79,7 +79,7 @@ hssne_stiffness <- function(pm, qm, wm, alpha = 1.5e-8, beta = 1) {
 #'
 #' The precision parameter \code{beta} is normally a scalar, but it can also
 #' work with a vector, as long as the length of the vector is equal to the
-#' number of rows  in the probability matrices. The \code{\link{nerv}} method
+#' number of rows  in the probability matrices. The \code{nerv} method
 #' makes use of this property.
 #'
 #' @param pm Input probability matrix.
@@ -100,7 +100,7 @@ reverse_asne_stiffness <- function(pm, qm, rev_kl, beta = 1,
 #' "reverse" Kullback-Leibler divergence as the cost function.
 #'
 #' The precision parameter \code{beta} is normally left at its default value of
-#' 1. Note that unlike the \code{\link{reverse_asne_stiffness}} function, a
+#' 1. Note that unlike the \code{reverse_asne_stiffness} function, a
 #' vector of precisions can not be used as input to \code{beta}: an incorrect
 #' gradient will result.
 #'
@@ -134,7 +134,7 @@ reverse_tsne_stiffness <- function(pm, qm, wm, rev_kl,
 #' "Reverse" HSSNE Stiffness Function
 #'
 #' The precision parameter \code{beta} is normally left at its default value of
-#' 1. Note that unlike the \code{\link{reverse_asne_stiffness}} function, a
+#' 1. Note that unlike the \code{reverse_asne_stiffness} function, a
 #' vector of precisions can not be used as input to \code{beta}: an incorrect
 #' gradient will result.
 #'

@@ -21,7 +21,7 @@ a list containing:
 }
 \description{
 Because JSE explicitly couples the input data to the output data via the
-JS mixture matrix (\code{\link{js_mixture}}), whenever the input data
+JS mixture matrix (\code{js_mixture}), whenever the input data
 changes, this function should be called.
 }
 

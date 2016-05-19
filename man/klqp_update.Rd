@@ -21,6 +21,6 @@ klqp_update(inp, out, method)
 Calculates and stores the KL divergence from P (input probabilities) to Q
 (output probabilities) on the output data. Used by those embedding methods
 where the KL divergence is used to calculate the stiffness matrix in a
-gradient calculation (e.g. \code{\link{nerv}}).
+gradient calculation (e.g. \code{nerv}).
 }
 

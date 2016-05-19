@@ -13,7 +13,7 @@ Pure gradient (steepest) descent optimizer.
 Optimizer factory function.
 }
 \details{
-Wrapper around \code{\link{make_opt}} that creates a simple (some might say
+Wrapper around \code{make_opt} that creates a simple (some might say
 boring) optimizer that only does steepest descent, without any momentum
 term. The gradient is normalized to length 1 and the bold driver step
 size method is used to adaptively select the step size.
@@ -25,7 +25,7 @@ size method is used to adaptively select the step size.
 }
 }
 \seealso{
-\code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+\code{embed_prob} and \code{embed_dist} for how to use
  this function for configuring an embedding.
 
 Other sneer optimization methods: \code{\link{back_nag_adapt}},

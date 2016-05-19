@@ -18,7 +18,7 @@ NULL
 #'
 #' A distance-based embedding method.
 #'
-#' This function minimizes an embedding using \code{\link{metric_stress_cost}}
+#' This function minimizes an embedding using \code{metric_stress_cost}
 #' as the cost function:
 #'
 #' \deqn{STRESS = \sum_{i<j} (r_{ij} - d_{ij})^2}{STRESS = sum(rij-dij)^2}
@@ -52,7 +52,7 @@ NULL
 #' to preserve the ratio of the distances in the input and output space. The
 #' result of this function is a list, containing a member \code{stress}, which
 #' is the Kruskal Stress, so can be compared to the
-#' \code{\link{kruskal_stress_cost}} of a sneer embedding. However, the embedded
+#' \code{kruskal_stress_cost} of a sneer embedding. However, the embedded
 #' configuration in the result, \code{conf} configuration, is not on the
 #' same scale as the input coordinates.}
 #' \item{\code{\link[stats]{cmdscale}}}{Doesn't use Kruskal Stress, but
@@ -181,7 +181,7 @@ smmds <- function(eps = .Machine$double.eps) {
 #'  problems, e.g. in gradients and cost functions.}
 #' @seealso \code{\link[MASS]{sammon}}, which also carries out Sammon mapping.
 #' Results should be comparable with those of a sneer embedding. The
-#' \code{stress} value is equivalent to the \code{\link{sammon_stress_cost}}
+#' \code{stress} value is equivalent to the \code{sammon_stress_cost}
 #' function in sneer.
 #' @family sneer embedding methods
 #' @family sneer distance embedding methods

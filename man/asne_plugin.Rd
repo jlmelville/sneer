@@ -25,7 +25,7 @@ A probability-based embedding method.
 An implementation of ASNE using the plugin gradient.
 }
 \seealso{
-\code{\link{asne}} should give equivalent results, but is probably
+\code{asne} should give equivalent results, but is probably
 a bit more efficient.
 
 Other sneer embedding methods: \code{\link{asne}},

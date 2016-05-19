@@ -25,7 +25,7 @@ a list containing:
 A distance-based embedding method.
 }
 \details{
-This function minimizes an embedding using \code{\link{metric_stress_cost}}
+This function minimizes an embedding using \code{metric_stress_cost}
 as the cost function:
 
 \deqn{STRESS = \sum_{i<j} (r_{ij} - d_{ij})^2}{STRESS = sum(rij-dij)^2}
@@ -67,7 +67,7 @@ of a sneer MDS embedding.}
 to preserve the ratio of the distances in the input and output space. The
 result of this function is a list, containing a member \code{stress}, which
 is the Kruskal Stress, so can be compared to the
-\code{\link{kruskal_stress_cost}} of a sneer embedding. However, the embedded
+\code{kruskal_stress_cost} of a sneer embedding. However, the embedded
 configuration in the result, \code{conf} configuration, is not on the
 same scale as the input coordinates.}
 \item{\code{\link[stats]{cmdscale}}}{Doesn't use Kruskal Stress, but

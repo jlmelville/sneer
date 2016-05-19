@@ -2,7 +2,7 @@
 
 #' Area Under the RNX Curve
 #'
-#' The RNX curve is formed by calculating the \code{\link{rnx_crm}} metric for
+#' The RNX curve is formed by calculating the \code{rnx_crm} metric for
 #' different sizes of neighborhood. Each value of RNX is scaled according to
 #' the natural log of the neighborhood size, to give a higher weight to smaller
 #' neighborhoods. An AUC of 1 indicates perfect neighborhood preservation, an
@@ -31,12 +31,12 @@ rnx_auc <- function(inp, out) {
   if (is.null(out$dm)) {
     out$dm <- distance_matrix(out$ym)
   }
-  list(name = "rnx_auc", value = rnx_auc_dm(inp$dm, out$dm))
+  list(name = "rnx_auc", value = rnx_auc_embed(inp$dm, out$dm))
 }
 
 #' Area Under the RNX Curve
 #'
-#' The RNX curve is formed by calculating the \code{\link{rnx_crm}} metric for
+#' The RNX curve is formed by calculating the \code{rnx_crm} metric for
 #' different sizes of neighborhood. Each value of RNX is scaled according to
 #' the natural log of the neighborhood size, to give a higher weight to smaller
 #' neighborhoods. An AUC of 1 indicates perfect neighborhood preservation, an
@@ -50,7 +50,8 @@ rnx_auc <- function(inp, out) {
 #' Multi-scale similarities in stochastic neighbour embedding: Reducing
 #' dimensionality while preserving both local and global structure.
 #' \emph{Neurocomputing}, \emph{169}, 246-261.
-rnx_auc_dm <- function(din, dout) {
+#' @export
+rnx_auc_embed <- function(din, dout) {
   rnx_auc_crm(coranking_matrix(din, dout))
 }
 
@@ -59,8 +60,8 @@ rnx_auc_dm <- function(din, dout) {
 #' Calculates the co-ranking matrix for an embedding.
 #'
 #' The co-ranking matrix is the basic data structure used for calculating
-#' various quality metrics, such as \code{\link{qnx_crm}},
-#' \code{\link{rnx_crm}} and \code{\link{bnx_crm}}.
+#' various quality metrics, such as \code{qnx_crm},
+#' \code{rnx_crm} and \code{bnx_crm}.
 #'
 #' The co-ranking matrix is an N x N matrix where N is the number of
 #' observations (so it's the same size as the distance matrices its
@@ -97,7 +98,7 @@ coranking_matrix <- function(din, dout) {
 
 #' Area Under the RNX Curve
 #'
-#' The RNX curve is formed by calculating the \code{\link{rnx_crm}} metric for
+#' The RNX curve is formed by calculating the \code{rnx_crm} metric for
 #' different sizes of neighborhood. Each value of RNX is scaled according to
 #' the natural log of the neighborhood size, to give a higher weight to smaller
 #' neighborhoods. An AUC of 1 indicates perfect neighborhood preservation, an
@@ -130,7 +131,7 @@ rnx_auc_crm <- function(crm) {
 #' perfectly and a value of 0 for a random embedding.
 #'
 #' @param crm Co-ranking matrix. Create from a pair of distance matrices with
-#' \code{\link{coranking_matrix}}.
+#' \code{coranking_matrix}.
 #' @param k Neighborhood size.
 #' @return RNX for \code{k}.
 #' @references
@@ -155,11 +156,11 @@ rnx_crm <- function(crm, k) {
 #'
 #' For a random embedding, the expected value of QNX is approximately
 #' K / (N - 1) where N is the number of observations. Using RNX
-#' (\code{\link{rnx_crm}}) removes this dependency on K and the number of
+#' (\code{rnx_crm}) removes this dependency on K and the number of
 #' observations.
 #'
 #' @param crm Co-ranking matrix. Create from a pair of distance matrices with
-#' \code{\link{coranking_matrix}}.
+#' \code{coranking_matrix}.
 #' @param k Neighborhood size.
 #' @return QNX for \code{k}.
 #' @references
@@ -180,7 +181,7 @@ qnx_crm <- function(crm, k) {
 #' neighbors in the input space tend to be non-neighbors in the output space.
 #'
 #' @param crm Co-ranking matrix. Create from a pair of distance matrices with
-#' \code{\link{coranking_matrix}}.
+#' \code{coranking_matrix}.
 #' @param k Neighborhood size.
 #' @return BNX for \code{k}.
 bnx_crm <- function(crm, k) {
@@ -264,7 +265,7 @@ nbr_pres_i <- function(di, dj, k) {
 #'
 #' @note This is not a very efficient way to calculate the preservation if you
 #'  want to calculate the value for multiple values of \code{k}. For more
-#'  global measures of preservation, see \code{\link{rnx_auc}}.
+#'  global measures of preservation, see \code{rnx_auc}.
 #'
 #' @param din Distance matrix. The "ground truth" or reference distances.
 #' @param dout Distance matrix. A set of distances to compare to the reference

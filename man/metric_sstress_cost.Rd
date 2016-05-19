@@ -21,7 +21,7 @@ A measure of embedding quality between input and output data.
 }
 \details{
 SSTRESS is a cost function used in metric MDS, related to the
-\code{\link{metric_stress}}. It is defined as:
+\code{metric_stress}. It is defined as:
 
 \deqn{SSTRESS = \sum_{i<j} ((r_{ij}^2 - d_{ij})^2)^2}{SSTRESS = sum(rij^2-dij^2)^2}
 
@@ -38,7 +38,7 @@ This cost function requires the following matrices to be defined:
 }
 \seealso{
 Other sneer cost functions: \code{\link{jse_cost}},
-  \code{\link{kl_cost}}, \code{\link{kruskal_stress_cost}},
+  \code{\link{kruskal_stress_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_stress_cost}},
   \code{\link{nerv_cost}},

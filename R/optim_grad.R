@@ -20,7 +20,7 @@ NULL
 #' for some step length calculation methods.
 #'
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_gradient_interface}}
+#' the sneer framework only. See \code{optimization_gradient_interface}
 #' for details on the functions and values defined for this method.
 #'
 #' @return Classical gradient calculation method.
@@ -50,7 +50,7 @@ classical_gradient <- function() {
 #' useful for some step length calculation methods.
 #'
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_gradient_interface}}
+#' the sneer framework only. See \code{optimization_gradient_interface}
 #' for details on the functions and values defined for this method.
 #'
 #' @return NAG method for gradient calculation.
@@ -114,7 +114,7 @@ calculate_gradient <- function(opt, inp, out, method, iter) {
 #' @return List containing:
 #'  \item{\code{km}}{Stiffness matrix.}
 #'  \item{\code{gm}}{Gradient matrix.}
-#' @seealso \code{\link{nesterov_position}} for an alternative location to
+#' @seealso \code{nesterov_position} for an alternative location to
 #' calculate the gradient at.
 classical_position <- function(opt, inp, out, method, iter) {
   out

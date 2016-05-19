@@ -12,7 +12,7 @@ inp_prob(input_initializer, init_only = TRUE, call_inp_updated = TRUE)
 \item{init_only, }{if \code{TRUE}, then this initializer is only called once,
 when the iteration number is zero.}
 
-\item{call_inp_updated, }{if \code{TRUE}, then the \code{\link{inp_updated}}
+\item{call_inp_updated, }{if \code{TRUE}, then the \code{inp_updated}
 function will be called by this wrapper if \code{inp$dirty} is \code{TRUE}.
 As this deals with calling the function and reassigning any changed data
 for you, there's no reason to change this from its default value
@@ -32,7 +32,7 @@ is handled in the correct way (e.g. converting from conditional to joint
 probability), and other matrices are updated if needed.
 }
 \seealso{
-\code{\link{probability_matrices}} describe the type of probability
+\code{probability_matrices} describe the type of probability
   matrix used by sneer.
 }
 

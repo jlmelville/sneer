@@ -47,16 +47,16 @@ NULL
 #'
 #' @param gradient Method to calculate the gradient at a solution
 #'   position. Set by calling one of the configuration functions listed in
-#'   \code{\link{optimization_gradient}}.
+#'   \code{optimization_gradient}.
 #' @param direction Method to calculate the direction to move. Set
 #'   by calling one of the configuration functions listed in
-#'   \code{\link{optimization_direction}}.
+#'   \code{optimization_direction}.
 #' @param step_size Method to calculate the step size of the direction. Set
 #'   by calling one of the configuration functions listed in
-#'   \code{\link{optimization_step_size}}.
+#'   \code{optimization_step_size}.
 #' @param update Method to combine a gradient descent with other terms (e.g.
 #'   momentum) to produce the final update. Set by calling one of the
-#'   configuration functions listed in \code{\link{optimization_update}}.
+#'   configuration functions listed in \code{optimization_update}.
 #' @param normalize_direction If \code{TRUE} the gradient matrix is normalized to
 #'   a length of one before step size calculation.
 #' @param mat_name Name of the matrix in the output list \code{out} which
@@ -64,7 +64,7 @@ NULL
 #' @param recenter If \code{TRUE}, recenter the coordinates after each
 #'   optimization step.
 #' @return Optimizer.
-#' @seealso \code{\link{embed_prob}} for how to use this function for configuring
+#' @seealso \code{embed_prob} for how to use this function for configuring
 #'   an embedding.
 #' @examples
 #' # Steepest descent with Jacobs adaptive step size and step momentum, as
@@ -125,11 +125,11 @@ make_opt <- function(gradient = classical_gradient(),
 #'
 #' Optimizer factory function.
 #'
-#' Wrapper around \code{\link{make_opt}} which sets the optimizer parameters to
+#' Wrapper around \code{make_opt} which sets the optimizer parameters to
 #' that from the t-SNE paper.
 #'
 #' @return optimizer with parameters from the t-SNE paper.
-#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#' @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #'  this function for configuring an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
@@ -151,13 +151,13 @@ tsne_opt <- function() {
 #'
 #' Optimizer factory function.
 #'
-#' Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+#' Wrapper around \code{make_opt} which mixes the NAG descent method and
 #' momentum for non-strongly convex problems formulated by Sutskever et al.,
 #' along with the bold driver method for step size.
 #'
 #' @note This optimizer is prone to converge prematurely in the face of sudden
 #' changes to the solution landscape, such as can happen when certain
-#' \code{\link{tricks}} are applied. In these cases, substantially increasing
+#' \code{tricks} are applied. In these cases, substantially increasing
 #' the \code{min_step_size} parameter so that the bold driver doesn't reduce
 #' the step size is highly recommended.
 #'
@@ -169,7 +169,7 @@ tsne_opt <- function() {
 #' @param linear_weight If \code{TRUE}, then the contribution of the gradient
 #'  descent part of the update is scaled relative to the momentum part.
 #' @return Optimizer with NAG parameters and bold driver step size.
-#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#' @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #'  this function for configuring an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
@@ -195,7 +195,7 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #'
 #' Optimizer factory function.
 #'
-#' Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+#' Wrapper around \code{make_opt} which mixes the NAG descent method and
 #' momentum for non-strongly convex problems formulated by Sutskever et al.,
 #' along with the bold driver method for step size. Additionally the adaptive
 #' restart method of O'Donoghue and Candes.
@@ -210,7 +210,7 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #' @param dec_mult Degree to downweight the momentum iteration number when
 #'  restarting.
 #' @return Optimizer with NAG parameters and bold driver step size.
-#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#' @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #'  this function for configuring an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
@@ -239,7 +239,7 @@ bold_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
 #'
 #' Optimizer factory function.
 #'
-#' Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+#' Wrapper around \code{make_opt} which mixes the NAG descent method and
 #' momentum for non-strongly convex problems formulated by Sutskever et al.,
 #' along with a backstepping method for step size.
 #'
@@ -250,7 +250,7 @@ bold_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
 #' @param linear_weight If \code{TRUE}, then the contribution of the gradient
 #'  descent part of the update is scaled relative to the momentum part.
 #' @return Optimizer with NAG parameters and backstepping step size.
-#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#' @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #'  this function for configuring an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
@@ -275,7 +275,7 @@ back_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #'
 #' Optimizer factory function.
 #'
-#' Wrapper around \code{\link{make_opt}} which mixes the NAG descent method and
+#' Wrapper around \code{make_opt} which mixes the NAG descent method and
 #' momentum for non-strongly convex problems formulated by Sutskever et al.,
 #' along with a backstepping method for step size.
 #'
@@ -288,7 +288,7 @@ back_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #' @param dec_mult Degree to downweight the momentum iteration number when
 #'  restarting.
 #' @return Optimizer with NAG parameters and backstepping step size.
-#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#' @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #'  this function for configuring an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
@@ -315,13 +315,13 @@ back_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
 #'
 #' Optimizer factory function.
 #'
-#' Wrapper around \code{\link{make_opt}} that creates a simple (some might say
+#' Wrapper around \code{make_opt} that creates a simple (some might say
 #' boring) optimizer that only does steepest descent, without any momentum
 #' term. The gradient is normalized to length 1 and the bold driver step
 #' size method is used to adaptively select the step size.
 #'
 #' @return Pure gradient (steepest) descent optimizer.
-#' @seealso \code{\link{embed_prob}} and \code{\link{embed_dist}} for how to use
+#' @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #'  this function for configuring an embedding.
 #' @examples
 #' # Should be passed to the opt argument of an embedding function:
@@ -635,8 +635,8 @@ update_solution <- function(opt, inp, out, method) {
 #'
 #' This function validates a solution by looking for a non-increasing cost
 #' function between iterations. Used by adaptive schemes, e.g. the
-#' \code{\link{bold_driver}} step size method and the
-#' \code{\link{adaptive_restart}} momentum scheme.
+#' \code{bold_driver} step size method and the
+#' \code{adaptive_restart} momentum scheme.
 #'
 #' Because multiple methods may use this function, some caching is carried out
 #' to prevent wasteful recalculation of the cost function. This function will

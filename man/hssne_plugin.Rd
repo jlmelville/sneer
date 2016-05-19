@@ -29,7 +29,7 @@ A probability-based embedding method.
 An implementation of HSSNE using the plugin gradient.
 }
 \seealso{
-\code{\link{hssne}} should give equivalent results, but is probably
+\code{hssne} should give equivalent results, but is probably
 a bit more efficient.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

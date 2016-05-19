@@ -22,7 +22,7 @@ An embedding method for use by an embedding function.
 An implementation of NeRV using the plugin gradient.
 }
 \seealso{
-\code{\link{nerv}} should give equivalent results, but is probably
+\code{nerv} should give equivalent results, but is probably
 a bit more efficient.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

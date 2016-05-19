@@ -36,9 +36,9 @@ don't attempt to preserve the input distances but input probabilities, which
 are based on the distances by some non-linear weighting function. HSSNE
 and NeRV further generalize these algorithms.
 
-To carry out a distance-based embedding, use the \code{\link{embed_dist}}
+To carry out a distance-based embedding, use the \code{embed_dist}
 function. The entry point for probability-based embeddings is the
-function \code{\link{embed_prob}}. They have a similar signature, but
+function \code{embed_prob}. They have a similar signature, but
 provide useful defaults.
 
 Apart from the description of the various parts of the embedding below, you
@@ -58,7 +58,7 @@ function, so you don't need to worry about the underlying structure.
 
 Entirely optional, but provides some way to preprocess the input data, e.g.
 various scaling methods, filtering of zero-variance columns, whitening.
-See \code{\link{make_preprocess}} for more details.
+See \code{make_preprocess} for more details.
 }
 
 \section{Input Initialization}{
@@ -68,7 +68,7 @@ need a distance matrix, if the input data wasn't already in this form.
 For SNE and other probability-based methods, a probability matrix is also
 needed. There's really only one way of doing this in the literature, which
 involves specifying  a target perplexity for row-wise probabilities.
-See \code{\link{input_initializers}} for more details.
+See \code{input_initializers} for more details.
 }
 
 \section{Output Initialization}{
@@ -78,7 +78,7 @@ a gaussian distribution with a very small standard deviation (e.g. 1e-4) is
 very popular. But that makes comparing different results difficult. Using
 PCA to generate a two-component scores matrix gives repeatable results with
 a computational cost that is entirely reasonable. See
-\code{\link{output_initializers}} for more details.
+\code{output_initializers} for more details.
 }
 
 \section{Embedding Method}{
@@ -92,7 +92,7 @@ is defined (e.g. joint versus conditional probabilities). The embedding
 method defines the functions needed to do this conversion. If the embedding
 can have a stiffness matrix defined for it it should be possible to
 implement it as a method in sneer, although it requires a little knowledge
-of the internals of the package. See \code{\link{embedding_methods}} for
+of the internals of the package. See \code{embedding_methods} for
 the list of available embedding methods.
 }
 
@@ -114,14 +114,14 @@ also implement conjugate gradient within this framework, including backwards
 stepping Wolfe line search for step size selection, but you would also need
 a good guess for the trace of the Hessian, and NAG works well enough with
 the bold driver method for step size selection without all that.
-See \code{\link{optimization_methods}} for more details.
+See \code{optimization_methods} for more details.
 }
 
 \section{Tricks}{
 
 Various embedding methods use different heuristics to speed up convergence.
 Only the "early exaggeration" method described in the t-SNE paper is
-currently implemented. See \code{\link{make_tricks}} for more details.
+currently implemented. See \code{make_tricks} for more details.
 }
 
 \section{Reporter}{
@@ -129,7 +129,7 @@ currently implemented. See \code{\link{make_tricks}} for more details.
 Optional functions that will run on a regular schedule during the
 optimization. Used for keeping track of the progress of the optimization,
 and stopping early if necessary. Also, you can plot the current state of the
-embedding. See \code{\link{make_reporter}} for more details.
+embedding. See \code{make_reporter} for more details.
 }
 
 \section{Synthetic Dataset}{
@@ -138,7 +138,7 @@ There's a synthetic dataset in this package, called \code{s1k}. It consists
 of a 1000 points representing a fuzzy 9D simplex. It's intended to
 demonstrate the "crowding effect" and require the sort of
 probability-based embedding methods provided in this package (PCA does a
-horrible job of separated the 10 clusters in the data). See \code{\link{s1k}}
+horrible job of separated the 10 clusters in the data). See \code{s1k}
 for more details.
 }
 \examples{

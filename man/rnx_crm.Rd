@@ -8,7 +8,7 @@ rnx_crm(crm, k)
 }
 \arguments{
 \item{crm}{Co-ranking matrix. Create from a pair of distance matrices with
-\code{\link{coranking_matrix}}.}
+\code{coranking_matrix}.}
 
 \item{k}{Neighborhood size.}
 }

@@ -24,7 +24,7 @@ Output initialization function.
 \details{
 Creates output data and initializes embedding coordinates from a random
 uniform distribution. This is the initialization method suggested for use
-by the authors of the \code{\link{nerv}} method.
+by the authors of the \code{nerv} method.
 }
 \examples{
 \dontrun{
@@ -39,7 +39,7 @@ data visualization.
 \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
 }
 \seealso{
-\code{\link{embed_dist}} and \code{\link{embed_prob}}
+\code{embed_dist} and \code{embed_prob}
   for how to use this function to configure an embedding.
 
 Other sneer output intializers: \code{\link{out_from_PCA}},

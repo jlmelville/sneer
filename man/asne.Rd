@@ -23,7 +23,7 @@ A probability-based embedding method.
 }
 \details{
 The original SNE method, this uses exponential weighting for both the input
-and output probabilities. Unlike \code{\link{ssne}} and \code{\link{tsne}},
+and output probabilities. Unlike \code{ssne} and \code{tsne},
 the probabilities are defined with respect to points, not pairs: an element
 Pij from the NxN probability matrix P should be thought of as a conditional
 probabilty, pj|i, the probability that point j would be chosen as a close
@@ -58,9 +58,9 @@ Stochastic neighbor embedding.
 In \emph{Advances in neural information processing systems} (pp. 833-840).
 }
 \seealso{
-ASNE uses the \code{\link{kl_cost}} cost function and the
-  \code{\link{exp_weight}} similarity function. The return value of this
-  function should be used with the \code{\link{embed_prob}} embedding
+ASNE uses the \code{kl_cost} cost function and the
+  \code{exp_weight} similarity function. The return value of this
+  function should be used with the \code{embed_prob} embedding
   function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

@@ -19,7 +19,7 @@ the entire matrix sum to one, and that the matrix is symmetric, i.e.
 \code{p[i, j] = p[j, i]}.
 }
 \details{
-Used in \code{\link{ssne}}, \code{\link{tsne}} and related methods to convert
+Used in \code{ssne}, \code{tsne} and related methods to convert
 input probabilities.
 }
 

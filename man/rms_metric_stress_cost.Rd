@@ -21,7 +21,7 @@ A measure of embedding quality between input and output data.
 }
 \details{
 The RMS stress is the square root of the normalized
-\code{\link{metric_stress_cost}}:
+\code{metric_stress_cost}:
 
 \deqn{STRESS_{RMS} = \sqrt{\frac{2\times STRESS}{n(n-1)}}}{stress_rms = sqrt[(2*STRESS)/(n*(n-1))]}
 
@@ -40,7 +40,7 @@ This cost function requires the following matrices to be defined:
 }
 \seealso{
 Other sneer cost functions: \code{\link{jse_cost}},
-  \code{\link{kl_cost}}, \code{\link{kruskal_stress_cost}},
+  \code{\link{kruskal_stress_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},

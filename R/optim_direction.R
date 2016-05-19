@@ -19,7 +19,7 @@ NULL
 #' Uses the direction of steepest descent.
 #'
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_direction_interface}}
+#' the sneer framework only. See \code{optimization_direction_interface}
 #' for details on the functions and values defined for this method.
 #'
 #' @return Steepest Descent direction method.

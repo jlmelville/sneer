@@ -34,6 +34,6 @@ approximate value of K / K - 1.
 \note{
 This is not a very efficient way to calculate the preservation if you
  want to calculate the value for multiple values of \code{k}. For more
- global measures of preservation, see \code{\link{rnx_auc}}.
+ global measures of preservation, see \code{rnx_auc}.
 }
 

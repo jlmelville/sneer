@@ -51,7 +51,7 @@ make_plot(iris, "Species", make_label(2))
 }
 }
 \seealso{
-\code{\link{make_reporter}} for how to use this function for
+\code{make_reporter} for how to use this function for
 configuring visualization of the progress of an embedding.
 
 Other sneer plot functions: \code{\link{make_iris_plot}}

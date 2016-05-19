@@ -21,7 +21,7 @@ hssne_stiffness(pm, qm, wm, alpha = 1.5e-08, beta = 1)
 Stiffness matrix.
 }
 \description{
-Note that unlike the \code{\link{asne_stiffness}} function, a vector of
+Note that unlike the \code{asne_stiffness} function, a vector of
 precisions can not be used as input to \code{beta}: an incorrect gradient
 will result.
 }

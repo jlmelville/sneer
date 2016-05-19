@@ -24,7 +24,7 @@ A probability-based embedding method.
 }
 \details{
 t-NeRV is a variant of t-distributed Stochastic Neighbor Embedding
-(\code{\link{tsne}}), with a modified cost function: in addition to
+(\code{tsne}), with a modified cost function: in addition to
 calculating the Kullback-Leibler divergence of the output probabilities Q,
 from the input probabilities, P, it also includes the divergence of P from Q.
 The final cost function is a weighted sum of these two individual functions.
@@ -77,11 +77,11 @@ data visualization.
 \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
 }
 \seealso{
-NeRV uses the \code{\link{nerv_cost}} cost function and the
-  \code{\link{tdist_weight}} similarity function for converting distances to
+NeRV uses the \code{nerv_cost} cost function and the
+  \code{tdist_weight} similarity function for converting distances to
   probabilities.
 The return value of this function should be used with the
- \code{\link{embed_prob}} embedding function.
+ \code{embed_prob} embedding function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
   \code{\link{asne}}, \code{\link{embedding_methods}},

@@ -60,7 +60,7 @@ metric_stress_fg <- function() {
 #' A measure of embedding quality between input and output data.
 #'
 #' SSTRESS is a cost function used in metric MDS, related to the
-#' \code{\link{metric_stress}}. It is defined as:
+#' \code{metric_stress}. It is defined as:
 #'
 #' \deqn{SSTRESS = \sum_{i<j} ((r_{ij}^2 - d_{ij})^2)^2}{SSTRESS = sum(rij^2-dij^2)^2}
 #'
@@ -91,7 +91,7 @@ attr(metric_sstress_cost, "sneer_cost_type") <- "dist"
 #' A measure of embedding quality between distance matrices.
 #'
 #' SSTRESS is a cost function used in metric MDS, related to the
-#' \code{\link{metric_stress}}. It is defined as:
+#' \code{metric_stress}. It is defined as:
 #'
 #' \deqn{SSTRESS = \sum_{i<j} ((dx_{ij}^2 - dy_{ij})^2)^2}{SSTRESS = sum(dxij^2-dyij^2)^2}
 #'
@@ -119,7 +119,7 @@ metric_sstress_fg <- function() {
 #' A measure of embedding quality between input and output data.
 #'
 #' The RMS stress is the square root of the normalized
-#' \code{\link{metric_stress_cost}}:
+#' \code{metric_stress_cost}:
 #'
 #' \deqn{STRESS_{RMS} = \sqrt{\frac{2\times STRESS}{n(n-1)}}}{stress_rms = sqrt[(2*STRESS)/(n*(n-1))]}
 #'
@@ -152,7 +152,7 @@ attr(rms_metric_stress_cost, "sneer_cost_type") <- "dist"
 #' A measure of embedding quality between distance matrices.
 #'
 #' The RMS stress is the square root of the normalized
-#' \code{\link{metric_stress}}:
+#' \code{metric_stress}:
 #'
 #' \deqn{STRESS_{RMS} = \sqrt{\frac{2\times STRESS}{n(n-1)}}}{stress_rms = sqrt[(2*STRESS)/(n*(n-1))]}
 #'
@@ -175,16 +175,16 @@ rms_metric_stress <- function(dxm, dym) {
 #'
 #' A measure of embedding quality between input and output data.
 #'
-#' A normalized version of the \code{\link{metric_stress_cost}}:
+#' A normalized version of the \code{metric_stress_cost}:
 #'
 #' \deqn{STRESS_{RN} = \frac{STRESS}{\sum_{i<j} r_{ij}^2}}{STRESS/sum(rij^2)}
 #'
 #' where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
-#' \eqn{j} and \eqn{STRESS} is the \code{\link{metric_stress_cost}} between the
+#' \eqn{j} and \eqn{STRESS} is the \code{metric_stress_cost} between the
 #' input and output distances. This gives a dimensionless value similar to the
-#' \code{\link{kruskal_stress_cost}}, except the normalization uses the input
+#' \code{kruskal_stress_cost}, except the normalization uses the input
 #' distances, not the output distances, much like the
-#' \code{\link{sammon_stress_cost}}. It can be interpreted as the proportion of
+#' \code{sammon_stress_cost}. It can be interpreted as the proportion of
 #' the sum of squares of the input distances unaccounted for by the output
 #' distances. Borg and Groenen defined this in their book on MDS.
 #'
@@ -213,15 +213,15 @@ attr(normalized_stress_cost, "sneer_cost_type") <- "dist"
 #'
 #' A measure of embedding quality between input and output distance matrices.
 #'
-#' A normalized version of the \code{\link{metric_stress}}:
+#' A normalized version of the \code{metric_stress}:
 #'
 #' \deqn{STRESS_{RN} = \frac{STRESS}{\sum_{i<j} dxm_{ij}^2}}{STRESS/sum(dxm^2)}
 #'
 #' where \eqn{dxm} is the input distance matrix and \eqn{STRESS} is the
-#' \code{\link{metric_stress}} between the input and output distances.
-#' This gives a dimensionless value similar to the \code{\link{kruskal_stress}},
+#' \code{metric_stress} between the input and output distances.
+#' This gives a dimensionless value similar to the \code{kruskal_stress},
 #' except the normalization uses the input distances, not the output distances,
-#' much like the \code{\link{sammon_stress}}. It can be interpreted as the
+#' much like the \code{sammon_stress}. It can be interpreted as the
 #' proportion of the sum of squares of the input distances unaccounted for by
 #' the output distances. Borg and Groenen defined this in their book on MDS.
 #'
@@ -248,7 +248,7 @@ normalized_stress <- function(dxm, dym, eps = .Machine$double.eps) {
 #' \deqn{K = \sqrt{\frac{STRESS}{\sum_{i<j} d_{ij}^2}}}{K = sqrt(STRESS/sum(dij^2))}
 #'
 #' where \eqn{d_{ij}}{dij} is the output distance between points \eqn{i} and
-#' \eqn{j}, and \eqn{STRESS} is the \code{\link{metric_stress}} between the
+#' \eqn{j}, and \eqn{STRESS} is the \code{metric_stress} between the
 #' input and output distance matrices. Unlike the raw STRESS, it is
 #' dimensionless.
 #'
@@ -279,7 +279,7 @@ attr(kruskal_stress_cost, "sneer_cost_type") <- "dist"
 #' \deqn{K = \sqrt{\frac{STRESS}{\sum_{i<j} dym_{ij}^2}}}{K = sqrt(STRESS/sum(dym^2))}
 #'
 #' where \eqn{dym} is the input distance matrix and \eqn{STRESS} is the
-#' \code{\link{metric_stress_cost}} between the input and output distances. It
+#' \code{metric_stress_cost} between the input and output distances. It
 #' is dimensionless.
 #'
 #' @param dxm Distance matrix.
@@ -425,7 +425,7 @@ sammon_stress <- function(dxm, dym, eps = .Machine$double.eps) {
 #' {S = sum(((rij-dij)/rij)^2)}
 #'
 #' This is marginally faster, and is consistent with the analytical gradient
-#' calculation in \code{\link{sammon_map}}.
+#' calculation in \code{sammon_map}.
 #'
 #' @param inp Input data.
 #' @param out Output data.
@@ -458,7 +458,7 @@ attr(sammon_stress_unnorm_cost, "sneer_cost_type") <- "dist"
 #' {S = sum(((rij-dij)/rij)^2)}
 #'
 #' This is marginally faster, and is consistent with the analytical gradient
-#' calculation in \code{\link{sammon_map}}.
+#' calculation in \code{sammon_map}.
 #'
 #' @param dxm Distance matrix.
 #' @param dym Distance matrix, must be of the same dimensions as \code{dxm}.

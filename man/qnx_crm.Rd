@@ -8,7 +8,7 @@ qnx_crm(crm, k)
 }
 \arguments{
 \item{crm}{Co-ranking matrix. Create from a pair of distance matrices with
-\code{\link{coranking_matrix}}.}
+\code{coranking_matrix}.}
 
 \item{k}{Neighborhood size.}
 }
@@ -27,7 +27,7 @@ is 1, and if there is no neighborhood preservation, QNX is 0.
 \details{
 For a random embedding, the expected value of QNX is approximately
 K / (N - 1) where N is the number of observations. Using RNX
-(\code{\link{rnx_crm}}) removes this dependency on K and the number of
+(\code{rnx_crm}) removes this dependency on K and the number of
 observations.
 }
 \references{

@@ -25,8 +25,8 @@ part of mapping from embedded coordinates to the output probabilities they
 want to keep. The squared distances (\code{d2m}) are not always useful,
 except if the plugin gradient is being used to calculate the stiffness
 matrix. The weight matrix (\code{wm}) is used by the plugin gradient method
-and by some non-plugin method stiffness functions (e.g. \code{\link{tsne}}
-or \code{\link{hssne}}). The output probability (\code{qm}) is an integral
+and by some non-plugin method stiffness functions (e.g. \code{tsne}
+or \code{hssne}). The output probability (\code{qm}) is an integral
 part of all cost functions and gradients so should always be retained.
 }
 

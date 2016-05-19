@@ -51,7 +51,7 @@ If used in an embedding, the output data list will contain:
 \seealso{
 \code{\link[MASS]{sammon}}, which also carries out Sammon mapping.
 Results should be comparable with those of a sneer embedding. The
-\code{stress} value is equivalent to the \code{\link{sammon_stress_cost}}
+\code{stress} value is equivalent to the \code{sammon_stress_cost}
 function in sneer.
 
 Other sneer distance embedding methods: \code{\link{distance_embedding_methods}},

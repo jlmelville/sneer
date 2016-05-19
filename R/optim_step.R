@@ -66,7 +66,7 @@ constant_step_size <- function(step_size = 1) {
 #' @param max_step_size Maximum step size.
 #' @return Bold driver step size method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_step_size_interface}}
+#' the sneer framework only. See \code{optimization_step_size_interface}
 #' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
@@ -171,9 +171,9 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 #' @param max_step_size Maximum step size.
 #' @return Jacobs step size method, to be used by the optimizer.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_step_size_interface}}
+#' the sneer framework only. See \code{optimization_step_size_interface}
 #' for details on the functions and values defined for this method.
-#' \code{\link{tsne_jacobs}} provides a wrapper around for this method to use
+#' \code{tsne_jacobs} provides a wrapper around for this method to use
 #' the settings as given in the t-SNE paper.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's
@@ -234,7 +234,7 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
 #'
 #' @return A step size method suitable for use with t-SNE.
 #' @seealso The return value of this function is intended for internal use of
-#' the sneer framework only. See \code{\link{optimization_step_size_interface}}
+#' the sneer framework only. See \code{optimization_step_size_interface}
 #' for details on the functions and values defined for this method.
 #' @examples
 #' # Use as part of the make_opt function for configuring an optimizer's

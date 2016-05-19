@@ -18,7 +18,7 @@ List containing the updated method.
 Call this function to register a callback to run when the input data changes.
 }
 \details{
-For example, in \code{\link{nerv}}, the output kernel precisions are the
+For example, in \code{nerv}, the output kernel precisions are the
 same as those of the input kernel. Hence, it registers a function to transfer
 those value from the input data to the output kernel. This may be called
 multiple times if the probability is recalculated (e.g. due to multiple

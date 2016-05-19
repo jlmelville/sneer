@@ -36,11 +36,11 @@ the function dispenses with that part of the calculation:
 {S = sum(((rij-dij)/rij)^2)}
 
 This is marginally faster, and is consistent with the analytical gradient
-calculation in \code{\link{sammon_map}}.
+calculation in \code{sammon_map}.
 }
 \seealso{
 Other sneer cost functions: \code{\link{jse_cost}},
-  \code{\link{kl_cost}}, \code{\link{kruskal_stress_cost}},
+  \code{\link{kruskal_stress_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},

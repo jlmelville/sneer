@@ -54,7 +54,7 @@ prec_to_bandwidth <- function(prec) {
 #' values calculated at the previous step of the binary search.
 #'
 #' The intrinsic dimensionality is mainly used in multiscale embedding, e.g.
-#' \code{\link{inp_from_perps_multi}}, but may have some diagnostic value in
+#' \code{inp_from_perps_multi}, but may have some diagnostic value in
 #' other embeddings, if monitored with respect to different perplexity settings,
 #' for example. The calculation requires the \code{weight_fn} to be
 #' exponential in the squared distances (i.e. the usual Gaussian similarity
@@ -90,8 +90,8 @@ prec_to_bandwidth <- function(prec) {
 #' fact that multiple beta/perplexity values are generated as part of the
 #' bisection search anyway, so are reported even when only single-scale
 #' embeddings are used. Comparison of intrinsic dimensionalities calculated
-#' on the simulation datasets \code{\link{ball}}, \code{\link{helix}}
-#' and \code{\link{sphere}} with those reported in the paper show similar
+#' on the simulation datasets \code{ball}, \code{helix}
+#' and \code{sphere} with those reported in the paper show similar
 #' values.
 d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
                                max_iters = 50, verbose = TRUE) {

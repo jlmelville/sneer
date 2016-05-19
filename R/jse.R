@@ -3,7 +3,7 @@
 #' A probability-based embedding method.
 #'
 #' JSE is a variant of Asymmetric Stochastic Neighbor Embedding
-#' (see \code{\link{asne}}), with a modified cost function that uses the
+#' (see \code{asne}), with a modified cost function that uses the
 #' a slightly modified version of the Generalized Jensen-Shannon Divergence,
 #' rather than the Kullback-Leibler divergence. The JS divergence can be
 #' considered a symmetrized and smoothed version of the KL divergence.
@@ -15,7 +15,7 @@
 #' JS divergence. As kappa approaches zero, its behavior approaches that of the
 #' KL divergence, KL(P||Q) (and hence ASNE). As kappa aproaches one, its
 #' behaviour approaches that of the "reverse" KL divergence, KL(Q||P)
-#' (and hence like \code{\link{rasne}}). You won't get exactly identical results
+#' (and hence like \code{rasne}). You won't get exactly identical results
 #' to RASNE and ASNE, because of numerical issues.
 #'
 #' The probability matrix used in JSE:
@@ -47,14 +47,14 @@
 #' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
 #' dimensionality reduction based on similarity preservation.
 #' \emph{Neurocomputing}, \emph{112}, 92-108.
-#' @seealso JSE uses the \code{\link{jse_cost}} cost function and the
-#'   \code{\link{exp_weight}} similarity function for converting distances to
-#'   probabilities. The \code{\link{nerv}} embedding method also uses a cost
+#' @seealso JSE uses the \code{jse_cost} cost function and the
+#'   \code{exp_weight} similarity function for converting distances to
+#'   probabilities. The \code{nerv} embedding method also uses a cost
 #'   function which is the sum of KL divergences, controlled by a parameter,
 #'   and which also reduces to ASNE at one extreme, and to "reverse" ASNE at
 #'   another.
 #' The return value of this function should be used with the
-#' \code{\link{embed_prob}} embedding function.
+#' \code{embed_prob} embedding function.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
@@ -86,10 +86,10 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 #'
 #' A probability-based embedding method.
 #'
-#' SJSE is a variant of \code{\link{jse}} which uses a symmetrized, normalized
-#' probability distribution like \code{\link{ssne}}, rather than the that used
+#' SJSE is a variant of \code{jse} which uses a symmetrized, normalized
+#' probability distribution like \code{ssne}, rather than the that used
 #' by the original JSE method, which used the unnormalized distributions of
-#' \code{\link{asne}}.
+#' \code{asne}.
 #'
 #' The probability matrix used in SJSE:
 #'
@@ -120,12 +120,12 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 #' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
 #' dimensionality reduction based on similarity preservation.
 #' \emph{Neurocomputing}, \emph{112}, 92-108.
-#' @seealso SJSE uses the \code{\link{jse_cost}} cost function and the
-#'   \code{\link{exp_weight}} similarity function for converting
-#'   distances to probabilities. The \code{\link{snerv}} embedding method is
+#' @seealso SJSE uses the \code{jse_cost} cost function and the
+#'   \code{exp_weight} similarity function for converting
+#'   distances to probabilities. The \code{snerv} embedding method is
 #'   similar.
 #' The return value of this function should be used with the
-#' \code{\link{embed_prob}} embedding function.
+#' \code{embed_prob} embedding function.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
@@ -156,13 +156,13 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 #'
 #' A probability-based embedding method.
 #'
-#' HSJSE is a variant of \code{\link{jse}} which uses a symmetrized, normalized
-#' probability distribution like \code{\link{ssne}}, rather than the that used
+#' HSJSE is a variant of \code{jse} which uses a symmetrized, normalized
+#' probability distribution like \code{ssne}, rather than the that used
 #' by the original JSE method, which used the unnormalized distributions of
-#' \code{\link{asne}}.
+#' \code{asne}.
 #'
 #' Additionally, it uses the heavy-tailed kernel function of
-#' \code{\link{hssne}}, to generalize exponential and t-distributed weighting.
+#' \code{hssne}, to generalize exponential and t-distributed weighting.
 #' By modifying the \code{alpha} and \code{kappa} parameters, this embedding
 #' method can reproduce multiple embedding methods (see the examples section).
 #'
@@ -203,12 +203,12 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 #' Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
 #' Heavy-tailed symmetric stochastic neighbor embedding.
 #' In \emph{Advances in neural information processing systems} (pp. 2169-2177).
-#' @seealso HSJSE uses the \code{\link{jse_cost}} cost function and the
-#'   \code{\link{heavy_tail_weight}} similarity function for converting
-#'   distances to probabilities. The \code{\link{hsnerv}} embedding method is
+#' @seealso HSJSE uses the \code{jse_cost} cost function and the
+#'   \code{heavy_tail_weight} similarity function for converting
+#'   distances to probabilities. The \code{hsnerv} embedding method is
 #'   similar.
 #' The return value of this function should be used with the
-#' \code{\link{embed_prob}} embedding function.
+#' \code{embed_prob} embedding function.
 #' @export
 #' @family sneer embedding methods
 #' @family sneer probability embedding methods
@@ -337,7 +337,7 @@ hsjse_stiffness <- function(qm, zm, wm, kl_qz, kappa = 0.5, alpha = 1.5e-8,
 #' @return JSE divergence between \code{inp$pm} and \code{out$qm}.
 #' @seealso To use \code{out$qm} as the reference probability and calculate the
 #'   divergence of \code{inp$pm} from \code{out$qm}, see
-#'   \code{\link{reverse_kl_cost}}.
+#'   \code{reverse_kl_cost}.
 #' @family sneer cost functions
 jse_cost <- function(inp, out, method) {
   jse_divergence(inp$pm, out$qm, out$zm, method$cost$kappa, method$eps)
@@ -441,7 +441,7 @@ js_mixture <- function(pm, qm, kappa = 0.5) {
 #' Update JSE Output Data When Input Data Changes
 #'
 #' Because JSE explicitly couples the input data to the output data via the
-#' JS mixture matrix (\code{\link{js_mixture}}), whenever the input data
+#' JS mixture matrix (\code{js_mixture}), whenever the input data
 #' changes, this function should be called.
 #'
 #' @param inp Input data.
@@ -464,7 +464,7 @@ jse_inp_update <- function(inp, out, method) {
 #' Calculates and stores the mixture probability Z and calculates the KL
 #' divergence from Q (output probabilities) to Z on the output data. Used by
 #' those embedding methods where this KL divergence is used to calculate the
-#' stiffness matrix in a gradient calculation (e.g. \code{\link{jse}}).
+#' stiffness matrix in a gradient calculation (e.g. \code{jse}).
 #'
 #' @param inp Input data.
 #' @param out Output data.
@@ -489,7 +489,7 @@ klqz_update <- function(inp, out, method) {
 #' Calculates and stores the mixture probability Z and calculates the KL
 #' divergence from Q (output probabilities) to Z on the output data. Used by
 #' those embedding methods where this KL divergence is used to calculate the
-#' stiffness matrix in a gradient calculation (e.g. \code{\link{sjse}}).
+#' stiffness matrix in a gradient calculation (e.g. \code{sjse}).
 #'
 #' Only appropriate for embedding methods that use joint probabilities.
 #'
@@ -509,7 +509,7 @@ klqz_update_pjoint <- function(inp, out, method) {
 #' Calculates and stores the mixture probability Z and calculates the KL
 #' divergence from Q (output probabilities) to Z on the output data. Used by
 #' those embedding methods where this KL divergence is used to calculate the
-#' stiffness matrix in a gradient calculation (e.g. \code{\link{jse}}).
+#' stiffness matrix in a gradient calculation (e.g. \code{jse}).
 #'
 #' Only appropriate for embedding methods that use row probabilities.
 #'

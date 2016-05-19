@@ -7,7 +7,7 @@
 make_tricks(...)
 }
 \arguments{
-\item{...}{Zero or more \code{\link{tricks}}.}
+\item{...}{Zero or more \code{tricks}.}
 }
 \value{
 Callback collecting all the supplied tricks, to be invoked by the
@@ -26,7 +26,7 @@ output data, optimizer or embedding method.
 The input to this function can be zero, one or multiple independent tricks,
 each of which is created by their own factory function. As a result, the
 signature of this function is not informative. For information on the tricks
-available, see \code{\link{tricks}}.
+available, see \code{tricks}.
 
 Some wrappers around this function which apply sets of tricks from the
 literature are available. See the links under the 'See Also' section.
@@ -43,8 +43,8 @@ make_tricks(early_exaggeration(exaggeration = 4, off_iter = 50))
 }
 \seealso{
 The result value of this function should be passed to the
-\code{\link{tricks}} parameter of embedding routines like
-\code{\link{embed_prob}} and \code{\link{embed_dist}}.
+\code{tricks} parameter of embedding routines like
+\code{embed_prob} and \code{embed_dist}.
 
 Other sneer trick collections: \code{\link{tsne_tricks}}
 }

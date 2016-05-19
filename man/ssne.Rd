@@ -22,7 +22,7 @@ An embedding method for use by an embedding function.
 A probability-based embedding method.
 }
 \details{
-SSNE is a variant of \code{\link{asne}} where the probabilities are with
+SSNE is a variant of \code{asne} where the probabilities are with
 respect to pairs of points, not individual points. The element
 \code{P[i, j]} in matrix P should be thought of as the probability of
 selecting a pair of points i and j as close neighbours. As a result, unlike
@@ -58,9 +58,9 @@ Visualizing data using t-SNE.
 \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
 }
 \seealso{
-SSNE uses the \code{\link{kl_cost}} cost function and the
-  \code{\link{exp_weight}} similarity function. The return value of this
-  function should be used with the \code{\link{embed_prob}} embedding
+SSNE uses the \code{kl_cost} cost function and the
+  \code{exp_weight} similarity function. The return value of this
+  function should be used with the \code{embed_prob} embedding
   function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

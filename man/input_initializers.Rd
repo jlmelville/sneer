@@ -21,7 +21,7 @@ embed_prob(method = tsne(), init_inp = inp_from_perp(perplexity = 50), ...)
 \seealso{
 Input initializers should be passed to the
 \code{init_inp} parameter of embedding functions such as
-\code{\link{embed_prob}} or \code{\link{embed_dist}}.
+\code{embed_prob} or \code{embed_dist}.
 
 Other sneer input initializers: \code{\link{inp_from_dint_max}},
   \code{\link{inp_from_perps_multi}},

@@ -30,7 +30,7 @@ In \emph{Proceedings of the 30th international conference on machine learning (I
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimization_gradient_interface}}
+the sneer framework only. See \code{optimization_gradient_interface}
 for details on the functions and values defined for this method.
 
 Other sneer optimization gradient methods: \code{\link{classical_gradient}},

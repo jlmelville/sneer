@@ -33,7 +33,7 @@ embed_dist(init_out = out_from_matrix(pca_scores), ...)
 }
 }
 \seealso{
-\code{\link{embed_dist}} and \code{\link{embed_prob}}
+\code{embed_dist} and \code{embed_prob}
   for how to use this function to configure an embedding.
 
 Other sneer output intializers: \code{\link{out_from_PCA}},

@@ -26,7 +26,7 @@ An embedding method for use by an embedding function.
 An implementation of SJSE using the plugin gradient.
 }
 \seealso{
-\code{\link{sjse}} should give equivalent results, but is probably
+\code{sjse} should give equivalent results, but is probably
 a bit more efficient.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

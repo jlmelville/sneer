@@ -8,7 +8,7 @@ no_momentum(...)
 }
 \arguments{
 \item{...}{Base momentum parameters to pass to the
-\code{\link{momentum_scheme}} factory function.}
+\code{momentum_scheme} factory function.}
 }
 \value{
 Zero-momentum update method, to be used by the optimizer.
@@ -27,7 +27,7 @@ make_opt(update = no_momentum())
 }
 \seealso{
 The return value of this function is intended for internal use of
-the sneer framework only. See \code{\link{optimization_update_interface}}
+the sneer framework only. See \code{optimization_update_interface}
 for details on the functions and values defined for this method.
 
 Other sneer optimization update methods: \code{\link{constant_momentum}},

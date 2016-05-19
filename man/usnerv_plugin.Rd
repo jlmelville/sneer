@@ -26,7 +26,7 @@ An embedding method for use by an embedding function.
 An implementation of USNeRV using the plugin gradient.
 }
 \seealso{
-\code{\link{usnerv}} should give equivalent results, but is probably
+\code{usnerv} should give equivalent results, but is probably
 a bit more efficient.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},

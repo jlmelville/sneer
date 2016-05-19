@@ -19,7 +19,7 @@ A measure of embedding quality between distance matrices.
 }
 \details{
 SSTRESS is a cost function used in metric MDS, related to the
-\code{\link{metric_stress}}. It is defined as:
+\code{metric_stress}. It is defined as:
 
 \deqn{SSTRESS = \sum_{i<j} ((dx_{ij}^2 - dy_{ij})^2)^2}{SSTRESS = sum(dxij^2-dyij^2)^2}
 

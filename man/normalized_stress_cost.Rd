@@ -20,16 +20,16 @@ Normalized stress.
 A measure of embedding quality between input and output data.
 }
 \details{
-A normalized version of the \code{\link{metric_stress_cost}}:
+A normalized version of the \code{metric_stress_cost}:
 
 \deqn{STRESS_{RN} = \frac{STRESS}{\sum_{i<j} r_{ij}^2}}{STRESS/sum(rij^2)}
 
 where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
-\eqn{j} and \eqn{STRESS} is the \code{\link{metric_stress_cost}} between the
+\eqn{j} and \eqn{STRESS} is the \code{metric_stress_cost} between the
 input and output distances. This gives a dimensionless value similar to the
-\code{\link{kruskal_stress_cost}}, except the normalization uses the input
+\code{kruskal_stress_cost}, except the normalization uses the input
 distances, not the output distances, much like the
-\code{\link{sammon_stress_cost}}. It can be interpreted as the proportion of
+\code{sammon_stress_cost}. It can be interpreted as the proportion of
 the sum of squares of the input distances unaccounted for by the output
 distances. Borg and Groenen defined this in their book on MDS.
 
@@ -46,7 +46,7 @@ Springer Science & Business Media.
 }
 \seealso{
 Other sneer cost functions: \code{\link{jse_cost}},
-  \code{\link{kl_cost}}, \code{\link{kruskal_stress_cost}},
+  \code{\link{kruskal_stress_cost}},
   \code{\link{mean_relative_error_cost}},
   \code{\link{metric_sstress_cost}},
   \code{\link{metric_stress_cost}},
