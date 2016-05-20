@@ -76,7 +76,7 @@
 #' If the parameter \code{modify_kernel_fn} is not provided, then the scheme
 #' above is used to create output functions. Any function with a parameter
 #' called \code{beta} can be used, so for example embedding methods which use
-#' the \code{\link{exp_weight}} and \code{\link{heavy_tail_weight}} weighting
+#' the \code{exp_weight} and \code{heavy_tail_weight} weighting
 #' functions can be used with the default function. The signature of
 #' \code{modify_kernel_fn} must be:
 #'

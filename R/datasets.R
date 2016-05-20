@@ -20,6 +20,7 @@
 #' Multi-scale similarities in stochastic neighbour embedding: Reducing
 #' dimensionality while preserving both local and global structure.
 #' \emph{Neurocomputing}, \emph{169}, 246-261.
+#' @export
 sphere <- function(n = 1000, nlabels = 5) {
   # from http://stats.stackexchange.com/questions/7977/how-to-generate-uniformly-distributed-points-on-the-surface-of-the-3-d-unit-sphe
   z <- runif(n, min = -1, max = 1)
@@ -49,6 +50,7 @@ sphere <- function(n = 1000, nlabels = 5) {
 #' Multi-scale similarities in stochastic neighbour embedding: Reducing
 #' dimensionality while preserving both local and global structure.
 #' \emph{Neurocomputing}, \emph{169}, 246-261.
+#' @export
 ball <- function(n = 1000, rad = 1, nlabels = 5) {
   # from http://math.stackexchange.com/questions/87230/picking-random-points-in-the-volume-of-sphere-with-uniform-probability
   u <- runif(n)
@@ -84,6 +86,7 @@ ball <- function(n = 1000, rad = 1, nlabels = 5) {
 #' Multi-scale similarities in stochastic neighbour embedding: Reducing
 #' dimensionality while preserving both local and global structure.
 #' \emph{Neurocomputing}, \emph{169}, 246-261.
+#' @export
 helix <- function(n = 1000, rmajor = 2, rminor = 1, nwinds = 8, nlabels = 5) {
   # http://math.stackexchange.com/questions/324527/do-these-equations-create-a-helix-wrapped-into-a-torus
   u <- seq(-pi, pi, length.out = n)
@@ -112,6 +115,7 @@ helix <- function(n = 1000, rmajor = 2, rminor = 1, nwinds = 8, nlabels = 5) {
 #' @param d Dimension of the Gaussian.
 #' @param nlabels Number of labels.
 #' @return Data frame.
+#' @export
 gauss <- function(n = 1000, d = 3, nlabels = 5) {
   m <- matrix(rnorm(n * d), ncol = d)
   dist <- sqrt(rowSums(m * m))
@@ -148,6 +152,7 @@ gauss <- function(n = 1000, d = 3, nlabels = 5) {
 #' Agrafiotis, D. K., & Xu, H. (2002).
 #' A self-organizing principle for learning nonlinear manifolds.
 #' \emph{Proceedings of the National Academy of Sciences}, \emph{99}(25), 15869-15872.
+#' @export
 swiss_roll <- function(n = 1000, nlabels = 6) {
   phi <- runif(n, min = 5, max = 30)
   x <- phi * cos(phi)
@@ -246,6 +251,7 @@ show_frey_face <- function(df, n, col = gray(1 / 12:1)) {
 #' Saul Roweis' dataset web page: \url{http://www.cs.nyu.edu/~roweis/data.html}.
 #' Each row can be visualized as an image using
 #' \code{\link{show_olivetti_face}}.
+#' @export
 olivetti_faces <- function() {
   if (!requireNamespace("RnavGraphImageData", quietly = TRUE,
                         warn.conflicts = FALSE)) {
@@ -288,16 +294,16 @@ show_olivetti_face <- function(df, face, pose, col = gray(1 / 12:1)) {
   image(1:nrow(im), 1:nrow(im), im, xlab = "", ylab = "", col = col)
 }
 
-#' Split A Vector Into Equally Populated Factors
-#'
-#' Assigns each member of a vector to a factor, based on the quantiles of the
-#' distribution, so that each factor is equal populated. Levels range from
-#' one to \code{nfactors}.
-#'
-#' @param x Numeric vector
-#' @param nfactors Number of factors required.
-#' @return factor-encoded vector specifying the level for each item in the
-#' vector.
+# Split A Vector Into Equally Populated Factors
+#
+# Assigns each member of a vector to a factor, based on the quantiles of the
+# distribution, so that each factor is equal populated. Levels range from
+# one to \code{nfactors}.
+#
+# @param x Numeric vector
+# @param nfactors Number of factors required.
+# @return factor-encoded vector specifying the level for each item in the
+# vector.
 equal_factors <- function(x, nfactors) {
   breaks <- quantile(x, probs = seq(0, 1, length.out = nfactors + 1))
   cuts <- cut(x, breaks = breaks, include.lowest = TRUE, labels = FALSE)
