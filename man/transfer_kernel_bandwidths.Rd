@@ -39,7 +39,4 @@ creating the input data, and an asymmetric exponential kernel for the output
 data, as in the usual NeRV functions. If you deviate from these conditions,
 you may get incorrect behavior.
 }
-\seealso{
-Other sneer kernel modifiers: \code{\link{scale_prec_to_perp}}
-}
 
