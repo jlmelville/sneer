@@ -68,8 +68,6 @@ kernel should be returned.
  non-default version of \code{input_weight_fn}.
 
 Other sneer input initializers: \code{\link{inp_from_perps_multi}},
-  \code{\link{inp_from_perp}},
-  \code{\link{inp_from_step_perp}},
-  \code{\link{input_initializers}}
+  \code{\link{inp_from_step_perp}}
 }
 

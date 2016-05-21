@@ -91,8 +91,6 @@ exponential similarity kernel to those from the input kernel.
 configuring an embedding.
 
 Other sneer input initializers: \code{\link{inp_from_dint_max}},
-  \code{\link{inp_from_perps_multi}},
-  \code{\link{inp_from_perp}},
-  \code{\link{input_initializers}}
+  \code{\link{inp_from_perps_multi}}
 }
 

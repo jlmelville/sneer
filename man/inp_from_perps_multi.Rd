@@ -156,8 +156,6 @@ perplexity values, but replaces the old probability matrix with that of the
 new perplexity at each step, rather than averaging.
 
 Other sneer input initializers: \code{\link{inp_from_dint_max}},
-  \code{\link{inp_from_perp}},
-  \code{\link{inp_from_step_perp}},
-  \code{\link{input_initializers}}
+  \code{\link{inp_from_step_perp}}
 }
 
