@@ -42,7 +42,6 @@ data visualization.
 \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
 }
 \seealso{
-Other sneer cost functions: \code{\link{jse_cost}},
-  \code{\link{reverse_kl_cost}}
+Other sneer cost functions: \code{\link{reverse_kl_cost}}
 }
 

@@ -25,7 +25,6 @@ in an embedding.
 Provides the cost function and its gradient (with respect to Q).
 }
 \seealso{
-Other sneer cost wrappers: \code{\link{jse_fg}},
-  \code{\link{reverse_kl_fg}}
+Other sneer cost wrappers: \code{\link{reverse_kl_fg}}
 }
 

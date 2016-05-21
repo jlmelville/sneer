@@ -19,7 +19,6 @@ Kullback Leibler Divergence, i.e. KL(Q||P), in an embedding.
 Provides the cost function and its gradient (with respect to Q).
 }
 \seealso{
-Other sneer cost wrappers: \code{\link{jse_fg}},
-  \code{\link{nerv_fg}}
+Other sneer cost wrappers: \code{\link{nerv_fg}}
 }
 

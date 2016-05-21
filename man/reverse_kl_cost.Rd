@@ -34,7 +34,6 @@ This cost function requires the following matrices to be defined:
 \code{kl_cost} provides more detail on the differences
   between the usual KL divergence and this "reverse" divergence.
 
-Other sneer cost functions: \code{\link{jse_cost}},
-  \code{\link{nerv_cost}}
+Other sneer cost functions: \code{\link{nerv_cost}}
 }
 
