@@ -1,113 +1,112 @@
 # Functions to be run at a fixed frequency during the optimization.
 
-#' Reporter
-#'
-#' Factory function which returns a function which will be invoked by the
-#' embedding algorithm at regular intervals during the optimization.
-#'
-#' @param report_every Number of steps between callback invocations.
-#' @param min_cost If the cost function used by the embedding falls below this
-#'  value, the optimization process is halted.
-#' @param reltol If the relative tolerance of the cost function between
-#'  consecutive reports falls below this value, the optimization process is
-#'  halted.
-#' @param disttol If the RMSD between output distance matrices calculated
-#'  between consecutive reports falls below this value, the optimization
-#'  process is halted.
-#' @param plot Function for plotting embedding. Signature should be
-#'  \code{plot(out)} where \code{out} is the output data list. Return value
-#'  of this function is ignored.
-#' @param normalize_cost If \code{TRUE}, the cost calculated by the cost
-#'  function will be normalized and both values logged.
-#' @param keep_costs If \code{TRUE}, all costs (including those specified in
-#'  \code{extra_costs}) and the iteration number at
-#'  which they were calculated will be stored on result list returned by the
-#'  reporter callback.
-#' @param extra_costs List containing the names of cost functions to be
-#'  reported, in addition to the cost associated with the embedding method,
-#'  which will always be logged. Possible cost functions include:
-#'  \itemize{
-#'    \item \code{"kl"} (Kullback Leibler Divergence).
-#'    \item \code{"kruskal_stress"}.
-#'    \item \code{"mean_relative_error"}.
-#'    \item \code{"metric_sstress"}.
-#'    \item \code{"metric_stress"}.
-#'    \item \code{"normalized_stress"}.
-#'    \item \code{"rms_metric_stress"}.
-#'    \item \code{"sammon_stress"}.
-#'  }
-#'  Note that not all costs are compatible with all embedding methods, because
-#'  they may require specific matrices or other values to be precalculated in
-#'  the Input and Output data. See the help text for each cost function for
-#'  details.
-#' @param opt_report If \code{TRUE}, summary of the state of the optimization
-#'  (e.g. step size, momentum, gradient length) will be reported.
-#' @param out_report If \code{TRUE}, summary of the state of the output data
-#'  (e.g. coordinates, probabilities, weights) will be reported.
-#' @param verbose If \code{TRUE}, report results such as cost values
-#'  will be logged to screen. If set to false, you will have to export the
-#'  report from the embedding routine to access any of the information.
-#' @return Reporter callback used by the embedding routine. The callback has the
-#' signature \code{reporter(iter, inp, out, method, report)} where:
-#'  \item{\code{iter}}{Iteration number.}
-#'  \item{\code{inp}}{Input data.}
-#'  \item{\code{method}}{Embedding method.}
-#'  \item{\code{report}}{Report from previous reporter invocation.}
-#'  \item{\code{force}}{If TRUE, then the report will be generated even if the
-#'  iteration number doesn't meet the \code{report_every} criterion.}
-#' The return value of the callback is an updated
-#' version of the \code{report} passed as a parameter to the callback. A list
-#' containing:
-#'  \item{\code{stop_early}}{If \code{TRUE} then optimization stopped before
-#'  the maximum number of iterations specified by the embedding algorithm.}
-#'  \item{\code{reltol}}{Relative convergence value.}
-#'  \item{\code{iter}}{Iteration number that the callback was invoked at.}
-#'  \item{\code{cost}}{Cost for this reporter.}
-#'  \item{\code{norm}}{Normalized cost for the most recent iteration. Only
-#'  present if \code{normalize_cost} was \code{TRUE}.}
-#'  \item{\code{costs}}{Matrix of all costs calculated for all invocations of
-#'  the reporter callback and the value of \code{iter} the reporters were
-#'  invoked at. Only present if \code{keep_costs} was \code{TRUE}.}
-#'
-#' The result list is reused on each invocation of the callback so that the cost
-#' from the previous report can be compared with that of the current report,
-#' allowing for relative convergence early stopping, and appending of costs
-#' if \code{keep_costs} is \code{TRUE}.
-#' @seealso \code{embed_prob} for how to use this function for configuring
-#' an embedding, and \code{make_plot} for 2D plot generation.
-#' @examples
-#' # reporter calculation every 100 steps of optimization, log cost and also the
-#' # normalized cost
-#' make_reporter(report_every = 100, normalize_cost = TRUE)
-#'
-#' # Stop optimization early if relative tolerance of costs falls below 0.001
-#' make_reporter(report_every = 100, reltol = 0.001)
-#'
-#' # For s1k dataset, plot 2D embedding at every reporter, with "Label" factor
-#' # to identify each point on the plot
-#' make_reporter(report_every = 100, plot = make_plot(s1k, "Label"))
-#'
-#' # For iris dataset, plot 2D embedding at every reporter, with first two
-#' # characters of the "Species" factor to identify each point on the plot
-#' make_reporter(report_every = 100,
-#'               plot = make_plot(iris, "Species", make_label(2)))
-#'
-#' # Keep all costs calculated during reporters, can be exported from the
-#' # embedding routine and plotted or otherwise used.
-#' make_reporter(report_every = 100, keep_costs = TRUE)
-#'
-#' # Report normalized stress, Kruskal stress and Sammon stress:
-#' make_reporter(extra_costs =
-#'                 c("normalized_stress", "kruskal_stress", "sammon_stress"))
-#'
-#' # Should be passed to the reporter argument of an embedding function:
-#' \dontrun{
-#'  embed_prob(reporter = make_reporter(report_every = 100,
-#'                                     normalize_cost = TRUE,
-#'                                     plot = make_plot(iris, "Species")),
-#'                                     ...)
-#' }
-#' @export
+# Reporter
+#
+# Factory function which returns a function which will be invoked by the
+# embedding algorithm at regular intervals during the optimization.
+#
+# @param report_every Number of steps between callback invocations.
+# @param min_cost If the cost function used by the embedding falls below this
+#  value, the optimization process is halted.
+# @param reltol If the relative tolerance of the cost function between
+#  consecutive reports falls below this value, the optimization process is
+#  halted.
+# @param disttol If the RMSD between output distance matrices calculated
+#  between consecutive reports falls below this value, the optimization
+#  process is halted.
+# @param plot Function for plotting embedding. Signature should be
+#  \code{plot(out)} where \code{out} is the output data list. Return value
+#  of this function is ignored.
+# @param normalize_cost If \code{TRUE}, the cost calculated by the cost
+#  function will be normalized and both values logged.
+# @param keep_costs If \code{TRUE}, all costs (including those specified in
+#  \code{extra_costs}) and the iteration number at
+#  which they were calculated will be stored on result list returned by the
+#  reporter callback.
+# @param extra_costs List containing the names of cost functions to be
+#  reported, in addition to the cost associated with the embedding method,
+#  which will always be logged. Possible cost functions include:
+#  \itemize{
+#    \item \code{"kl"} (Kullback Leibler Divergence).
+#    \item \code{"kruskal_stress"}.
+#    \item \code{"mean_relative_error"}.
+#    \item \code{"metric_sstress"}.
+#    \item \code{"metric_stress"}.
+#    \item \code{"normalized_stress"}.
+#    \item \code{"rms_metric_stress"}.
+#    \item \code{"sammon_stress"}.
+#  }
+#  Note that not all costs are compatible with all embedding methods, because
+#  they may require specific matrices or other values to be precalculated in
+#  the Input and Output data. See the help text for each cost function for
+#  details.
+# @param opt_report If \code{TRUE}, summary of the state of the optimization
+#  (e.g. step size, momentum, gradient length) will be reported.
+# @param out_report If \code{TRUE}, summary of the state of the output data
+#  (e.g. coordinates, probabilities, weights) will be reported.
+# @param verbose If \code{TRUE}, report results such as cost values
+#  will be logged to screen. If set to false, you will have to export the
+#  report from the embedding routine to access any of the information.
+# @return Reporter callback used by the embedding routine. The callback has the
+# signature \code{reporter(iter, inp, out, method, report)} where:
+#  \item{\code{iter}}{Iteration number.}
+#  \item{\code{inp}}{Input data.}
+#  \item{\code{method}}{Embedding method.}
+#  \item{\code{report}}{Report from previous reporter invocation.}
+#  \item{\code{force}}{If TRUE, then the report will be generated even if the
+#  iteration number doesn't meet the \code{report_every} criterion.}
+# The return value of the callback is an updated
+# version of the \code{report} passed as a parameter to the callback. A list
+# containing:
+#  \item{\code{stop_early}}{If \code{TRUE} then optimization stopped before
+#  the maximum number of iterations specified by the embedding algorithm.}
+#  \item{\code{reltol}}{Relative convergence value.}
+#  \item{\code{iter}}{Iteration number that the callback was invoked at.}
+#  \item{\code{cost}}{Cost for this reporter.}
+#  \item{\code{norm}}{Normalized cost for the most recent iteration. Only
+#  present if \code{normalize_cost} was \code{TRUE}.}
+#  \item{\code{costs}}{Matrix of all costs calculated for all invocations of
+#  the reporter callback and the value of \code{iter} the reporters were
+#  invoked at. Only present if \code{keep_costs} was \code{TRUE}.}
+#
+# The result list is reused on each invocation of the callback so that the cost
+# from the previous report can be compared with that of the current report,
+# allowing for relative convergence early stopping, and appending of costs
+# if \code{keep_costs} is \code{TRUE}.
+# @seealso \code{embed_prob} for how to use this function for configuring
+# an embedding, and \code{make_plot} for 2D plot generation.
+# @examples
+# # reporter calculation every 100 steps of optimization, log cost and also the
+# # normalized cost
+# make_reporter(report_every = 100, normalize_cost = TRUE)
+#
+# # Stop optimization early if relative tolerance of costs falls below 0.001
+# make_reporter(report_every = 100, reltol = 0.001)
+#
+# # For s1k dataset, plot 2D embedding at every reporter, with "Label" factor
+# # to identify each point on the plot
+# make_reporter(report_every = 100, plot = make_plot(s1k, "Label"))
+#
+# # For iris dataset, plot 2D embedding at every reporter, with first two
+# # characters of the "Species" factor to identify each point on the plot
+# make_reporter(report_every = 100,
+#               plot = make_plot(iris, "Species", make_label(2)))
+#
+# # Keep all costs calculated during reporters, can be exported from the
+# # embedding routine and plotted or otherwise used.
+# make_reporter(report_every = 100, keep_costs = TRUE)
+#
+# # Report normalized stress, Kruskal stress and Sammon stress:
+# make_reporter(extra_costs =
+#                 c("normalized_stress", "kruskal_stress", "sammon_stress"))
+#
+# # Should be passed to the reporter argument of an embedding function:
+# \dontrun{
+#  embed_prob(reporter = make_reporter(report_every = 100,
+#                                     normalize_cost = TRUE,
+#                                     plot = make_plot(iris, "Species")),
+#                                     ...)
+# }
 make_reporter <- function(report_every = 100, min_cost = 0,
                           reltol = sqrt(.Machine$double.eps),
                           disttol = sqrt(.Machine$double.eps),
@@ -265,25 +264,25 @@ make_reporter <- function(report_every = 100, min_cost = 0,
   }
 }
 
-#' Report Embedding Quality After Embedding Terminates
-#'
-#' Calculates the AUC of the log RNX metric, the scaled neighbor retrieval
-#' calculated for multiple neighbor values, with a logarithmic weighting to
-#' favour smaller neighbor values.
-#'
-#' Additionally, if a set of labels are provided for the dataset, the average
-#' ROC AUC and PR AUC will be calculated for each observation in the dataset,
-#' using its label as the positive class. If there are more than two labels
-#' in the dataset, then the other classes are all treated as negative.
-#'
-#' @param labels Vector of labels associated with the dataset, one for each
-#' observation, in the same order that the data is presented to the embedding
-#' algorithm.
-#' @return A function suitable for calling after embedding, which will in turn
-#' return the output data, with the quality metrics appended in a list called
-#' \code{quality}.
-#' @seealso \code{\link{pr_auc_embed}}, \code{\link{roc_auc_embed}} and
-#' \code{\link{rnx_auc_embed}} for definitions of these metrics.
+# Report Embedding Quality After Embedding Terminates
+#
+# Calculates the AUC of the log RNX metric, the scaled neighbor retrieval
+# calculated for multiple neighbor values, with a logarithmic weighting to
+# favour smaller neighbor values.
+#
+# Additionally, if a set of labels are provided for the dataset, the average
+# ROC AUC and PR AUC will be calculated for each observation in the dataset,
+# using its label as the positive class. If there are more than two labels
+# in the dataset, then the other classes are all treated as negative.
+#
+# @param labels Vector of labels associated with the dataset, one for each
+# observation, in the same order that the data is presented to the embedding
+# algorithm.
+# @return A function suitable for calling after embedding, which will in turn
+# return the output data, with the quality metrics appended in a list called
+# \code{quality}.
+# @seealso \code{\link{pr_auc_embed}}, \code{\link{roc_auc_embed}} and
+# \code{\link{rnx_auc_embed}} for definitions of these metrics.
 make_final_reporter <- function(labels = NULL) {
   fs <- c(rnx_auc)
   if (!is.null(labels)) {
@@ -296,18 +295,18 @@ make_final_reporter <- function(labels = NULL) {
   make_quality_reporter(fs, labels)
 }
 
-#' Create Embedding Quality Reporter
-#'
-#' Quality functions should have the signature \code{f(inp, out)} where
-#' \code{inp} is the input data and \code{out} is the output data, and return
-#' a list consisting of: \code{name}, the name of the quality measure; and
-#' \code{value}, the value of the quality measure.
-#'
-#' @param fs Vector of quality functions.
-#' @param labels Vector of labels to apply to the data.
-#' @return A function suitable for calling after embedding, which will in turn
-#' return the output data, with the quality metrics appended in a list called
-#' \code{quality}.
+# Create Embedding Quality Reporter
+#
+# Quality functions should have the signature \code{f(inp, out)} where
+# \code{inp} is the input data and \code{out} is the output data, and return
+# a list consisting of: \code{name}, the name of the quality measure; and
+# \code{value}, the value of the quality measure.
+#
+# @param fs Vector of quality functions.
+# @param labels Vector of labels to apply to the data.
+# @return A function suitable for calling after embedding, which will in turn
+# return the output data, with the quality metrics appended in a list called
+# \code{quality}.
 make_quality_reporter <- function(fs, labels) {
   function(inp, out) {
     if (is.null(out$dm)) {
@@ -323,4 +322,3 @@ make_quality_reporter <- function(fs, labels) {
     out
   }
 }
-
