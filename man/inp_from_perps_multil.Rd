@@ -41,7 +41,7 @@ An initialization method for creating input probabilities.
 This function calculates multiple input probability matrices, corresponding
 to multiple perplexities, then uses the average of these matrices for the
 final probability matrix. It uses the same basic method of
-\code{\link{inp_from_perps_multi}}, but saves a bit of memory by not having
+\code{inp_from_perps_multi}, but saves a bit of memory by not having
 to store all the probability matrices in memory at once.
 
 The requirement to store all the matrices in memory comes from needing
@@ -97,9 +97,9 @@ This function will be called once for each perplexity, and an updated
 kernel should be returned.
 }
 \seealso{
-\code{\link{inp_from_perps_multi}} for more details on how the intrinsic
+\code{inp_from_perps_multi} for more details on how the intrinsic
 dimensionality is calculated.
-\code{\link{embed_prob}} for how to use this function for
+\code{embed_prob} for how to use this function for
 configuring an embedding.
 }
 

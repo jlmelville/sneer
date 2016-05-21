@@ -57,7 +57,7 @@ By default, the kernel function will try the  suggestion of Lee and
 co-workers, which is to scale the beta parameter of the exponential kernel
 function used in many embedding methods so that as the perplexity gets
 smaller, the beta value gets larger, thus reducing the bandwidth of the
-kernel. See the \code{\link{scale_prec_to_perp}} function for more details.
+kernel. See the \code{scale_prec_to_perp} function for more details.
 If your kernel function doesn't have a \code{beta} parameter, the function
 will still run but have no effect on the output kernel.
 }
@@ -87,7 +87,7 @@ the perplexity. This is because NeRV sets the bandwidths of the output
 exponential similarity kernel to those from the input kernel.
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for
+\code{embed_prob} for how to use this function for
 configuring an embedding.
 
 Other sneer input initializers: \code{\link{inp_from_dint_max}},

@@ -148,10 +148,10 @@ dimensionality while preserving both local and global structure.
 \emph{Neurocomputing}, \emph{169}, 246-261.
 }
 \seealso{
-\code{\link{embed_prob}} for how to use this function for
+\code{embed_prob} for how to use this function for
 configuring an embedding.
 
-\code{\link{inp_from_step_perp}} also uses multiple
+\code{inp_from_step_perp} also uses multiple
 perplexity values, but replaces the old probability matrix with that of the
 new perplexity at each step, rather than averaging.
 

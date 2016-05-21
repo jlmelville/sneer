@@ -106,10 +106,10 @@
 #' @param verbose If \code{TRUE} print message about initialization during the
 #' embedding.
 #' @return Input initializer for use by an embedding function.
-#' @seealso \code{\link{embed_prob}} for how to use this function for
+#' @seealso \code{embed_prob} for how to use this function for
 #' configuring an embedding.
 #'
-#' \code{\link{inp_from_step_perp}} also uses multiple
+#' \code{inp_from_step_perp} also uses multiple
 #' perplexity values, but replaces the old probability matrix with that of the
 #' new perplexity at each step, rather than averaging.
 #'
@@ -278,7 +278,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
 #' This function calculates multiple input probability matrices, corresponding
 #' to multiple perplexities, then uses the average of these matrices for the
 #' final probability matrix. It uses the same basic method of
-#' \code{\link{inp_from_perps_multi}}, but saves a bit of memory by not having
+#' \code{inp_from_perps_multi}, but saves a bit of memory by not having
 #' to store all the probability matrices in memory at once.
 #'
 #' The requirement to store all the matrices in memory comes from needing
@@ -352,9 +352,9 @@ inp_from_perps_multi <- function(perplexities = NULL,
 #' embedding.
 #' @return Input initializer for use by an embedding function.
 #' @seealso
-#' \code{\link{inp_from_perps_multi}} for more details on how the intrinsic
+#' \code{inp_from_perps_multi} for more details on how the intrinsic
 #' dimensionality is calculated.
-#' \code{\link{embed_prob}} for how to use this function for
+#' \code{embed_prob} for how to use this function for
 #' configuring an embedding.
 inp_from_perps_multil <- function(perplexities = NULL,
                                  input_weight_fn = exp_weight,
@@ -480,7 +480,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
 #' co-workers, which is to scale the beta parameter of the exponential kernel
 #' function used in many embedding methods so that as the perplexity gets
 #' smaller, the beta value gets larger, thus reducing the bandwidth of the
-#' kernel. See the \code{\link{scale_prec_to_perp}} function for more details.
+#' kernel. See the \code{scale_prec_to_perp} function for more details.
 #' If your kernel function doesn't have a \code{beta} parameter, the function
 #' will still run but have no effect on the output kernel.
 #'
@@ -501,7 +501,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
 #' @param verbose If \code{TRUE} print message about initialization during the
 #' embedding.
 #' @return Input initializer for use by an embedding function.
-#' @seealso \code{\link{embed_prob}} for how to use this function for
+#' @seealso \code{embed_prob} for how to use this function for
 #' configuring an embedding.
 #'
 #' @examples
@@ -678,7 +678,7 @@ scale_prec_to_perp <- function(inp, out, method) {
 #' @param verbose If \code{TRUE} print message about initialization during the
 #'  embedding.
 #' @return Input initializer for use by an embedding function.
-#' @seealso \code{\link{inp_from_perps_multi}} for caveats on using a
+#' @seealso \code{inp_from_perps_multi} for caveats on using a
 #'  non-default version of \code{input_weight_fn}.
 #' @family sneer input initializers
 #' @export

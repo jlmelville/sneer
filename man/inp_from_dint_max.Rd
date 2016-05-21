@@ -64,7 +64,7 @@ This function will be called once for each perplexity, and an updated
 kernel should be returned.
 }
 \seealso{
-\code{\link{inp_from_perps_multi}} for caveats on using a
+\code{inp_from_perps_multi} for caveats on using a
  non-default version of \code{input_weight_fn}.
 
 Other sneer input initializers: \code{\link{inp_from_perps_multi}},

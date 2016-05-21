@@ -64,7 +64,6 @@ ASNE uses the \code{kl_cost} cost function and the
   function.
 
 Other sneer embedding methods: \code{\link{asne_plugin}},
-  \code{\link{embedding_methods}},
   \code{\link{hsjse_plugin}}, \code{\link{hsjse}},
   \code{\link{hsnerv_plugin}}, \code{\link{hsnerv}},
   \code{\link{hssne_plugin}}, \code{\link{hssne}},

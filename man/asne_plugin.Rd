@@ -29,7 +29,6 @@ An implementation of ASNE using the plugin gradient.
 a bit more efficient.
 
 Other sneer embedding methods: \code{\link{asne}},
-  \code{\link{embedding_methods}},
   \code{\link{hsjse_plugin}}, \code{\link{hsjse}},
   \code{\link{hsnerv_plugin}}, \code{\link{hsnerv}},
   \code{\link{hssne_plugin}}, \code{\link{hssne}},
