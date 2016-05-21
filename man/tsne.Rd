@@ -59,35 +59,16 @@ t-SNE uses the \code{kl_cost} cost function and the
   function should be used with the \code{embed_prob} embedding
   function.
 
-Other sneer embedding methods: \code{\link{asne_plugin}},
-  \code{\link{asne}}, \code{\link{hsjse_plugin}},
-  \code{\link{hsnerv_plugin}}, \code{\link{hssne_plugin}},
-  \code{\link{hssne}}, \code{\link{jse_plugin}},
-  \code{\link{nerv_plugin}}, \code{\link{plugin}},
-  \code{\link{rasne_plugin}}, \code{\link{rasne}},
-  \code{\link{rssne_plugin}}, \code{\link{rssne}},
-  \code{\link{rtsne_plugin}}, \code{\link{rtsne}},
-  \code{\link{sjse_plugin}}, \code{\link{snerv_plugin}},
-  \code{\link{ssne_plugin}}, \code{\link{ssne}},
-  \code{\link{tasne_plugin}}, \code{\link{tasne}},
-  \code{\link{tnerv_plugin}}, \code{\link{tsne_plugin}},
-  \code{\link{uhsnerv_plugin}}, \code{\link{unerv_plugin}},
-  \code{\link{usnerv_plugin}}
+Other sneer embedding methods: \code{\link{asne}},
+  \code{\link{hssne}}, \code{\link{rasne}},
+  \code{\link{rssne}}, \code{\link{rtsne}},
+  \code{\link{ssne}}, \code{\link{tasne}}
 
-Other sneer probability embedding methods: \code{\link{asne_plugin}},
-  \code{\link{asne}}, \code{\link{hsjse_plugin}},
-  \code{\link{hsnerv_plugin}}, \code{\link{hssne_plugin}},
-  \code{\link{hssne}}, \code{\link{jse_plugin}},
-  \code{\link{nerv_plugin}}, \code{\link{plugin}},
+Other sneer probability embedding methods: \code{\link{asne}},
+  \code{\link{hssne}},
   \code{\link{probability_embedding_methods}},
-  \code{\link{rasne_plugin}}, \code{\link{rasne}},
-  \code{\link{rssne_plugin}}, \code{\link{rssne}},
-  \code{\link{rtsne_plugin}}, \code{\link{rtsne}},
-  \code{\link{sjse_plugin}}, \code{\link{snerv_plugin}},
-  \code{\link{ssne_plugin}}, \code{\link{ssne}},
-  \code{\link{tasne_plugin}}, \code{\link{tasne}},
-  \code{\link{tnerv_plugin}}, \code{\link{tsne_plugin}},
-  \code{\link{uhsnerv_plugin}}, \code{\link{unerv_plugin}},
-  \code{\link{usnerv_plugin}}
+  \code{\link{rasne}}, \code{\link{rssne}},
+  \code{\link{rtsne}}, \code{\link{ssne}},
+  \code{\link{tasne}}
 }
 
