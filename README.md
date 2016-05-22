@@ -12,6 +12,7 @@ devtools::install_github("jlmelville/sneer")
 
 ### Documentation:
 ```R
+package?sneer
 ?embed
 ```
 
