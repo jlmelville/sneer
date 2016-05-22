@@ -373,15 +373,20 @@ NULL
 #'   # to map values onto the embedded points
 #'   plot(res$coords, col = map2color(pres32), pch = 20, cex = 1.5)
 #'
-#'   # export degree centrality, input beta values and intrinsic dimensionality
+#'   # export degree centrality, input weight function precision parameters,
+#'   # and intrinsic dimensionality
 #'   res <- embed(iris, scale_type = "a", method = "wtsne",
 #'                ret = c("deg", "prec", "dim"))
 #'
-#'   plot(res$coords, col = map2color(res$deg), pch = 20, cex = 1.5)
-#'   plot(res$coords, col = map2color(res$dim, name = "PRGn"), pch = 20,
-#'        cex = 1.5)
-#'   plot(res$coords, col = map2color(res$prec, name = "Spectral"), pch = 20,
-#'        cex = 1.5)
+#'   # Load the RColorBrewer Library
+#'   library(RColorBrewer)
+#'   # Visualize embedding colored by various values:
+#'   # Degree centrality
+#'   embed_quant_plot(res$coords, res$deg)
+#'   # Intrinsic Dimensionality using the PRGn palette
+#'   embed_quant_plot(res$coords, res$dim, name = "PRGn")
+#'   # Input weight function precision parameter with the Spectral palette
+#'   embed_quant_plot(res$coords, res$prec, name = "Spectral")
 #' }
 #' @export
 embed <- function(df,
