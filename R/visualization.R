@@ -6,7 +6,7 @@
 #' Plots the embedded coordinates, using a ColorBrewer palette to color each
 #' point according to a numerical vector.
 #'
-#' @note Use of this function requires that the \code{RColorBrewer} packages be
+#' @note Use of this function requires that the \code{RColorBrewer} package be
 #'  installed.
 #' @param coords Matrix of embedded coordinates, with as many rows as
 #'  observations, and 2 columns.
@@ -42,6 +42,12 @@
 #' }
 embed_quant_plot <- function(coords, quant_vec, name = "Blues", num_colors = 15,
                              limits = NULL, cex = 0.5, top = NULL) {
+
+  if (!requireNamespace("RColorBrewer", quietly = TRUE,
+                        warn.conflicts = FALSE)) {
+    stop("embed_quant_plot function requires 'RColorBrewer' package")
+  }
+
   if (!is.null(top)) {
     svec <- sort(quant_vec, decreasing = TRUE)
     quant_vec[quant_vec < svec[top]] <- 0

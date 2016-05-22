@@ -36,7 +36,7 @@ Plots the embedded coordinates, using a ColorBrewer palette to color each
 point according to a numerical vector.
 }
 \note{
-Use of this function requires that the \code{RColorBrewer} packages be
+Use of this function requires that the \code{RColorBrewer} package be
  installed.
 }
 \examples{
