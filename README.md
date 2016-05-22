@@ -179,8 +179,6 @@ reproducibility.
 * Numerical scores for qualitatively evaluating the embedding.
 * s1k, a small (1000 points) 9-dimensional synthetic dataset that exemplifies
 the "crowding problem".
-* Some tests! (Not many, though)
-* A bit of documentation!
 
 ### Roadmap
 * Better documentation of internals so a hypothetical person who isn't me
