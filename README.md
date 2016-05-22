@@ -131,7 +131,8 @@ plot(res$coords, col = map2color(pres32), pch = 20, cex = 1.5)
 res <- embed(iris, scale_type = "a", method = "wtsne", 
   ret = c("deg", "prec", "dim"))
 
-# Visualize embedding colored by various values:
+# Visualize embedding colored by various values (function requires RColorBrewer
+# package to be installed):
 # Degree centrality
 embed_quant_plot(res$coords, res$deg)
 # Intrinsic Dimensionality using the PRGn palette
