@@ -197,5 +197,11 @@ unless you were looking for an insight into my questionable design, naming and
 decision making skills. But this is a hobby project, so I get to make it as 
 over-engineered as I want.
 
+### See also
+I have some other packages that create or download datasets often used in 
+SNE-related research: 
+[Simulation, Olivetti and Frey Faces](https://github.com/jlmelville/snedata), [COIL-20](https://github.com/jlmelville/coil20), and 
+[MNIST Digit](https://github.com/jlmelville/mnist).
+
 ### License
 [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.txt).
