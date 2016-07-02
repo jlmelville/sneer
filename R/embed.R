@@ -118,6 +118,22 @@ NULL
 #'   Supply the coordinates as the \code{init_config} parameter.
 #'}
 #'
+#' For configuring the optimization method, the options for the \code{opt}
+#' parameter are:
+#' \itemize{
+#'  \item \code{"L-BFGS"} The low-memory BFGS method.
+#'  \item \code{"NAG-BOLD"} Nesterov Accelerated Gradient with bold driver step
+#'    size selection.
+#' }
+#'
+#' The \code{L-BFGS} method uses the \code{\link[stats]{optim}} function,
+#' running in batches of \code{report_every}, with the optimization resetting
+#' between invocations, so don't set \code{report_every} too low in this case,
+#' or the optimization will essentially behave like steepest descent.
+#'
+#' batches of size \code{report_every}, so you shouldn't set
+#' \code{report_every} too low in this case.
+#'
 #' For the \code{quality_measures} argument, a vector with one or more of the
 #' following options can be supplied:
 #' \itemize{
@@ -179,6 +195,7 @@ NULL
 #' @param init Type of initialization of the output coordinates. See 'Details'.
 #' @param init_config Coordinates to use for initial configuration. Used only
 #'  if \code{init} is \code{"m"}.
+#' @param opt Type of optimizer. See 'Details'.
 #' @param max_iter Maximum number of iterations to carry out optimization of
 #'  the embedding. Ignored if the \code{method} is \code{"pca"}.
 #' @param report_every Frequency (in terms of iteration number) with which to
@@ -401,6 +418,7 @@ embed <- function(df,
                   perp_kernel_fun = "exp",
                   prec_scale = "",
                   init = "p", init_config = NULL,
+                  opt = "NAG-BOLD",
                   max_iter = 1000,
                   report_every = 50,
                   tol = 1e-4,
@@ -688,10 +706,29 @@ embed <- function(df,
     }
   }
 
+  # Adaptive restart decrement
+  dec_mult <- 0.1
+  if (toupper(opt) == "L-BFGS") {
+    message("Optimizing with L-BFGS")
+    optimizer <- ropt(method = "L-BFGS-B", batch_iter = report_every,
+                      inc_iter = TRUE)
+  }
+  else if (toupper(opt) == "NAG-BOLD") {
+    message("Optimizing with Adaptive NAG and bold driver step size")
+    optimizer <- bold_nag_adapt(dec_mult = dec_mult)
+  }
+  else if (toupper(opt) == "NAG-BACK") {
+    message("Optimizing with Adaptive NAG and backstepping step size")
+    optimizer <- back_nag_adapt(dec_mult = dec_mult)
+  }
+  else {
+    stop("Unrecognized optimizer option '", opt, "'")
+  }
+
   embed_result <- embed_main(
     df[, indexes],
     method = embed_method,
-    opt = bold_nag_adapt(),
+    opt = optimizer,
     preprocess = preprocess,
     init_inp = init_inp,
     init_out = init_out,

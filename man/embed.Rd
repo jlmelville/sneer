@@ -7,10 +7,10 @@
 embed(df, indexes = NULL, method = "tsne", alpha = 1, lambda = 0.5,
   kappa = 0.5, scale_type = "", perplexity = 32, perp_scale = "single",
   perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
-  init = "p", init_config = NULL, max_iter = 1000, report_every = 50,
-  tol = 1e-04, plot_type = "p", label_name = NULL, label_chars = NULL,
-  label_size = 1, palette = "Set1", legend = TRUE, legend_rows = NULL,
-  quality_measures = NULL, ret = c())
+  init = "p", init_config = NULL, opt = "NAG-BOLD", max_iter = 1000,
+  report_every = 50, tol = 1e-04, plot_type = "p", label_name = NULL,
+  label_chars = NULL, label_size = 1, palette = "Set1", legend = TRUE,
+  legend_rows = NULL, quality_measures = NULL, ret = c())
 }
 \arguments{
 \item{df}{Data frame to embed.}
@@ -56,6 +56,8 @@ Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.}
 
 \item{init_config}{Coordinates to use for initial configuration. Used only
 if \code{init} is \code{"m"}.}
+
+\item{opt}{Type of optimizer. See 'Details'.}
 
 \item{max_iter}{Maximum number of iterations to carry out optimization of
 the embedding. Ignored if the \code{method} is \code{"pca"}.}
@@ -217,6 +219,22 @@ For initializing the output coordinates, the options for the
  \item \code{"u"} Initialize the coordinates from a user-supplied matrix.
   Supply the coordinates as the \code{init_config} parameter.
 }
+
+For configuring the optimization method, the options for the \code{opt}
+parameter are:
+\itemize{
+ \item \code{"L-BFGS"} The low-memory BFGS method.
+ \item \code{"NAG-BOLD"} Nesterov Accelerated Gradient with bold driver step
+   size selection.
+}
+
+The \code{L-BFGS} method uses the \code{\link[stats]{optim}} function,
+running in batches of \code{report_every}, with the optimization resetting
+between invocations, so don't set \code{report_every} too low in this case,
+or the optimization will essentially behave like steepest descent.
+
+batches of size \code{report_every}, so you shouldn't set
+\code{report_every} too low in this case.
 
 For the \code{quality_measures} argument, a vector with one or more of the
 following options can be supplied:
