@@ -780,6 +780,9 @@ embed <- function(df,
         result$deg <- centrality(inp, embed_result$method)
       }
     }
+    else {
+      warning("Skipping return of unknown result type '", r, "'")
+    }
   }
 
   result
