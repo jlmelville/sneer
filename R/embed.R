@@ -428,7 +428,7 @@ embed <- function(df,
     }
   }
 
-  if (is.null(df[[label_name]])) {
+  if (!is.null(label_name) && is.null(df[[label_name]])) {
     stop("Data frame does not have a '",label_name,
          "' column for use as a label")
   }
