@@ -7,7 +7,7 @@
 # the conjugate gradient method (used in the NeRV paper), and the low-memory
 # approximation to BFGS (used in the multiscale JSE paper).
 #
-# Their only downside is that you have much less control over their inner
+# The only downside is that you have much less control over their inner
 # workings, and they run synchronously until the specified number of
 # iterations, given by the \code{batch_iter} parameter, has been run
 # (or convergence causes the routine to exit early). During those iterations,
@@ -41,9 +41,18 @@
 # value will reduce their behavior to steepest descent. A \code{batch_iter} of
 # 15-25 seems adequate.
 #
+# If you don't need granular access to the iteration counter, for example, you
+# have synchronized reporting to trigger at the same frequency as the
+# \code{batch_iter} (or a positive integer multiple thereof), and don't use any
+# tricks or stepped/scaled input initialization, you can set the \code{inc_iter}
+# parameter to \code{TRUE}.
+#
 # @param method The optimization method to be used.
 # @param batch_iter Number of steps of minimization to carry out per invocation
 #  of the optimizer.
+# @param inc_iter If \code{TRUE}, then increment the iteration counter so that
+#  the number of \code{batch_iter} is taken into account. See above for the
+#  risks of doing that.
 # @param ... Other options to pass to the \code{control} parameter of the
 #   underlying \code{\link[stats]{optim}} function.
 # @return Optimizer using R general-purpose optimization methods.
@@ -67,13 +76,15 @@
 #
 # }
 # @family sneer optimization methods
-ropt <- function(method = "CG", batch_iter = 20, ...) {
+ropt <- function(method = "CG", batch_iter = 20, inc_iter = FALSE, ...) {
   list(
     mat_name = "ym",
     optimize_step = ropt_step,
     method = method,
     control_params = c(maxit = batch_iter, ...),
-    gradient = classical_gradient()
+    gradient = classical_gradient(),
+    batch_iter = batch_iter,
+    inc_iter = inc_iter
   )
 }
 
@@ -105,7 +116,10 @@ ropt_step <- function(opt, method, inp, out, iter) {
   }
   out <- par_to_out(result$par, opt, inp, method, nr)
 
-  list(opt = opt, inp = inp, out = out)
+  if (opt$inc_iter) {
+    iter <- iter + opt$batch_iter - 1
+  }
+  list(opt = opt, inp = inp, out = out, iter = iter)
 }
 
 # Convert Cost Function
@@ -171,8 +185,8 @@ make_optim_g <- function(opt, inp, method, iter) {
 # @param nrow Number of rows in the sneer output matrix.
 # @return Output data with coordinates converted from \code{par}.
 par_to_out <- function(par, opt, inp, method, nrow) {
-  ym <- matrix(par, nrow = nrow)
-  out <- set_solution(inp, ym, method, mat_name = opt$mat_name)
+  dim(par) <- c(nrow, length(par) / nrow)
+  out <- set_solution(inp, par, method, mat_name = opt$mat_name)
   out$dirty <- TRUE
   out
 }
@@ -186,5 +200,6 @@ par_to_out <- function(par, opt, inp, method, nrow) {
 # @param mat Matrix to convert.
 # @return Matrix in vector form.
 mat_to_par <- function(mat) {
-  as.vector(mat)
+  dim(mat) <- NULL
+  mat
 }

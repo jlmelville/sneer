@@ -1139,6 +1139,9 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
     opt_result <- opt$optimize_step(opt, method, inp, out, iter)
     out <- opt_result$out
     opt <- opt_result$opt
+    if (!is.null(opt_result$iter)) {
+      iter <- opt_result$iter
+    }
 
     iter <- iter + 1
   }
