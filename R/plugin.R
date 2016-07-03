@@ -194,6 +194,19 @@ tasne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
   )
 }
 
+# t-PSNE Method using Plugin Gradient
+#
+# A probability-based embedding method.
+#
+# An implementation of t-PSNE using the plugin gradient.
+tpsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
+  lreplace(
+    tsne_plugin(eps = eps),
+    prob_type = "cond",
+    verbose = verbose
+  )
+}
+
 # RASNE Method using Plugin Gradient
 #
 # A probability-based embedding method.
@@ -539,19 +552,30 @@ plugin_stiffness_row <- function(method, inp, out) {
   2 * (km + t(km))
 }
 
-# Plugin Stiffness for Joint Probabilities
+# Plugin Stiffness for Conditional Probabilities
 #
-# Calculates the stiffness matrix for joint probability based embedding
+# Calculates the stiffness matrix for conditional probability based embedding
 # methods.
 #
 # @param inp Input data.
 # @param out Output data.
 # @param method Embedding method.
 # @return Stiffness matrix.
-plugin_stiffness_joint <- function(method, inp, out) {
+plugin_stiffness_cond <- function(method, inp, out) {
   dc_dq <- method$cost$gr(inp, out, method)
   dw_du <- method$kernel$gr(method$kernel, out$d2m)
   wm_sum <- sum(out$wm)
   km <- (sum(dc_dq * out$qm) - dc_dq) * (-dw_du / wm_sum)
   2 * (km + t(km))
 }
+
+# Plugin Stiffness for Joint Probabilities
+#
+# The stiffness matrix is identical for joint and conditional P matrices, because
+# they both sum over all pairs, rather than all points.
+#
+# Further simplification for joint probability embedding is possible only if Q
+# is joint as well as P (by either enforcing jointness as done with P, or
+# because the similarity kernel is naturally symmetric). In that case, we
+# could replace 2 * (km * t(km)) with 4 * km (but we don't support that yet).
+plugin_stiffness_joint <- plugin_stiffness_cond

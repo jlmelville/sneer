@@ -55,5 +55,6 @@ test_that("plugin method results match non-plugin methods", {
   expect_plugin_equal("jse", tolerance = 1e-5)
   expect_plugin_equal("sjse", tolerance = 1e-5)
   expect_plugin_equal("hsjse", tolerance = 1e-5)
+  expect_plugin_equal("tpsne", tolerance = 1e-5)
 })
 

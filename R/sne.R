@@ -197,7 +197,7 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 # within sneer: this uses the t-distributed distance weighting of t-SNE, but
 # for probability generation uses the point-wise distribution of ASNE.
 #
-# The probability matrix used in ASNE:
+# The probability matrix used in t-ASNE:
 #
 # \itemize{
 #  \item{represents one N row-wise probability distributions, where N is the
@@ -238,6 +238,40 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
       tasne_stiffness(inp$pm, out$qm, out$wm)
     },
     prob_type = "row")
+}
+
+# t-Distribute "Pairwise" Stochastic Neighbor Embedding (t-PSNE)
+#
+# A probability-based embedding method.
+#
+# Identical to t-SNE, except the input probability matrix is not symmetrized.
+# If you compare the embedding produced by this method and those of t-ASNE
+# and t-SNE, you can evaluate the relative impact of defining pair-wise
+# probabilities versus point-wise probabilities, and that of enforcing that
+# the pair-wise probabilities are symmetric.
+#
+# The probability matrix used in t-PSNE:
+#
+# \itemize{
+#  \item{represents one probability distribution, i.e. the grand sum of the
+#  matrix is one.}
+#  \item{is asymmetric, i.e. there is no requirement that
+#  \code{p[i, j] == p[j, i]}.}
+# }
+#
+# @section Output Data:
+# If used in an embedding, the output data list will contain:
+# \describe{
+#  \item{\code{ym}}{Embedded coordinates.}
+#  \item{\code{qm}}{Row probability matrix based on the weight matrix
+#  \code{wm}.}
+#  \item{\code{wm}}{Weight matrix generated from the distances between points
+#  in \code{ym}.}
+# }
+tpsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
+  lreplace(
+    tasne(eps = eps, verbose = verbose),
+    prob_type = "cond")
 }
 
 # Heavy-Tailed Symmetric Stochastic Neighbor Embedding (HSSNE)

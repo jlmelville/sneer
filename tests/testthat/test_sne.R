@@ -95,6 +95,24 @@ expect_equal(tasne_iris$report$norm, 0.931, tolerance = 5e-4, scale = 1,
              label = "tasne")
 })
 
+test_that("characterize TPSNE", {
+  tpsne_iris <- embed_prob(iris[, 1:4],
+                           method = tpsne(verbose = FALSE),
+                           init_inp = inp_from_perp(
+                             perplexity = 25,
+                             input_weight_fn = sqrt_exp_weight,
+                             verbose = FALSE),
+                           preprocess = make_preprocess(range_scale_matrix = TRUE,
+                                                        verbose = FALSE),
+                           max_iter = 0, verbose = FALSE,
+                           reporter = make_reporter(report_every = 1,
+                                                    verbose = FALSE),
+                           export = c("report"))
+  expect_equal(tpsne_iris$report$norm, 0.932, tolerance = 5e-4, scale = 1,
+               label = "tasne")
+})
+
+
 test_that("tsne with Jacobs opt", {
 tsne_iris_jacobs <- embed_prob(iris[, 1:4],
                               method = tsne(verbose = FALSE),
