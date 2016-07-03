@@ -131,7 +131,7 @@ NULL
 #'  \item \code{"CG-MT"} Conjugate Gradient with More-Thuente step size
 #'  selection.
 #'  \item \code{"CG-R"} Conjugate Gradient with Rasmussen step size selection.
-#'
+#' }
 #' The \code{L-BFGS} and conjugate gradient methods run in batches of
 #' \code{report_every}, with the optimization resetting between invocations, so
 #' don't set \code{report_every} too low in this case, or the optimization will

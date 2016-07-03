@@ -226,15 +226,22 @@ parameter are:
  \item \code{"L-BFGS"} The low-memory BFGS method.
  \item \code{"NAG-BOLD"} Nesterov Accelerated Gradient with bold driver step
    size selection.
+ \item \code{"NAG-MT"} Nesterov Accelerated Gradient with More-Thuente step
+   size selection.
+ \item \code{"NAG-R"} Nesterov Accelerated Gradient with Rasmussen step size
+  selection.
+ \item \code{"CG-MT"} Conjugate Gradient with More-Thuente step size
+ selection.
+ \item \code{"CG-R"} Conjugate Gradient with Rasmussen step size selection.
 }
+The \code{L-BFGS} and conjugate gradient methods run in batches of
+\code{report_every}, with the optimization resetting between invocations, so
+don't set \code{report_every} too low in this case, or the optimization will
+essentially behave like steepest descent.
 
-The \code{L-BFGS} method uses the \code{\link[stats]{optim}} function,
-running in batches of \code{report_every}, with the optimization resetting
-between invocations, so don't set \code{report_every} too low in this case,
-or the optimization will essentially behave like steepest descent.
-
-batches of size \code{report_every}, so you shouldn't set
-\code{report_every} too low in this case.
+To use the conjugate gradient method or the Rasmussen or More-Thuente step
+size methods, you must install and load the rcgmin package from
+https://github.com/jlmelville/rcgmin
 
 For the \code{quality_measures} argument, a vector with one or more of the
 following options can be supplied:
@@ -301,6 +308,20 @@ following options can be supplied:
   # default settings are to use TSNE with perplexity 32 and initialization
   # from PCA so the following is the equivalent of the above
   res <- embed(iris, scale_type = "a")
+
+  # Use the L-BFGS optimization method
+  res <- embed(iris, scale_type = "a", opt = "L-BFGS")
+
+  # Load the rcgmin library
+  install.packages("devtools")
+  devtools::install_github("jlmelville/rcgmin")
+  library("rcgmin")
+  # Use More-Thuente line search with NAG optimizer instead of bold driver
+  res <- embed(iris, scale_type = "a", opt = "NAG-MT")
+  # Use Rasmussen line search
+  res <- embed(iris, scale_type = "a", opt = "NAG-R")
+  # Use Conjugate Gradient with More-Thuente line search
+  res <- embed(iris, scale_type = "a", opt = "CG-R")
 
   # NeRV method, starting at a more global perplexity and slowly stepping
   # towards a value of 32 (might help avoid local optima)
