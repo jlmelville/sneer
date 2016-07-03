@@ -234,14 +234,26 @@ parameter are:
  selection.
  \item \code{"CG-R"} Conjugate Gradient with Rasmussen step size selection.
 }
-The \code{L-BFGS} and conjugate gradient methods run in batches of
-\code{report_every}, with the optimization resetting between invocations, so
-don't set \code{report_every} too low in this case, or the optimization will
-essentially behave like steepest descent.
 
-To use the conjugate gradient method or the Rasmussen or More-Thuente step
-size methods, you must install and load the rcgmin package from
-https://github.com/jlmelville/rcgmin
+There are some caveats to using these optimization routines:
+
+\itemize{
+ \item To use the conjugate gradient method or the Rasmussen or More-Thuente
+  step size methods, you must install and load the \code{rcgmin} package from
+  \url{https://github.com/jlmelville/rcgmin}.
+ \item The external optimization routines (\code{L-BFGS} and \code{CG-}
+  methods) run in batches of \code{report_every}. For example, if you want to
+  report every 50 iterations, the optimization routine will be run for 50
+  iterations, the cost is logged to screen, and then a new batch of 50
+  iterations are run, losing any memory of the previous direction or other
+  state, effectively "resetting" the search. Therefore, do not set
+  \code{report_every} too low in this case, or the optimization will
+  approach the behavior of steepest descent.
+ \item Use of the external optimization routines is incompatible with
+  \code{perp_scale} settings that need to update the input probabilities at
+  certain iterations (e.g. multiscaling), because that iteration number might
+  have been "lost" inside the optimization routine.
+}
 
 For the \code{quality_measures} argument, a vector with one or more of the
 following options can be supplied:
