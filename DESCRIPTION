@@ -7,17 +7,19 @@ Authors@R: person("Melville", "James", email = "jlmelville@gmail.com",
     role = c("aut", "cre"))
 Description: Pure R implementation of similarity preserving embedding
     algorithms, including t-Distributed Stochastic Neighbour Embedding (TSNE).
-Depends:
+Depends: 
     R (>= 3.2.2)
 License: GPL-2 | GPL-3
 LazyData: TRUE
-Suggests:
+Suggests: 
     testthat,
     ggplot2,
     RColorBrewer,
     PRROC,
-    rcgmin
+    rcgmin,
+    knitr,
+    rmarkdown
 URL: http://github.com/jlmelville/sneer
 BugReports: http://github.com/jlmelville/sneer/issues
 RoxygenNote: 5.0.1
-
+VignetteBuilder: knitr
