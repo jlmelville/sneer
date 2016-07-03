@@ -15,7 +15,8 @@ Suggests:
     testthat,
     ggplot2,
     RColorBrewer,
-    PRROC
+    PRROC,
+    rcgmin
 URL: http://github.com/jlmelville/sneer
 BugReports: http://github.com/jlmelville/sneer/issues
 RoxygenNote: 5.0.1
