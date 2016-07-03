@@ -124,15 +124,22 @@ NULL
 #'  \item \code{"L-BFGS"} The low-memory BFGS method.
 #'  \item \code{"NAG-BOLD"} Nesterov Accelerated Gradient with bold driver step
 #'    size selection.
-#' }
+#'  \item \code{"NAG-MT"} Nesterov Accelerated Gradient with More-Thuente step
+#'    size selection.
+#'  \item \code{"NAG-R"} Nesterov Accelerated Gradient with Rasmussen step size
+#'   selection.
+#'  \item \code{"CG-MT"} Conjugate Gradient with More-Thuente step size
+#'  selection.
+#'  \item \code{"CG-R"} Conjugate Gradient with Rasmussen step size selection.
 #'
-#' The \code{L-BFGS} method uses the \code{\link[stats]{optim}} function,
-#' running in batches of \code{report_every}, with the optimization resetting
-#' between invocations, so don't set \code{report_every} too low in this case,
-#' or the optimization will essentially behave like steepest descent.
+#' The \code{L-BFGS} and conjugate gradient methods run in batches of
+#' \code{report_every}, with the optimization resetting between invocations, so
+#' don't set \code{report_every} too low in this case, or the optimization will
+#' essentially behave like steepest descent.
 #'
-#' batches of size \code{report_every}, so you shouldn't set
-#' \code{report_every} too low in this case.
+#' To use the conjugate gradient method or the Rasmussen or More-Thuente step
+#' size methods, you must install and load the rcgmin package from
+#' https://github.com/jlmelville/rcgmin
 #'
 #' For the \code{quality_measures} argument, a vector with one or more of the
 #' following options can be supplied:
@@ -311,6 +318,20 @@ NULL
 #'   # default settings are to use TSNE with perplexity 32 and initialization
 #'   # from PCA so the following is the equivalent of the above
 #'   res <- embed(iris, scale_type = "a")
+#'
+#'   # Use the L-BFGS optimization method
+#'   res <- embed(iris, scale_type = "a", opt = "L-BFGS")
+#'
+#'   # Load the rcgmin library
+#'   install.packages("devtools")
+#'   devtools::install_github("jlmelville/rcgmin")
+#'   library("rcgmin")
+#'   # Use More-Thuente line search with NAG optimizer instead of bold driver
+#'   res <- embed(iris, scale_type = "a", opt = "NAG-MT")
+#'   # Use Rasmussen line search
+#'   res <- embed(iris, scale_type = "a", opt = "NAG-R")
+#'   # Use Conjugate Gradient with More-Thuente line search
+#'   res <- embed(iris, scale_type = "a", opt = "CG-R")
 #'
 #'   # NeRV method, starting at a more global perplexity and slowly stepping
 #'   # towards a value of 32 (might help avoid local optima)
@@ -706,6 +727,10 @@ embed <- function(df,
     }
   }
 
+  # c1 = 1e-4 suggested by Nocedal & Wright
+  c1 <- 1e-4
+  # 0.9 for Newton and Quasi-Newton, 0.1 for CG
+  c2 <- 0.9
   # Adaptive restart decrement
   dec_mult <- 0.1
   if (toupper(opt) == "L-BFGS") {
@@ -720,6 +745,50 @@ embed <- function(df,
   else if (toupper(opt) == "NAG-BACK") {
     message("Optimizing with Adaptive NAG and backstepping step size")
     optimizer <- back_nag_adapt(dec_mult = dec_mult)
+  }
+  else if (toupper(opt) == "NAG-MT") {
+    if (!requireNamespace("rcgmin",
+                          quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("Using More-Thuente line search requires 'rcgmin' package")
+    }
+    message("Optimizing with Adaptive NAG and MT line search")
+    optimizer <- back_nag_adapt(dec_mult = dec_mult)
+    optimizer$step_size <- more_thuente_ls(c1 = c1, c2 = c2)
+  }
+  else if (toupper(opt) == "NAG-R") {
+    if (!requireNamespace("rcgmin",
+                          quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("Using Rasmussen line search requires 'rcgmin' package")
+    }
+    message("Optimizing with Adaptive NAG and Rasmussen line search")
+    optimizer <- back_nag_adapt(dec_mult = dec_mult)
+    optimizer$step_size <- rasmussen_ls(c1 = c1, c2 = c2)
+  }
+  else if (toupper(opt) == "CG-R") {
+    if (!requireNamespace("rcgmin",
+                          quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("Using conjugate gradient optimizer requires 'rcgmin' package")
+    }
+    message("Optimizing with CG and Rasmussen line search")
+    c2 <- 0.1
+    optimizer <- optim_rcg(line_search = "r", batch_iter = report_every,
+                           c1 = c1, c2 = c2,
+                           inc_iter = TRUE)
+  }
+  else if (toupper(opt) == "CG-MT") {
+    if (!requireNamespace("rcgmin",
+                          quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("Using conjugate gradient optimizer requires 'rcgmin' package")
+    }
+    message("Optimizing with CG and More-Thuente line search")
+    c2 <- 0.1
+    optimizer <- optim_rcg(line_search = "mt", batch_iter = report_every,
+                           c1 = c1, c2 = c2,
+                           inc_iter = TRUE)
   }
   else {
     stop("Unrecognized optimizer option '", opt, "'")
