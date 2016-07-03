@@ -79,6 +79,11 @@ rcg_opt_step <- function(opt, method, inp, out, iter) {
 
   par <- mat_to_par(out$ym)
 
+  if (!requireNamespace("rcgmin",
+                        quietly = TRUE,
+                        warn.conflicts = FALSE)) {
+    stop("Using conjugate gradient optimizer requires 'rcgmin' package")
+  }
   result <- rcgmin::conj_grad(par = par, fn = fr, gr = grr,
                       line_search = opt$line_search,
                       max_iter = opt$batch_iter,
