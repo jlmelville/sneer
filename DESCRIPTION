@@ -1,17 +1,17 @@
 Package: sneer
 Type: Package
 Title: Stochastic Neighbor Embedding Experiments in R
-Version: 0.0.0.9015
+Version: 0.0.0.9016
 Date: 2015-10-04
 Authors@R: person("Melville", "James", email = "jlmelville@gmail.com",
     role = c("aut", "cre"))
 Description: Pure R implementation of similarity preserving embedding
     algorithms, including t-Distributed Stochastic Neighbour Embedding (TSNE).
-Depends: 
+Depends:
     R (>= 3.2.2)
 License: GPL-2 | GPL-3
 LazyData: TRUE
-Suggests: 
+Suggests:
     testthat,
     ggplot2,
     RColorBrewer,
