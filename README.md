@@ -163,17 +163,22 @@ fork. It does, however, inherit its license (GPL-2 or later).
 
 Currently sneer offers:
 
-* Embedding with t-SNE and its variants ASNE and SSNE.
+* Embedding with [t-SNE](http://jmlr.org/papers/v9/vandermaaten08a.html) 
+and its variants ASNE and SSNE.
 * Sammon mapping and metric Multidimensional Scaling.
-* Heavy-Tailed Symmetric SNE (HSSNE).
-* Neighbor Retrieval Visualizer (NeRV).
-* Jensen-Shannon Embedding (JSE).
-* Multiscale SNE (msSNE).
-* Weighted SNE using degree centrality (wSSNE).
+* [Heavy-Tailed Symmetric SNE](http://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding) (HSSNE).
+* [Neighbor Retrieval Visualizer](http://www.jmlr.org/papers/v11/venna10a.html) (NeRV).
+* [Jensen-Shannon Embedding](http://www.sciencedirect.com/science/article/pii/S0925231213001471) (JSE).
+* [Multiscale SNE](http://www.sciencedirect.com/science/article/pii/S0925231215003641) (msSNE).
+* [Weighted SNE using degree centrality (PDF)](http://www.jmlr.org/proceedings/papers/v32/yange14.pdf) (wSSNE).
 * Nesterov Accelerated Gradient method for optimization.
 * The usual t-SNE Steepest descent with momentum and Jacobs adaptive step size
 if NAG is too racy for you.
 * The bold driver adaptive step algorithm if you want to mix it up a little.
+* The [Spectral Directions (PDF)](http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml12.pdf)
+optimization method of Vladymyrov and Carreira-Perpiñán, although in a 
+non-sparse form.
+* The L-BFGS method from the R `optim` function.
 * Output initialization options include using PCA scores matrix for easier
 reproducibility.
 * Various simple preprocessing options.
@@ -181,14 +186,31 @@ reproducibility.
 * s1k, a small (1000 points) 9-dimensional synthetic dataset that exemplifies
 the "crowding problem".
 
-### Roadmap
-* Better documentation of internals so a hypothetical person who isn't me
-could implement an embedding algorithm.
-* Some vignettes exploring aspects of embedding.
+If you install and load the [rcgmin](https://github.com/jlmelville/rcgmin) 
+package:
+```R
+devtools::install_github("jlmelville/rcgmin")
+library("rcgmin")
+```
+
+You can also access some extra optimization options:
+
+* A Polak-Ribiere-style conjugate gradient optimizer.
+* A choice of the More-Thuente or Rasmussen line search algorithm when using
+CG, spectral direction or NAG.
+
+Again, see the documentation and examples for the `embed` function for more 
+details.
 
 ### Limitations and Issues
-It's in pure R, so it's slow. It's definitely designed for experimenting on 
-smaller datasets, not production-readiness.
+* It's in pure R, so it's slow. 
+* It doesn't implement any of the Barnes-Hut or multipole or related approaches
+to speed up the distance calculations from O(N^2), so it's slow.
+* It doesn't work with sparse matrices... so it's slow and it can't work with
+large datasets.
+
+Consider this package designed for experimenting on smaller datasets, not 
+production-readiness.
 
 Also, fitting everything I wanted to do into one package has involved 
 splitting everything up into lots of little functions, so good luck finding 
@@ -200,8 +222,18 @@ over-engineered as I want.
 ### See also
 I have some other packages that create or download datasets often used in 
 SNE-related research: 
-[Simulation, Olivetti and Frey Faces](https://github.com/jlmelville/snedata), [COIL-20](https://github.com/jlmelville/coil20), and 
+[Simulation, Olivetti and Frey Faces](https://github.com/jlmelville/snedata), 
+[COIL-20](https://github.com/jlmelville/coil20), and 
 [MNIST Digit](https://github.com/jlmelville/mnist).
+
+### Acknowledgements
+I reverse engineered some specifics of the Spectral Directions gradient by 
+translating the relevant part of the Matlab implementation provided on the 
+Carreira-Perpiñán group's 
+[software page](http://faculty.ucmerced.edu/mcarreira-perpinan/software.html).
+Professor Carreira-Perpiñán kindly agreed to allow the resulting R code to
+be under the GPL license of this package. Obviously, assume any mistakes, errors
+or resulting destruction of your computer is a bug in sneer.
 
 ### License
 [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.txt).

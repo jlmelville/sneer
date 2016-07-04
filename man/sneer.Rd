@@ -28,11 +28,32 @@ including:
 }
 
 See the documentation for the function for the exact list of methods
-and variations. Optimization is carried out using the momentum interpretation
+and variations.
+
+Optimization is carried out using the momentum interpretation
 of the Nesterov Accelerated Gradient method (Sutskever et al 2013.) with
 an adaptive restart (O'Donoghue and Candes 2013). This seems a bit more
 robust compared to the usual t-SNE optimization method across the different
 methods exposed by sneer.
+
+Some other optimization methods are also available:
+\itemize{
+ \item{The low-memory BFGS method from the \code{optim} function.}
+ \item{A Polak-Ribiere Conjugate Gradient optimizer, if you install and load
+ the rcgmin package from https://github.com/jlmelville/rcgmin}
+ \item{If you install rcgmin, you can also use the two line search algorithms
+ it implements with the NAG optimizer, instead of the bold driver approach.}
+ \item{The Spectral Direction method of Vladymyrov and Carreira-Perpinan.
+ This can only be applied to probability-based embedding methods that use a
+ symmetric input probability matrix (not NeRV or JSE, but SSNE and t-SNE
+ are fine), but works very well. However, it is intended to be used with
+ sparse matrices, because it internally uses a Cholesky decomposition of the
+ probability matrix, which has a complexity of O(N^3). Currently, lack of
+ support for sparse matrices in sneer restricts its applicability to smaller
+ datasets. This can be used with the bold driver line search method, but
+ to be on the safe side, you might want to also consider the line search
+ methods provided by the rcgmin package.}
+}
 }
 
 \section{Visualization}{
@@ -132,5 +153,11 @@ In \emph{Proceedings of the 30th international conference on machine learning (I
 O'Donoghue, B., & Candes, E. (2013).
 Adaptive restart for accelerated gradient schemes.
 \emph{Foundations of computational mathematics}, \emph{15}(3), 715-732.
+
+Spectral Direction:
+Vladymyrov, M., & Carreira-Perpinan, M. A. (2012).
+Partial-Hessian Strategies for Fast Learning of Nonlinear Embeddings.
+In \emph{Proceedings of the 29th International Conference on Machine Learning (ICML-12)}
+(pp. 345-352).
 }
 

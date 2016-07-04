@@ -131,14 +131,19 @@ NULL
 #'  \item \code{"CG-MT"} Conjugate Gradient with More-Thuente step size
 #'  selection.
 #'  \item \code{"CG-R"} Conjugate Gradient with Rasmussen step size selection.
+#'  \item \code{"SPEC-BOLD"} Spectral Direction method of Vladymyrov and
+#'  Carreira-Perpinan (2012) with bold driver step size selection.
+#'  \item \code{"SPEC-MT"} Spectral Direction with More-Thuente step size
+#'  selection.
+#'  \item \code{"SPEC-R"} Spectral Direction with Rasmussen step size selection.
 #' }
 #'
 #' There are some caveats to using these optimization routines:
 #'
 #' \itemize{
-#'  \item To use the conjugate gradient method or the Rasmussen or More-Thuente
-#'   step size methods, you must install and load the \code{rcgmin} package from
-#'   \url{https://github.com/jlmelville/rcgmin}.
+#'  \item To use the conjugate gradient method or the
+#'   Rasmussen or More-Thuente step size methods, you must install and load the
+#'   \code{rcgmin} package from \url{https://github.com/jlmelville/rcgmin}.
 #'  \item The external optimization routines (\code{L-BFGS} and \code{CG-}
 #'   methods) run in batches of \code{report_every}. For example, if you want to
 #'   report every 50 iterations, the optimization routine will be run for 50
@@ -151,6 +156,14 @@ NULL
 #'   \code{perp_scale} settings that need to update the input probabilities at
 #'   certain iterations (e.g. multiscaling), because that iteration number might
 #'   have been "lost" inside the optimization routine.
+#'  \item The spectral direction method requires a probability-based embedding
+#'   method and that the input probability matrix be symmetric. Some
+#'   probability-based methods are not compatible (e.g. NeRV and JSE; t-SNE
+#'   works with it, however). Also, while it works with the dense matrices used
+#'   by sneer, because this method uses a Cholesky decomposition of the input
+#'   probability matrix which has a complexity of O(N^3), it is intended
+#'   to be used with sparse matrices. Its inclusion here is suitable for use
+#'   with smaller datasets.
 #' }
 #'
 #' For the \code{quality_measures} argument, a vector with one or more of the
@@ -288,6 +301,11 @@ NULL
 #' data visualization.
 #' \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
 #'
+#' Vladymyrov, M., & Carreira-Perpinan, M. A. (2012).
+#' Partial-Hessian Strategies for Fast Learning of Nonlinear Embeddings.
+#' In \emph{Proceedings of the 29th International Conference on Machine Learning (ICML-12)}
+#' (pp. 345-352).
+#'
 #' Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
 #' Heavy-tailed symmetric stochastic neighbor embedding.
 #' In \emph{Advances in neural information processing systems} (pp. 2169-2177).
@@ -333,8 +351,11 @@ NULL
 #'
 #'   # Use the L-BFGS optimization method
 #'   res <- embed(iris, scale_type = "a", opt = "L-BFGS")
+#'   # Use the Spectral Directions method with bold driver
+#'   res <- embed(iris, scale_type = "a", opt = "SPEC-BOLD")
 #'
-#'   # Load the rcgmin library
+#'   # Load the rcgmin library: make use of other line search algorithms and
+#'   # conjugate gradient optimizer
 #'   install.packages("devtools")
 #'   devtools::install_github("jlmelville/rcgmin")
 #'   library("rcgmin")
@@ -343,7 +364,10 @@ NULL
 #'   # Use Rasmussen line search
 #'   res <- embed(iris, scale_type = "a", opt = "NAG-R")
 #'   # Use Conjugate Gradient with More-Thuente line search
-#'   res <- embed(iris, scale_type = "a", opt = "CG-R")
+#'   res <- embed(iris, scale_type = "a", opt = "CG-MT")
+#'
+#'   # Use the Spectral Direction method with More-Thuente line search
+#'   res <- embed(iris, scale_type = "a", opt = "SPEC-MT")
 #'
 #'   # NeRV method, starting at a more global perplexity and slowly stepping
 #'   # towards a value of 32 (might help avoid local optima)
@@ -816,6 +840,32 @@ embed <- function(df,
                            inc_iter = TRUE)
     ext_opt <- TRUE
   }
+  else if (toupper(opt) == "SPEC-R") {
+    if (!requireNamespace("rcgmin",
+                          quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("Using spectral direction optimizer requires 'rcgmin' package")
+    }
+    message("Optimizing with Spectral Direction and Rasmussen line search")
+    optimizer <- optim_spectral(line_search = "r", c1 = c1, c2 = c2)
+  }
+  else if (toupper(opt) == "SPEC-MT") {
+    if (!requireNamespace("rcgmin",
+                          quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("Using More-Thuente optimizer requires 'rcgmin' package")
+    }
+    message("Optimizing with Spectral Direction and More-Thuente line search")
+    optimizer <- optim_spectral(line_search = "mt", c1 = c1, c2 = c2)
+  }
+  else if (toupper(opt) == "SPEC-BOLD") {
+    message("Optimizing with Spectral Direction and Bold Driver line search")
+    optimizer <- optim_spectral(line_search = "bold")
+  }
+  else if (toupper(opt) == "SPEC-BACK") {
+    message("Optimizing with Spectral Direction and Backstepping line search")
+    optimizer <- optim_spectral(line_search = "back", c1 = c1)
+  }
   else {
     stop("Unrecognized optimizer option '", opt, "'")
   }
@@ -825,6 +875,14 @@ embed <- function(df,
       perp_scale %in% c('multi', 'multil', 'step')) {
     stop("optimizer '", opt, "' is incompatible with perplexity scale option '",
          perp_scale, "'")
+  }
+
+  # Ensure that if Spectral Direction optimizer is chosen, it can be used with
+  # the chosen embedding method
+  if (is.null(embed_method$prob_type) || embed_method$prob_type != "joint") {
+    stop("Spectral direction optimizer is only compatible with ",
+         "probability-based embedding methods that use symmetric input ",
+         "probabilities (e.g. t-SNE), not '", method, "'")
   }
 
   embed_result <- embed_main(
