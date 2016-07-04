@@ -1,0 +1,323 @@
+---
+title: "Neighbor Embedding"
+author: "James Melville"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+## Chain rule for partial derivatives
+
+Say we have a function $x$, of $N$ variables $y_1, y_2 \dots y_i \dots y_N$, and
+each $y$ is a function of $M$ variables $z_1, z_2, \dots z_j \dots z_M$, then 
+the partial derivative of $x$ with respect to one of $z$ is:
+
+$$\frac{\partial x}{\partial z_j} = \sum_i^N \frac{\partial x}{\partial y_i}\frac{\partial y_i}{\partial z_j}$$
+
+## Breaking down the cost function
+
+For embeddings, we need to define the gradient of the cost function with respect
+to the coordinates. Let's define a chain of dependent variables specifically
+for probability-based embeddings. A glance at the chain rule for partial 
+derivatives above indicates that we're going to be using a lot of nested
+summations of multiple terms, although mercifully most of them evaluate to 0 and
+disappear. But for now, let's ignore the exact indexes.
+
+* The cost function, $C$ is normally a divergence of some kind, and hence 
+expressed in terms of the output probabilities, $q$.
+* The output probabilities, $q$, are normalized versions of the similarity
+weights, $w$.
+* The similarity weights are generated from a function of the distances, $f$.
+* The $f$ values are a function of the Euclidean distances, $d$. Normally,
+this is the squared distance.
+* The distances are generated from the coordinates, $\mathbf{y_i}$.
+
+We're going to chain those individual bits together via the chain rule
+for partial derivatives. The chain of variable dependencies is $C \rightarrow q
+\rightarrow w \rightarrow f \rightarrow d \rightarrow \mathbf{y}$.
+
+I find the best way to proceed is to start by writing out the gradient with 
+respect to $\mathbf{y}$ in terms of the distances, then proceeding backwards to
+$q$ until we have a product of simple expressions that can have their 
+derivatives easily calculated.
+
+Some of these terms are often varied by different researchers to produce 
+different types of embedding methods, e.g. the cost with respect to the 
+probability (the divergence) or the similarity weighting kernel (e.g. gaussian
+or t-distribution). Other parts are never changed (e.g. the output distance
+function, how weights are converted to probabilities). Where there is universal
+agreement, I will explicitly write out the function and its derivative. For the
+functions which are often changed, I'll leave them generic.
+
+### Distance, $d_{ij}$
+
+To start, let's consider $C$, $d$ and $\mathbf{y}$. Using the chain rule we can
+write out the gradient of the cost function with respect to the $i$th embedded 
+point as:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  \sum_j^N \sum_k^N \frac{\partial C}{\partial d_{jk}} 
+  \frac{\partial d_{jk}}{\partial \mathbf{y_i}}$$
+
+where $d_{jk}$ is the distance between point $j$ and $k$ and we have a double
+sum over all pairs of points. These derivatives are all zero unless either 
+$j = i$ or $k = i$, so we can simplify to:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  \sum_k^N \frac{\partial C}{\partial d_{ik}} 
+    \frac{\partial d_{ik}}{\partial \mathbf{y_i}}
++
+  \sum_j^N \frac{\partial C}{\partial d_{ji}} 
+    \frac{\partial d_{ji}}{\partial \mathbf{y_i}}$$
+
+We can then relabel $k$ to $j$ and move both terms inside the same sum:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  \sum_j^N \frac{\partial C}{\partial d_{ij}} 
+    \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
++
+    \frac{\partial C}{\partial d_{ji}}
+    \frac{\partial d_{ji}}{\partial \mathbf{y_i}}$$
+
+Because distances are symmetric, $d_{ij} = d_{ji}$, we can simplify to:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  \sum_j^N \left(
+    \frac{\partial C}{\partial d_{ij}} +
+    \frac{\partial C}{\partial d_{ji}}
+   \right) 
+   \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+    $$
+
+What we can't do is treat $\frac{\partial C}{\partial d_{ij}}$ and 
+$\frac{\partial C}{\partial d_{ji}}$ as equivalent (any of the other variables
+$C$ and $d$ are coupled through might be asymmetric).
+
+While there may be some exotic situations where the output distances should be
+non-Euclidean (a literary analysis of HP Lovecraft perhaps), I'm not aware of
+any publications that do this. You can safely assume that $d_{ij}$ represent
+Euclidean distances. In an $K$-dimensional output space, the 
+distance between point $\mathbf{y_i}$ and point $\mathbf{y_j}$ is:
+
+$$d_{ij} = \left[\sum_l^K\left (y_{il} - y_{jl} \right )^2\right ]^{1/2}$$
+
+and the derivative can be written as:
+
+$$\frac{\partial d_{ij}}{\partial \mathbf{y_i}} = 
+\frac{1}{d_{ij}}\left(\mathbf{y_i} - \mathbf{y_j}\right)$$
+
+### Transformed distance, $f_{ij}$
+
+Now we need an expression for $\frac{\partial C}{\partial d_{ij}}$:
+
+$$\frac{\partial C}{\partial d_{ij}} = 
+\sum_k^N \sum_l^N \frac{\partial C}{\partial f_{kl}} 
+  \frac{\partial f_{kl}}{\partial d_{ij}}$$
+
+which is only non-zero when $i = k$ and $j = l$, so:
+
+$$\frac{\partial C}{\partial d_{ij}} = 
+\frac{\partial C}{\partial f_{ij}} 
+\frac{\partial f_{ij}}{\partial d_{ij}}$$
+
+What is this $f_{ij}$? It's a transformation of the output distance that will
+then be used as input into the similarity kernel. Most authors do indeed include
+this function as part of the similarity kernel itself, or even jump straight
+to defining the probabilities, but I prefer to split things up more finely,
+because I find that this makes dealing with derivatives of different similarity 
+kernels easier. Indulge me.
+
+$f_{ij}$ is an increasing function of the distance between points $i$ and $j$
+and is invariably merely the square of the distance. While we could include 
+other parameters like a "bandwidth" or "precision" that reflects the local 
+density of points at $i$, it's better to include that in the similarity kernel.
+
+Allow me to insult your intelligence by writing out the function and derivative 
+for the sake of completeness:
+
+$$f_{ij} = d_{ij}^{2}$$
+
+$$\frac{\partial f_{ij}}{\partial d_{ij}} = 2d_{ij}$$
+
+### Similarity weight, $w_{ij}$
+
+Next, $\frac{\partial C}{\partial f_{ij}}$ can be written as:
+
+$$\frac{\partial C}{\partial f_{ij}} = 
+\sum_k^N \sum_l^N \frac{\partial C}{\partial w_{kl}} 
+  \frac{\partial w_{kl}}{\partial f_{ij}}$$
+  
+once again, this is only non-zero when $i = k$ and $j = l$:
+
+$$\frac{\partial C}{\partial f_{ij}} = 
+\frac{\partial C}{\partial w_{ij}} 
+\frac{\partial w_{ij}}{\partial f_{ij}}$$
+
+Various functional forms have been used for the weighting function (or 
+similarity kernel; I use either term as the mood takes me). We'll get into
+specifics later.
+
+### Probability, $q_{ij}$
+
+So far, so good. Those unpleasant looking double sums are just melting away.
+Alas, the good times cannot last forever and now we're going to have to do a bit
+more work. Using the chain rule on 
+$\frac{\partial C}{\partial w_{ij}}$, we get:
+
+$$\frac{\partial C}{\partial w_{ij}} = 
+\sum_k^N \sum_l^N \frac{\partial C}{\partial q_{kl}} 
+  \frac{\partial q_{kl}}{\partial w_{ij}}$$
+
+This is the equation that relates the weights to the probabilities. The 
+probabilities sum to one, so a change to a weight $w_{ij}$ will affect all the
+probabilities, not just $q_{ij}$. Therefore, we should see non-zero derivatives 
+for some $q_{kl}$ other than when $i = k$ and $j = l$. 
+
+The probabilities are (nearly) always defined by normalizing the weight so
+they sum to one:
+
+$$q_{ij} = \frac{w_{ij}}{\sum_k^N \sum_l^N w_{kl}} = \frac{w_{ij}}{S}$$
+
+$S$ is the sum of all the weights, which reduces a bit of notational clutter.
+
+It's important to realize that any particular weight, $w_{ij}$, appears in both 
+the expression for its equivalent probability, $q_{ij}$ (where it appears in 
+the numerator and denonimator) _and_ in the expression for all the other 
+probabilities, $q_{kl}$, where $i \neq k$ and $j \neq l$. In the latter case, it 
+appears only in the denominator, but this is what leads to the non-zero 
+derivatives.
+
+Thus, we have two forms of the derivative to consider:
+$$\frac{\partial q_{ij}}{\partial w_{ij}} = \frac{S - w_{ij}}{S^2} = 
+  \frac{1}{S} - \frac{q_{ij}}{S}$$
+and:
+$$\frac{\partial q_{kl}}{\partial w_{ij}} = 
+  -\frac{w_{kl}}{S^2} = 
+  -\frac{q_{kl}}{S}$$
+
+Inserting these expressions into the one we had for the chain rule applied to
+$\frac{\partial C}{\partial w_{ij}}$, we get:
+
+$$\frac{\partial C}{\partial w_{ij}} = 
+-\frac{1}{S} 
+  \left[ 
+    \sum_k^N \sum_l^N 
+      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
+      \frac{\partial C}{\partial q_{ij}} 
+  \right]
+$$
+
+I'll admit, that doesn't look great, but we're over the worst.
+
+### Cost function, $C$
+
+Nearly there! Finally, we need to... wait, no, that's it. All that's left is 
+an expression for the cost function in terms of the probabilities. And that's 
+exactly how the divergences are normally expressed. No chain rule here, 
+we can just write $\frac{\partial C}{\partial q_{ij}}$.
+
+## Putting it all together
+
+Substituting in the various expressions we can now write:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  \sum_j^N \left(
+    -\frac{1}{S} 
+  \left[ 
+    \sum_k^N \sum_l^N 
+      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
+      \frac{\partial C}{\partial q_{ij}} 
+  \right]
+    \frac{\partial w_{ij}}{\partial f_{ij}}
+    \frac{\partial f_{ij}}{\partial d_{ij}}
+    -\frac{1}{S} 
+  \left[ 
+    \sum_k^N \sum_l^N 
+      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
+      \frac{\partial C}{\partial q_{ji}} 
+  \right]
+    \frac{\partial w_{ji}}{\partial f_{ji}}
+    \frac{\partial f_{ji}}{\partial d_{ji}}    
+   \right) 
+   \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+    $$
+
+Well, that looks terrifying. Let's tidy up a bit. First, let's use the fact that
+the definition of $f_{ij}$ is symmetric and therefore 
+$\frac{\partial f_{ij}}{\partial d_{ij}} = 
+ \frac{\partial f_{ji}}{\partial d_{ji}}$ to pull that part of the equation out
+ of those parentheses:
+ 
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  \sum_j^N \left(
+    -\frac{1}{S} 
+  \left[ 
+    \sum_k^N \sum_l^N 
+      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
+      \frac{\partial C}{\partial q_{ij}} 
+  \right]
+    \frac{\partial w_{ij}}{\partial f_{ij}}
+    -\frac{1}{S} 
+  \left[ 
+    \sum_k^N \sum_l^N 
+      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
+      \frac{\partial C}{\partial q_{ji}} 
+  \right]
+    \frac{\partial w_{ji}}{\partial f_{ji}}
+   \right)
+   \frac{\partial f_{ij}}{\partial d_{ij}}
+   \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+    $$
+
+That leaves the two functional forms that get varied the most, 
+$\frac{\partial C}{\partial q_{ij}}$ and 
+$\frac{\partial w_{ij}}{\partial q_{ij}}$ together. Let's define:
+
+$$k_{ij} =
+-\frac{1}{S} 
+  \left[ 
+    \sum_k^N \sum_l^N 
+      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
+      \frac{\partial C}{\partial q_{ij}} 
+  \right]
+    \frac{\partial w_{ij}}{\partial f_{ij}}
+$$
+
+And now we can say:
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  \sum_j^N 
+  \left(
+    k_{ij} + k_{ji}
+  \right)
+   \frac{\partial f_{ij}}{\partial d_{ij}}
+   \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+$$
+
+Further we can use the fact that we always use Euclidean distances for $d_{ij}$
+and square those distances for $f_{ij}$ and some handy cancellation of terms
+in the derivatives results in:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    k_{ij} + k_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+$$
+
+This is now looking more like the expected "points on springs" interpretation of
+the gradient, with the $k_{ij}$ representing the force constant (stiffness) of 
+each spring, and $\mathbf{y_i - y_j}$ the displacement.
+
+The above equation is useful because as long as you can define the gradient
+of a cost function in terms of $q$ and the gradient of a similarity kernel in
+terms of $f$, you can mix and match these terms and get the gradient of the
+cost function with respect to the embedded coordinates without too much trouble,
+which is all you need to optimize the coordinates with a standard gradient
+descent algorithm.
