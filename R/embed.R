@@ -879,7 +879,8 @@ embed <- function(df,
 
   # Ensure that if Spectral Direction optimizer is chosen, it can be used with
   # the chosen embedding method
-  if (is.null(embed_method$prob_type) || embed_method$prob_type != "joint") {
+  if (substr(opt, 1, 5) == "SPEC-" &&
+      (is.null(embed_method$prob_type) || embed_method$prob_type != "joint")) {
     stop("Spectral direction optimizer is only compatible with ",
          "probability-based embedding methods that use symmetric input ",
          "probabilities (e.g. t-SNE), not '", method, "'")
