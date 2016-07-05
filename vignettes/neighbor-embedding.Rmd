@@ -1,5 +1,5 @@
 ---
-title: "Neighbor Embedding"
+title: "Deriving Neighbor Embedding Gradients"
 author: "James Melville"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
@@ -9,22 +9,117 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+No R code in this document. Instead, here's my attempt to derive
+the gradient for neighbor embedding, using the handy MathJax integration. There
+are a few papers which attempt something like this, the clearest in my opinion
+being the treatment by Lee et al. The version I give here is very similar, but
+with a bit less notation.
+
+The only mathematical ability you should need for this is the ability to do 
+basic partial differentiation, and know the chain rule for partial derivatives,
+which happens to be:
+
 ## Chain rule for partial derivatives
 
 Say we have a function $x$, of $N$ variables $y_1, y_2 \dots y_i \dots y_N$, and
 each $y$ is a function of $M$ variables $z_1, z_2, \dots z_j \dots z_M$, then 
 the partial derivative of $x$ with respect to one of $z$ is:
 
-$$\frac{\partial x}{\partial z_j} = \sum_i^N \frac{\partial x}{\partial y_i}\frac{\partial y_i}{\partial z_j}$$
+$$\frac{\partial x}{\partial z_j} = 
+  \sum_i^N \frac{\partial x}{\partial y_i}\frac{\partial y_i}{\partial z_j}$$
+
+## Notation
+
+I assume you are familiar with the basics of the approach of SNE and related 
+methods. I'll use the following notation:
+
+* $\mathbf{y_i}$ is the $i$th embedded coordinate in the lower dimension.
+* $P$ is the matrix of input probabilities, $Q$ is the matrix of output 
+probabilities.
+* $p_{ij}$ means the $\left(i, j\right)$th element of the matrix $P$.
+* I'll also use $i$, $j$, $k$ and $l$ as indexes into various matrices.
+* The number of points being embedded is $N$.
+
+I'll assume that there is an input probability matrix already created, and that
+the cost function involves $P$ and $Q$ and hence so does the gradient. At each
+stage of the optimization we need to get from the current set of coordinates
+$\mathbf{y_1}, \mathbf{y_2} \dots \mathbf{y_i} \dots \mathbf{y_N}$, to a 
+gradient matrix. The procedure is as follows:
+
+* Create the distance matrix, where the element $d_{ij}$ represents the distance
+between point $i$ and $j$.
+* Transform the distances to create $f_{ij}$.
+* Apply a weighting function to create a weight, $w_{ij}$, such that the larger
+the weight, the smaller the distance between $i$ and $j$. Because of this 
+inverse relationship between the weight and the distance, I will refer to this
+weight as a similarity as it makes it easier to remember that a big weight
+refers to a small distance.
+* Convert the weights into a probability, $q_{ij}$. This achieved by normalizing
+over a sum of weights. There are two approaches to defining this sum, which
+affects the interpretation of the probability. See below for more on this.
+
+Once the output probabilities $q_{ij}$ are calculated, you are generally in 
+possession of enough data to calcuate the gradient, with the exact form
+depending on the nature of the cost and similarity function.
+
+Before going further, let's look at the two approaches to probability 
+calculation.
+
+## Symmetric vs asymmetric embedding
+
+### Point-wise probabilities
+
+The original SNE approach converted the weights into probabilities by:
+
+$$q_{ij} = \frac{w_{ij}}{\sum_k^N w_{ik}}$$
+
+That is, we consider all similarities involving point $i$. Let's call this the
+point-wise approach. A consequence of this is that $q_{ij} \neq q_{ji}$ and
+hence this results in an asymmetric probability matrix, $Q$. In fact, (at least
+in the sneer implementation), each row of the matrix is a separate probability 
+matrix, where each row sums to one. In the point-wise approach you are
+calculating $N$ different divergences, with each point being responsible for
+a separate probability distribution.
+
+The point-wise normalization to create $N$ probabilities is the scheme used
+in what is now called Asymmetric SNE.
+
+### Pair-wise probabilities
+
+Another way to convert the weights is:
+
+$$q_{ij} = \frac{w_{ij}}{\sum_k^N \sum_l^N w_{kl}}$$
+
+This normalizes by using _all_ pairs of points, so we'll call this the pair-wise
+approach. The resulting matrix $Q$ contains a single probability distribution, 
+i.e. the grand sum of the matrix is one. Using this normalization, it's still
+true that, in general, $q_{ij} \neq q_{ji}$, but when creating the input 
+probabilities $p_{ij}$, $p_{ij}$ and $p_{ji}$ are averaged so that they are 
+equal to each other. In the case of the output weights, the function that 
+generates them  always produces symmetric weights, so that $w_{ij} = w_{ji}$ 
+which naturally leads to $q_{ij} = q_{ji}$, so the resulting matrix is 
+symmetric without having to do any extra work.
+
+This pair-wise scheme is used in what is called Symmetric SNE and t-distributed
+SNE.
+
+Obviously these two schemes are very similar to each other, but it's easy to
+get confused when looking at how different embedding methods are implemented.
+As to whether it makes much of a practical difference, Lee and co-workers say 
+that it has "no significant effect" on JSE, whereas van der Maaten and Hinton 
+note that SSNE sometimes produced results that were "a little better" than ASNE.
+Not a ringing endorsement either way, but in my experiments with sneer, the
+symmetrized (pair-wise) normalization seems to produce better results.
 
 ## Breaking down the cost function
 
-For embeddings, we need to define the gradient of the cost function with respect
-to the coordinates. Let's define a chain of dependent variables specifically
-for probability-based embeddings. A glance at the chain rule for partial 
-derivatives above indicates that we're going to be using a lot of nested
-summations of multiple terms, although mercifully most of them evaluate to 0 and
-disappear. But for now, let's ignore the exact indexes.
+With all that out of the way, let's try and define the gradient. We'll start by 
+definining a chain of dependent variables specifically for probability-based 
+embeddings. A glance at the chain rule for partial derivatives above indicates 
+that we're going to be using a lot of nested summations of multiple terms, 
+although mercifully most of them evaluate to 0 and disappear. But for now, 
+let's ignore the exact indexes. To recap the variables we need to include and
+the order of their dependencies:
 
 * The cost function, $C$ is normally a divergence of some kind, and hence 
 expressed in terms of the output probabilities, $q$.
@@ -50,7 +145,7 @@ probability (the divergence) or the similarity weighting kernel (e.g. gaussian
 or t-distribution). Other parts are never changed (e.g. the output distance
 function, how weights are converted to probabilities). Where there is universal
 agreement, I will explicitly write out the function and its derivative. For the
-functions which are often changed, I'll leave them generic.
+functions which are often changed, I'll leave them generic. 
 
 ### Distance, $d_{ij}$
 
@@ -142,6 +237,22 @@ $$f_{ij} = d_{ij}^{2}$$
 
 $$\frac{\partial f_{ij}}{\partial d_{ij}} = 2d_{ij}$$
 
+This may look trivial, but it combines very well with the derivative of the 
+Euclidean distance we defined in the previous section:
+
+$$
+\frac{\partial f_{ij}}{\partial d_{ij}}
+\frac{\partial d_{ij}}{\partial \mathbf{y_i}} 
+= 
+2d_{ij}
+\frac{1}{d_{ij}}\left(\mathbf{y_i} - \mathbf{y_j}\right)
+=
+2\left(\mathbf{y_i} - \mathbf{y_j}\right)
+$$
+
+This will come in handy when we want to simplify the full expression of the
+gradient later.
+
 ### Similarity weight, $w_{ij}$
 
 Next, $\frac{\partial C}{\partial f_{ij}}$ can be written as:
@@ -176,12 +287,21 @@ probabilities sum to one, so a change to a weight $w_{ij}$ will affect all the
 probabilities, not just $q_{ij}$. Therefore, we should see non-zero derivatives 
 for some $q_{kl}$ other than when $i = k$ and $j = l$. 
 
-The probabilities are (nearly) always defined by normalizing the weight so
-they sum to one:
+The probabilities are defined by normalizing the weights so they sum to one. As
+discussed above, there are two ways to define the probabilities. The point-wise
+normalization gives:
+
+$$q_{ij} = \frac{w_{ij}}{\sum_k^N w_{ik}} = \frac{w_{ij}}{S_i}$$
+
+where $S_i$ is the sum of all the weights associated with point $i$, which 
+reduces a bit of notational clutter. The pair-wise normalization is:
 
 $$q_{ij} = \frac{w_{ij}}{\sum_k^N \sum_l^N w_{kl}} = \frac{w_{ij}}{S}$$
 
-$S$ is the sum of all the weights, which reduces a bit of notational clutter.
+$S$ is the sum of all the weights involving all pairs, so there's no need for a
+subscript. As you can see, the functional form of the two different 
+normalization schemes is very similar, so I'll just use the pair-wise form
+from now on.
 
 It's important to realize that any particular weight, $w_{ij}$, appears in both 
 the expression for its equivalent probability, $q_{ij}$ (where it appears in 
@@ -221,7 +341,10 @@ we can just write $\frac{\partial C}{\partial q_{ij}}$.
 
 ## Putting it all together
 
-Substituting in the various expressions we can now write:
+By substituting in the various expressions, starting with 
+$\frac{\partial C}{\partial {d_{ij}}}$ and then recursively replacing any
+expressions until we hit $\frac{\partial C}{\partial q_{ij}}$, we can now 
+write:
 
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
   \sum_j^N \left(
@@ -273,8 +396,12 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
     $$
 
 That leaves the two functional forms that get varied the most, 
-$\frac{\partial C}{\partial q_{ij}}$ and 
-$\frac{\partial w_{ij}}{\partial q_{ij}}$ together. Let's define:
+$\frac{\partial C}{\partial q_{ij}}$ (derivative of the cost function) and 
+$\frac{\partial w_{ij}}{\partial f_{ij}}$ (derivative of the similarity 
+function), together. There are some common  choices of cost and similarity 
+function that would let us simplify these further, but for now we'll leave them 
+in their still mildly intimidating forms. Instead, we'll just hide their full 
+"glory" by defining:
 
 $$k_{ij} =
 -\frac{1}{S} 
@@ -296,9 +423,10 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
    \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
 $$
 
-Further we can use the fact that we always use Euclidean distances for $d_{ij}$
-and square those distances for $f_{ij}$ and some handy cancellation of terms
-in the derivatives results in:
+Further, we can put to good use the expression we came up with for 
+$\frac{\partial f_{ij}}{\partial d_{ij}}
+\frac{\partial d_{ij}}{\partial \mathbf{y_i}}$ earlier (the one that assumes 
+the use of squared Euclidean distances) to get:
 
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
   2
