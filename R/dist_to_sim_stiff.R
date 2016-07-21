@@ -255,7 +255,7 @@ weights_to_probs <- function(wm, method) {
 # @return A list containing
 #  \item{pm}{Row probability matrix.}
 weights_to_prow <- function(wm) {
-  row_sums <- apply(wm, 1, sum) + .Machine$double.eps
+  row_sums <- rowSums(wm) + .Machine$double.eps
   pm <- sweep(wm, 1, row_sums, "/")
   list(pm = pm)
 }
