@@ -14,6 +14,12 @@
 # @family sneer distance embedding methods
 NULL
 
+# Output update function that only updates distances
+update_dist = function(inp, out, method) {
+  out$dm <- distance_matrix(out$ym)
+  out
+}
+
 # Metric Multi-dimensional Scaling (MDS) Using STRESS Cost Function
 #
 # A distance-based embedding method.
@@ -91,10 +97,7 @@ mmds <- function(eps = .Machine$double.eps) {
     stiffness_fn = function(method, inp, out) {
       f(inp$dm, out$dm, eps = method$eps)
     },
-    update_out_fn = function(inp, out, method) {
-      out$dm <- distance_matrix(out$ym)
-      out
-    },
+    update_out_fn = update_dist,
     eps = eps
   )
 }
@@ -132,10 +135,7 @@ smmds <- function(eps = .Machine$double.eps) {
     stiffness_fn = function(method, inp, out) {
       f(inp$dm, out$dm, eps = method$eps)
     },
-    update_out_fn = function(inp, out, method) {
-      out$dm <- distance_matrix(out$ym)
-      out
-    },
+    update_out_fn = update_dist,
     eps = eps
   )
 }
@@ -193,10 +193,7 @@ sammon_map <- function(eps = .Machine$double.eps) {
     stiffness_fn = function(method, inp, out) {
       f(inp$dm, out$dm, sum_rij = method$sum_rij, eps = method$eps)
     },
-    update_out_fn = function(inp, out, method) {
-      out$dm <- distance_matrix(out$ym)
-      out
-    },
+    update_out_fn = update_dist,
     after_init_fn = function(inp, out, method) {
       method$sum_rij <- sum(upper_tri(inp$dm)) + eps
       list(method = method)
@@ -204,3 +201,4 @@ sammon_map <- function(eps = .Machine$double.eps) {
     eps = eps
   )
 }
+
