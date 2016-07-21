@@ -117,9 +117,8 @@ asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 # @family sneer probability embedding methods
 ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    asne_plugin(eps = eps, beta = beta),
-    prob_type = "joint",
-    verbose = verbose
+    asne_plugin(eps = eps, beta = beta, verbose = verbose),
+    prob_type = "joint"
   )
 }
 
@@ -139,9 +138,8 @@ ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 # @family sneer probability embedding methods
 tsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    ssne_plugin(eps = eps),
-    kernel = tdist_kernel(),
-    verbose = verbose
+    ssne_plugin(eps = eps, verbose = verbose),
+    kernel = tdist_kernel()
   )
 }
 
@@ -188,9 +186,8 @@ hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
 # @family sneer probability embedding methods
 tasne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    tsne_plugin(eps = eps),
-    prob_type = "row",
-    verbose = verbose
+    tsne_plugin(eps = eps, verbose = verbose),
+    prob_type = "row"
   )
 }
 
@@ -225,10 +222,8 @@ tpsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 # @family sneer probability embedding methods
 rasne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    asne_plugin(beta = beta, eps = eps),
-    cost = reverse_kl_fg(),
-    out_updated_fn = klqp_update,
-    verbose = verbose
+    asne_plugin(beta = beta, eps = eps, verbose = verbose),
+    cost = reverse_kl_fg()
   )
 }
 
@@ -245,9 +240,8 @@ rasne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 # @family sneer probability embedding methods
 rssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    rasne_plugin(beta = beta, eps = eps),
-    prob_type = "joint",
-    verbose = verbose
+    rasne_plugin(beta = beta, eps = eps, verbose = verbose),
+    prob_type = "joint"
   )
 }
 
@@ -267,9 +261,8 @@ rssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 # @family sneer probability embedding methods
 rtsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    rssne_plugin(eps = eps),
-    kernel = tdist_kernel(),
-    verbose = verbose
+    rssne_plugin(eps = eps, verbose = verbose),
+    kernel = tdist_kernel()
   )
 }
 
@@ -287,11 +280,8 @@ rtsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 # @family sneer probability embedding methods
 nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
   method <- lreplace(
-    asne_plugin(eps = eps),
-    cost = nerv_fg(lambda = lambda),
-    kernel = exp_kernel(),
-    out_updated_fn = klqp_update,
-    verbose = verbose
+    asne_plugin(eps = eps, verbose = verbose),
+    cost = nerv_fg(lambda = lambda)
   )
   method <- on_inp_updated(method, nerv_inp_update)$method
   method
@@ -313,10 +303,8 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE)
 snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
                          verbose = TRUE) {
   lreplace(
-    nerv_plugin(lambda = lambda, eps = eps),
-    update_out_fn = make_update_out(keep = c("qm", "wm", "d2m", "qcm")),
-    prob_type = "joint",
-    verbose = verbose
+    nerv_plugin(lambda = lambda, eps = eps, verbose = verbose),
+    prob_type = "joint"
   )
 }
 
@@ -340,9 +328,8 @@ snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
 hsnerv_plugin <- function(lambda = 0.5, alpha = 0, eps = .Machine$double.eps,
                           verbose = TRUE) {
   lreplace(
-    snerv_plugin(lambda = lambda, eps = eps),
-    kernel = heavy_tail_kernel(alpha = alpha),
-    verbose = verbose
+    snerv_plugin(lambda = lambda, eps = eps, verbose = verbose),
+    kernel = heavy_tail_kernel(alpha = alpha)
   )
 }
 
@@ -362,10 +349,8 @@ hsnerv_plugin <- function(lambda = 0.5, alpha = 0, eps = .Machine$double.eps,
 tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
                          verbose = TRUE) {
   lreplace(
-    tsne_plugin(eps = eps),
-    cost = nerv_fg(lambda = lambda),
-    out_updated_fn = klqp_update,
-    verbose = verbose
+    tsne_plugin(eps = eps, verbose = verbose),
+    cost = nerv_fg(lambda = lambda)
   )
 }
 
@@ -386,10 +371,8 @@ tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
 unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
                          verbose = TRUE) {
   lreplace(
-    asne_plugin(beta = beta, eps = eps),
-    cost = nerv_fg(lambda = lambda),
-    out_updated_fn = klqp_update,
-    verbose = verbose
+    asne_plugin(beta = beta, eps = eps, verbose = verbose),
+    cost = nerv_fg(lambda = lambda)
   )
 }
 
@@ -410,9 +393,8 @@ unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
                           verbose = TRUE) {
   lreplace(
-    unerv_plugin(lambda = lambda, beta = beta, eps = eps),
-    prob_type = "joint",
-    verbose = verbose
+    unerv_plugin(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
+    prob_type = "joint"
   )
 }
 
@@ -436,9 +418,8 @@ usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
                            eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    tnerv_plugin(lambda = lambda, eps = eps),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    verbose = verbose
+    tnerv_plugin(lambda = lambda, eps = eps, verbose = verbose),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 
@@ -459,10 +440,9 @@ uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
 jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                        verbose = TRUE) {
   lreplace(
-    asne_plugin(beta = beta, eps = eps),
+    asne_plugin(beta = beta, eps = eps, verbose = verbose),
     cost = jse_fg(kappa = kappa),
-    out_updated_fn = klqz_update,
-    verbose = verbose
+    out_updated_fn = klqz_update
   )
 }
 
@@ -483,9 +463,8 @@ jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                         verbose = TRUE) {
   lreplace(
-    jse_plugin(kappa = kappa, beta = beta, eps = eps),
-    prob_type = "joint",
-    verbose = verbose
+    jse_plugin(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
+    prob_type = "joint"
   )
 }
 
@@ -507,9 +486,8 @@ sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
                          eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    sjse_plugin(kappa = kappa, eps = eps),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    verbose = verbose
+    sjse_plugin(kappa = kappa, eps = eps, verbose = verbose),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 
@@ -545,8 +523,10 @@ plugin_stiffness_row <- function(method, inp, out) {
   dc_dq <- method$cost$gr(inp, out, method)
   dw_du <- method$kernel$gr(method$kernel, out$d2m)
 
-  wm_sum <-  apply(out$wm, 1, sum)
-  km <- apply(dc_dq * out$qm, 1, sum) # row sums
+  wm_sum <-  rowSums(out$wm)
+  #apply(out$wm, 1, sum)
+#  km <- apply(dc_dq * out$qm, 1, sum) # row sums
+  km <- rowSums(dc_dq * out$qm)
   km <- sweep(-dc_dq, 1, -km) # subtract row sum from each row element
   km <- km * (-dw_du / wm_sum)
   2 * (km + t(km))
