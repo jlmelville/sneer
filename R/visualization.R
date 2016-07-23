@@ -1,7 +1,73 @@
 # Functions to help with visualizing embedding during the optimization
 # procedure.
 
-#' Embedding Plot With Points Colored By A Specific Property
+#' Embedding Plot, Colored By Category
+#'
+#' Plots the embedded coordinates, with each point colored by a specified
+#' color.
+#'
+#' @param coords Matrix of embedded coordinates, with as many rows as
+#'  observations, and 2 columns.
+#' @param categories Vector containing equivalent categories for each
+#'  observation \code{coords}. Qualitative information which will
+#'  be converted to a color. Each value will be applied to the equivalent
+#'  row in \code{coords}. Can be a vector of levels or strings.
+#' @param cex Size of the points.
+#' @param palette Either the name of a Qualitative ColorBrewer palette to use
+#'  for assigning colors to \code{categories}, \emph{or} the name of a palette
+#'  function (e.g. \code{"rainbow"}). The palette function should be able to
+#'  take a single numeric argument, the number of colors required. For some
+#'  applicable functions, see the \code{Palettes} help page in the
+#'  \code{grDevices} package (e.g. by running the \code{?rainbow} command).
+#' @note Use of this function with ColorBrewer qualitative palette names
+#' requires that the \code{RColorBrewer} package be installed.
+#' @seealso
+#' \link{embed_quant_plot}, to color the points using a numerical scale.
+#'
+#' More information on ColorBrewer is available at its website,
+#'  \url{http://www.colorbrewer2.org}.
+#' @export
+#' @examples
+#' \dontrun{
+#' # Embed with PCA
+#' pca_iris <- embed(iris, method = "pca", scale_type = "a", ret = c("dy"))
+#' # Visualize the resulting embedding, colored by iris species, using the
+#' # rainbow palette
+#' embed_plot(pca_iris$coords, iris$Species, palette = "rainbow")
+#'
+#' # topo.colors palette
+#' embed_plot(pca_iris$coords, iris$Species, palette = "topo.colors")
+#'
+#' # default palette needs RColorBrewer installed and loaded
+#' library("RColorBrewer")
+#' embed_plot(pca_iris$coords, iris$Species)
+#'
+#' # Use the "Dark2" ColorBrewer palette
+#' embed_plot(pca_iris$coords, iris$Species, palette = "Dark2")
+#' }
+embed_plot <- function(coords, categories, cex = 1, palette = "Set1") {
+
+  ncolors <- length(unique(categories))
+
+  if (palette %in% c("Set1", "Set2", "Set3", "Pastel1", "Pastel2", "Dark2")) {
+    if (!requireNamespace("RColorBrewer", quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("Palette '", palette, "' requires 'RColorBrewer' package")
+    }
+    colorPalette <- colorBrewerPalette(palette, ncolors)
+  }
+  else {
+    palette_fn <- get(palette)
+    if (is.null(palette_fn)) {
+      stop("Unknown palette function '",palette,"'")
+    }
+    colorPalette <- palette_fn(ncolors)
+  }
+
+  plot(coords, pch = 20, cex = cex, col = colorPalette[categories])
+}
+
+#' Embedding Plot, Numerical Color Scale
 #'
 #' Plots the embedded coordinates, using a ColorBrewer palette to color each
 #' point according to a numerical vector.
@@ -30,8 +96,7 @@
 #' @export
 #' @examples
 #' \dontrun{
-#' tsne_iris <- embed(iris, method = "pca", scale_method = "a",
-#'  export = c("dx", "dy", "deg"))
+#' tsne_iris <- embed(iris, method = "tsne", scale_type = "a", ret = c("dx", "dy", "deg"))
 #' # how well is the 32 nearest neighborhood preserved for each point?
 #' nbr_pres_32 <- nbr_pres(tsne_iris$dx, tsne_iris$dy, 32)
 #' # visualize preservation, use absolute scale of 0-1 for colors.

@@ -132,6 +132,16 @@ plot(res$coords, col = map2color(pres32), pch = 20, cex = 1.5)
 res <- embed(iris, scale_type = "a", method = "wtsne", 
   ret = c("deg", "prec", "dim"))
 
+# Plot the embedding as points colored by category, using the rainbow
+# palette:
+embed_plot(res$coords, iris$Species, palette = "rainbow")
+
+# Load the RColorBrewer Library
+library(RColorBrewer)
+
+# Use a Color Brewer Qualitative palette
+embed_plot(res$coords, iris$Species, palette = "Dark2")
+
 # Visualize embedding colored by various values (function requires RColorBrewer
 # package to be installed):
 # Degree centrality

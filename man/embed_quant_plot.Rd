@@ -2,7 +2,7 @@
 % Please edit documentation in R/visualization.R
 \name{embed_quant_plot}
 \alias{embed_quant_plot}
-\title{Embedding Plot With Points Colored By A Specific Property}
+\title{Embedding Plot, Numerical Color Scale}
 \usage{
 embed_quant_plot(coords, quant_vec, name = "Blues", num_colors = 15,
   limits = NULL, cex = 0.5, top = NULL)
@@ -41,8 +41,7 @@ Use of this function requires that the \code{RColorBrewer} package be
 }
 \examples{
 \dontrun{
-tsne_iris <- embed(iris, method = "pca", scale_method = "a",
- export = c("dx", "dy", "deg"))
+tsne_iris <- embed(iris, method = "tsne", scale_type = "a", ret = c("dx", "dy", "deg"))
 # how well is the 32 nearest neighborhood preserved for each point?
 nbr_pres_32 <- nbr_pres(tsne_iris$dx, tsne_iris$dy, 32)
 # visualize preservation, use absolute scale of 0-1 for colors.
