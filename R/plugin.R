@@ -524,8 +524,6 @@ plugin_stiffness_row <- function(method, inp, out) {
   dw_du <- method$kernel$gr(method$kernel, out$d2m)
 
   wm_sum <-  rowSums(out$wm)
-  #apply(out$wm, 1, sum)
-#  km <- apply(dc_dq * out$qm, 1, sum) # row sums
   km <- rowSums(dc_dq * out$qm)
   km <- sweep(-dc_dq, 1, -km) # subtract row sum from each row element
   km <- km * (-dw_du / wm_sum)
