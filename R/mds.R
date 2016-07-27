@@ -125,6 +125,11 @@ mmds <- function(eps = .Machine$double.eps) {
 #  problems, e.g. in gradients and cost functions.}
 # @family sneer embedding methods
 # @family sneer distance embedding methods
+#
+# @references
+# Hughes, N. P., & Lowe, D. (2002).
+# Artefactual Structure from Least-Squares Multidimensional Scaling.
+# In \emph{Advances in Neural Information Processing Systems} (pp. 913-920).
 smmds <- function(eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
     -4 * (dxm ^ 2 - dym ^ 2)
