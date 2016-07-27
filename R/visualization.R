@@ -49,6 +49,10 @@
 #'
 #' # Use the "Dark2" ColorBrewer palette
 #' embed_plot(pca_iris$coords, iris$Species, palette = "Dark2")
+#'
+#' # Can plot the category names instead of points, but looks bad if they're
+#' # long (or the dataset is large)
+#' embed_plot(pca_iris$coords, iris$Species, palette = "Dark2", as_text = TRUE)
 #' }
 embed_plot <- function(coords, categories = rep("+", nrow(coords)), cex = 1,
                        palette = "Set1", as_text = FALSE) {
