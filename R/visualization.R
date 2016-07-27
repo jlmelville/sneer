@@ -47,6 +47,9 @@
 #' }
 embed_plot <- function(coords, categories, cex = 1, palette = "Set1") {
 
+  if (class(categories) != "factor") {
+    categories <- as.factor(categories)
+  }
   ncolors <- length(unique(categories))
 
   if (palette %in% c("Set1", "Set2", "Set3", "Pastel1", "Pastel2", "Dark2")) {
