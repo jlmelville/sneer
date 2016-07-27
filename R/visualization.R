@@ -45,7 +45,8 @@
 #' # Use the "Dark2" ColorBrewer palette
 #' embed_plot(pca_iris$coords, iris$Species, palette = "Dark2")
 #' }
-embed_plot <- function(coords, categories, cex = 1, palette = "Set1") {
+embed_plot <- function(coords, categories, cex = 1, palette = "Set1",
+                       as_text = FALSE) {
 
   if (class(categories) != "factor") {
     categories <- as.factor(categories)
@@ -67,7 +68,16 @@ embed_plot <- function(coords, categories, cex = 1, palette = "Set1") {
     colorPalette <- palette_fn(ncolors)
   }
 
-  plot(coords, pch = 20, cex = cex, col = colorPalette[categories])
+  if (as_text) {
+    plot(coords, type = 'n')
+  }
+  else {
+    plot(coords, pch = 20, cex = cex, col = colorPalette[categories])
+  }
+
+  if (as_text) {
+    text(coords, labels = categories, cex = cex, col = colorPalette[categories])
+  }
 }
 
 #' Embedding Plot, Numerical Color Scale
