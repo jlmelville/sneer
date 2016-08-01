@@ -56,6 +56,7 @@
 #'  cex = 0.5, as_text = TRUE)
 #' }
 embed_plot <- function(coords, categories = rep("+", nrow(coords)), cex = 1,
+                       palette = "Set1", as_text = FALSE) {
 
   if (class(categories) != "factor") {
     categories <- as.factor(categories)
