@@ -4,7 +4,8 @@
 \alias{embed_plot}
 \title{Embedding Plot, Colored By Category}
 \usage{
-embed_plot(coords, categories, cex = 1, palette = "Set1")
+embed_plot(coords, categories = rep("+", nrow(coords)), cex = 1,
+  palette = "Set1", as_text = FALSE)
 }
 \arguments{
 \item{coords}{Matrix of embedded coordinates, with as many rows as
@@ -13,7 +14,8 @@ observations, and 2 columns.}
 \item{categories}{Vector containing equivalent categories for each
 observation \code{coords}. Qualitative information which will
 be converted to a color. Each value will be applied to the equivalent
-row in \code{coords}. Can be a vector of levels or strings.}
+row in \code{coords}. Can be a vector of levels or strings. If not provided,
+then all points are assumed to have the same category.}
 
 \item{cex}{Size of the points.}
 
@@ -23,6 +25,11 @@ function (e.g. \code{"rainbow"}). The palette function should be able to
 take a single numeric argument, the number of colors required. For some
 applicable functions, see the \code{Palettes} help page in the
 \code{grDevices} package (e.g. by running the \code{?rainbow} command).}
+
+\item{as_text}{If \code{TRUE}, plot the category name rather than a point.
+Only useful if the category names are short, unique, and the data set has
+few observations. If no \code{categories} vector is provided, the category
+name is displayed as '+'.}
 }
 \description{
 Plots the embedded coordinates, with each point colored by a specified
@@ -49,6 +56,10 @@ embed_plot(pca_iris$coords, iris$Species)
 
 # Use the "Dark2" ColorBrewer palette
 embed_plot(pca_iris$coords, iris$Species, palette = "Dark2")
+
+# Can plot the category names instead of points, but looks bad if they're
+# long (or the dataset is large)
+embed_plot(pca_iris$coords, iris$Species, palette = "Dark2", as_text = TRUE)
 }
 }
 \seealso{

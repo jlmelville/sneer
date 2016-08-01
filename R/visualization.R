@@ -52,15 +52,16 @@
 #'
 #' # Can plot the category names instead of points, but looks bad if they're
 #' # long (or the dataset is large)
-#' embed_plot(pca_iris$coords, iris$Species, palette = "Dark2", as_text = TRUE)
+#' embed_plot(pca_iris$coords, iris$Species, palette = "Dark2",
+#'  cex = 0.5, as_text = TRUE)
 #' }
 embed_plot <- function(coords, categories = rep("+", nrow(coords)), cex = 1,
-                       palette = "Set1", as_text = FALSE) {
 
   if (class(categories) != "factor") {
     categories <- as.factor(categories)
   }
-  ncolors <- length(unique(categories))
+  category_names <- unique(categories)
+  ncolors <- length(category_names)
 
   if (palette %in% c("Set1", "Set2", "Set3", "Pastel1", "Pastel2", "Dark2")) {
     if (!requireNamespace("RColorBrewer", quietly = TRUE,
