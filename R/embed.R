@@ -766,7 +766,7 @@ embed <- function(df,
     }
   }
 
-  ok_rets <- c("x", "dx", "dy", "p", "q", "prec", "dim", "deg")
+  ok_rets <- c("x", "dx", "dy", "p", "q", "w", "prec", "dim", "deg")
   ret <- unique(ret)
   for (r in (ret)) {
     if (!r %in% ok_rets) {
@@ -961,6 +961,11 @@ embed <- function(df,
     else if (r == "p") {
       if (!is.null(inp$pm)) {
         result$p <- inp$pm
+      }
+    }
+    else if (r == "w") {
+      if (!is.null(out$wm)) {
+        result$w <- out$wm
       }
     }
     else if (r == "q") {
