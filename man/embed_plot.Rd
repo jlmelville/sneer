@@ -59,7 +59,8 @@ embed_plot(pca_iris$coords, iris$Species, palette = "Dark2")
 
 # Can plot the category names instead of points, but looks bad if they're
 # long (or the dataset is large)
-embed_plot(pca_iris$coords, iris$Species, palette = "Dark2", as_text = TRUE)
+embed_plot(pca_iris$coords, iris$Species, palette = "Dark2",
+ cex = 0.5, as_text = TRUE)
 }
 }
 \seealso{
