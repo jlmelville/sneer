@@ -42,7 +42,7 @@ requires that the \code{RColorBrewer} package be installed.
 \examples{
 \dontrun{
 # Embed with PCA
-pca_iris <- embed(iris, method = "pca", scale_type = "a", ret = c("dy"))
+pca_iris <- sneer(iris, method = "pca", scale_type = "a", ret = c("dy"))
 # Visualize the resulting embedding, colored by iris species, using the
 # rainbow palette
 embed_plot(pca_iris$coords, iris$Species, palette = "rainbow")

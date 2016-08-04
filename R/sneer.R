@@ -8,7 +8,7 @@
 #'
 #' @section Embedding:
 #'
-#' The \code{\link{embed}} function provides a variety of methods for embedding,
+#' The \code{\link{sneer}} function provides a variety of methods for embedding,
 #' including:
 #'
 #' \itemize{
@@ -51,7 +51,7 @@
 #' @section Visualization:
 #'
 #' The \code{\link{embed_quant_plot}} function will take the output of the
-#' \code{\link{embed}} function and provide a visualization of the embedding.
+#' \code{\link{sneer}} function and provide a visualization of the embedding.
 #' Note that to use this function, you must have the \code{RColorBrewer}
 #' package installed.
 #'
@@ -85,11 +85,11 @@
 #' \dontrun{
 #' # Do t-SNE on the iris dataset, scaling columns to zero mean and
 #' # unit variance.
-#' res <- embed(iris, scale_type = "a")
+#' res <- sneer(iris, scale_type = "a")
 #'
 #' # Use the weighted TSNE variant and export the input and output distance
 #' # matrices.
-#' res <- embed(iris, scale_type = "a", method = "wtsne", ret = c("dx", "dy"))
+#' res <- sneer(iris, scale_type = "a", method = "wtsne", ret = c("dx", "dy"))
 #'
 #' # calculate the 32-nearest neighbor preservation for each observation
 #' # 0 means no neighbors preserved, 1 means all of them
