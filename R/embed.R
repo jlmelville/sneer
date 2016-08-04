@@ -109,12 +109,12 @@ NULL
 #'  \item \code{"p"} Initialize using the first two scores of the PCA.
 #'  Data will be centered, but not scaled unless the \code{scale_type} parameter
 #'  is used.
-#'  \item \code{"r"} Initialize each coordinate vlaue from a normal random
+#'  \item \code{"r"} Initialize each coordinate value from a normal random
 #'  distribution with a standard deviation of 1e-4, as suggested by van der
 #'  Maaten and Hinton (2008).
 #'  \item \code{"u"} Initialize each coordinate value from a uniform random
 #'  distribution between 0 and 1 as suggested by Venna et al (2010).
-#'  \item \code{"u"} Initialize the coordinates from a user-supplied matrix.
+#'  \item \code{"m"} Initialize the coordinates from a user-supplied matrix.
 #'   Supply the coordinates as the \code{init_config} parameter.
 #'}
 #'
@@ -452,8 +452,16 @@ NULL
 #'   res <- embed(iris, scale_type = "a", method = "wtsne",
 #'                ret = c("deg", "prec", "dim"))
 #'
+#'   # Plot the embedding as points colored by category, using the rainbow
+#'   # palette:
+#'   embed_plot(res$coords, iris$Species, palette = "rainbow")
+#'
 #'   # Load the RColorBrewer Library
 #'   library(RColorBrewer)
+#'
+#'   # Use a Color Brewer Qualitative palette
+#'   embed_plot(res$coords, iris$Species, palette = "Dark2")
+#'
 #'   # Visualize embedding colored by various values:
 #'   # Degree centrality
 #'   embed_quant_plot(res$coords, res$deg)
