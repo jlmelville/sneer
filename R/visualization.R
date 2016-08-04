@@ -80,14 +80,15 @@ embed_plot <- function(coords, categories = rep("+", nrow(coords)), cex = 1,
   }
 
   if (as_text) {
-    plot(coords, type = 'n')
+    graphics::plot(coords, type = 'n')
   }
   else {
-    plot(coords, pch = 20, cex = cex, col = colorPalette[categories])
+    graphics::plot(coords, pch = 20, cex = cex, col = colorPalette[categories])
   }
 
   if (as_text) {
-    text(coords, labels = categories, cex = cex, col = colorPalette[categories])
+    graphics::text(coords, labels = categories, cex = cex,
+                   col = colorPalette[categories])
   }
 }
 
@@ -142,9 +143,9 @@ embed_quant_plot <- function(coords, quant_vec, name = "Blues", num_colors = 15,
     quant_vec[quant_vec < svec[top]] <- 0
   }
 
-  plot(coords, col = map2color(quant_vec, name = name, n = num_colors,
-                               limits = limits),
-       pch = 20, cex = 0.75)
+  graphics::plot(coords, col = map2color(quant_vec, name = name, n = num_colors,
+                                         limits = limits),
+                 pch = 20, cex = 0.75)
 }
 
 # Map Numbers to Colors
@@ -239,10 +240,12 @@ scores_plot <- function(df, pca_indexes = NULL, label_name = NULL,
     stop("Data frame does not have a '",label_name,
          "' column for use as a label")
   }
-  pca <- prcomp(df[, pca_indexes], retx = TRUE, center = center, scale. = scale)
-  plot(pca$x[, 1:2], type = 'n')
-  text(pca$x[, 1:2], labels = df[[label_name]], cex = cex,
-       col = rainbow(length(levels(df[[label_name]])))[df[[label_name]]])
+  pca <- stats::prcomp(df[, pca_indexes], retx = TRUE, center = center,
+                       scale. = scale)
+  graphics::plot(pca$x[, 1:2], type = 'n')
+  graphics::text(pca$x[, 1:2], labels = df[[label_name]], cex = cex,
+                 col = grDevices::rainbow(
+                    length(levels(df[[label_name]])))[df[[label_name]]])
 }
 
 # PCA Scores Plot Using ggplot2 and ColorBrewer Palettes
@@ -328,7 +331,8 @@ scores_qplot <- function(df, pca_indexes = NULL, label_name = NULL,
          "' column for use as a label")
   }
 
-  pca <- prcomp(df[, pca_indexes], retx = TRUE, center = center, scale. = scale)
+  pca <- stats::prcomp(df[, pca_indexes], retx = TRUE, center = center,
+                       scale. = scale)
   scatterqplot(df, x = pca$x[, 1], y = pca$x[, 2],
                label_name = label_name, size = size, palette = palette,
                x_label = "t1", y_label = "t2",
@@ -509,7 +513,7 @@ make_plot <- function(x, attr_name,
 make_embedding_plot <- function(x, attr_name, label_fn = NULL, cex = 1) {
   attr <- x[[attr_name]]
   uniq_attr <- sort(unique(attr))
-  colors <- rainbow(length(uniq_attr))
+  colors <- grDevices::rainbow(length(uniq_attr))
   names(colors) <- uniq_attr
   if (!is.null(label_fn)) {
     labels <- label_fn(attr)
@@ -517,8 +521,8 @@ make_embedding_plot <- function(x, attr_name, label_fn = NULL, cex = 1) {
     labels <- attr
   }
   function(ym) {
-    plot(ym, type = "n", xlab = "D1", ylab = "D2")
-    text(ym, labels = labels, col = colors[attr], cex = cex)
+    graphics::plot(ym, type = "n", xlab = "D1", ylab = "D2")
+    graphics::text(ym, labels = labels, col = colors[attr], cex = cex)
   }
 }
 
@@ -549,7 +553,7 @@ make_label <- function(num_label_chars = 1) {
 # @return Function for plotting the embedded iris data set.
 # @family sneer plot functions
 make_iris_plot <- function(num_label_chars = 1) {
-  make_plot(iris, "Species", make_label(num_label_chars))
+  make_plot(datasets::iris, "Species", make_label(num_label_chars))
 }
 
 
@@ -713,7 +717,7 @@ colorBrewerPalette <- function(name, n) {
                         warn.conflicts = FALSE)) {
     stop("colorBrewerPalette function requires 'RColorBrewer' package")
   }
-  colorRampPalette(
+  grDevices::colorRampPalette(
     RColorBrewer::brewer.pal(
       RColorBrewer::brewer.pal.info[name,]$maxcolors, name))(n)
 }

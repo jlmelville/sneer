@@ -150,7 +150,7 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
       dm <- preprocess_dm[[name]](dm)
     }
 
-    flush.console()
+    utils::flush.console()
     result <- list(dm = dm, dirty = TRUE)
     if (class(xm) != "dist") {
       result$xm <- xm
@@ -269,7 +269,7 @@ whiten <- function(xm, scale = FALSE, zca = FALSE, ncomp = min(dim(xm)),
 # @return Data with all columns with a variance lower than \code{minvar}
 # removed.
 varfilter <- function(xm, minvar = 0.0) {
-  vars <- apply(xm, 2, var)
+  vars <- apply(xm, 2, stats::var)
   xm[, vars > minvar, drop = FALSE]
 }
 

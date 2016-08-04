@@ -178,7 +178,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
 
     if (verbose) {
       message("Iteration #", iter, cost_str)
-      flush.console()
+      utils::flush.console()
     }
 
     if (cost < min_cost) {

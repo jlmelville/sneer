@@ -261,7 +261,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
 
         out$dirty <- TRUE
         opt$old_cost_dirty <- TRUE
-        flush.console()
+        utils::flush.console()
       }
       list(inp = inp, method = method, out = out, opt = opt)
     },
@@ -446,7 +446,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
 
         out$dirty <- TRUE
         opt$old_cost_dirty <- TRUE
-        flush.console()
+        utils::flush.console()
       }
       list(inp = inp, method = method, out = out)
     },
@@ -589,7 +589,7 @@ inp_from_step_perp <- function(perplexities = NULL,
 
         out$dirty <- TRUE
         opt$old_cost_dirty <- TRUE
-        flush.console()
+        utils::flush.console()
 
       }
       list(inp = inp, method = method, opt = opt)
@@ -708,7 +708,7 @@ inp_from_dint_max <- function(perplexities = NULL,
                                  input_weight_fn = input_weight_fn,
                                  verbose = verbose)$inp
 
-        d_hat <- median(inpl$dims)
+        d_hat <- stats::median(inpl$dims)
         if (is.null(inp$d_hat)) {
           inp <- inpl
           inp$d_hat <- d_hat

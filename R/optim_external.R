@@ -105,8 +105,8 @@ ropt_step <- function(opt, method, inp, out, iter) {
 
   par <- mat_to_par(out$ym)
 
-  result <- optim(par = par, fn = fr, gr = grr, method = opt$method,
-                  control = opt$control_params)
+  result <- stats::optim(par = par, fn = fr, gr = grr, method = opt$method,
+                         control = opt$control_params)
 
   if (!is.null(inp$xm)) {
     nr <- nrow(inp$xm)

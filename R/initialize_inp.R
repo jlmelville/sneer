@@ -120,7 +120,7 @@ inp_from_perp <- function(perplexity = 30,
                         keep_all_results = keep_all_results,
                         verbose = verbose)$inp
 
-      inp$d_hat <- median(inp$dims)
+      inp$d_hat <- stats::median(inp$dims)
 
       list(inp = inp, method = method)
 
@@ -176,7 +176,7 @@ inp_prob <- function(input_initializer, init_only = TRUE,
         }
 
         out$dirty <- TRUE
-        flush.console()
+        utils::flush.console()
         # invalidate cached data (e.g. old costs) in optimizer
         opt$old_cost_dirty <- TRUE
         inp$dirty <- FALSE
