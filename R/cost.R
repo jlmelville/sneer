@@ -152,6 +152,9 @@ make_normalized_cost_fn <- function(cost_fn) {
   else if (cost_type == "dist") {
     mat_name <- "dm"
   }
+  else if (cost_type == "weight") {
+    mat_name <- "wm"
+  }
   else {
     stop("No known null model matrix name for cost type '", cost_type, "'")
   }
