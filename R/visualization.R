@@ -808,6 +808,7 @@ make_color_brewer_ramp <- function(name) {
 
   function(n) {
     max_colors <- RColorBrewer::brewer.pal.info[name,]$maxcolors
+    n <- max(n, 3)
     if (n <= max_colors) {
       RColorBrewer::brewer.pal(n, name)
     }
