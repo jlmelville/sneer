@@ -14,12 +14,13 @@
 #'  row in \code{coords}. Can be a vector of levels or strings. If not provided,
 #'  then all points are assumed to have the same category.
 #' @param cex Size of the points.
-#' @param palette Either the name of a Qualitative ColorBrewer palette to use
-#'  for assigning colors to \code{categories}, \emph{or} the name of a palette
-#'  function (e.g. \code{"rainbow"}). The palette function should be able to
-#'  take a single numeric argument, the number of colors required. For some
-#'  applicable functions, see the \code{Palettes} help page in the
-#'  \code{grDevices} package (e.g. by running the \code{?rainbow} command).
+#' @param palette Name of a ColorBrewer palette to use for assigning colors to
+#'  \code{categories}. Probably should be one of the "Qualitative" set. Ignored
+#'  if the \code{col_ramp} parameter is supplied.
+#' @param col_ramp Color ramp function, accepting an integer n as an argument
+#'  and returning n colors. For some applicable functions, see the
+#'  \code{Palettes} help page in the \code{grDevices} package (e.g. by running
+#'  the \code{?rainbow} command).
 #' @param as_text If \code{TRUE}, plot the category name rather than a point.
 #'  Only useful if the category names are short, unique, and the data set has
 #'  few observations. If no \code{categories} vector is provided, the category
@@ -38,10 +39,10 @@
 #' pca_iris <- sneer(iris, method = "pca", scale_type = "a", ret = c("dy"))
 #' # Visualize the resulting embedding, colored by iris species, using the
 #' # rainbow palette
-#' embed_plot(pca_iris$coords, iris$Species, palette = "rainbow")
+#' embed_plot(pca_iris$coords, iris$Species, col_ramp = rainbow)
 #'
 #' # topo.colors palette
-#' embed_plot(pca_iris$coords, iris$Species, palette = "topo.colors")
+#' embed_plot(pca_iris$coords, iris$Species, col_ramp = topo.colors)
 #'
 #' # default palette needs RColorBrewer installed and loaded
 #' library("RColorBrewer")
@@ -52,11 +53,11 @@
 #'
 #' # Can plot the category names instead of points, but looks bad if they're
 #' # long (or the dataset is large)
-#' embed_plot(pca_iris$coords, iris$Species, palette = "Dark2",
-#'  cex = 0.5, as_text = TRUE)
+#' embed_plot(pca_iris$coords, iris$Species, palette = "Dark2", cex = 0.5,
+#'            as_text = TRUE)
 #' }
 embed_plot <- function(coords, categories = rep("+", nrow(coords)), cex = 1,
-                       palette = "Set1", as_text = FALSE) {
+                       palette = "Set1", col_ramp = NULL, as_text = FALSE) {
 
   if (class(categories) != "factor") {
     categories <- as.factor(categories)
@@ -64,31 +65,19 @@ embed_plot <- function(coords, categories = rep("+", nrow(coords)), cex = 1,
   category_names <- unique(categories)
   ncolors <- length(category_names)
 
-  if (palette %in% c("Set1", "Set2", "Set3", "Pastel1", "Pastel2", "Dark2")) {
-    if (!requireNamespace("RColorBrewer", quietly = TRUE,
-                          warn.conflicts = FALSE)) {
-      stop("Palette '", palette, "' requires 'RColorBrewer' package")
-    }
-    colorPalette <- colorBrewerPalette(palette, ncolors)
-  }
-  else {
-    palette_fn <- get(palette)
-    if (is.null(palette_fn)) {
-      stop("Unknown palette function '",palette,"'")
-    }
-    colorPalette <- palette_fn(ncolors)
-  }
+  color_palette = make_palette(name = palette, ncolors = ncolors,
+                               col_ramp = col_ramp)
 
   if (as_text) {
     graphics::plot(coords, type = 'n')
   }
   else {
-    graphics::plot(coords, pch = 20, cex = cex, col = colorPalette[categories])
+    graphics::plot(coords, pch = 20, cex = cex, col = color_palette[categories])
   }
 
   if (as_text) {
     graphics::text(coords, labels = categories, cex = cex,
-                   col = colorPalette[categories])
+                   col = color_palette[categories])
   }
 }
 
@@ -148,6 +137,43 @@ embed_quant_plot <- function(coords, quant_vec, name = "Blues", num_colors = 15,
                  pch = 20, cex = 0.75)
 }
 
+# Color Palette with Specified Number of Colors
+#
+# Creates a color palette with the specified number of colors, interpolating
+# ColorBrewer palettes by default.
+#
+# This function is designed to make it easy to use the ColorBrewer palettes,
+# particularly with the qualitative sets, without having to worry about a plot
+# not being displayed because the palette didn't have enough colors for the
+# number of categories required. Admittedly, you probably shouldn't be using
+# the palette in that case, but it's better to see the plot.
+#
+# Rather than specify a ColorBrewer palette by name, you can also pass in
+# a color ramp function of any kind via the \code{col_ramp} parameter. For some
+# applicable ramp functions, see the \code{Palettes} help page in the
+# \code{grDevices} package (e.g. by running the \code{?rainbow} command).
+#
+# @param name The name of a ColorBrewer palette. Ignored if \code{col_ramp} is
+#  specified.
+# @param ncolors Number of colors desired for the palette.
+# @param col_ramp Function accepting an integer n as an argument and returning
+#  n colors. If specified, the \code{name} parameter will be ignored.
+# @value A palette with the specified number of colors, interpolated if
+#  necessary.
+make_palette <- function(name = "Set3", ncolors, col_ramp = NULL) {
+  if (!is.null(col_ramp)) {
+    palette <- col_ramp(ncolors)
+  }
+  else {
+    if (!requireNamespace("RColorBrewer", quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("make_palette function requires 'RColorBrewer' package")
+    }
+    palette <- color_brewer_palette(name, ncolors)
+  }
+  palette
+}
+
 # Map Numbers to Colors
 #
 # Maps a numeric vector to an equivalent set of colors based on the specified
@@ -177,10 +203,14 @@ embed_quant_plot <- function(coords, quant_vec, name = "Blues", num_colors = 15,
 # \dontrun{
 # # Plot Iris dataset sepal width vs length, colored by petal length, using
 # # 20 colors ranging from Purple to Green (PRGn):
-# plot(iris[, c("Sepal.Length", "Sepal.Width")],
-#  col = map2color(iris$Petal.Length, "PRGn", 20), pch = 20, cex = 1.5)
+# plot(iris[, c("Sepal.Length", "Sepal.Width")], cex = 1.5, pch = 20,
+#  col = map2color(iris$Petal.Length, name = "PRGn", n = 20))
+#
+# # Use the rainbow color ramp function
+# plot(iris[, c("Sepal.Length", "Sepal.Width")], cex = 1.5, pch = 20,
+#  col = map2color(iris$Petal.Length, col_ramp = rainbow, n = 20))
 # }
-map2color <- function(x, name = "Blues", n = 15, limits = NULL) {
+map2color <- function(x, name = "Blues", col_ramp = NULL, n = 15, limits = NULL) {
   if (!requireNamespace("RColorBrewer", quietly = TRUE,
                         warn.conflicts = FALSE)) {
     stop("map2color function requires 'RColorBrewer' package")
@@ -188,7 +218,7 @@ map2color <- function(x, name = "Blues", n = 15, limits = NULL) {
   if (is.null(limits)) {
     limits <- range(x)
   }
-  pal <- colorBrewerPalette(name, n)
+  pal <- make_palette(name = name, ncolors = n, col_ramp = col_ramp)
   pal[findInterval(x, seq(limits[1], limits[2], length.out = length(pal) + 1),
                    all.inside = TRUE)]
 }
@@ -379,7 +409,7 @@ scores_qplot <- function(df, pca_indexes = NULL, label_name = NULL,
 # @seealso
 # More information on ColorBrewer is available at its website,
 # \url{http://www.colorbrewer2.org}.
-scatterqplot <- function(df, x, y, label_name = NULL, size = 1,
+scatterqplot <- function(df, x, y, label_name = NULL, labels = NULL, size = 1,
                          palette = "Set1", x_label = "x", y_label = "y",
                          legend = TRUE, legend_rows = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
@@ -390,7 +420,7 @@ scatterqplot <- function(df, x, y, label_name = NULL, size = 1,
     stop("scatterqplot function requires 'RColorBrewer' package")
   }
 
-  if (is.null(label_name)) {
+  if (is.null(labels) && is.null(label_name)) {
     factor_names <- names(df)[(sapply(df, is.factor))]
     if (length(factor_names) == 0) {
       stop("Couldn't find a factor column in data frame to use for label")
@@ -399,17 +429,22 @@ scatterqplot <- function(df, x, y, label_name = NULL, size = 1,
       label_name <- factor_names[1]
     }
   }
-
-  if (is.null(df[[label_name]])) {
-    stop("Data frame does not have a '",label_name,
-         "' column for use as a label")
+  if (is.null(labels)) {
+    if (is.null(df[[label_name]])) {
+      stop("Data frame does not have a '",label_name,
+           "' column for use as a label")
+    }
+    labels <- df[[label_name]]
+  }
+  else {
+    label_name <- "Labels"
   }
 
-  ncolors <- length(unique(df[[label_name]]))
-  colorPalette <- colorBrewerPalette(palette, ncolors)
+  ncolors <- length(unique(labels))
+  colorPalette <- color_brewer_palette(palette, ncolors)
 
   score_plot <-
-    ggplot2::qplot(x, y, data = df, colour = df[[label_name]], size = I(size)) +
+    ggplot2::qplot(x, y, colour = labels, size = I(size)) +
     ggplot2::scale_color_manual(values = colorPalette, name = label_name) +
     ggplot2::theme(legend.position = "bottom") +
     ggplot2::labs(x = x_label, y = y_label)
@@ -429,8 +464,10 @@ scatterqplot <- function(df, x, y, label_name = NULL, size = 1,
 # Factory function for a plotting callback which can be used by the reporter
 # function of an embedding to plot the current (two-dimensional) embedding.
 #
-# @param x Data frame containing label information for the embedded data.
-# @param attr_name Name of the label column in \code{x}.
+# @param x Data frame.
+# @param attr_name Name of the label column in \code{x}. Ignored if
+#  \code{labels} is provided.
+# @param labels Vector of labels.
 # @param label_fn Function with the signature \code{label_fn(labels)} where
 # \code{labels} is a vector of labels for each point in the data set, and
 # the function returns a vector of labels suitable for displaying in the plot
@@ -462,12 +499,13 @@ scatterqplot <- function(df, x, y, label_name = NULL, size = 1,
 #                                      ...)
 # }
 # @family sneer plot functions
-make_plot <- function(x, attr_name,
+make_plot <- function(x, attr_name, labels = NULL,
                       label_fn = function(labels) {
                         labels
                       },
                       mat_name = "ym", cex = 1) {
-  embedding_plot <- make_embedding_plot(x, attr_name, label_fn, cex = cex)
+  embedding_plot <- make_embedding_plot(x, attr_name, labels = labels,
+                                        label_fn = label_fn, cex = cex)
   function(out) {
     embedding_plot(out[[mat_name]])
   }
@@ -478,8 +516,10 @@ make_plot <- function(x, attr_name,
 # Create a function which when invoked on a 2D matrix, plots the embedding
 # with color-coded labels.
 #
-# @param x Data frame containing label information for the embedded data.
-# @param attr_name Name of the label column in \code{x}.
+# @param x Data frame.
+# @param attr_name Name of the label column in \code{x}. Ignored if
+#  \code{labels} is provided.
+# @param labels Vector of labels for \code{x}.
 # @param label_fn Function with the signature \code{label_fn(labels)} where
 # \code{labels} is a vector of labels for each point in the data set. The
 # function should return a vector of labels suitable for displaying in the
@@ -510,8 +550,14 @@ make_plot <- function(x, attr_name,
 # # Same plot, with smaller labels
 # make_embedding_plot(iris, "Species", cex = 0.5)(tsne_iris$ym)
 #}
-make_embedding_plot <- function(x, attr_name, label_fn = NULL, cex = 1) {
-  attr <- x[[attr_name]]
+make_embedding_plot <- function(x, attr_name, labels = NULL, label_fn = NULL,
+                                cex = 1) {
+  if (!is.null(labels)) {
+    attr <- labels
+  }
+  else {
+    attr <- x[[attr_name]]
+  }
   uniq_attr <- sort(unique(attr))
   colors <- grDevices::rainbow(length(uniq_attr))
   names(colors) <- uniq_attr
@@ -566,7 +612,9 @@ make_iris_plot <- function(num_label_chars = 1) {
 # \code{RColorBrewer} packages be installed.
 #
 # @param df Data frame containing label information for the embedded data.
-# @param attr_name Name of the label column in \code{df}.
+# @param attr_name Name of the label column in \code{df}. Ignored if
+#  \code{labels} is provided.
+# @param labels Vector of labels.
 # @param mat_name The name of the matrix containing the embedded data in the
 #   output list \code{out} which will be passed to the plot function.
 # @param size Size of the points.
@@ -603,7 +651,8 @@ make_iris_plot <- function(num_label_chars = 1) {
 # iris_view <- make_qplot(iris, "Species")
 # iris_view(mds_iris)
 # }
-make_qplot <- function(df, attr_name = "Label", mat_name = "ym", size = 1,
+make_qplot <- function(df, attr_name = "Label", labels = NULL, mat_name = "ym",
+                       size = 1,
                        palette = "Set1",
                        legend = TRUE, legend_rows = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
@@ -613,7 +662,8 @@ make_qplot <- function(df, attr_name = "Label", mat_name = "ym", size = 1,
                         warn.conflicts = FALSE)) {
     stop("make_qplot function requires 'RColorBrewer' package")
   }
-  embedding_plot <- make_embedding_qplot(df, attr_name, size = size,
+  embedding_plot <- make_embedding_qplot(df, attr_name, labels = labels,
+                                         size = size,
                                          palette = palette, legend = legend,
                                          legend_rows = legend_rows)
 
@@ -672,7 +722,8 @@ make_qplot <- function(df, attr_name = "Label", mat_name = "ym", size = 1,
 # iris_view(prcomp_iris$x)
 # iris_view(mds_iris$ym)
 # }
-make_embedding_qplot <- function(df, attr_name = "Label", size = 1,
+make_embedding_qplot <- function(df, attr_name = "Label", labels = NULL,
+                                 size = 1,
                                  palette = "Set1",
                                  legend = TRUE, legend_rows = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
@@ -686,6 +737,7 @@ make_embedding_qplot <- function(df, attr_name = "Label", size = 1,
   function(ym) {
     colnames(ym) <- NULL
     scatterqplot(df, x = ym[, 1], y = ym[, 2], label_name = attr_name,
+                 labels = labels,
                  size = size, palette = palette,
                  x_label = "D1", y_label = "D2",
                  legend = legend, legend_rows = legend_rows)
@@ -705,20 +757,62 @@ make_embedding_qplot <- function(df, attr_name = "Label", size = 1,
 # Diverging palette names:
 #  BrBG PiYG PRGn PuOr RdBu RdGy RdYlBu RdYlGn Spectral
 # Qualitative:
-#  Accent Dark2 Paired	Pastel1 Pastel2	Set1 Set2	Set3
+#  Accent Dark2 Paired Pastel1 Pastel2	Set1 Set2	Set3
 # @param name Name of the palette.
-# @param n Number of colors desired.
+# @param ncolors Number of colors desired.
 # @return Vector of \code{n} colors from the palette.
 # @seealso
 # More information on ColorBrewer is available at its website,
 # \url{http://www.colorbrewer2.org}.
-colorBrewerPalette <- function(name, n) {
+color_brewer_palette <- function(name, ncolors) {
+  if (!requireNamespace("RColorBrewer", quietly = TRUE,
+                        warn.conflicts = FALSE)) {
+    stop("color_brewer_palette function requires 'RColorBrewer' package")
+  }
+  make_color_brewer_ramp(name)(ncolors)
+}
+
+# Interpolated Color Brewer Ramp
+#
+# Creates a color ramp function using the ColorBrewer palettes, with
+# interpolation if the requested number of colors exceeds the maximum number of
+# colors in the palette. Sequential and Diverging palettes are suitable for
+# numerical scales. The Qualitiative palettes are intended for categorical
+# values.
+#
+# Sequential palettes names:
+#  Blues BuGn BuPu GnBu Greens Greys Oranges OrRd PuBu PuBuGn PuRd Purples
+#  RdPu Reds YlGn YlGnBu YlOrBr YlOrRd
+# Diverging palette names:
+#  BrBG PiYG PRGn PuOr RdBu RdGy RdYlBu RdYlGn Spectral
+# Qualitative:
+#  Accent Dark2 Paired Pastel1 Pastel2	Set1 Set2	Set3
+#
+# @param name Name of the palette.
+# @return Function accepting an integer n as an argument and returning n colors.
+#
+# @note This function requires the RColorBrewer package to be installed and
+#  loaded.
+# @seealso
+# More information on ColorBrewer is available at its website,
+# \url{http://www.colorbrewer2.org}.
+make_color_brewer_ramp <- function(name) {
   if (!requireNamespace("RColorBrewer", quietly = TRUE,
                         warn.conflicts = FALSE)) {
     stop("colorBrewerPalette function requires 'RColorBrewer' package")
   }
-  grDevices::colorRampPalette(
-    RColorBrewer::brewer.pal(
-      RColorBrewer::brewer.pal.info[name,]$maxcolors, name))(n)
-}
+  if (!name %in% rownames(RColorBrewer::brewer.pal.info)) {
+    stop("Unknown ColorBrewer name '", name, "', must be one of ",
+         paste(rownames(RColorBrewer::brewer.pal.info), collapse = ", "))
+  }
 
+  function(n) {
+    max_colors <- RColorBrewer::brewer.pal.info[name,]$maxcolors
+    if (n <= max_colors) {
+      RColorBrewer::brewer.pal(n, name)
+    }
+    else {
+      grDevices::colorRampPalette(RColorBrewer::brewer.pal(max_colors, name))(n)
+    }
+  }
+}
