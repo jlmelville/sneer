@@ -35,8 +35,6 @@ NULL
 # The first \code{k} scores of the PCA of the input coordinates are used to
 # initialize the \code{k} dimensions of the embedded coordinates. Input
 # coordinates are centered but not scaled before the PCA is carried out.
-# This initialization can only be used if the input  data is in the form of
-# coordinates, not a distance matrix.
 #
 # @param k Number of output dimensions. For 2D visualization this is always 2.
 # @param verbose If \code{TRUE}, log information about the initialization.
@@ -52,9 +50,13 @@ NULL
 out_from_PCA <- function(k = 2, verbose = TRUE) {
   init_out(function(inp, out) {
     if (is.null(inp$xm)) {
-      stop("PCA initialization is only possible with input coordinates")
+      message("PCA: Calculating PCA scores plot by classical MDS on distance matrix")
+      x <- stats::as.dist(inp$dm)
     }
-    out$ym <- scores_matrix(inp$xm, ncol = k, verbose = verbose)
+    else {
+      x <- inp$xm
+    }
+    out$ym <- scores_matrix(x, ncol = k, verbose = verbose)
     out
   })
 }
@@ -201,20 +203,31 @@ init_out <- function(initializer) {
 # }
 scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
                           verbose = TRUE) {
-
-  xm <- scale(xm, center = TRUE, scale = FALSE)
-  # do SVD on xm directly rather than forming covariance matrix
   ncomp <- ncol
-  sm <- svd(xm, nu = ncomp, nv = 0)
-  dm <- diag(c(sm$d[1:ncomp]))
-  if (verbose) {
-    # calculate eigenvalues of covariance matrix from singular values
-    lambda <- (sm$d ^ 2) / (nrow(xm) - 1)
-    varex <- sum(lambda[1:ncomp]) / sum(lambda)
-    message("PCA: ", ncomp, " components explained ",
-            formatC(varex * 100), "% variance")
+  if (class(xm) == "dist") {
+    res_mds <- stats::cmdscale(xm, x.ret = TRUE, eig = TRUE)
+    if (verbose) {
+      lambda <- res_mds$eig
+      varex <- sum(lambda[1:ncomp]) / sum(lambda)
+      message("Classical MDS: ", ncomp, " components explained ",
+              formatC(varex * 100), "% variance")
+    }
+    return(res_mds$points)
   }
-  sm$u %*% dm
+  else {
+    xm <- scale(xm, center = TRUE, scale = FALSE)
+    # do SVD on xm directly rather than forming covariance matrix
+    sm <- svd(xm, nu = ncomp, nv = 0)
+    dm <- diag(c(sm$d[1:ncomp]))
+    if (verbose) {
+      # calculate eigenvalues of covariance matrix from singular values
+      lambda <- (sm$d ^ 2) / (nrow(xm) - 1)
+      varex <- sum(lambda[1:ncomp]) / sum(lambda)
+      message("PCA: ", ncomp, " components explained ",
+              formatC(varex * 100), "% variance")
+    }
+    return(sm$u %*% dm)
+  }
 }
 
 # Random Matrix (Normal Distribution)
