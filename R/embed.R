@@ -106,9 +106,9 @@ NULL
 #' For initializing the output coordinates, the options for the
 #' \code{init} parameter are:
 #' \itemize{
-#'  \item \code{"p"} Initialize using the first two scores of the PCA.
-#'  Data will be centered, but not scaled unless the \code{scale_type} parameter
-#'  is used.
+#'  \item \code{"p"} Initialize using the first two scores of the PCA (using
+#'  classical MDS if \code{df} is a distance matrix). Data will be centered,
+#'  but not scaled unless the \code{scale_type} parameter is used.
 #'  \item \code{"r"} Initialize each coordinate value from a normal random
 #'  distribution with a standard deviation of 1e-4, as suggested by van der
 #'  Maaten and Hinton (2008).
@@ -197,7 +197,7 @@ NULL
 #'  if not present.
 #' }
 #'
-#' @param df Data frame to embed.
+#' @param df Data frame or distance matrix (as dist object) to embed.
 #' @param indexes Indexes of the columns of the numerical variables to use in
 #'  the embedding. The default of \code{NULL} will use all the numeric
 #'  variables.
@@ -245,7 +245,8 @@ NULL
 #'  \code{"g"}) or to color the text associated with each plotted observation
 #'  {\code{plot_type "p"}}. If not specified, then the first factor column
 #'  will be used. If no suitable column can be found, then no plotting
-#'  is carried out.
+#'  is carried out. Ignored if \code{labels} is provided.
+#' @param labels Vector of labels associated with \code{df}.
 #' @param label_chars Number of characters to use for the labels in the
 #'  embedding plot. Applies only when \code{plot_type} is set to \code{"p"}.
 #' @param label_size Size of the points in the embedding plot.
@@ -321,6 +322,10 @@ NULL
 #'   # Same as above, but with sensible defaults (use all numeric columns, plot
 #'   # with first factor column found)
 #'   res <- sneer(iris, method = "pca")
+#'
+#'   # Can use a distance matrix as input with external vector of labels
+#'   res <- sneer(dist(iris[1:4]), method = "pca", labels = iris$Species)
+#'
 #'   # scale columns so each one has mean 0 and variance 1
 #'   res <- sneer(iris, method = "pca", scale_type = "a")
 #'   # full species name on plot is cluttered, so just use the first two
@@ -488,6 +493,7 @@ sneer <- function(df,
                   report_every = 50,
                   tol = 1e-4,
                   plot_type = "p",
+                  labels = NULL,
                   label_name = NULL,
                   label_chars = NULL,
                   label_size = 1,
@@ -496,23 +502,29 @@ sneer <- function(df,
                   legend_rows = NULL,
                   quality_measures = NULL,
                   ret = c()) {
-  if (is.null(indexes)) {
+
+  if (class(df) != "dist" && class(df) != "data.frame") {
+    stop("df should be a data frame or dist object")
+  }
+  if (class(df) != "dist" && is.null(indexes)) {
     indexes <- sapply(df, is.numeric)
   }
 
-  if (is.null(label_name)) {
-    factor_names <- names(df)[(sapply(df, is.factor))]
-    if (length(factor_names) > 0) {
-      label_name <- factor_names[length(factor_names)]
-      message("Using '", label_name, "' as the label")
-    }
-    else {
-      message("No label found")
+  if (is.null(labels)) {
+    if (is.null(label_name)) {
+      factor_names <- names(df)[(sapply(df, is.factor))]
+      if (length(factor_names) > 0) {
+        label_name <- factor_names[length(factor_names)]
+        message("Using '", label_name, "' as the label")
+      }
+      else {
+        message("No label found")
+      }
     }
   }
 
   if (!is.null(label_name) && is.null(df[[label_name]])) {
-    stop("Data frame does not have a '",label_name,
+    stop("Data frame does not have a '", label_name,
          "' column for use as a label")
   }
 
@@ -704,7 +716,7 @@ sneer <- function(df,
 
   embed_plot <- NULL
   if (is.null(plot_type)) { plot_type <- "n" }
-  if (!is.null(label_name)) {
+  if (!is.null(label_name) || !is.null(labels)) {
     if (plot_type == "g") {
       if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
         stop("plot type 'g' requires 'ggplot2' package")
@@ -718,6 +730,7 @@ sneer <- function(df,
         make_qplot(
           df,
           attr_name = label_name,
+          labels = labels,
           size = label_size,
           palette = palette,
           legend = legend,
@@ -726,13 +739,16 @@ sneer <- function(df,
     }
     else if (plot_type == 'p') {
       if (!is.null(label_chars)) {
-        embed_plot <- make_plot(df,
-                                label_name,
+        embed_plot <- make_plot(x = df,
+                                attr_name = label_name,
+                                labels = labels,
                                 cex = label_size,
                                 label_fn = make_label(label_chars))
       }
       else {
-        embed_plot <- make_plot(df, label_name, cex = label_size)
+        embed_plot <- make_plot(x = df, attr_name = label_name,
+                                labels = labels,
+                                cex = label_size)
       }
     }
   }
@@ -894,8 +910,14 @@ sneer <- function(df,
          "probabilities (e.g. t-SNE), not '", method, "'")
   }
 
+  if (class(df) == 'dist') {
+    xm <- df
+  }
+  else {
+    xm <- df[, indexes]
+  }
   embed_result <- embed_main(
-    df[, indexes],
+    xm,
     method = embed_method,
     opt = optimizer,
     preprocess = preprocess,

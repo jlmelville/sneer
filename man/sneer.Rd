@@ -10,12 +10,13 @@ sneer(df, indexes = NULL, method = "tsne", alpha = 1, lambda = 0.5,
   kappa = 0.5, scale_type = "", perplexity = 32, perp_scale = "single",
   perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
   init = "p", init_config = NULL, opt = "NAG-BOLD", max_iter = 1000,
-  report_every = 50, tol = 1e-04, plot_type = "p", label_name = NULL,
-  label_chars = NULL, label_size = 1, palette = "Set1", legend = TRUE,
-  legend_rows = NULL, quality_measures = NULL, ret = c())
+  report_every = 50, tol = 1e-04, plot_type = "p", labels = NULL,
+  label_name = NULL, label_chars = NULL, label_size = 1,
+  palette = "Set1", legend = TRUE, legend_rows = NULL,
+  quality_measures = NULL, ret = c())
 }
 \arguments{
-\item{df}{Data frame to embed.}
+\item{df}{Data frame or distance matrix (as dist object) to embed.}
 
 \item{indexes}{Indexes of the columns of the numerical variables to use in
 the embedding. The default of \code{NULL} will use all the numeric
@@ -77,12 +78,14 @@ function; \code{"g"} to use the \code{ggplot2} package, with the
 \code{RColorBrewer} palettes. You are responsible for installing and
 loading these packages yourself.}
 
+\item{labels}{Vector of labels associated with \code{df}.}
+
 \item{label_name}{Name of factor-typed column in \code{df} to be used to
 color the points in the embedding plot (for \code{plot_type}
 \code{"g"}) or to color the text associated with each plotted observation
 {\code{plot_type "p"}}. If not specified, then the first factor column
 will be used. If no suitable column can be found, then no plotting
-is carried out.}
+is carried out. Ignored if \code{labels} is provided.}
 
 \item{label_chars}{Number of characters to use for the labels in the
 embedding plot. Applies only when \code{plot_type} is set to \code{"p"}.}
@@ -216,9 +219,9 @@ setting \code{perp_kernel_fun} to "step".
 For initializing the output coordinates, the options for the
 \code{init} parameter are:
 \itemize{
- \item \code{"p"} Initialize using the first two scores of the PCA.
- Data will be centered, but not scaled unless the \code{scale_type} parameter
- is used.
+ \item \code{"p"} Initialize using the first two scores of the PCA (using
+ classical MDS if \code{df} is a distance matrix). Data will be centered,
+ but not scaled unless the \code{scale_type} parameter is used.
  \item \code{"r"} Initialize each coordinate value from a normal random
  distribution with a standard deviation of 1e-4, as suggested by van der
  Maaten and Hinton (2008).
@@ -396,6 +399,10 @@ for more details.
   # Same as above, but with sensible defaults (use all numeric columns, plot
   # with first factor column found)
   res <- sneer(iris, method = "pca")
+
+  # Can use a distance matrix as input with external vector of labels
+  res <- sneer(dist(iris[1:4]), method = "pca", labels = iris$Species)
+
   # scale columns so each one has mean 0 and variance 1
   res <- sneer(iris, method = "pca", scale_type = "a")
   # full species name on plot is cluttered, so just use the first two
