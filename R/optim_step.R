@@ -100,10 +100,11 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 
       step_size <- opt$step_size$value
       y_alpha <- y0 + (step_size * pm)
+
       out_alpha <- set_solution(inp, y_alpha, method)
       cost <- calculate_cost(method, inp, out_alpha)
 
-      while (cost > cost0 && step_size > min_step_size) {
+      while ((!is.finite(cost) || cost > cost0) && step_size > min_step_size) {
         step_size <- sclamp(opt$step_size$dec_fn(step_size),
                             min = opt$step_size$min,
                             max = opt$step_size$max)
@@ -112,6 +113,9 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
         cost <- calculate_cost(method, inp, out_alpha)
       }
       opt$cost <- cost
+      if (!is.finite(cost)) {
+        stop("Non finite cost found with bold driver at iter ", iter)
+      }
       opt$step_size$value <- step_size
       list(opt = opt)
     },
