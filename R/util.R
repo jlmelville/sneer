@@ -57,7 +57,7 @@ length_vec <- function(x) {
 # @param x Matrix.
 # @return \code{x} with elements scaled such that its length equals 1.
 normalize <- function(x) {
-  x / length_vec(x)
+  x / (length_vec(x) + .Machine$double.eps)
 }
 
 # Relative Tolerance
