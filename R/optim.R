@@ -207,6 +207,8 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #  descent part of the update is scaled relative to the momentum part.
 # @param dec_mult Degree to downweight the momentum iteration number when
 #  restarting.
+# @param restart If \code{TRUE}, then the momentum memory will be reset to zero
+#   whenever the cost does not decrease.
 # @return Optimizer with NAG parameters and bold driver step size.
 # @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #  this function for configuring an embedding.
@@ -221,14 +223,16 @@ bold_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
                       max_momentum = 1,
                       normalize_direction = TRUE,
                       linear_weight = TRUE,
-                      dec_mult = 0) {
+                      dec_mult = 0,
+                      restart = TRUE) {
   opt <- bold_nag(min_step_size = min_step_size,
                   init_step_size = init_step_size,
                   max_momentum = max_momentum,
                   normalize_direction = normalize_direction,
                   linear_weight = linear_weight)
 
-  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult)
+  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
+                                 restart = restart)
   opt
 }
 
@@ -283,6 +287,8 @@ back_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #  descent part of the update is scaled relative to the momentum part.
 # @param dec_mult Degree to downweight the momentum iteration number when
 #  restarting.
+# @param restart If \code{TRUE}, then the momentum memory will be reset to zero
+#   whenever the cost does not decrease.
 # @return Optimizer with NAG parameters and backstepping step size.
 # @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #  this function for configuring an embedding.
@@ -296,13 +302,15 @@ back_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
                       max_momentum = 1,
                       normalize_direction = TRUE,
                       linear_weight = TRUE,
-                      dec_mult = 0) {
+                      dec_mult = 0,
+                      restart = TRUE) {
   opt <- back_nag(min_step_size = min_step_size,
                   max_momentum = max_momentum,
                   normalize_direction = normalize_direction,
                   linear_weight = linear_weight)
 
-  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult)
+  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
+                                 restart = restart)
   opt
 }
 
@@ -324,12 +332,13 @@ back_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
 #  embed_prob(opt = gradient_descent(), ...)
 # }
 # @family sneer optimization methods
-gradient_descent <- function() {
+gradient_descent <- function(min_step_size = 0.01,
+                             update = no_momentum()) {
   make_opt(gradient = classical_gradient(), direction = steepest_descent(),
            step_size = bold_driver(
-             min_step_size = 0.01
+             min_step_size = min_step_size
              ),
-           update = no_momentum(),
+           update = update,
            normalize_direction = TRUE)
 }
 

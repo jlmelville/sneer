@@ -368,6 +368,8 @@ gradient_update_term <- function(opt) {
 #  the iteration number. Function should return a new iteration number between
 #  \code{0} and \code{iter}. Optional: default behavior is to multiply
 #  \code{iter} by \code{dec_mult}.
+# @param restart If \code{TRUE}, then reset the memory of the momentum to zero
+#   when the cost increases.
 # @return Update method with adaptive restart behavior.
 # @references
 # O'Donoghue, B., & Candes, E. (2013).
@@ -383,7 +385,8 @@ gradient_update_term <- function(opt) {
 # embed_prob(opt = nag(update = update), ...)
 # }
 adaptive_restart <- function(update, dec_mult  = 0,
-                             dec_fn = partial(`*`, dec_mult)) {
+                             dec_fn = partial(`*`, dec_mult),
+                             restart = TRUE) {
 
   if (!is.null(update$after_step)) {
     update$old_after_step <- update$after_step
@@ -431,8 +434,10 @@ adaptive_restart <- function(update, dec_mult  = 0,
     }
 
     if (!opt$cost_ok) {
-      opt$update$previous <- matrix(0, nrow(out[[opt$mat_name]]),
-                               ncol(out[[opt$mat_name]]))
+      if (restart) {
+        opt$update$previous <- matrix(0, nrow(out[[opt$mat_name]]),
+                                         ncol(out[[opt$mat_name]]))
+      }
       opt$update$t <- dec_fn(opt$update$t)
       opt$update$dirty <- TRUE
     }

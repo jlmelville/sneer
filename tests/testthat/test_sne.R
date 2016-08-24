@@ -154,7 +154,7 @@ test_that("different beta gives same converged results", {
                                                    report_every = 2),
                           export = c("report"),
                           verbose = FALSE,
-                          opt = bold_nag_adapt())
+                          opt = bold_nag_adapt(linear_weight = TRUE, restart = FALSE))
   # should be the same as the SSNE test above
   expect_equal(ssne_iris$report$norm, 0.07265, tolerance = 5e-5, scale = 1,
                label = "ssne with non-default beta")
