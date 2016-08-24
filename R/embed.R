@@ -1331,6 +1331,7 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
                   preprocess = make_preprocess(),
                   export = NULL, after_embed = NULL) {
 
+  opt$max_iter <- max_iter
   init_result <- init_embed(xm, method, preprocess, init_inp, init_out, opt)
   inp <- init_result$inp
   out <- init_result$out
