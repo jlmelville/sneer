@@ -431,7 +431,7 @@ adaptive_restart <- function(update, dec_mult  = 0,
     }
 
     if (!opt$cost_ok) {
-      opt$update$value <- matrix(0, nrow(out[[opt$mat_name]]),
+      opt$update$previous <- matrix(0, nrow(out[[opt$mat_name]]),
                                ncol(out[[opt$mat_name]]))
       opt$update$t <- dec_fn(opt$update$t)
       opt$update$dirty <- TRUE
