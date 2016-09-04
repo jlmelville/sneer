@@ -42,7 +42,7 @@ test_that("weighting works with row probabilities too", {
   asne_embed <- do_embed(asne())
   expect_equal(asne_embed$cost, 8.739439, tolerance = 1e-6)
   wasne_embed <- do_embed(importance_weight(asne()))
-  expect_equal(wasne_embed$cost, 6.912204, tolerance = 1e-6)
+  expect_equal(wasne_embed$cost, 6.912204, tolerance = 1e-4)
   woasne_embed <- do_embed(importance_weight(asne(),
                                          centrality_fn = outdegree_centrality))
   expect_equal(woasne_embed$cost, asne_embed$cost, tolerance = 1e-6,

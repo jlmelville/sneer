@@ -332,7 +332,7 @@ back_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
 #  embed_prob(opt = gradient_descent(), ...)
 # }
 # @family sneer optimization methods
-gradient_descent <- function(min_step_size = 0.01,
+gradient_descent <- function(min_step_size = sqrt(.Machine$double.eps),
                              update = no_momentum()) {
   make_opt(gradient = classical_gradient(), direction = steepest_descent(),
            step_size = bold_driver(
