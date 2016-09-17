@@ -17,22 +17,22 @@ do_embed <- function(method, input_weight_fn = exp_weight) {
 test_that("wSSNE gives different results to SSNE", {
   ssne_embed <- do_embed(ssne())
   wssne_embed <- do_embed(importance_weight(ssne()))
-  expect_equal(ssne_embed$cost, 0.03745801, tolerance = 1e-6)
-  expect_equal(wssne_embed$cost, 0.04952052, tolerance = 1e-6)
+  expect_equal(ssne_embed$cost, 0.0375, tolerance = 1e-4)
+  expect_equal(wssne_embed$cost, 0.0495, tolerance = 1e-4)
   # expect warnings with knn and iris because of identical observations, which
   # means certain perplexity values can't be achieved.
   knn_wssne_embed <- do_embed(importance_weight(ssne()),
                               input_weight_fn = step_weight)
-  expect_equal(knn_wssne_embed$cost, 0.09886, tolerance = 1e-2)
+  expect_equal(knn_wssne_embed$cost, 0.099, tolerance = 1e-3)
 
   knn_centrality <- centrality(knn_wssne_embed$inp, knn_wssne_embed$method)
-  expect_equal(min(knn_centrality), 62.02, tolerance = 1e-5)
+  expect_equal(min(knn_centrality), 62.02, tolerance = 1e-3)
   expect_equal(median(knn_centrality), 99)
   expect_equal(mean(knn_centrality), 100)
   expect_equal(max(knn_centrality), 144.9, tolerance = 1e-3)
 
   exp_centrality <- centrality(wssne_embed$inp, wssne_embed$method)
-  expect_equal(min(exp_centrality), 65.34, tolerance = 1e-5)
+  expect_equal(min(exp_centrality), 65.34, tolerance = 1e-3)
   expect_equal(median(exp_centrality), 102.2, tolerance = 1e-3)
   expect_equal(mean(exp_centrality), 100)
   expect_equal(max(exp_centrality), 131, tolerance = 1e-3)
@@ -40,9 +40,9 @@ test_that("wSSNE gives different results to SSNE", {
 
 test_that("weighting works with row probabilities too", {
   asne_embed <- do_embed(asne())
-  expect_equal(asne_embed$cost, 8.739439, tolerance = 1e-6)
+  expect_equal(asne_embed$cost, 8.74, tolerance = 1e-4)
   wasne_embed <- do_embed(importance_weight(asne()))
-  expect_equal(wasne_embed$cost, 6.912204, tolerance = 1e-4)
+  expect_equal(wasne_embed$cost, 6.91, tolerance = 1e-3)
   woasne_embed <- do_embed(importance_weight(asne(),
                                          centrality_fn = outdegree_centrality))
   expect_equal(woasne_embed$cost, asne_embed$cost, tolerance = 1e-6,
