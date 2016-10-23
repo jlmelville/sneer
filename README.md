@@ -120,14 +120,6 @@ res <- sneer(iris, scale_type = "a", method = "wtsne",
 # leisure
 res <- sneer(iris, scale_type = "a", method = "wtsne", ret = c("dx", "dy"))
 
-# calculate the 32-nearest neighbor preservation for each observation
-# 0 means no neighbors preserved, 1 means all of them
-pres32 <- nbr_pres(res$dx, res$dy, 32)
-
-# use map2color helper function with diverging or sequential color palettes
-# to map values onto the embedded points
-plot(res$coords, col = map2color(pres32), pch = 20, cex = 1.5)
-
 # export degree centrality, input weight function precision parameters,
 # and intrinsic dimensionality
 res <- sneer(iris, scale_type = "a", method = "wtsne", 
@@ -143,14 +135,19 @@ library(RColorBrewer)
 # Use a Color Brewer Qualitative palette
 embed_plot(res$coords, iris$Species, palette = "Dark2")
 
-# Visualize embedding colored by various values (function requires RColorBrewer
-# package to be installed):
+# Visualize embedding colored by various values:
 # Degree centrality
-embed_quant_plot(res$coords, res$deg)
-# Intrinsic Dimensionality using the PRGn palette
-embed_quant_plot(res$coords, res$dim, name = "PRGn")
+embed_plot(res$coords, x = res$deg)
+# Intrinsic Dimensionality using the PRGn palette 
+# (requires RColorBrewer package to be installed)
+embed_plot(res$coords, x = res$dim, palette = "PRGn")
 # Input weight function precision parameter with the Spectral palette
-embed_quant_plot(res$coords, res$prec, name = "Spectral")
+embed_plot(res$coords, x = res$prec, palette = "Spectral")
+# Calculate the 32-nearest neighbor preservation for each observation
+# 0 means no neighbors preserved, 1 means all of them
+pres32 <- nbr_pres(res$dx, res$dy, 32)
+embed_plot(res$coords, x = pres32, cex = 1.5)
+
 ```
 
 ### Motivation

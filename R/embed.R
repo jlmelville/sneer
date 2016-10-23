@@ -444,14 +444,6 @@ NULL
 #'   # Similarly, for the ROC curve:
 #'   roc <- roc_auc_embed(res$dy, iris$Species)
 #'
-#'   # calculate the 32-nearest neighbor preservation for each observation
-#'   # 0 means no neighbors preserved, 1 means all of them
-#'   pres32 <- nbr_pres(res$dx, res$dy, 32)
-#'
-#'   # use map2color helper function with diverging or sequential color palettes
-#'   # to map values onto the embedded points
-#'   plot(res$coords, col = map2color(pres32), pch = 20, cex = 1.5)
-#'
 #'   # export degree centrality, input weight function precision parameters,
 #'   # and intrinsic dimensionality
 #'   res <- sneer(iris, scale_type = "a", method = "wtsne",
@@ -469,11 +461,16 @@ NULL
 #'
 #'   # Visualize embedding colored by various values:
 #'   # Degree centrality
-#'   embed_quant_plot(res$coords, res$deg)
+#'   embed_plot(res$coords, x = res$deg)
 #'   # Intrinsic Dimensionality using the PRGn palette
-#'   embed_quant_plot(res$coords, res$dim, name = "PRGn")
+#'   embed_plot(res$coords, x = res$dim, palette = "PRGn")
 #'   # Input weight function precision parameter with the Spectral palette
-#'   embed_quant_plot(res$coords, res$prec, name = "Spectral")
+#'   embed_plot(res$coords, x = res$prec, palette = "Spectral")
+#'
+#'   # calculate the 32-nearest neighbor preservation for each observation
+#'   # 0 means no neighbors preserved, 1 means all of them
+#'   pres32 <- nbr_pres(res$dx, res$dy, 32)
+#'   embed_plot(res$coords, x = pres32, cex = 1.5)
 #' }
 #' @export
 sneer <- function(df,
@@ -507,22 +504,22 @@ sneer <- function(df,
     stop("df should be a data frame or dist object")
   }
   if (class(df) != "dist" && is.null(indexes)) {
-    indexes <- sapply(df, is.numeric)
+    indexes <- vapply(df, is.numeric, logical(1))
+    message("Found ", length(indexes), " numeric columns")
   }
 
-  if (is.null(labels)) {
-    if (is.null(label_name)) {
-      factor_names <- names(df)[(sapply(df, is.factor))]
-      if (length(factor_names) > 0) {
-        label_name <- factor_names[length(factor_names)]
-        message("Using '", label_name, "' as the label")
-      }
-      else {
-        message("No label found")
-      }
+  # Embedding plot point colors
+  # if no explicit labels or name of a column to use is provided,
+  # we'll look for one
+  if (is.null(labels) && is.null(label_name)) {
+    label_name <- last_factor_column_name(df)
+    if (!is.null(label_name)) {
+      message("Using '", label_name, "' as the label")
+    }
+    else {
+      message("No label found")
     }
   }
-
   if (!is.null(label_name) && is.null(df[[label_name]])) {
     stop("Data frame does not have a '", label_name,
          "' column for use as a label")

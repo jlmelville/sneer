@@ -357,10 +357,10 @@ Some other optimization methods are also available:
 \section{Visualization}{
 
 
-The \code{\link{embed_quant_plot}} function will take the output of the
+The \code{\link{embed_plot}} function will take the output of the
 \code{\link{sneer}} function and provide a visualization of the embedding.
-Note that to use this function, you must have the \code{RColorBrewer}
-package installed.
+If you install the \code{RColorBrewer} package installed, you can use the
+Color Brewer palettes by name.
 }
 
 \section{Quantifying embedding quality}{
@@ -521,14 +521,6 @@ for more details.
   # Similarly, for the ROC curve:
   roc <- roc_auc_embed(res$dy, iris$Species)
 
-  # calculate the 32-nearest neighbor preservation for each observation
-  # 0 means no neighbors preserved, 1 means all of them
-  pres32 <- nbr_pres(res$dx, res$dy, 32)
-
-  # use map2color helper function with diverging or sequential color palettes
-  # to map values onto the embedded points
-  plot(res$coords, col = map2color(pres32), pch = 20, cex = 1.5)
-
   # export degree centrality, input weight function precision parameters,
   # and intrinsic dimensionality
   res <- sneer(iris, scale_type = "a", method = "wtsne",
@@ -546,11 +538,16 @@ for more details.
 
   # Visualize embedding colored by various values:
   # Degree centrality
-  embed_quant_plot(res$coords, res$deg)
+  embed_plot(res$coords, x = res$deg)
   # Intrinsic Dimensionality using the PRGn palette
-  embed_quant_plot(res$coords, res$dim, name = "PRGn")
+  embed_plot(res$coords, x = res$dim, palette = "PRGn")
   # Input weight function precision parameter with the Spectral palette
-  embed_quant_plot(res$coords, res$prec, name = "Spectral")
+  embed_plot(res$coords, x = res$prec, palette = "Spectral")
+
+  # calculate the 32-nearest neighbor preservation for each observation
+  # 0 means no neighbors preserved, 1 means all of them
+  pres32 <- nbr_pres(res$dx, res$dy, 32)
+  embed_plot(res$coords, x = pres32, cex = 1.5)
 }
 \dontrun{
 # Do t-SNE on the iris dataset, scaling columns to zero mean and
@@ -580,7 +577,7 @@ roc <- roc_auc_embed(res$dy, iris$Species)
 # Load the RColorBrewer library
 library(RColorBrewer)
 # Plot the embedding, with points colored by the neighborhood preservation
-embed_quant_plot(res$coords, pres32)
+embed_plot(res$coords, x = pres32, palette = "Blues")
 }
 }
 \references{

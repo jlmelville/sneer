@@ -4,20 +4,18 @@
 \alias{embed_plot}
 \title{Embedding Plot, Colored By Category}
 \usage{
-embed_plot(coords, categories = rep("+", nrow(coords)), cex = 1,
-  palette = "Set1", col_ramp = NULL, as_text = FALSE)
+embed_plot(coords, colors = NULL, x = NULL, palette = NULL,
+  col_ramp = grDevices::rainbow, num_colors = 15, limits = NULL,
+  top = NULL, cex = 1, text = NULL)
 }
 \arguments{
 \item{coords}{Matrix of embedded coordinates, with as many rows as
 observations, and 2 columns.}
 
-\item{categories}{Vector containing equivalent categories for each
-observation \code{coords}. Qualitative information which will
-be converted to a color. Each value will be applied to the equivalent
-row in \code{coords}. Can be a vector of levels or strings. If not provided,
-then all points are assumed to have the same category.}
+\item{colors}{Vector containing colors for each coordinate.}
 
-\item{cex}{Size of the points.}
+\item{x}{Either a data frame or a column that can be used to derive a
+suitable vector of colors. Ignored if \code{colors} is provided.}
 
 \item{palette}{Name of a ColorBrewer palette to use for assigning colors to
 \code{categories}. Probably should be one of the "Qualitative" set. Ignored
@@ -28,18 +26,50 @@ and returning n colors. For some applicable functions, see the
 \code{Palettes} help page in the \code{grDevices} package (e.g. by running
 the \code{?rainbow} command).}
 
-\item{as_text}{If \code{TRUE}, plot the category name rather than a point.
-Only useful if the category names are short, unique, and the data set has
-few observations. If no \code{categories} vector is provided, the category
-name is displayed as '+'.}
+\item{num_colors}{Number of unique colors to map to from \code{x}, if
+\code{x} is a numeric vector. Otherwise ignored.}
+
+\item{limits}{The range that the colors should map over when mapping from a
+numeric vector. If not specified, then the range of \code{x}. This is useful
+if there is some external absolute scale that should be used. Ignored if
+\code{x} is not a numeric vector.}
+
+\item{top}{If not \code{NULL}, only the specified number of points will be
+displayed, corresponding to those with the highest values in \code{vec},
+after sorting by decreasing order.
+num_colors = 15, limits = NULL, top = NULL,}
+
+\item{cex}{Size of the points. Ignored if \code{as_text} is \code{TRUE}.}
+
+\item{text}{Vector of label text to display instead of a point. If the labels
+are long or the data set is large, this is unlikely to be very legible, but
+is occasionally useful.}
 }
 \description{
 Plots the embedded coordinates, with each point colored by a specified
 color.
 }
+\details{
+The \code{x} argument can be used to provide a suitable vector of colors
+from either a data frame or vector.
+
+If a data frame is provided, then a vector of colors will be looked for. If
+it's present, it will be used as the \code{colors} argument directly.
+Otherwise, a factor column will be looked for, and each level will be mapped
+to a different color. Otherwise, one color will be used for each point. If
+more than one column of a type is found in the data frame, the last one
+encountered is used.
+
+If a vector is provided, a similar procedure to the data frame is used when
+mapping from its content to a vector of colors. Additionally, a numeric vector
+can be provided, which will be linearly mapped to a color scheme.
+}
 \note{
 Use of this function with ColorBrewer qualitative palette names
 requires that the \code{RColorBrewer} package be installed.
+
+More information on ColorBrewer is available at its website,
+ \url{http://www.colorbrewer2.org}.
 }
 \examples{
 \dontrun{
@@ -47,28 +77,31 @@ requires that the \code{RColorBrewer} package be installed.
 pca_iris <- sneer(iris, method = "pca", scale_type = "a", ret = c("dy"))
 # Visualize the resulting embedding, colored by iris species, using the
 # rainbow palette
-embed_plot(pca_iris$coords, iris$Species, col_ramp = rainbow)
+embed_plot(pca_iris$coords, x = iris$Species, col_ramp = rainbow)
 
 # topo.colors palette
-embed_plot(pca_iris$coords, iris$Species, col_ramp = topo.colors)
+embed_plot(pca_iris$coords, x = iris$Species, col_ramp = topo.colors)
 
-# default palette needs RColorBrewer installed and loaded
-library("RColorBrewer")
-embed_plot(pca_iris$coords, iris$Species)
+# Pass in data frame and it will use any factor column it finds
+embed_plot(pca_iris$coords, x = iris)
 
+#' library("RColorBrewer")
 # Use the "Dark2" ColorBrewer palette
-embed_plot(pca_iris$coords, iris$Species, palette = "Dark2")
+embed_plot(pca_iris$coords, x = iris, palette = "Dark2")
 
 # Can plot the category names instead of points, but looks bad if they're
 # long (or the dataset is large)
-embed_plot(pca_iris$coords, iris$Species, palette = "Dark2", cex = 0.5,
-           as_text = TRUE)
-}
-}
-\seealso{
-\link{embed_quant_plot}, to color the points using a numerical scale.
+embed_plot(pca_iris$coords, x = iris$Species, cex = 0.5, as_text = TRUE)
 
-More information on ColorBrewer is available at its website,
- \url{http://www.colorbrewer2.org}.
+tsne_iris <- sneer(iris, method = "tsne", scale_type = "a",
+                   ret = c("dx", "dy", "deg"))
+# how well is the 32 nearest neighborhood preserved for each point?
+nbr_pres_32 <- nbr_pres(tsne_iris$dx, tsne_iris$dy, 32)
+# visualize preservation, use absolute scale of 0-1 for colors.
+embed_plot(tsne_iris$coords, x = nbr_pres_32, limits = c(0, 1))
+
+# visualize 10 points with the hightest degree centrality
+embed_plot(tsne_iris$coords, x = tsne_iris$deg, top = 10)
+}
 }
 

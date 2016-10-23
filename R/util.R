@@ -123,7 +123,7 @@ upper_tri <- function(x) {
 # names(remove_nulls(mylist)) == c("foo", "baz")
 # }
 remove_nulls <- function(l) {
-  l[!sapply(l, is.null)]
+  l[!vapply(l, is.null, logical(1))]
 }
 
 # Dot Product
@@ -175,6 +175,56 @@ lreplace <- function(l, ...) {
     l[[i]] <- varargs[[i]]
   }
   l
+}
+
+# Looks at all the columns in a data frame, returning the name of the last
+# column which is a factor or NULL if there are no factors present.
+last_factor_column_name <- function(df) {
+  factor_name <- NULL
+  factor_names <- filter_column_names(df, is.factor)
+  if (length(factor_names) > 0) {
+    factor_name <- factor_names[length(factor_names)]
+  }
+  factor_name
+}
+
+# Looks at all the columns in a data frame, returning the name of the last
+# column which contains colors or NULL if there are no factors present.
+last_color_column_name <- function(df) {
+  color_column_name <- NULL
+  color_column_names <- filter_column_names(df, is_color_column)
+  if (length(color_column_names) > 0) {
+    color_column_name <- color_column_names[length(color_column_names)]
+  }
+  color_column_name
+}
+
+# returns TRUE if vector x consists of colors
+is_color_column <- function(x) {
+  !is.numeric(x) && all(is_color(x))
+}
+
+# Applies pred to each column in df and returns the names of each column that
+# returns TRUE.
+filter_column_names <- function(df, pred) {
+  names(df)[(vapply(df, pred, logical(1)))]
+}
+
+# Given a vector of character types x, returns a vector of the same length,
+# where each element is a boolean indicating if the element in x is a valid
+# color.
+# @note Taken from
+# \url{http://stackoverflow.com/questions/13289009/check-if-character-string-is-a-valid-color-representation}
+# @note numeric values are always seen as being valid colors!
+# @examples
+# is_color(c(NA, "black", "blackk", "1", "#00", "#000000", 1000))
+#  <NA>   black  blackk       1     #00 #000000    1000
+#  TRUE    TRUE   FALSE    TRUE   FALSE    TRUE    TRUE
+is_color <- function(x) {
+  vapply(x, function(X) {
+    tryCatch(is.matrix(grDevices::col2rgb(X)),
+             error = function(e) FALSE)
+  }, logical(1))
 }
 
 # Initialize Embedding

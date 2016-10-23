@@ -50,10 +50,10 @@
 #'
 #' @section Visualization:
 #'
-#' The \code{\link{embed_quant_plot}} function will take the output of the
+#' The \code{\link{embed_plot}} function will take the output of the
 #' \code{\link{sneer}} function and provide a visualization of the embedding.
-#' Note that to use this function, you must have the \code{RColorBrewer}
-#' package installed.
+#' If you install the \code{RColorBrewer} package installed, you can use the
+#' Color Brewer palettes by name.
 #'
 #' @section Quantifying embedding quality:
 #'
@@ -110,7 +110,7 @@
 #' # Load the RColorBrewer library
 #' library(RColorBrewer)
 #' # Plot the embedding, with points colored by the neighborhood preservation
-#' embed_quant_plot(res$coords, pres32)
+#' embed_plot(res$coords, x = pres32, palette = "Blues")
 #' }
 #' @references
 #'
