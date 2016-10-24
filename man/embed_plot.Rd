@@ -4,8 +4,8 @@
 \alias{embed_plot}
 \title{Embedding Plot, Colored By Category}
 \usage{
-embed_plot(coords, colors = NULL, x = NULL, palette = NULL,
-  col_ramp = grDevices::rainbow, num_colors = 15, limits = NULL,
+embed_plot(coords, colors = NULL, x = NULL,
+  color_scheme = grDevices::rainbow, num_colors = 15, limits = NULL,
   top = NULL, cex = 1, text = NULL)
 }
 \arguments{
@@ -17,14 +17,8 @@ observations, and 2 columns.}
 \item{x}{Either a data frame or a column that can be used to derive a
 suitable vector of colors. Ignored if \code{colors} is provided.}
 
-\item{palette}{Name of a ColorBrewer palette to use for assigning colors to
-\code{categories}. Probably should be one of the "Qualitative" set. Ignored
-if the \code{col_ramp} parameter is supplied.}
-
-\item{col_ramp}{Color ramp function, accepting an integer n as an argument
-and returning n colors. For some applicable functions, see the
-\code{Palettes} help page in the \code{grDevices} package (e.g. by running
-the \code{?rainbow} command).}
+\item{color_scheme}{Either a color ramp function, or the name of a
+ColorBrewer scheme. See 'Details'.}
 
 \item{num_colors}{Number of unique colors to map to from \code{x}, if
 \code{x} is a numeric vector. Otherwise ignored.}
@@ -63,6 +57,13 @@ encountered is used.
 If a vector is provided, a similar procedure to the data frame is used when
 mapping from its content to a vector of colors. Additionally, a numeric vector
 can be provided, which will be linearly mapped to a color scheme.
+
+The \code{color_scheme} parameter can be one of either a color ramp function,
+accepting an integer n as an argument and returning n colors, or the name of
+a ColorBrewer color scheme. Probably should be one of the "Qualitative" set.
+
+For some applicable color ramp functions, see the \code{Palettes} help page
+in the \code{grDevices} package (e.g. by running the \code{?rainbow} command).
 }
 \note{
 Use of this function with ColorBrewer qualitative palette names
@@ -76,18 +77,18 @@ More information on ColorBrewer is available at its website,
 # Embed with PCA
 pca_iris <- sneer(iris, method = "pca", scale_type = "a", ret = c("dy"))
 # Visualize the resulting embedding, colored by iris species, using the
-# rainbow palette
-embed_plot(pca_iris$coords, x = iris$Species, col_ramp = rainbow)
+# rainbow color scheme
+embed_plot(pca_iris$coords, x = iris$Species, color_scheme = rainbow)
 
-# topo.colors palette
-embed_plot(pca_iris$coords, x = iris$Species, col_ramp = topo.colors)
+# topo.colors scheme
+embed_plot(pca_iris$coords, x = iris$Species, color_scheme = topo.colors)
 
 # Pass in data frame and it will use any factor column it finds
 embed_plot(pca_iris$coords, x = iris)
 
 #' library("RColorBrewer")
-# Use the "Dark2" ColorBrewer palette
-embed_plot(pca_iris$coords, x = iris, palette = "Dark2")
+# Use the "Dark2" ColorBrewer scheme
+embed_plot(pca_iris$coords, x = iris, color_scheme = "Dark2")
 
 # Can plot the category names instead of points, but looks bad if they're
 # long (or the dataset is large)

@@ -12,8 +12,8 @@ sneer(df, indexes = NULL, method = "tsne", alpha = 1, lambda = 0.5,
   init = "p", init_config = NULL, opt = "NAG-BOLD", max_iter = 1000,
   report_every = 50, tol = 1e-04, plot_type = "p", labels = NULL,
   label_name = NULL, label_chars = NULL, label_size = 1,
-  palette = "Set1", legend = TRUE, legend_rows = NULL,
-  quality_measures = NULL, ret = c())
+  color_name = NULL, color_scheme = grDevices::rainbow, legend = TRUE,
+  legend_rows = NULL, quality_measures = NULL, ret = c())
 }
 \arguments{
 \item{df}{Data frame or distance matrix (as dist object) to embed.}
@@ -74,14 +74,13 @@ value, the optimization stops early.}
 
 \item{plot_type}{String code indicating the type of plot of the embedding
 to display: \code{"p"} to use the usual \code{\link[graphics]{plot}}
-function; \code{"g"} to use the \code{ggplot2} package, with the
-\code{RColorBrewer} palettes. You are responsible for installing and
-loading these packages yourself.}
+function; \code{"g"} to use the \code{ggplot2} package. You are responsible
+for installing and loading the ggplot2 package yourself.}
 
 \item{labels}{Vector of labels associated with \code{df}.}
 
 \item{label_name}{Name of factor-typed column in \code{df} to be used to
-color the points in the embedding plot (for \code{plot_type}
+map to colors of the points in the embedding plot (for \code{plot_type}
 \code{"g"}) or to color the text associated with each plotted observation
 {\code{plot_type "p"}}. If not specified, then the first factor column
 will be used. If no suitable column can be found, then no plotting
@@ -92,8 +91,12 @@ embedding plot. Applies only when \code{plot_type} is set to \code{"p"}.}
 
 \item{label_size}{Size of the points in the embedding plot.}
 
-\item{palette}{Color Brewer palette name to use for coloring points in embedding
-plot. Applies to \code{plot_type} type \code{"g"} only.}
+\item{color_name}{Name of column of colors in \code{df} to be used to color
+the points directly.}
+
+\item{color_scheme}{Either a color ramp function, or the name of a Color
+Brewer palette name to use for coloring points in embedding
+plot. See "Details".}
 
 \item{legend}{if \code{TRUE}, display the legend in the embedding plot.
 Applies when \code{plot_type} is \code{"g"} only.}
@@ -309,6 +312,16 @@ following options can be supplied:
  \item \code{"deg"} Degree centrality of the input probability. Calculated
  if not present.
 }
+
+The \code{color_scheme} parameter is used to set the color scheme for the
+embedding plot that is displayed during the optimization. It can be one of
+either a color ramp function (e.g. \code{grDevices::rainbow}), accepting an
+integer n as an argument and returning n colors, or the name of a ColorBrewer
+color scheme (e.g. "Spectral"). Using a ColorBrewer scheme requires the
+\code{RColorBrewer} package be installed.
+
+For some applicable color ramp functions, see the \code{Palettes} help page
+in the \code{grDevices} package (e.g. by running the \code{?rainbow} command).
 }
 \section{Embedding}{
 
@@ -360,7 +373,7 @@ Some other optimization methods are also available:
 The \code{\link{embed_plot}} function will take the output of the
 \code{\link{sneer}} function and provide a visualization of the embedding.
 If you install the \code{RColorBrewer} package installed, you can use the
-Color Brewer palettes by name.
+ColorBrewer palettes by name.
 }
 
 \section{Quantifying embedding quality}{
@@ -417,7 +430,7 @@ for more details.
   # Use a different ColorBrewer palette, bigger points, and range scale each
   # column
   res <- sneer(iris, method = "pca", scale_type = "r", plot_type = "g",
-               palette = "Dark2", label_size = 2)
+               color_scheme = "Dark2", label_size = 2)
 
   # metric MDS starting from the PCA
   res <- sneer(iris, method = "mmds", scale_type = "a", init = "p")
@@ -502,6 +515,15 @@ for more details.
   res <- sneer(iris, scale_type = "a", method = "wtsne",
                quality_measures =  c("n"))
 
+  # Create a 5D gaussian with its own column specifying colors to use
+  # for each point (in this case, random)
+  g5d <- data.frame(matrix(rnorm(100 * 5), ncol = 5),
+                    color = rgb(runif(100), runif(100), runif(100)),
+                    stringsAsFactors = FALSE)
+  # Specify the name of the color column and the plot will use it rather than
+  # trying to map factor levels to colors
+  res <- sneer(g5d, method = "pca", color_name = "color")
+
   # If your dataset labels divide the data into natural classes, can
   # calculate average area under the ROC and/or precision-recall curve too,
   # but you need to have installed the PRROC package.
@@ -527,22 +549,23 @@ for more details.
                ret = c("deg", "prec", "dim"))
 
   # Plot the embedding as points colored by category, using the rainbow
-  # palette:
-  embed_plot(res$coords, iris$Species, palette = "rainbow")
+  # color ramp function:
+  embed_plot(res$coords, iris$Species, color_scheme = rainbow)
 
   # Load the RColorBrewer Library
   library(RColorBrewer)
 
-  # Use a Color Brewer Qualitative palette
-  embed_plot(res$coords, iris$Species, palette = "Dark2")
+  # Use a ColorBrewer Qualitative color scheme name (pass a string, not
+  # a function!)
+  embed_plot(res$coords, iris$Species, color_scheme = "Dark2")
 
   # Visualize embedding colored by various values:
   # Degree centrality
   embed_plot(res$coords, x = res$deg)
   # Intrinsic Dimensionality using the PRGn palette
-  embed_plot(res$coords, x = res$dim, palette = "PRGn")
+  embed_plot(res$coords, x = res$dim, color_scheme = "PRGn")
   # Input weight function precision parameter with the Spectral palette
-  embed_plot(res$coords, x = res$prec, palette = "Spectral")
+  embed_plot(res$coords, x = res$prec, color_scheme = "Spectral")
 
   # calculate the 32-nearest neighbor preservation for each observation
   # 0 means no neighbors preserved, 1 means all of them
@@ -577,7 +600,7 @@ roc <- roc_auc_embed(res$dy, iris$Species)
 # Load the RColorBrewer library
 library(RColorBrewer)
 # Plot the embedding, with points colored by the neighborhood preservation
-embed_plot(res$coords, x = pres32, palette = "Blues")
+embed_plot(res$coords, x = pres32, color_scheme = "Blues")
 }
 }
 \references{

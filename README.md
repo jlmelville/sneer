@@ -43,7 +43,7 @@ res <- sneer(iris, method = "pca", scale_type = "a", plot_type = "g")
 # Use a different ColorBrewer palette, bigger points, and range scale each
 # column
 res <- sneer(iris, method = "pca", scale_type = "r", plot_type = "g",
-             palette = "Dark2", label_size = 2)
+             color_scheme = "Dark2", label_size = 2)
 
 # metric MDS starting from the PCA
 res <- sneer(iris, method = "mmds", scale_type = "a", init = "p")
@@ -108,6 +108,15 @@ res <- sneer(iris, scale_type = "a", method = "wtsne", perp_kernel_fun = "step")
 res <- sneer(iris, scale_type = "a", method = "wtsne",
              quality_measures =  c("n"))
 
+# Create a 5D gaussian with its own column specifying colors to use 
+# for each point (in this case, random)
+g5d <- data.frame(matrix(rnorm(100 * 5), ncol = 5), 
+                  color = rgb(runif(100), runif(100), runif(100)),
+                  stringsAsFactors = FALSE)
+# Specify the name of the color column and the plot will use it rather than
+# trying to map factor levels to colors
+res <- sneer(g5d, method = "pca", color_name = "color")
+
 # If your dataset labels divide the data into natural classes, can calculate 
 # average area under the ROC and/or precision-recall curve too, but you need to 
 # have installed the PRROC package. And all these techniques can be slow (scale 
@@ -126,23 +135,24 @@ res <- sneer(iris, scale_type = "a", method = "wtsne",
   ret = c("deg", "prec", "dim"))
 
 # Plot the embedding as points colored by category, using the rainbow
-# palette:
-embed_plot(res$coords, iris$Species, palette = "rainbow")
+# color ramp function:
+embed_plot(res$coords, iris$Species, color_scheme = rainbow)
 
 # Load the RColorBrewer Library
 library(RColorBrewer)
 
-# Use a Color Brewer Qualitative palette
-embed_plot(res$coords, iris$Species, palette = "Dark2")
+# Use a ColorBrewer Qualitative palette
+# NB: ColorBrewer as a string)
+embed_plot(res$coords, iris$Species, color_scheme = "Dark2")
 
 # Visualize embedding colored by various values:
 # Degree centrality
 embed_plot(res$coords, x = res$deg)
 # Intrinsic Dimensionality using the PRGn palette 
 # (requires RColorBrewer package to be installed)
-embed_plot(res$coords, x = res$dim, palette = "PRGn")
+embed_plot(res$coords, x = res$dim, color_scheme = "PRGn")
 # Input weight function precision parameter with the Spectral palette
-embed_plot(res$coords, x = res$prec, palette = "Spectral")
+embed_plot(res$coords, x = res$prec, color_scheme = "Spectral")
 # Calculate the 32-nearest neighbor preservation for each observation
 # 0 means no neighbors preserved, 1 means all of them
 pres32 <- nbr_pres(res$dx, res$dy, 32)

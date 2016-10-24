@@ -197,6 +197,16 @@ NULL
 #'  if not present.
 #' }
 #'
+#' The \code{color_scheme} parameter is used to set the color scheme for the
+#' embedding plot that is displayed during the optimization. It can be one of
+#' either a color ramp function (e.g. \code{grDevices::rainbow}), accepting an
+#' integer n as an argument and returning n colors, or the name of a ColorBrewer
+#' color scheme (e.g. "Spectral"). Using a ColorBrewer scheme requires the
+#' \code{RColorBrewer} package be installed.
+#'
+#' For some applicable color ramp functions, see the \code{Palettes} help page
+#' in the \code{grDevices} package (e.g. by running the \code{?rainbow} command).
+#'
 #' @param df Data frame or distance matrix (as dist object) to embed.
 #' @param indexes Indexes of the columns of the numerical variables to use in
 #'  the embedding. The default of \code{NULL} will use all the numeric
@@ -237,11 +247,10 @@ NULL
 #'  value, the optimization stops early.
 #' @param plot_type String code indicating the type of plot of the embedding
 #'  to display: \code{"p"} to use the usual \code{\link[graphics]{plot}}
-#'  function; \code{"g"} to use the \code{ggplot2} package, with the
-#'  \code{RColorBrewer} palettes. You are responsible for installing and
-#'  loading these packages yourself.
+#'  function; \code{"g"} to use the \code{ggplot2} package. You are responsible
+#'  for installing and loading the ggplot2 package yourself.
 #' @param label_name Name of factor-typed column in \code{df} to be used to
-#'  color the points in the embedding plot (for \code{plot_type}
+#'  map to colors of the points in the embedding plot (for \code{plot_type}
 #'  \code{"g"}) or to color the text associated with each plotted observation
 #'  {\code{plot_type "p"}}. If not specified, then the first factor column
 #'  will be used. If no suitable column can be found, then no plotting
@@ -250,8 +259,11 @@ NULL
 #' @param label_chars Number of characters to use for the labels in the
 #'  embedding plot. Applies only when \code{plot_type} is set to \code{"p"}.
 #' @param label_size Size of the points in the embedding plot.
-#' @param palette Color Brewer palette name to use for coloring points in embedding
-#'  plot. Applies to \code{plot_type} type \code{"g"} only.
+#' @param color_name Name of column of colors in \code{df} to be used to color
+#'  the points directly.
+#' @param color_scheme Either a color ramp function, or the name of a Color
+#'  Brewer palette name to use for coloring points in embedding
+#'  plot. See "Details".
 #' @param legend if \code{TRUE}, display the legend in the embedding plot.
 #'  Applies when \code{plot_type} is \code{"g"} only.
 #' @param legend_rows Number of rows to use for displaying the legend in
@@ -340,7 +352,7 @@ NULL
 #'   # Use a different ColorBrewer palette, bigger points, and range scale each
 #'   # column
 #'   res <- sneer(iris, method = "pca", scale_type = "r", plot_type = "g",
-#'                palette = "Dark2", label_size = 2)
+#'                color_scheme = "Dark2", label_size = 2)
 #'
 #'   # metric MDS starting from the PCA
 #'   res <- sneer(iris, method = "mmds", scale_type = "a", init = "p")
@@ -425,6 +437,15 @@ NULL
 #'   res <- sneer(iris, scale_type = "a", method = "wtsne",
 #'                quality_measures =  c("n"))
 #'
+#'   # Create a 5D gaussian with its own column specifying colors to use
+#'   # for each point (in this case, random)
+#'   g5d <- data.frame(matrix(rnorm(100 * 5), ncol = 5),
+#'                     color = rgb(runif(100), runif(100), runif(100)),
+#'                     stringsAsFactors = FALSE)
+#'   # Specify the name of the color column and the plot will use it rather than
+#'   # trying to map factor levels to colors
+#'   res <- sneer(g5d, method = "pca", color_name = "color")
+#'
 #'   # If your dataset labels divide the data into natural classes, can
 #'   # calculate average area under the ROC and/or precision-recall curve too,
 #'   # but you need to have installed the PRROC package.
@@ -450,22 +471,23 @@ NULL
 #'                ret = c("deg", "prec", "dim"))
 #'
 #'   # Plot the embedding as points colored by category, using the rainbow
-#'   # palette:
-#'   embed_plot(res$coords, iris$Species, palette = "rainbow")
+#'   # color ramp function:
+#'   embed_plot(res$coords, iris$Species, color_scheme = rainbow)
 #'
 #'   # Load the RColorBrewer Library
 #'   library(RColorBrewer)
 #'
-#'   # Use a Color Brewer Qualitative palette
-#'   embed_plot(res$coords, iris$Species, palette = "Dark2")
+#'   # Use a ColorBrewer Qualitative color scheme name (pass a string, not
+#'   # a function!)
+#'   embed_plot(res$coords, iris$Species, color_scheme = "Dark2")
 #'
 #'   # Visualize embedding colored by various values:
 #'   # Degree centrality
 #'   embed_plot(res$coords, x = res$deg)
 #'   # Intrinsic Dimensionality using the PRGn palette
-#'   embed_plot(res$coords, x = res$dim, palette = "PRGn")
+#'   embed_plot(res$coords, x = res$dim, color_scheme = "PRGn")
 #'   # Input weight function precision parameter with the Spectral palette
-#'   embed_plot(res$coords, x = res$prec, palette = "Spectral")
+#'   embed_plot(res$coords, x = res$prec, color_scheme = "Spectral")
 #'
 #'   # calculate the 32-nearest neighbor preservation for each observation
 #'   # 0 means no neighbors preserved, 1 means all of them
@@ -494,7 +516,8 @@ sneer <- function(df,
                   label_name = NULL,
                   label_chars = NULL,
                   label_size = 1,
-                  palette = "Set1",
+                  color_name = NULL,
+                  color_scheme = grDevices::rainbow,
                   legend = TRUE,
                   legend_rows = NULL,
                   quality_measures = NULL,
@@ -713,40 +736,43 @@ sneer <- function(df,
 
   embed_plot <- NULL
   if (is.null(plot_type)) { plot_type <- "n" }
-  if (!is.null(label_name) || !is.null(labels)) {
-    if (plot_type == "g") {
-      if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
-        stop("plot type 'g' requires 'ggplot2' package")
-      }
-      if (!requireNamespace("RColorBrewer",
-                            quietly = TRUE,
-                            warn.conflicts = FALSE)) {
-        stop("plot type 'g' requires 'RColorBrewer' package")
-      }
-      embed_plot <-
-        make_qplot(
-          df,
-          attr_name = label_name,
-          labels = labels,
-          size = label_size,
-          palette = palette,
-          legend = legend,
-          legend_rows = legend_rows
-        )
+  if (plot_type == "g") {
+    if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
+      stop("plot type 'g' requires 'ggplot2' package")
     }
-    else if (plot_type == 'p') {
-      if (!is.null(label_chars)) {
-        embed_plot <- make_plot(x = df,
-                                attr_name = label_name,
-                                labels = labels,
-                                cex = label_size,
-                                label_fn = make_label(label_chars))
-      }
-      else {
-        embed_plot <- make_plot(x = df, attr_name = label_name,
-                                labels = labels,
-                                cex = label_size)
-      }
+    if (!requireNamespace("RColorBrewer",
+                          quietly = TRUE,
+                          warn.conflicts = FALSE)) {
+      stop("plot type 'g' requires 'RColorBrewer' package")
+    }
+    embed_plot <-
+      make_qplot(
+        df,
+        label_name = label_name,
+        labels = labels,
+        size = label_size,
+        color_scheme = color_scheme,
+        legend = legend,
+        legend_rows = legend_rows
+      )
+  }
+  else if (plot_type == 'p') {
+    if (!is.null(label_chars)) {
+      embed_plot <- make_plot(x = df,
+                              label_name = label_name,
+                              labels = labels,
+                              cex = label_size,
+                              label_fn = make_label(label_chars),
+                              color_name = color_name,
+                              color_scheme = color_scheme)
+    }
+    else {
+      embed_plot <- make_plot(x = df,
+                              label_name = label_name,
+                              labels = labels,
+                              cex = label_size,
+                              color_name = color_name,
+                              color_scheme = color_scheme)
     }
   }
 
