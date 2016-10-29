@@ -85,12 +85,13 @@
 #
 # # For s1k dataset, plot 2D embedding at every reporter, with "Label" factor
 # # to identify each point on the plot
-# make_reporter(report_every = 100, plot = make_plot(s1k, "Label"))
+# make_reporter(report_every = 100, plot = make_plot(s1k, label_name = "Label"))
 #
 # # For iris dataset, plot 2D embedding at every reporter, with first two
 # # characters of the "Species" factor to identify each point on the plot
 # make_reporter(report_every = 100,
-#               plot = make_plot(iris, "Species", make_label(2)))
+#               plot = make_plot(iris, label_name = "Species",
+#                                label_fn = make_label(2)))
 #
 # # Keep all costs calculated during reporters, can be exported from the
 # # embedding routine and plotted or otherwise used.
@@ -104,7 +105,8 @@
 # \dontrun{
 #  embed_prob(reporter = make_reporter(report_every = 100,
 #                                     normalize_cost = TRUE,
-#                                     plot = make_plot(iris, "Species")),
+#                                     plot = make_plot(iris,
+#                                                      label_name = "Species")),
 #                                     ...)
 # }
 make_reporter <- function(report_every = 100, min_cost = 0,
