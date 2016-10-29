@@ -58,6 +58,12 @@ res <- sneer(iris, method = "tsne", scale_type = "a", init = "p",
 # from PCA so the following is the equivalent of the above
 res <- sneer(iris, scale_type = "a")
 
+# Use the standard tSNE optimization method (Jacobs step size method) with
+# step momentum. Range scale the matrix and use an aggressive learning
+# rate (epsilon).
+res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
+             epsilon = 500)
+
 # NeRV method, starting at a more global perplexity and slowly stepping
 # towards a value of 32 (might help avoid local optima)
 res <- sneer(iris, scale_type = "a", method = "nerv", perp_scale = "step")

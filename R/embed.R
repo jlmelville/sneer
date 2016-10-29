@@ -121,6 +121,12 @@ NULL
 #' For configuring the optimization method, the options for the \code{opt}
 #' parameter are:
 #' \itemize{
+#'  \item \code{"TSNE"} The optimization method used in the original t-SNE
+#'    paper: the Jacobs method for step size selection and a step function
+#'    for the momentum: switching from 0.4 to 0.8 after 250 steps. You may need
+#'    to modify the \code{"epsilon"} parameter to get good results, depending
+#'    on how you have scaled and preprocessed your data, and the embedding
+#'    method used.
 #'  \item \code{"L-BFGS"} The low-memory BFGS method.
 #'  \item \code{"NAG-BOLD"} Nesterov Accelerated Gradient with bold driver step
 #'    size selection.
@@ -165,6 +171,11 @@ NULL
 #'   to be used with sparse matrices. Its inclusion here is suitable for use
 #'   with smaller datasets.
 #' }
+#'
+#' The default is to use NAG with the bold driver step size, and adaptive
+#' restarting. This is not quite as fast as using the Jacobs method for some
+#' datasets, but is more robust across different embedding methods and scaling,
+#' and doesn't require fiddling with the learning rate.
 #'
 #' For the \code{quality_measures} argument, a vector with one or more of the
 #' following options can be supplied:
@@ -308,6 +319,8 @@ NULL
 #' @param init_config Coordinates to use for initial configuration. Used only
 #'  if \code{init} is \code{"m"}.
 #' @param opt Type of optimizer. See 'Details'.
+#' @param epsilon Learning rate. Used only when \code{opt} is set to
+#'  \code{"TSNE"}.
 #' @param max_iter Maximum number of iterations to carry out optimization of
 #'  the embedding. Ignored if the \code{method} is \code{"pca"}.
 #' @param report_every Frequency (in terms of iteration number) with which to
@@ -446,6 +459,12 @@ NULL
 #'   # default settings are to use TSNE with perplexity 32 and initialization
 #'   # from PCA so the following is the equivalent of the above
 #'   res <- sneer(iris, scale_type = "a")
+#'
+#'   # Use the standard tSNE optimization method (Jacobs step size method) with
+#'   # step momentum. Range scale the matrix and use an aggressive learning
+#'   # rate (epsilon).
+#'   res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
+#'                epsilon = 500)
 #'
 #'   # Use the L-BFGS optimization method
 #'   res <- sneer(iris, scale_type = "a", opt = "L-BFGS")
@@ -589,6 +608,7 @@ sneer <- function(df,
                   prec_scale = "",
                   init = "p", init_config = NULL,
                   opt = "NAG-BOLD",
+                  epsilon = 1,
                   max_iter = 1000,
                   report_every = 50,
                   tol = 1e-4,
@@ -697,9 +717,19 @@ sneer <- function(df,
 
   init_inp <- NULL
   if (!is.null(perplexity)) {
-    weight_fn <- exp_weight
-    if (!is.null(perp_kernel_fun) && perp_kernel_fun == "step") {
-      weight_fn <- step_weight
+    if (!is.null(perp_kernel_fun)) {
+      if (perp_kernel_fun == "exp") {
+        weight_fn <- exp_weight
+      }
+      else if (perp_kernel_fun == "step") {
+        weight_fn <- step_weight
+      }
+      else if (perp_kernel_fun == "sqrt_exp") {
+        weight_fn <- sqrt_exp_weight
+      }
+      else {
+        stop("Unknown perplexity kernel function '", perp_kernel_fun, "'")
+      }
     }
 
     modify_kernel_fn <- NULL
@@ -987,6 +1017,9 @@ sneer <- function(df,
   else if (toupper(opt) == "SPEC-BACK") {
     message("Optimizing with Spectral Direction and Backstepping line search")
     optimizer <- optim_spectral(line_search = "back", c1 = c1)
+  }
+  else if (toupper(opt) == "TSNE") {
+    optimizer <- tsne_opt(epsilon = epsilon)
   }
   else {
     stop("Unrecognized optimizer option '", opt, "'")

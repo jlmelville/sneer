@@ -9,9 +9,9 @@
 sneer(df, indexes = NULL, method = "tsne", alpha = 1, lambda = 0.5,
   kappa = 0.5, scale_type = "", perplexity = 32, perp_scale = "single",
   perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
-  init = "p", init_config = NULL, opt = "NAG-BOLD", max_iter = 1000,
-  report_every = 50, tol = 1e-04, plot_type = "p", colors = NULL,
-  color_name = NULL, labels = NULL, label_name = NULL,
+  init = "p", init_config = NULL, opt = "NAG-BOLD", epsilon = 1,
+  max_iter = 1000, report_every = 50, tol = 1e-04, plot_type = "p",
+  colors = NULL, color_name = NULL, labels = NULL, label_name = NULL,
   label_chars = NULL, point_size = 1, plot_labels = FALSE,
   color_scheme = grDevices::rainbow, equal_axes = FALSE, legend = TRUE,
   legend_rows = NULL, quality_measures = NULL, ret = c())
@@ -62,6 +62,9 @@ Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.}
 if \code{init} is \code{"m"}.}
 
 \item{opt}{Type of optimizer. See 'Details'.}
+
+\item{epsilon}{Learning rate. Used only when \code{opt} is set to
+\code{"TSNE"}.}
 
 \item{max_iter}{Maximum number of iterations to carry out optimization of
 the embedding. Ignored if the \code{method} is \code{"pca"}.}
@@ -252,6 +255,12 @@ For initializing the output coordinates, the options for the
 For configuring the optimization method, the options for the \code{opt}
 parameter are:
 \itemize{
+ \item \code{"TSNE"} The optimization method used in the original t-SNE
+   paper: the Jacobs method for step size selection and a step function
+   for the momentum: switching from 0.4 to 0.8 after 250 steps. You may need
+   to modify the \code{"epsilon"} parameter to get good results, depending
+   on how you have scaled and preprocessed your data, and the embedding
+   method used.
  \item \code{"L-BFGS"} The low-memory BFGS method.
  \item \code{"NAG-BOLD"} Nesterov Accelerated Gradient with bold driver step
    size selection.
@@ -296,6 +305,11 @@ There are some caveats to using these optimization routines:
   to be used with sparse matrices. Its inclusion here is suitable for use
   with smaller datasets.
 }
+
+The default is to use NAG with the bold driver step size, and adaptive
+restarting. This is not quite as fast as using the Jacobs method for some
+datasets, but is more robust across different embedding methods and scaling,
+and doesn't require fiddling with the learning rate.
 
 For the \code{quality_measures} argument, a vector with one or more of the
 following options can be supplied:
@@ -528,6 +542,12 @@ for more details.
   # default settings are to use TSNE with perplexity 32 and initialization
   # from PCA so the following is the equivalent of the above
   res <- sneer(iris, scale_type = "a")
+
+  # Use the standard tSNE optimization method (Jacobs step size method) with
+  # step momentum. Range scale the matrix and use an aggressive learning
+  # rate (epsilon).
+  res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
+               epsilon = 500)
 
   # Use the L-BFGS optimization method
   res <- sneer(iris, scale_type = "a", opt = "L-BFGS")

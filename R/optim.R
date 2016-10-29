@@ -127,7 +127,8 @@ make_opt <- function(gradient = classical_gradient(),
 #
 # Wrapper around \code{make_opt} which sets the optimizer parameters to
 # that from the t-SNE paper.
-#
+# @param epsilon Learning rate. Multiplies the Jacobs step size by this
+#   value.
 # @return optimizer with parameters from the t-SNE paper.
 # @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #  this function for configuring an embedding.
@@ -137,10 +138,10 @@ make_opt <- function(gradient = classical_gradient(),
 #  embed_prob(opt = tsne_opt(), ...)
 # }
 # @family sneer optimization methods
-tsne_opt <- function() {
+tsne_opt <- function(epsilon = 1) {
   make_opt(gradient = classical_gradient(),
            direction = steepest_descent(),
-           step_size = tsne_jacobs(),
+           step_size = tsne_jacobs(epsilon = epsilon),
            update = step_momentum(),
            normalize_direction = FALSE, recenter = TRUE,
            mat_name = "ym")

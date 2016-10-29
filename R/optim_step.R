@@ -167,10 +167,10 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 # decreases. Should return a value greater than the current step size.
 # @param dec_fn Function to apply to the current step size when the cost
 # increases. Should return a value smaller than the current step size.
-# @param init_step_size Step size to attempt on the first step of
-# optimization.
-# @param min_step_size Minimum step size.
-# @param max_step_size Maximum step size.
+# @param init_gain Initial gain (step size before scaling by epsilon).
+# @param min_gain Minimum gain. The gain (step size before scaling by epsilon)
+#   will be clamped to this value, to avoid negative step sizes.
+# @param epsilon Learning rate. Multiply the step size by this parameter.
 # @return Jacobs step size method, to be used by the optimizer.
 # @seealso The return value of this function is intended for internal use of
 # the sneer framework only. See \code{optimization_step_size_interface}
@@ -196,34 +196,33 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
 jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
                    inc_fn = partial(`*`, inc_mult),
                    dec_fn = partial(`*`, dec_mult),
-                   init_step_size = 1, min_step_size = .Machine$double.eps,
-                   max_step_size = NULL) {
+                   init_gain = 1,
+                   min_gain = 0.01,
+                   epsilon = 1) {
   list(
     inc_fn = inc_fn,
     dec_fn = dec_fn,
-    init_step_size = init_step_size,
-    min_step_size = min_step_size,
-    max_step_size = max_step_size,
+    init_gain = init_gain,
+    min_gain = min_gain,
     init = function(opt, inp, out, method) {
       v <- out[[opt$mat_name]]
-      opt$step_size$value <-
-        matrix(opt$step_size$init_step_size, nrow(v), ncol(v))
+      opt$step_size$old_gain <- matrix(1, nrow(v), ncol(v))
       opt
     },
     calculate = function(opt, inp, out, method, iter) {
-
       gm <- opt$gm
-      old_step_size <- opt$step_size$value
+      old_gain <- opt$step_size$old_gain
       inc_fn <- opt$step_size$inc_fn
       dec_fn <- opt$step_size$dec_fn
       old_update <- opt$update$value
-      min_step_size <- opt$step_size$min_step_size
+      min_gain <- opt$step_size$min_gain
 
-      new_step_size <- jacobs_step_size(gm, old_step_size,
-                                        old_update, inc_fn, dec_fn)
+      new_gain <- jacobs_step_size(gm, old_gain,
+                                   old_update, inc_fn, dec_fn)
 
+      opt$step_size$old_gain <- new_gain
       # clamp to min_gain to avoid negative learning rate
-      opt$step_size$value <- clamp(new_step_size, min_step_size)
+      opt$step_size$value <- clamp(new_gain, min_gain) * epsilon
       list(opt = opt)
     }
   )
@@ -233,6 +232,8 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
 #
 # Factory function for creating an optimizer step size method.
 #
+# @param epsilon Learning rate parameter. Multiplies the step size by this
+#   values.
 # @return A step size method suitable for use with t-SNE.
 # @seealso The return value of this function is intended for internal use of
 # the sneer framework only. See \code{optimization_step_size_interface}
@@ -251,9 +252,8 @@ jacobs <- function(inc_mult = 1.1, dec_mult = 0.5,
 # \emph{Neural networks}, \emph{1}(4), 295-307.
 #
 # @family sneer optimization step size methods
-tsne_jacobs <- function() {
-  jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
-         min_step_size = 0.1)
+tsne_jacobs <- function(epsilon = 1) {
+  jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8, epsilon = epsilon)
 }
 
 # Jacobs Step Size Matrix Update

@@ -126,7 +126,7 @@ tsne_iris_jacobs <- embed_prob(iris[, 1:4],
                               max_iter = 10, opt =
                                 make_opt(
                                   step_size = jacobs(inc_fn = partial(`+`, 0.2),
-                                    dec_mult = 0.8, min_step_size = 0.1),
+                                    dec_mult = 0.8, min_gain = 0.1),
                                   normalize_direction = FALSE),
                               verbose = FALSE,
                               reporter = make_reporter(report_every = 1,
