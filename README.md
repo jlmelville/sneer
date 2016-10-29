@@ -30,7 +30,7 @@ res <- sneer(iris[, 1:4], label = iris$Species, method = "tsne",
 ```
 
 There is a section of the documentation that has (many) more 
-[examples](docs/examples.html).
+[examples](http://jlmelville.github.io/sneer/examples.html).
 
 
 ### Motivation
