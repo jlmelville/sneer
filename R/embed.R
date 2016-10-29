@@ -181,6 +181,76 @@ NULL
 #'   method of Lee et al (2015).
 #' }
 #'
+#' Progress of the embedding is logged to the standard output every 50
+#' iterations. The raw cost of the embedding will be provided along with some
+#' tolerances of either how the embedding or the cost has changed.
+#'
+#' Because the different costs are not always scaled in a way that makes it
+#' obvious how well the embedding has performed, a normalized cost is also
+#' shown, where 0 is the minimum possible cost (coinciding with the
+#' probabilities or distances in the input and output space being matched), and
+#' a normalized cost of 1 is what you would get if you just set all the
+#' distances and probabilities to be equal to each other (i.e. ignoring any
+#' information from the input space).
+#'
+#' Also, the embedding will be plotted. Plotting can be done
+#' with either the standard \code{\link[graphics]{plot}} function (the default
+#' or by explicitly providing \code{plot_type = "p"}) or with the \code{ggplot2}
+#' library (which you need to install and load yourself), by using
+#' \code{plot_type = "g"}. The goal has been to provide enough customization to
+#' give intelligible results for most datasets. The following are things to
+#' consider:
+#'
+#' \itemize{
+#'  \item The plot symbols are normally filled circles. However, if you
+#'  set the \code{plot_text} argument to \code{TRUE}, the \code{labels}
+#'  argument can be used to provide a factor vector that provides a meaningful
+#'  label for each data point. In this case, the text of each factor level will
+#'  be used as a level. This creates a mess with all but the shortest labels
+#'  and smallest datasets. There's also a \code{label_fn} parameter that lets
+#'  you provide a function to convert the vector of labels to a different
+#'  (preferably shorter) form, but you may want to just do it yourself ahead
+#'  of time and add it to the data frame.
+#'  \item Points are colored using two strategies. The most straightforward way
+#'  is to provide a vector of rgb color strings as an argument to \code{colors}.
+#'  Each element of \code{colors} will be used to color the equivalent point
+#'  in the data frame. Note, however, this is currently ignored when plotting
+#'  with ggplot2.
+#'  \item The second way to color the embedding plot uses the \code{labels}
+#'  parameter mentioned above. Each level of the factor used for \code{labels}
+#'  will be mapped to a color and that used to color each point. The mapping
+#'  is handled by the \code{color_scheme} parameter. It can be either a color
+#'  ramp function like \code{\link[grDevices]{rainbow}} or the name of a color
+#'  scheme in the \code{RColorBrewer} package (e.g. \code{"Set3"}). The latter
+#'  requires the \code{RColorBrewer} package to have been installed and loaded.
+#'  Unlike with using \code{colors}, providing a \code{labels} argument works
+#'  with ggplot2 plots. In fact, you may find it preferable to use ggplot2,
+#'  because if the \code{legend} argument is \code{TRUE} (the default), you
+#'  will get a legend with the plot. Unfortunately, getting a legend with an
+#'  arbitary number of elements to fit on an image created with the
+#'  \code{graphics::plot} function and for it not to obscure the points proved
+#'  beyond my capabilities. Even with ggplot2, a dataset with a large number
+#'  of categories can generate a large and unwieldy legend.
+#' }
+#'
+#' Additionally, instead of providing the vectors directly, there are
+#' \code{color_name} and \code{label_name} arguments that take a string
+#' containing the name of a column in the data frame, e.g. you can use
+#' \code{labels = iris$Species} or \code{label_name = "Species"} and get the
+#' same result.
+#'
+#' If you don't care that much about the colors, provide none of these options
+#' and sneer will try and work out a suitable column to use. If it finds at
+#' least one color column in the data frame (i.e. a string column where every
+#' element can be parsed as a color), it will use the last column found as
+#' if you had provided it as the \code{colors} argument.
+#'
+#' Otherwise, it will repeat the process but looking for a vector of factors.
+#' If it finds one, it will map it to colors via the \code{color_scheme}, just
+#' as if you had provided the \code{labels} argument. The default color scheme
+#' is to use the \code{rainbow} function so you should normally get a colorful,
+#' albeit potentially garish, result.
+#'
 #' For the \code{ret} argument, a vector with one or more of the
 #' following options can be supplied:
 #' \itemize{
@@ -249,21 +319,32 @@ NULL
 #'  to display: \code{"p"} to use the usual \code{\link[graphics]{plot}}
 #'  function; \code{"g"} to use the \code{ggplot2} package. You are responsible
 #'  for installing and loading the ggplot2 package yourself.
-#' @param label_name Name of factor-typed column in \code{df} to be used to
-#'  map to colors of the points in the embedding plot (for \code{plot_type}
-#'  \code{"g"}) or to color the text associated with each plotted observation
-#'  {\code{plot_type "p"}}. If not specified, then the first factor column
-#'  will be used. If no suitable column can be found, then no plotting
-#'  is carried out. Ignored if \code{labels} is provided.
-#' @param labels Vector of labels associated with \code{df}.
+#' @param colors Vector of colors to use to color each point in the embedding
+#'  plot.
+#' @param color_name Name of column of colors in \code{df} to be used to color
+#'  the points directly. Ignored if \code{colors} is provided.
+#' @param labels Factor vector associated with (but not necessarily in)
+#'  \code{df}. Used to map from factor levels to colors in the embedding plot
+#'  (if no \code{color} or \code{color_name} is provided), and as text labels
+#'  in the plot if \code{plot_labels} is \code{TRUE}. Ignored if \code{colors}
+#'  or \code{color_name} is provided.
+#' @param label_name Name of a factor column in \code{df}, to be used like
+#'  \code{labels}. Ignored if \code{labels} is provided.
 #' @param label_chars Number of characters to use for the labels in the
 #'  embedding plot. Applies only when \code{plot_type} is set to \code{"p"}.
-#' @param label_size Size of the points in the embedding plot.
-#' @param color_name Name of column of colors in \code{df} to be used to color
-#'  the points directly.
+#' @param point_size Size of the points (or text) in the embedding plot.
+#' @param plot_labels If \code{TRUE} and either \code{labels} or
+#'  \code{label_name} is provided, then the specified factor column will be used
+#'  to provide a text label associated with each point in the plot. Only useful
+#'  for small dataset with short labels. Ignored if \code{plot_type} is not
+#'  set to \code{"p"}.
 #' @param color_scheme Either a color ramp function, or the name of a Color
-#'  Brewer palette name to use for coloring points in embedding
-#'  plot. See "Details".
+#'  Brewer palette name to use for mapping the factor specified by
+#'  \code{labels} or \code{label_name}. Ignored if not using \code{labels}
+#'  or \code{label_name}.
+#' @param equal_axes If \code{TRUE}, the embedding plot will have the axes
+#'  scaled so that both the X and Y axes have the same extents. Only applies if
+#'  \code{plot_type} is set to \code{"p"}.
 #' @param legend if \code{TRUE}, display the legend in the embedding plot.
 #'  Applies when \code{plot_type} is \code{"g"} only.
 #' @param legend_rows Number of rows to use for displaying the legend in
@@ -343,7 +424,7 @@ NULL
 #'   # full species name on plot is cluttered, so just use the first two
 #'   # letters and half size
 #'   res <- sneer(iris, method = "pca", scale_type = "a", label_chars = 2,
-#'                label_size = 0.5)
+#'                point_size = 0.5)
 #'
 #'   library(ggplot2)
 #'   library(RColorBrewer)
@@ -352,7 +433,7 @@ NULL
 #'   # Use a different ColorBrewer palette, bigger points, and range scale each
 #'   # column
 #'   res <- sneer(iris, method = "pca", scale_type = "r", plot_type = "g",
-#'                color_scheme = "Dark2", label_size = 2)
+#'                color_scheme = "Dark2", point_size = 2)
 #'
 #'   # metric MDS starting from the PCA
 #'   res <- sneer(iris, method = "mmds", scale_type = "a", init = "p")
@@ -512,12 +593,15 @@ sneer <- function(df,
                   report_every = 50,
                   tol = 1e-4,
                   plot_type = "p",
+                  colors = NULL,
+                  color_name = NULL,
                   labels = NULL,
                   label_name = NULL,
                   label_chars = NULL,
-                  label_size = 1,
-                  color_name = NULL,
+                  point_size = 1,
+                  plot_labels = FALSE,
                   color_scheme = grDevices::rainbow,
+                  equal_axes = FALSE,
                   legend = TRUE,
                   legend_rows = NULL,
                   quality_measures = NULL,
@@ -527,25 +611,8 @@ sneer <- function(df,
     stop("df should be a data frame or dist object")
   }
   if (class(df) != "dist" && is.null(indexes)) {
-    indexes <- vapply(df, is.numeric, logical(1))
+    indexes <- which(vapply(df, is.numeric, logical(1)))
     message("Found ", length(indexes), " numeric columns")
-  }
-
-  # Embedding plot point colors
-  # if no explicit labels or name of a column to use is provided,
-  # we'll look for one
-  if (is.null(labels) && is.null(label_name)) {
-    label_name <- last_factor_column_name(df)
-    if (!is.null(label_name)) {
-      message("Using '", label_name, "' as the label")
-    }
-    else {
-      message("No label found")
-    }
-  }
-  if (!is.null(label_name) && is.null(df[[label_name]])) {
-    stop("Data frame does not have a '", label_name,
-         "' column for use as a label")
   }
 
   normalize_cost <- TRUE
@@ -734,6 +801,20 @@ sneer <- function(df,
     stop("No initialization method '", init, "'")
   }
 
+
+  color_res <- process_color_options(df,
+                                     colors = colors, color_name = color_name,
+                                     labels = labels, label_name = label_name,
+                                     color_scheme = color_scheme,
+                                     verbose = TRUE)
+  colors <- color_res$colors
+  labels <- color_res$labels
+  if (!plot_labels) {
+    # If not asked to explicitly plot the labels as text, our need for these
+    # labels is done
+    labels <- NULL
+  }
+
   embed_plot <- NULL
   if (is.null(plot_type)) { plot_type <- "n" }
   if (plot_type == "g") {
@@ -748,32 +829,26 @@ sneer <- function(df,
     embed_plot <-
       make_qplot(
         df,
-        label_name = label_name,
-        labels = labels,
-        size = label_size,
+        labels = labels, label_name = label_name,
         color_scheme = color_scheme,
+        size = point_size,
         legend = legend,
         legend_rows = legend_rows
       )
   }
   else if (plot_type == 'p') {
+    label_fn <- NULL
     if (!is.null(label_chars)) {
-      embed_plot <- make_plot(x = df,
-                              label_name = label_name,
-                              labels = labels,
-                              cex = label_size,
-                              label_fn = make_label(label_chars),
-                              color_name = color_name,
-                              color_scheme = color_scheme)
+      label_fn <- make_label(label_chars)
     }
-    else {
-      embed_plot <- make_plot(x = df,
-                              label_name = label_name,
-                              labels = labels,
-                              cex = label_size,
-                              color_name = color_name,
-                              color_scheme = color_scheme)
-    }
+
+    embed_plot <- make_plot(x = df,
+                            colors = colors,
+                            labels = labels,
+                            label_fn = label_fn,
+                            color_scheme = color_scheme,
+                            cex = point_size,
+                            equal_axes = equal_axes)
   }
 
   after_embed <- NULL
@@ -1113,7 +1188,9 @@ sneer <- function(df,
 # tsne_iris <- embed_prob(iris[, 1:4], opt = tsne_opt(),
 #                init_inp = inp_from_perp(perplexity = 25),
 #                tricks = tsne_tricks(),
-#                reporter = make_reporter(plot = make_iris_plot()))
+#                reporter = make_reporter(plot =
+#                                           make_plot(iris,
+#                                                     labels = iris$Species)))
 #
 # # Do t-SNE on the iris dataset with the same options as the t-SNE paper
 # # and initialize from a random normal distribution. Use generic plot
@@ -1126,7 +1203,8 @@ sneer <- function(df,
 #                init_out = out_from_rnorm(sd = 1e-4),
 #                tricks = tsne_tricks(),
 #                reporter = make_reporter(
-#                  plot = make_plot(iris, "Species", make_label(2))))
+#                  plot = make_plot(iris, label_name = "Species",
+#                                   label_fn = make_label(2))))
 #
 # # Use the SSNE method, and preprocess input data by range scaling. t-SNE
 # # tricks and optimization are reasonable defaults for other probability-based
@@ -1139,7 +1217,8 @@ sneer <- function(df,
 #                init_out = out_from_runif(),
 #                tricks = tsne_tricks(),
 #                reporter = make_reporter(
-#                  plot = make_plot(iris, "Species", make_label(2))))
+#                  plot = make_plot(iris, label_name = "Species",
+#                                   label_fn = make_label(2))))
 #
 # # ASNE method on the s1k dataset (10 overlapping 9D Gaussian blobs),
 # # Set perplexity for input initialization to 50, initialize with PCA scores,
@@ -1153,7 +1232,7 @@ sneer <- function(df,
 #  init_out = out_from_PCA(),
 #  opt = make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
 #   update = nesterov_nsc_momentum()),
-#   reporter = make_reporter(plot = make_plot(s1k, "Label")))
+#   reporter = make_reporter(plot = make_plot(s1k, label_name = "Label")))
 #
 # # Same as above, but using convenience method to create optimizer with less
 # # typing
@@ -1162,7 +1241,7 @@ sneer <- function(df,
 #  init_inp = inp_from_perp(perplexity = 50),
 #  init_out = out_from_PCA(),
 #  opt = bold_nag(),
-#  reporter = make_reporter(plot = make_plot(s1k, "Label")))
+#  reporter = make_reporter(plot = make_plot(s1k, label_name = "Label")))
 # }
 # @family sneer embedding functions
 embed_prob <- function(xm,
@@ -1246,16 +1325,15 @@ embed_prob <- function(xm,
 # # Do metric MDS on the iris data set
 # # In addition to the STRESS loss function also report the Kruskal Stress
 # # (often used in MDS applications) and the mean relative error, which can
-# # be multiplied by 100 and interpreted as a percentage error. Also, use
-# # the make_iris_plot function, which wrap the make_plot function specifically
-# # for the iris dataset, which is quite handy for testing.
-# mds_iris <- embed_dist(iris[, 1:4],
-#                        method = mmds(),
-#                        opt = bold_nag(),
-#                        reporter = make_reporter(
+# # be multiplied by 100 and interpreted as a percentage error.
+# mds_iris <-
+#   embed_dist(iris[, 1:4],
+#              method = mmds(),
+#              opt = bold_nag(),
+#              reporter = make_reporter(
 #                          extra_costs = c("kruskal_stress",
 #                                          "mean_relative_error")),
-#                                          plot = make_iris_plot())
+#                          plot = make_plot(iris, labels = iris$Species))
 #
 # # Sammon map the autoscaled iris data set, which turns out to be a
 # # surprisingly tough assignment. Increase epsilon substantially to 1e-4 to
@@ -1264,16 +1342,17 @@ embed_prob <- function(xm,
 # # in MDS. The Sammon mapping cost function is already normalized, so tell the
 # # make_reporter function not to report an automatically normalized version in
 # # the output.
-# sammon_iris <- embed_dist(iris[, 1:4],
-#                           method = sammon_map(eps = 1e-4),
-#                           opt = bold_nag(),
-#                           preprocess = make_preprocess(auto_scale = TRUE),
-#                           init_out = out_from_rnorm(sd = 1e-4),
-#                           reporter = make_reporter(normalize_cost = FALSE,
-#                                        extra_costs = c("normalized_stress",
-#                                                        "kruskal_stress"),
-#                                        plot = make_plot(iris, "Species",
-#                                                            make_label())))
+# sammon_iris <-
+#   embed_dist(iris[, 1:4],
+#              method = sammon_map(eps = 1e-4),
+#              opt = bold_nag(),
+#              preprocess = make_preprocess(auto_scale = TRUE),
+#              init_out = out_from_rnorm(sd = 1e-4),
+#              reporter = make_reporter(
+#                 normalize_cost = FALSE,
+#                 extra_costs = c("normalized_stress", "kruskal_stress"),
+#                 plot = make_plot(iris, label_name = "Species",
+#                                  label_fn = make_label())))
 # }
 # @family sneer embedding functions
 embed_dist <- function(xm,

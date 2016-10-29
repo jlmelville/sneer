@@ -10,9 +10,10 @@ sneer(df, indexes = NULL, method = "tsne", alpha = 1, lambda = 0.5,
   kappa = 0.5, scale_type = "", perplexity = 32, perp_scale = "single",
   perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
   init = "p", init_config = NULL, opt = "NAG-BOLD", max_iter = 1000,
-  report_every = 50, tol = 1e-04, plot_type = "p", labels = NULL,
-  label_name = NULL, label_chars = NULL, label_size = 1,
-  color_name = NULL, color_scheme = grDevices::rainbow, legend = TRUE,
+  report_every = 50, tol = 1e-04, plot_type = "p", colors = NULL,
+  color_name = NULL, labels = NULL, label_name = NULL,
+  label_chars = NULL, point_size = 1, plot_labels = FALSE,
+  color_scheme = grDevices::rainbow, equal_axes = FALSE, legend = TRUE,
   legend_rows = NULL, quality_measures = NULL, ret = c())
 }
 \arguments{
@@ -77,26 +78,40 @@ to display: \code{"p"} to use the usual \code{\link[graphics]{plot}}
 function; \code{"g"} to use the \code{ggplot2} package. You are responsible
 for installing and loading the ggplot2 package yourself.}
 
-\item{labels}{Vector of labels associated with \code{df}.}
+\item{colors}{Vector of colors to use to color each point in the embedding
+plot.}
 
-\item{label_name}{Name of factor-typed column in \code{df} to be used to
-map to colors of the points in the embedding plot (for \code{plot_type}
-\code{"g"}) or to color the text associated with each plotted observation
-{\code{plot_type "p"}}. If not specified, then the first factor column
-will be used. If no suitable column can be found, then no plotting
-is carried out. Ignored if \code{labels} is provided.}
+\item{color_name}{Name of column of colors in \code{df} to be used to color
+the points directly. Ignored if \code{colors} is provided.}
+
+\item{labels}{Factor vector associated with (but not necessarily in)
+\code{df}. Used to map from factor levels to colors in the embedding plot
+(if no \code{color} or \code{color_name} is provided), and as text labels
+in the plot if \code{plot_labels} is \code{TRUE}. Ignored if \code{colors}
+or \code{color_name} is provided.}
+
+\item{label_name}{Name of a factor column in \code{df}, to be used like
+\code{labels}. Ignored if \code{labels} is provided.}
 
 \item{label_chars}{Number of characters to use for the labels in the
 embedding plot. Applies only when \code{plot_type} is set to \code{"p"}.}
 
-\item{label_size}{Size of the points in the embedding plot.}
+\item{point_size}{Size of the points (or text) in the embedding plot.}
 
-\item{color_name}{Name of column of colors in \code{df} to be used to color
-the points directly.}
+\item{plot_labels}{If \code{TRUE} and either \code{labels} or
+\code{label_name} is provided, then the specified factor column will be used
+to provide a text label associated with each point in the plot. Only useful
+for small dataset with short labels. Ignored if \code{plot_type} is not
+set to \code{"p"}.}
 
 \item{color_scheme}{Either a color ramp function, or the name of a Color
-Brewer palette name to use for coloring points in embedding
-plot. See "Details".}
+Brewer palette name to use for mapping the factor specified by
+\code{labels} or \code{label_name}. Ignored if not using \code{labels}
+or \code{label_name}.}
+
+\item{equal_axes}{If \code{TRUE}, the embedding plot will have the axes
+scaled so that both the X and Y axes have the same extents. Only applies if
+\code{plot_type} is set to \code{"p"}.}
 
 \item{legend}{if \code{TRUE}, display the legend in the embedding plot.
 Applies when \code{plot_type} is \code{"g"} only.}
@@ -297,6 +312,76 @@ following options can be supplied:
   method of Lee et al (2015).
 }
 
+Progress of the embedding is logged to the standard output every 50
+iterations. The raw cost of the embedding will be provided along with some
+tolerances of either how the embedding or the cost has changed.
+
+Because the different costs are not always scaled in a way that makes it
+obvious how well the embedding has performed, a normalized cost is also
+shown, where 0 is the minimum possible cost (coinciding with the
+probabilities or distances in the input and output space being matched), and
+a normalized cost of 1 is what you would get if you just set all the
+distances and probabilities to be equal to each other (i.e. ignoring any
+information from the input space).
+
+Also, the embedding will be plotted. Plotting can be done
+with either the standard \code{\link[graphics]{plot}} function (the default
+or by explicitly providing \code{plot_type = "p"}) or with the \code{ggplot2}
+library (which you need to install and load yourself), by using
+\code{plot_type = "g"}. The goal has been to provide enough customization to
+give intelligible results for most datasets. The following are things to
+consider:
+
+\itemize{
+ \item The plot symbols are normally filled circles. However, if you
+ set the \code{plot_text} argument to \code{TRUE}, the \code{labels}
+ argument can be used to provide a factor vector that provides a meaningful
+ label for each data point. In this case, the text of each factor level will
+ be used as a level. This creates a mess with all but the shortest labels
+ and smallest datasets. There's also a \code{label_fn} parameter that lets
+ you provide a function to convert the vector of labels to a different
+ (preferably shorter) form, but you may want to just do it yourself ahead
+ of time and add it to the data frame.
+ \item Points are colored using two strategies. The most straightforward way
+ is to provide a vector of rgb color strings as an argument to \code{colors}.
+ Each element of \code{colors} will be used to color the equivalent point
+ in the data frame. Note, however, this is currently ignored when plotting
+ with ggplot2.
+ \item The second way to color the embedding plot uses the \code{labels}
+ parameter mentioned above. Each level of the factor used for \code{labels}
+ will be mapped to a color and that used to color each point. The mapping
+ is handled by the \code{color_scheme} parameter. It can be either a color
+ ramp function like \code{\link[grDevices]{rainbow}} or the name of a color
+ scheme in the \code{RColorBrewer} package (e.g. \code{"Set3"}). The latter
+ requires the \code{RColorBrewer} package to have been installed and loaded.
+ Unlike with using \code{colors}, providing a \code{labels} argument works
+ with ggplot2 plots. In fact, you may find it preferable to use ggplot2,
+ because if the \code{legend} argument is \code{TRUE} (the default), you
+ will get a legend with the plot. Unfortunately, getting a legend with an
+ arbitary number of elements to fit on an image created with the
+ \code{graphics::plot} function and for it not to obscure the points proved
+ beyond my capabilities. Even with ggplot2, a dataset with a large number
+ of categories can generate a large and unwieldy legend.
+}
+
+Additionally, instead of providing the vectors directly, there are
+\code{color_name} and \code{label_name} arguments that take a string
+containing the name of a column in the data frame, e.g. you can use
+\code{labels = iris$Species} or \code{label_name = "Species"} and get the
+same result.
+
+If you don't care that much about the colors, provide none of these options
+and sneer will try and work out a suitable column to use. If it finds at
+least one color column in the data frame (i.e. a string column where every
+element can be parsed as a color), it will use the last column found as
+if you had provided it as the \code{colors} argument.
+
+Otherwise, it will repeat the process but looking for a vector of factors.
+If it finds one, it will map it to colors via the \code{color_scheme}, just
+as if you had provided the \code{labels} argument. The default color scheme
+is to use the \code{rainbow} function so you should normally get a colorful,
+albeit potentially garish, result.
+
 For the \code{ret} argument, a vector with one or more of the
 following options can be supplied:
 \itemize{
@@ -421,7 +506,7 @@ for more details.
   # full species name on plot is cluttered, so just use the first two
   # letters and half size
   res <- sneer(iris, method = "pca", scale_type = "a", label_chars = 2,
-               label_size = 0.5)
+               point_size = 0.5)
 
   library(ggplot2)
   library(RColorBrewer)
@@ -430,7 +515,7 @@ for more details.
   # Use a different ColorBrewer palette, bigger points, and range scale each
   # column
   res <- sneer(iris, method = "pca", scale_type = "r", plot_type = "g",
-               color_scheme = "Dark2", label_size = 2)
+               color_scheme = "Dark2", point_size = 2)
 
   # metric MDS starting from the PCA
   res <- sneer(iris, method = "mmds", scale_type = "a", init = "p")

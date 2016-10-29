@@ -6,7 +6,7 @@
 \usage{
 embed_plot(coords, colors = NULL, x = NULL,
   color_scheme = grDevices::rainbow, num_colors = 15, limits = NULL,
-  top = NULL, cex = 1, text = NULL)
+  top = NULL, cex = 1, text = NULL, equal_axes = FALSE)
 }
 \arguments{
 \item{coords}{Matrix of embedded coordinates, with as many rows as
@@ -38,6 +38,9 @@ num_colors = 15, limits = NULL, top = NULL,}
 \item{text}{Vector of label text to display instead of a point. If the labels
 are long or the data set is large, this is unlikely to be very legible, but
 is occasionally useful.}
+
+\item{equal_axes}{If \code{TRUE}, the X and Y axes are set to have the
+same extents.}
 }
 \description{
 Plots the embedded coordinates, with each point colored by a specified

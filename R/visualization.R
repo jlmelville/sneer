@@ -48,6 +48,8 @@
 #' @param text Vector of label text to display instead of a point. If the labels
 #'  are long or the data set is large, this is unlikely to be very legible, but
 #'  is occasionally useful.
+#' @param equal_axes If \code{TRUE}, the X and Y axes are set to have the
+#'  same extents.
 #' @note Use of this function with ColorBrewer qualitative palette names
 #' requires that the \code{RColorBrewer} package be installed.
 #'
@@ -89,7 +91,7 @@
 embed_plot <- function(coords, colors = NULL, x = NULL,
                        color_scheme = grDevices::rainbow,
                        num_colors = 15, limits = NULL, top = NULL,
-                       cex = 1, text = NULL) {
+                       cex = 1, text = NULL, equal_axes = FALSE) {
 
   if (is.null(colors)) {
     if (!is.null(x)) {
@@ -103,13 +105,93 @@ embed_plot <- function(coords, colors = NULL, x = NULL,
     }
   }
 
+  lims <- NULL
+  if (equal_axes) {
+    lims <- range(coords)
+  }
+
   if (!is.null(text)) {
-    graphics::plot(coords, type = 'n')
+    graphics::plot(coords, type = 'n', xlim = lims, ylim = lims)
     graphics::text(coords, labels = text, cex = cex, col = colors)
   }
   else {
-    graphics::plot(coords, pch = 20, cex = cex, col = colors)
+    graphics::plot(coords, pch = 20, cex = cex, col = colors,
+                   xlim = lims, ylim = lims)
   }
+}
+
+# Helper function for generating color (and maybe factor) vectors from a data
+# frame, df, for use in an embedding plot, via multiple possible avenues.
+#
+# Users may provide any of the following, which are tested in the following
+#  order. As soon as one succeeds, that's the column that will be used.
+# colors - provide a color vector explicitly, in which case just use that.
+# color_name - the name of a column in df that contains colors.
+# labels - a column of factors which will be mapped to colors.
+# label_name - the name of a column in df that contains a factor to be mapped
+#   to colors.
+# color_scheme - either a color ramp function of an RColorBrewer color scheme
+#   name to use in the mapping of labels to colors.
+# If nothing is provided, we look in df directly for a color column. If there's
+# more than one, we use the last column found. If there are no color columns,
+# we look for a factor column. If more than one is found, we use the last column
+# found.
+#
+# A list is returned containing:
+#   colors - the colors that are going to be used
+#   labels - if label_name was used or we found a factor column ourselves, this
+#            is the vector of labels that was used. Necessary for
+#            plotting the labels as text in an embedding plot.
+process_color_options <- function(df,
+                                  colors = NULL,
+                                  color_name = NULL,
+                                  labels = NULL,
+                                  label_name = NULL,
+                                  color_scheme = grDevices::rainbow,
+                                  verbose = FALSE) {
+  if (is.null(colors)) {
+    # if no color vector was provided, look for a color name
+    if (!is.null(color_name)) {
+      colors <- df[[color_name]]
+      if (is.null(colors)) {
+        stop("Couldn't find color column '", color_name, "'")
+      }
+      if (!is_color_column(colors)) {
+        stop("Column '", color_name, "' does not contain colors")
+      }
+    }
+  }
+
+  if (is.null(colors)) {
+    # Neither colors nor color_name was specified, let's try with labels
+    if (is.null(labels) && !is.null(label_name)) {
+      # No labels provided, but there was a label name
+      labels <- df[[label_name]]
+      if (is.null(labels)) {
+        stop("Couldn't find label column '", label_name, "'")
+      }
+    }
+    if (!is.null(labels)) {
+      # Either we provided explicit labels or the label name worked out
+      if (class(labels) != "factor") {
+        stop("Label column should be a factor")
+      }
+      colors <- factor_to_colors(labels, color_scheme = color_scheme)
+    }
+  }
+  # Neither labels nor colors provided (or names to look up)
+  # Let's go look ourselves
+  if (is.null(colors)) {
+    res <- color_helper_df(df = df, color_scheme = color_scheme,
+                           ret_labels = TRUE, verbose = verbose)
+    if (is.null(colors)) {
+      colors <- res$colors
+    }
+    if (is.null(labels)) {
+      labels <- res$labels
+    }
+  }
+  list(colors = colors, labels = labels)
 }
 
 # Given a data frame or a vector, return a vector of colors appropriately
@@ -126,7 +208,8 @@ color_helper <- function(x,
                         num_colors = 15, limits = NULL, top = NULL,
                         verbose = FALSE) {
   if (class(x) == 'data.frame') {
-    color_helper_df(x, color_scheme = color_scheme, verbose = verbose)
+    color_helper_df(x, color_scheme = color_scheme, ret_labels = FALSE,
+                    verbose = verbose)
   }
   else {
     color_helper_column(x,
@@ -148,28 +231,45 @@ color_helper <- function(x,
 # rgb strings (e.g. "#140000" or "#140000FF" if including alpha values).
 color_helper_df <- function(df,
                             color_scheme = color_scheme,
+                            ret_labels = FALSE,
                             verbose = FALSE) {
 
+  colors <- NULL
+  labels <- NULL
   # Is there a color column?
   color_name <- last_color_column_name(df)
   if (!is.null(color_name)) {
     if (verbose) {
       message("Found color column ", color_name)
     }
-    return(df[[color_name]])
+    colors <- df[[color_name]]
   }
 
-  # Is there a factor column?
-  label_name <- last_factor_column_name(df)
-  if (!is.null(label_name)) {
-    if (verbose) {
-      message("Found a factor ", label_name, " for mapping to colors")
+  if (is.null(colors)) {
+    # Is there a factor column?
+    label_name <- last_factor_column_name(df)
+    if (!is.null(label_name)) {
+      if (verbose) {
+        message("Found a factor ", label_name, " for mapping to colors")
+      }
+      labels <- df[[label_name]]
+      colors <- factor_to_colors(labels, color_scheme = color_scheme)
     }
-    return(factor_to_colors(df[[label_name]], color_scheme = color_scheme))
   }
 
-  # use one color per point
-  make_palette(ncolors = nrow(df), color_scheme = color_scheme)
+  if (is.null(colors)) {
+    # use one color per point
+    colors <- make_palette(ncolors = nrow(df), color_scheme = color_scheme)
+  }
+
+  # Return a list with both results if we want labels, otherwise just colors
+  if (ret_labels) {
+    res <- list(colors = colors, labels = labels)
+  }
+  else {
+    res <- colors
+  }
+  res
 }
 
 color_helper_column <- function(x,
@@ -537,8 +637,12 @@ scatterqplot <- function(df, x, y, label_name = NULL, labels = NULL, size = 1,
   score_plot <-
     ggplot2::qplot(x, y, colour = labels, size = I(size)) +
     ggplot2::scale_color_manual(values = color_palette, name = label_name) +
-    ggplot2::theme(legend.position = "bottom") +
+    ggplot2::theme(legend.position = "bottom",
+                   panel.grid.major = ggplot2::element_blank(),
+                   panel.grid.minor = ggplot2::element_blank(),
+                   panel.background = ggplot2::element_blank()) +
     ggplot2::labs(x = x_label, y = y_label)
+
 
   if (!is.null(legend_rows)) {
     score_plot <- score_plot +
@@ -556,14 +660,19 @@ scatterqplot <- function(df, x, y, label_name = NULL, labels = NULL, size = 1,
 # function of an embedding to plot the current (two-dimensional) embedding.
 #
 # @param x Data frame.
+# @param colors Vector of colors for \code{x}.
+# @param color_name Name of a column in \code{x} that contains colors to use.
+# @param labels Vector of labels for \code{x}. Ignored if \code{colors} or
+#   \code{color_name} is provided.
 # @param label_name Name of the label column in \code{x}. Ignored if
-#  \code{labels} is provided.
-# @param labels Vector of labels.
+#  \code{colors}, \code{color_name} or \code{labels} is provided.
 # @param label_fn Function with the signature \code{label_fn(labels)} where
-# \code{labels} is a vector of labels for each point in the data set, and
-# the function returns a vector of labels suitable for displaying in the plot
-# (e.g. with each label truncated so that only the first three characters)
-# will be used.
+# \code{labels} is a vector of labels for each point in the data set. The
+# function should return a vector of labels suitable for displaying in the
+# plot.
+# @param color_scheme Either a color ramp function or the name of an
+#   RColorBrewer color scheme to use. The latter requires the RColorBrewer
+#   package to be installed and loaded.
 # @param mat_name The name of the matrix containing the embedded data in the
 # output list \code{out} which will be passed to the plot function.
 # @param cex Numeric \strong{c}haracter \strong{ex}pansion factor;
@@ -576,30 +685,39 @@ scatterqplot <- function(df, x, y, label_name = NULL, labels = NULL, size = 1,
 # @examples
 # # For s1k dataset, plot 2D embedding with "Label" factor to identify each
 # # point on the plot
-# make_plot(s1k, "Label")
+# make_plot(s1k, labels = iris$Label)
 #
 # # For iris dataset, plot 2D embedding with first two characters of the
 # # "Species" factor to identify each point on the plot
-# make_plot(iris, "Species", make_label(2))
+# make_plot(iris, labels = iris$Species, label_fn = make_label(2))
 #
 # # Should be passed to the plot_fn argument of the reporter factory function:
 # \dontrun{
-#  embed_prob(reporter = make_reporter(report_every = 100,
-#                                     normalize_cost = TRUE,
-#                                     plot = make_plot(iris, "Species")),
-#                                      ...)
+#  embed_prob(reporter =
+#               make_reporter(report_every = 100,
+#                             normalize_cost = TRUE,
+#                             plot =
+#                               make_plot(iris, labels = iris$Species)),
+#                                     ...)
 # }
 # @family sneer plot functions
-make_plot <- function(x, label_name, labels = NULL,
+make_plot <- function(x,
+                      colors = NULL,
+                      labels = NULL,
                       label_fn = function(labels) {
                         labels
                       },
-                      mat_name = "ym", cex = 1,
-                      color_name = NULL, color_scheme = grDevices::rainbow) {
-  embedding_plot <- make_embedding_plot(x, label_name, labels = labels,
-                                        label_fn = label_fn, cex = cex,
-                                        color_name = color_name,
-                                        color_scheme = color_scheme)
+                      color_scheme = grDevices::rainbow,
+                      cex = 1, equal_axes = FALSE,
+                      mat_name = "ym") {
+
+  embedding_plot <- make_embedding_plot(x,
+                                        colors = colors,
+                                        labels = labels,
+                                        label_fn = label_fn,
+                                        color_scheme = color_scheme,
+                                        cex = cex,
+                                        equal_axes = equal_axes)
   function(out) {
     embedding_plot(out[[mat_name]])
   }
@@ -610,67 +728,48 @@ make_plot <- function(x, label_name, labels = NULL,
 # Create a function which when invoked on a 2D matrix, plots the embedding
 # with color-coded labels.
 #
-# @param x Data frame.
-# @param label_name Name of the label column in \code{x}. Ignored if
-#  \code{labels} is provided.
-# @param labels Vector of labels for \code{x}.
-# @param label_fn Function with the signature \code{label_fn(labels)} where
-# \code{labels} is a vector of labels for each point in the data set. The
-# function should return a vector of labels suitable for displaying in the
-# plot.
-# @param cex Numeric \strong{c}haracter \strong{ex}pansion factor;
-#   multiplied by \code{\link[graphics]{par}("cex")} yields the final
-#   character size of the labels.
-# @param colors Vector of colors for \code{x}. If not supplied, colors will be
-#  mapped from labels.
-# @return Function which will take an output list, and produce a 2D plot of
-# the embedding.
-# @seealso \code{make_label} for an example of a suitable
-# argument to \code{label_fn}.
+# x Data frame.
+# colors Vector of colors for x. If not supplied, but the labels parameter
+#   does have a value, then the labels will be used to map to a vector of
+#   colors.
+# labels Factor vector containing one label or category per point in. If the
+#   text of these labels will be displayed instead of points, so make sure
+#   your dataset is small and the labels are short (preferably both).
+# label_fn Function to generated modified (probably shorter) labels.
+#   It should take one argument - the vector of labels, and return a vector of
+#   labels that will be used for display. Ignored if the labels parameter is
+#   not used.
+# color_scheme The color scheme to map the labels provided by labels or
+#   label_name to colors. Either a color ramp function or the name of an
+#   RColorBrewer color scheme to use. The latter requires the RColorBrewer
+#   package to be installed and loaded. Ignored if the labels parameter is
+#   not used.
+# cex The size of the points or text (if labels or label_name is supplied).
+#   Has the usual meaning when used with the graphics::plot command.
+# equal_axes if TRUE, then the range of x and y axes will be the same.
 #
-# @examples
-# \dontrun{
-# # Create a plot function for the Iris dataset
-# iris_plot <- make_embedding_plot(iris, "Species")
-#
-# # PCA on iris
-# pca_iris <- prcomp(iris[, 1:4], center = TRUE, retx = TRUE)
-# # view the first two scores:
-# iris_plot(pca_iris$x[, 1:2])
-#
-# # TSNE on iris
-# tsne_iris <- embed_prob(iris[, 1:4])
-# # view the TSNE embedding
-# iris_plot(tsne_iris$ym)
-#
-# # Same plot, with smaller labels
-# make_embedding_plot(iris, "Species", cex = 0.5)(tsne_iris$ym)
-#}
-make_embedding_plot <- function(x, label_name, labels = NULL, label_fn = NULL,
-                                cex = 1, color_name = NULL,
-                                color_scheme = grDevices::rainbow) {
-  if (is.null(labels) && !is.null(label_name)) {
-    labels <- x[[label_name]]
-  }
-
-  if (is.null(color_name)) {
-    if (!is.null(labels)) {
-      colors <- factor_to_colors(labels, color_scheme = color_scheme)
+# Returns a function which takes a matrix of 2D coordinates and produces a 2D
+# plot of the embedding.
+make_embedding_plot <- function(x,
+                                colors = NULL,
+                                labels = NULL,
+                                label_fn = NULL,
+                                color_scheme = grDevices::rainbow,
+                                cex = 1,
+                                equal_axes = FALSE) {
+  # If labels were provided but no colors, let's map labels to colors now
+  if (!is.null(labels)) {
+    if (is.null(colors)) {
+      colors <- factor_to_colors(x = labels, color_scheme = color_scheme)
     }
-    else {
-      colors <- NULL
+    if (!is.null(label_fn)) {
+      labels <- label_fn(labels)
     }
-  }
-  else {
-    colors <- x[[color_name]]
-  }
-
-  if (!is.null(label_fn) && !is.null(labels)) {
-    labels <- label_fn(labels)
   }
 
   function(ym) {
-    embed_plot(ym, colors = colors, cex = cex, text = labels)
+    embed_plot(ym, colors = colors, cex = cex, text = labels,
+               equal_axes = equal_axes)
   }
 }
 
@@ -686,24 +785,6 @@ make_embedding_plot <- function(x, label_name, labels = NULL, label_fn = NULL,
 make_label <- function(num_label_chars = 1) {
   partial(substr, start = 0, stop = num_label_chars)
 }
-
-# Embedding Plot for Iris Dataset
-#
-# Creates a function which can be used to visualize embeddings of the iris
-# dataset.
-#
-# Wrapper function for visualizing the iris data set. If embedding the iris
-# data set, the result of invoking this can be passed to the \code{plot_fn}
-# parameter of the \code{make_reporter} function.
-#
-# @param num_label_chars The number of characters to plot from the label
-# for each data point.
-# @return Function for plotting the embedded iris data set.
-# @family sneer plot functions
-make_iris_plot <- function(num_label_chars = 1) {
-  make_plot(datasets::iris, "Species", make_label(num_label_chars))
-}
-
 
 # Embedding Plot Using \code{ggplot2} and \code{RColorBrewer} Library
 #
