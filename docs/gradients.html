@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="James Melville" />
+
+<meta name="date" content="2016-10-29" />
+
+<title>Deriving Neighbor Embedding Gradients</title>
+
+
+
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Deriving Neighbor Embedding Gradients</h1>
+<h4 class="author"><em>James Melville</em></h4>
+<h4 class="date"><em>2016-10-29</em></h4>
+
+
+
+<p>No R code in this document. Instead, here’s my attempt to derive the gradient for neighbor embedding, using the handy MathJax integration. There are a few papers which attempt something like this, the clearest in my opinion being the treatment by Lee et al. The version I give here is very similar, but with a bit less notation.</p>
+<p>The only mathematical ability you should need for this is the ability to do basic partial differentiation, and know the chain rule for partial derivatives, which happens to be:</p>
+<div id="chain-rule-for-partial-derivatives" class="section level2">
+<h2>Chain rule for partial derivatives</h2>
+<p>Say we have a function <span class="math inline">\(x\)</span>, of <span class="math inline">\(N\)</span> variables <span class="math inline">\(y_1, y_2 \dots y_i \dots y_N\)</span>, and each <span class="math inline">\(y\)</span> is a function of <span class="math inline">\(M\)</span> variables <span class="math inline">\(z_1, z_2, \dots z_j \dots z_M\)</span>, then the partial derivative of <span class="math inline">\(x\)</span> with respect to one of <span class="math inline">\(z\)</span> is:</p>
+<p><span class="math display">\[\frac{\partial x}{\partial z_j} =
+  \sum_i^N \frac{\partial x}{\partial y_i}\frac{\partial y_i}{\partial z_j}\]</span></p>
+</div>
+<div id="notation" class="section level2">
+<h2>Notation</h2>
+<p>I assume you are familiar with the basics of the approach of SNE and related methods. I’ll use the following notation:</p>
+<ul>
+<li><span class="math inline">\(\mathbf{y_i}\)</span> is the <span class="math inline">\(i\)</span>th embedded coordinate in the lower dimension.</li>
+<li><span class="math inline">\(P\)</span> is the matrix of input probabilities, <span class="math inline">\(Q\)</span> is the matrix of output probabilities.</li>
+<li><span class="math inline">\(p_{ij}\)</span> means the <span class="math inline">\(\left(i, j\right)\)</span>th element of the matrix <span class="math inline">\(P\)</span>.</li>
+<li>I’ll also use <span class="math inline">\(i\)</span>, <span class="math inline">\(j\)</span>, <span class="math inline">\(k\)</span> and <span class="math inline">\(l\)</span> as indexes into various matrices.</li>
+<li>The number of points being embedded is <span class="math inline">\(N\)</span>.</li>
+</ul>
+<p>I’ll assume that there is an input probability matrix already created, and that the cost function involves <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span> and hence so does the gradient. At each stage of the optimization we need to get from the current set of coordinates <span class="math inline">\(\mathbf{y_1}, \mathbf{y_2} \dots \mathbf{y_i} \dots \mathbf{y_N}\)</span>, to a gradient matrix. The procedure is as follows:</p>
+<ul>
+<li>Create the distance matrix, where the element <span class="math inline">\(d_{ij}\)</span> represents the distance between point <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>.</li>
+<li>Transform the distances to create <span class="math inline">\(f_{ij}\)</span>.</li>
+<li>Apply a weighting function to create a weight, <span class="math inline">\(w_{ij}\)</span>, such that the larger the weight, the smaller the distance between <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>. Because of this inverse relationship between the weight and the distance, I will refer to this weight as a similarity as it makes it easier to remember that a big weight refers to a small distance.</li>
+<li>Convert the weights into a probability, <span class="math inline">\(q_{ij}\)</span>. This achieved by normalizing over a sum of weights. There are two approaches to defining this sum, which affects the interpretation of the probability. See below for more on this.</li>
+</ul>
+<p>Once the output probabilities <span class="math inline">\(q_{ij}\)</span> are calculated, you are generally in possession of enough data to calcuate the gradient, with the exact form depending on the nature of the cost and similarity function.</p>
+<p>Before going further, let’s look at the two approaches to probability calculation.</p>
+</div>
+<div id="symmetric-vs-asymmetric-embedding" class="section level2">
+<h2>Symmetric vs asymmetric embedding</h2>
+<div id="point-wise-probabilities" class="section level3">
+<h3>Point-wise probabilities</h3>
+<p>The original SNE approach converted the weights into probabilities by:</p>
+<p><span class="math display">\[q_{ij} = \frac{w_{ij}}{\sum_k^N w_{ik}}\]</span></p>
+<p>That is, we consider all similarities involving point <span class="math inline">\(i\)</span>. Let’s call this the point-wise approach. A consequence of this is that <span class="math inline">\(q_{ij} \neq q_{ji}\)</span> and hence this results in an asymmetric probability matrix, <span class="math inline">\(Q\)</span>. In fact, (at least in the sneer implementation), each row of the matrix is a separate probability matrix, where each row sums to one. In the point-wise approach you are calculating <span class="math inline">\(N\)</span> different divergences, with each point being responsible for a separate probability distribution.</p>
+<p>The point-wise normalization to create <span class="math inline">\(N\)</span> probabilities is the scheme used in what is now called Asymmetric SNE.</p>
+</div>
+<div id="pair-wise-probabilities" class="section level3">
+<h3>Pair-wise probabilities</h3>
+<p>Another way to convert the weights is:</p>
+<p><span class="math display">\[q_{ij} = \frac{w_{ij}}{\sum_k^N \sum_l^N w_{kl}}\]</span></p>
+<p>This normalizes by using <em>all</em> pairs of points, so we’ll call this the pair-wise approach. The resulting matrix <span class="math inline">\(Q\)</span> contains a single probability distribution, i.e. the grand sum of the matrix is one. Using this normalization, it’s still true that, in general, <span class="math inline">\(q_{ij} \neq q_{ji}\)</span>, but when creating the input probabilities <span class="math inline">\(p_{ij}\)</span>, <span class="math inline">\(p_{ij}\)</span> and <span class="math inline">\(p_{ji}\)</span> are averaged so that they are equal to each other. In the case of the output weights, the function that generates them always produces symmetric weights, so that <span class="math inline">\(w_{ij} = w_{ji}\)</span> which naturally leads to <span class="math inline">\(q_{ij} = q_{ji}\)</span>, so the resulting matrix is symmetric without having to do any extra work.</p>
+<p>This pair-wise scheme is used in what is called Symmetric SNE and t-distributed SNE.</p>
+<p>Obviously these two schemes are very similar to each other, but it’s easy to get confused when looking at how different embedding methods are implemented. As to whether it makes much of a practical difference, Lee and co-workers say that it has “no significant effect” on JSE, whereas van der Maaten and Hinton note that SSNE sometimes produced results that were “a little better” than ASNE. Not a ringing endorsement either way, but in my experiments with sneer, the symmetrized (pair-wise) normalization seems to produce better results.</p>
+</div>
+</div>
+<div id="breaking-down-the-cost-function" class="section level2">
+<h2>Breaking down the cost function</h2>
+<p>With all that out of the way, let’s try and define the gradient. We’ll start by defining a chain of dependent variables specifically for probability-based embeddings. A glance at the chain rule for partial derivatives above indicates that we’re going to be using a lot of nested summations of multiple terms, although mercifully most of them evaluate to 0 and disappear. But for now, let’s ignore the exact indexes. To recap the variables we need to include and the order of their dependencies:</p>
+<ul>
+<li>The cost function, <span class="math inline">\(C\)</span> is normally a divergence of some kind, and hence expressed in terms of the output probabilities, <span class="math inline">\(q\)</span>.</li>
+<li>The output probabilities, <span class="math inline">\(q\)</span>, are normalized versions of the similarity weights, <span class="math inline">\(w\)</span>.</li>
+<li>The similarity weights are generated from a function of the distances, <span class="math inline">\(f\)</span>.</li>
+<li>The <span class="math inline">\(f\)</span> values are a function of the Euclidean distances, <span class="math inline">\(d\)</span>. Normally, this is the squared distance.</li>
+<li>The distances are generated from the coordinates, <span class="math inline">\(\mathbf{y_i}\)</span>.</li>
+</ul>
+<p>We’re going to chain those individual bits together via the chain rule for partial derivatives. The chain of variable dependencies is <span class="math inline">\(C \rightarrow q \rightarrow w \rightarrow f \rightarrow d \rightarrow \mathbf{y}\)</span>.</p>
+<p>I find the best way to proceed is to start by writing out the gradient with respect to <span class="math inline">\(\mathbf{y}\)</span> in terms of the distances, then proceeding backwards to <span class="math inline">\(q\)</span> until we have a product of simple expressions that can have their derivatives easily calculated.</p>
+<p>Some of these terms are often varied by different researchers to produce different types of embedding methods, e.g. the cost with respect to the probability (the divergence) or the similarity weighting kernel (e.g. gaussian or t-distribution). Other parts are never changed (e.g. the output distance function, how weights are converted to probabilities). Where there is universal agreement, I will explicitly write out the function and its derivative. For the functions which are often changed, I’ll leave them generic.</p>
+<div id="distance-d_ij" class="section level3">
+<h3>Distance, <span class="math inline">\(d_{ij}\)</span></h3>
+<p>To start, let’s consider <span class="math inline">\(C\)</span>, <span class="math inline">\(d\)</span> and <span class="math inline">\(\mathbf{y}\)</span>. Using the chain rule we can write out the gradient of the cost function with respect to the <span class="math inline">\(i\)</span>th embedded point as:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N \sum_k^N \frac{\partial C}{\partial d_{jk}}
+  \frac{\partial d_{jk}}{\partial \mathbf{y_i}}\]</span></p>
+<p>where <span class="math inline">\(d_{jk}\)</span> is the distance between point <span class="math inline">\(j\)</span> and <span class="math inline">\(k\)</span> and we have a double sum over all pairs of points. These derivatives are all zero unless either <span class="math inline">\(j = i\)</span> or <span class="math inline">\(k = i\)</span>, so we can simplify to:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_k^N \frac{\partial C}{\partial d_{ik}}
+    \frac{\partial d_{ik}}{\partial \mathbf{y_i}}
++
+  \sum_j^N \frac{\partial C}{\partial d_{ji}}
+    \frac{\partial d_{ji}}{\partial \mathbf{y_i}}\]</span></p>
+<p>We can then relabel <span class="math inline">\(k\)</span> to <span class="math inline">\(j\)</span> and move both terms inside the same sum:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N \frac{\partial C}{\partial d_{ij}}
+    \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
++
+    \frac{\partial C}{\partial d_{ji}}
+    \frac{\partial d_{ji}}{\partial \mathbf{y_i}}\]</span></p>
+<p>Because distances are symmetric, <span class="math inline">\(d_{ij} = d_{ji}\)</span>, we can simplify to:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N \left(
+    \frac{\partial C}{\partial d_{ij}} +
+    \frac{\partial C}{\partial d_{ji}}
+   \right)
+   \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+    \]</span></p>
+<p>What we can’t do is treat <span class="math inline">\(\frac{\partial C}{\partial d_{ij}}\)</span> and <span class="math inline">\(\frac{\partial C}{\partial d_{ji}}\)</span> as equivalent (any of the other variables <span class="math inline">\(C\)</span> and <span class="math inline">\(d\)</span> are coupled through might be asymmetric).</p>
+<p>While there may be some exotic situations where the output distances should be non-Euclidean (a literary analysis of HP Lovecraft perhaps), I’m not aware of any publications that do this. You can safely assume that <span class="math inline">\(d_{ij}\)</span> represent Euclidean distances. In an <span class="math inline">\(K\)</span>-dimensional output space, the distance between point <span class="math inline">\(\mathbf{y_i}\)</span> and point <span class="math inline">\(\mathbf{y_j}\)</span> is:</p>
+<p><span class="math display">\[d_{ij} = \left[\sum_l^K\left (y_{il} - y_{jl} \right )^2\right ]^{1/2}\]</span></p>
+<p>and the derivative can be written as:</p>
+<p><span class="math display">\[\frac{\partial d_{ij}}{\partial \mathbf{y_i}} =
+\frac{1}{d_{ij}}\left(\mathbf{y_i} - \mathbf{y_j}\right)\]</span></p>
+</div>
+<div id="transformed-distance-f_ij" class="section level3">
+<h3>Transformed distance, <span class="math inline">\(f_{ij}\)</span></h3>
+<p>Now we need an expression for <span class="math inline">\(\frac{\partial C}{\partial d_{ij}}\)</span>:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} =
+\sum_k^N \sum_l^N \frac{\partial C}{\partial f_{kl}}
+  \frac{\partial f_{kl}}{\partial d_{ij}}\]</span></p>
+<p>which is only non-zero when <span class="math inline">\(i = k\)</span> and <span class="math inline">\(j = l\)</span>, so:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} =
+\frac{\partial C}{\partial f_{ij}}
+\frac{\partial f_{ij}}{\partial d_{ij}}\]</span></p>
+<p>What is this <span class="math inline">\(f_{ij}\)</span>? It’s a transformation of the output distance that will then be used as input into the similarity kernel. Most authors do indeed include this function as part of the similarity kernel itself, or even jump straight to defining the probabilities, but I prefer to split things up more finely, because I find that this makes dealing with derivatives of different similarity kernels easier. Indulge me.</p>
+<p><span class="math inline">\(f_{ij}\)</span> is an increasing function of the distance between points <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span> and is invariably merely the square of the distance. While we could include other parameters like a “bandwidth” or “precision” that reflects the local density of points at <span class="math inline">\(i\)</span>, it’s better to include that in the similarity kernel.</p>
+<p>Allow me to insult your intelligence by writing out the function and derivative for the sake of completeness:</p>
+<p><span class="math display">\[f_{ij} = d_{ij}^{2}\]</span></p>
+<p><span class="math display">\[\frac{\partial f_{ij}}{\partial d_{ij}} = 2d_{ij}\]</span></p>
+<p>This may look trivial, but it combines very well with the derivative of the Euclidean distance we defined in the previous section:</p>
+<p><span class="math display">\[
+\frac{\partial f_{ij}}{\partial d_{ij}}
+\frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+=
+2d_{ij}
+\frac{1}{d_{ij}}\left(\mathbf{y_i} - \mathbf{y_j}\right)
+=
+2\left(\mathbf{y_i} - \mathbf{y_j}\right)
+\]</span></p>
+<p>This will come in handy when we want to simplify the full expression of the gradient later.</p>
+</div>
+<div id="similarity-weight-w_ij" class="section level3">
+<h3>Similarity weight, <span class="math inline">\(w_{ij}\)</span></h3>
+<p>Next, <span class="math inline">\(\frac{\partial C}{\partial f_{ij}}\)</span> can be written as:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial f_{ij}} =
+\sum_k^N \sum_l^N \frac{\partial C}{\partial w_{kl}}
+  \frac{\partial w_{kl}}{\partial f_{ij}}\]</span></p>
+<p>once again, this is only non-zero when <span class="math inline">\(i = k\)</span> and <span class="math inline">\(j = l\)</span>:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial f_{ij}} =
+\frac{\partial C}{\partial w_{ij}}
+\frac{\partial w_{ij}}{\partial f_{ij}}\]</span></p>
+<p>Various functional forms have been used for the weighting function (or similarity kernel; I use either term as the mood takes me). We’ll get into specifics later.</p>
+</div>
+<div id="probability-q_ij" class="section level3">
+<h3>Probability, <span class="math inline">\(q_{ij}\)</span></h3>
+<p>So far, so good. Those unpleasant looking double sums are just melting away. Alas, the good times cannot last forever and now we’re going to have to do a bit more work. Using the chain rule on <span class="math inline">\(\frac{\partial C}{\partial w_{ij}}\)</span>, we get:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial w_{ij}} =
+\sum_k^N \sum_l^N \frac{\partial C}{\partial q_{kl}}
+  \frac{\partial q_{kl}}{\partial w_{ij}}\]</span></p>
+<p>This is the equation that relates the weights to the probabilities. The probabilities sum to one, so a change to a weight <span class="math inline">\(w_{ij}\)</span> will affect all the probabilities, not just <span class="math inline">\(q_{ij}\)</span>. Therefore, we should see non-zero derivatives for some <span class="math inline">\(q_{kl}\)</span> other than when <span class="math inline">\(i = k\)</span> and <span class="math inline">\(j = l\)</span>.</p>
+<p>The probabilities are defined by normalizing the weights so they sum to one. As discussed above, there are two ways to define the probabilities. The point-wise normalization gives:</p>
+<p><span class="math display">\[q_{ij} = \frac{w_{ij}}{\sum_k^N w_{ik}} = \frac{w_{ij}}{S_i}\]</span></p>
+<p>where <span class="math inline">\(S_i\)</span> is the sum of all the weights associated with point <span class="math inline">\(i\)</span>, which reduces a bit of notational clutter. The pair-wise normalization is:</p>
+<p><span class="math display">\[q_{ij} = \frac{w_{ij}}{\sum_k^N \sum_l^N w_{kl}} = \frac{w_{ij}}{S}\]</span></p>
+<p><span class="math inline">\(S\)</span> is the sum of all the weights involving all pairs, so there’s no need for a subscript. As you can see, the functional form of the two different normalization schemes is very similar, so I’ll just use the pair-wise form from now on.</p>
+<p>It’s important to realize that any particular weight, <span class="math inline">\(w_{ij}\)</span>, appears in both the expression for its equivalent probability, <span class="math inline">\(q_{ij}\)</span> (where it appears in the numerator and denonimator) <em>and</em> in the expression for all the other probabilities, <span class="math inline">\(q_{kl}\)</span>, where <span class="math inline">\(i \neq k\)</span> and <span class="math inline">\(j \neq l\)</span>. In the latter case, it appears only in the denominator, but this is what leads to the non-zero derivatives.</p>
+<p>Thus, we have two forms of the derivative to consider: <span class="math display">\[\frac{\partial q_{ij}}{\partial w_{ij}} = \frac{S - w_{ij}}{S^2} =
+  \frac{1}{S} - \frac{q_{ij}}{S}\]</span> and: <span class="math display">\[\frac{\partial q_{kl}}{\partial w_{ij}} =
+  -\frac{w_{kl}}{S^2} =
+  -\frac{q_{kl}}{S}\]</span></p>
+<p>Inserting these expressions into the one we had for the chain rule applied to <span class="math inline">\(\frac{\partial C}{\partial w_{ij}}\)</span>, we get:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial w_{ij}} =
+-\frac{1}{S}
+  \left[
+    \sum_k^N \sum_l^N
+      \frac{\partial C}{\partial q_{kl}} q_{kl} +
+      \frac{\partial C}{\partial q_{ij}}
+  \right]
+\]</span></p>
+<p>I’ll admit, that doesn’t look great, but we’re over the worst.</p>
+</div>
+<div id="cost-function-c" class="section level3">
+<h3>Cost function, <span class="math inline">\(C\)</span></h3>
+<p>Nearly there! Finally, we need to… wait, no, that’s it. All that’s left is an expression for the cost function in terms of the probabilities. And that’s exactly how the divergences are normally expressed. No chain rule here, we can just write <span class="math inline">\(\frac{\partial C}{\partial q_{ij}}\)</span>.</p>
+</div>
+</div>
+<div id="putting-it-all-together" class="section level2">
+<h2>Putting it all together</h2>
+<p>By substituting in the various expressions, starting with <span class="math inline">\(\frac{\partial C}{\partial {d_{ij}}}\)</span> and then recursively replacing any expressions until we hit <span class="math inline">\(\frac{\partial C}{\partial q_{ij}}\)</span>, we can now write:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N \left(
+    -\frac{1}{S}
+  \left[
+    \sum_k^N \sum_l^N
+      \frac{\partial C}{\partial q_{kl}} q_{kl} +
+      \frac{\partial C}{\partial q_{ij}}
+  \right]
+    \frac{\partial w_{ij}}{\partial f_{ij}}
+    \frac{\partial f_{ij}}{\partial d_{ij}}
+    -\frac{1}{S}
+  \left[
+    \sum_k^N \sum_l^N
+      \frac{\partial C}{\partial q_{kl}} q_{kl} +
+      \frac{\partial C}{\partial q_{ji}}
+  \right]
+    \frac{\partial w_{ji}}{\partial f_{ji}}
+    \frac{\partial f_{ji}}{\partial d_{ji}}
+   \right)
+   \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+    \]</span></p>
+<p>Well, that looks terrifying. Let’s tidy up a bit. First, let’s use the fact that the definition of <span class="math inline">\(f_{ij}\)</span> is symmetric and therefore <span class="math inline">\(\frac{\partial f_{ij}}{\partial d_{ij}} =  \frac{\partial f_{ji}}{\partial d_{ji}}\)</span> to pull that part of the equation out of those parentheses:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N \left(
+    -\frac{1}{S}
+  \left[
+    \sum_k^N \sum_l^N
+      \frac{\partial C}{\partial q_{kl}} q_{kl} +
+      \frac{\partial C}{\partial q_{ij}}
+  \right]
+    \frac{\partial w_{ij}}{\partial f_{ij}}
+    -\frac{1}{S}
+  \left[
+    \sum_k^N \sum_l^N
+      \frac{\partial C}{\partial q_{kl}} q_{kl} +
+      \frac{\partial C}{\partial q_{ji}}
+  \right]
+    \frac{\partial w_{ji}}{\partial f_{ji}}
+   \right)
+   \frac{\partial f_{ij}}{\partial d_{ij}}
+   \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+    \]</span></p>
+<p>That leaves the two functional forms that get varied the most, <span class="math inline">\(\frac{\partial C}{\partial q_{ij}}\)</span> (derivative of the cost function) and <span class="math inline">\(\frac{\partial w_{ij}}{\partial f_{ij}}\)</span> (derivative of the similarity function), together. There are some common choices of cost and similarity function that would let us simplify these further, but for now we’ll leave them in their still mildly intimidating forms. Instead, we’ll just hide their full “glory” by defining:</p>
+<p><span class="math display">\[k_{ij} =
+-\frac{1}{S}
+  \left[
+    \sum_k^N \sum_l^N
+      \frac{\partial C}{\partial q_{kl}} q_{kl} +
+      \frac{\partial C}{\partial q_{ij}}
+  \right]
+    \frac{\partial w_{ij}}{\partial f_{ij}}
+\]</span></p>
+<p>And now we can say: <span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N
+  \left(
+    k_{ij} + k_{ji}
+  \right)
+   \frac{\partial f_{ij}}{\partial d_{ij}}
+   \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+\]</span></p>
+<p>Further, we can put to good use the expression we came up with for <span class="math inline">\(\frac{\partial f_{ij}}{\partial d_{ij}} \frac{\partial d_{ij}}{\partial \mathbf{y_i}}\)</span> earlier (the one that assumes the use of squared Euclidean distances) to get:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  2
+  \sum_j^N
+  \left(
+    k_{ij} + k_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+\]</span></p>
+<p>This is now looking more like the expected “points on springs” interpretation of the gradient, with the <span class="math inline">\(k_{ij}\)</span> representing the force constant (stiffness) of each spring, and <span class="math inline">\(\mathbf{y_i - y_j}\)</span> the displacement.</p>
+<p>The above equation is useful because as long as you can define the gradient of a cost function in terms of <span class="math inline">\(q\)</span> and the gradient of a similarity kernel in terms of <span class="math inline">\(f\)</span>, you can mix and match these terms and get the gradient of the cost function with respect to the embedded coordinates without too much trouble, which is all you need to optimize the coordinates with a standard gradient descent algorithm.</p>
+</div>
+<div id="other-cost-functions" class="section level2">
+<h2>Other Cost Functions</h2>
+<div id="distance-based-embedding" class="section level3">
+<h3>Distance-based embedding</h3>
+<p>An embedding where the cost function is written in terms of the distances is delightfully straightforward compared to what we just went through. The chain of variable dependencies is <span class="math inline">\(C \rightarrow d \rightarrow \mathbf{y}\)</span>.</p>
+<p>We wrote all this out before, so we can just straight to:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N \left(
+    \frac{\partial C}{\partial d_{ij}} +
+    \frac{\partial C}{\partial d_{ji}}
+   \right)
+   \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
+\]</span></p>
+<p>and let’s go ahead and just assume Euclidean distances:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N \left(
+    \frac{\partial C}{\partial d_{ij}} +
+    \frac{\partial C}{\partial d_{ji}}
+   \right)
+   \frac{1}{d_{ij}}\left(\mathbf{y_i - y_j}\right)
+\]</span></p>
+<p>Unlike the probability-based embedding, this time we do have a direct dependency of <span class="math inline">\(C\)</span> on <span class="math inline">\(d\)</span>, and the symmetry of distances means that <span class="math inline">\(\frac{\partial C}{\partial d_{ij}} = \frac{\partial C}{\partial d_{ji}}\)</span>, so:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  2\sum_j^N
+    \frac{\partial C}{\partial d_{ij}}
+   \frac{1}{d_{ij}}\left(\mathbf{y_i - y_j}\right)
+  =
+  2\sum_j^N k_{ij} \left(\mathbf{y_i - y_j}\right)
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[k_{ij} = \frac{\partial C}{\partial d_{ij}}\frac{1}{d_{ij}}\]</span></p>
+<p>For a standard metric MDS, the cost for a pair is just the square loss between the input distances <span class="math inline">\(r_{ij}\)</span> and the output distances <span class="math inline">\(d_{ij}\)</span>:</p>
+<p><span class="math display">\[C_{ij} = \left(r_{ij} - d_{ij}\right)^2\]</span> <span class="math display">\[\frac{\partial C}{\partial d_{ij}} = -2\left(r_{ij} - d_{ij}\right)\]</span></p>
+<p>Plugging this into our expression for <span class="math inline">\(k_{ij}\)</span>, we get:</p>
+<p><span class="math display">\[k_{ij} = -2\frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}\]</span></p>
+<p>And then the gradient is: <span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  -4\sum_j^N \frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}
+\]</span></p>
+<p>This may not be quite what you’re expecting, because most distance-based cost functions take advantage of the symmetry of the distance matrix and generally only sum where the indices are <span class="math inline">\(i &lt; j\)</span>. In order to be consistent with non-symmetric cost functions, I’m considering the entire matrix.</p>
+</div>
+<div id="sstress" class="section level3">
+<h3>SSTRESS</h3>
+<p>The SSTRESS criterion is</p>
+<p><span class="math display">\[C_{ij} = \left(r_{ij}^2 - d_{ij}^2\right)^2\]</span> <span class="math display">\[\frac{\partial C}{\partial d_{ij}} = -4d_{ij}\left(r_{ij}^2 - d_{ij}^2\right)\]</span></p>
+<p>The stiffness is therefore: <span class="math display">\[k_{ij} = -4\left(r_{ij}^2 - d_{ij}^2\right)\]</span></p>
+<p>and the gradient is: <span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  =
+  -8\sum_j^N \left(r_{ij}^2 - d_{ij}^2\right) \left(\mathbf{y_i - y_j}\right)
+\]</span></p>
+</div>
+<div id="sammon-mapping" class="section level3">
+<h3>Sammon Mapping</h3>
+<p>Sammon Mapping is very similar to metric MDS, except that it tries to put more weight on preserving short distances (and hence local structure), by weighting the cost function by <span class="math inline">\(\frac{1}{r_{ij}}\)</span>:</p>
+<p><span class="math display">\[C_{ij} = \frac{\left(r_{ij} - d_{ij}\right)^2}{r_{ij}}\]</span> <span class="math display">\[\frac{\partial C}{\partial d_{ij}} =
+  -2\frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}}\]</span></p>
+<p>Therefore:</p>
+<p><span class="math display">\[k_{ij} = -2\frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}\]</span></p>
+<p>and the gradient is:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  -4\sum_j^N \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}
+\]</span></p>
+<p>Once again, as normally written (e.g. in Sammon’s original paper), the constant term is twice too big (i.e. you’ll normally see a <span class="math inline">\(-2\)</span>, not a <span class="math inline">\(-4\)</span>), because you wouldn’t normally bother to sum over <span class="math inline">\(i &gt; j\)</span>. Also, the Sammon error includes a normalization term (the sum of all <span class="math inline">\(\frac{1}{r_{ij}}\)</span>), but that’s a constant for any configuration, so irrelevant for the purposes of deriving a gradient.</p>
+</div>
+</div>
+<div id="generalized-divergences" class="section level2">
+<h2>Generalized Divergences</h2>
+<p>Divergences are normally applied to probabilities. But they have been generalized to work with other values. Some of this is discussed by Yang and co-workers (in Optimization Equivalence of Divergences Improves Neighbor Embedding), using definitions by Cichocki and co-workers.</p>
+<p>We can therefore define a set of algorithms, halfway between the distance-based embeddings like Sammon Mapping, and probability-based embeddings like SNE, that use the un-normalized weights. I can’t think of a good name for these: un-normalized embeddings? Weight-based embeddings? Similarity-based embeddings?</p>
+<p>Anyway, the chain of variable dependencies is <span class="math inline">\(C \rightarrow w \rightarrow f \rightarrow d \rightarrow \mathbf{y}\)</span>. We can re-use all the derivations we calculated for probability-based embeddings, including assuming that we’re going to use squared Euclidean distances as input to the weighting function, to get to:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  2\sum_j^N \left(
+    \frac{\partial C}{\partial w_{ij}}
+    \frac{\partial w_{ij}}{\partial f_{ij}}
+    +
+    \frac{\partial C}{\partial w_{ji}}
+    \frac{\partial w_{ji}}{\partial f_{ji}}
+   \right)
+   \left(\mathbf{y_i - y_j}\right)
+\]</span></p>
+<p>Without any probabilities involved, we can go straight to defining:</p>
+<p><span class="math display">\[k_{ij} = \frac{\partial C}{\partial w_{ij}}
+\frac{\partial w_{ij}}{\partial f_{ij}}\]</span></p>
+<p>The generalized divergences are defined in terms of the output weights, <span class="math inline">\(w_{ij}\)</span> and the input weights, which I’ve not had to come up with a symbol before now. Let’s call them <span class="math inline">\(v_{ij}\)</span>. The generalized Kullback Leibler divergence (also known as the I-divergence, and apparently used in non-negative matrix factorization) and its derivative with respect to the output weights is:</p>
+<p><span class="math display">\[C_{ij} = v_{ij}\ln\left(\frac{v_{ij}}{w_{ij}}\right) - v_{ij} + w_{ij}\]</span> <span class="math display">\[\frac{\partial C}{\partial w_{ij}} = 1 - \frac{v_{ij}}{w_{ij}}\]</span></p>
+<p>I’m not aware of any embedding algorithms that define their cost function in this way, although the Yang paper shows that elastic embedding can be considered a variant of this.</p>
+</div>
+<div id="normalized-distances" class="section level2">
+<h2>Normalized Distances</h2>
+<p>Taking the opposite tack, if normalization is so important for probability-based embeddings, what about normalizing the distances directly? In this case, we’ll use <span class="math inline">\(q_{ij}\)</span> as a symbol, but it’s better to think of it as a normalized distance, even though the sum of the distances will indeed sum to one. However, because the distances haven’t been converted to similarities, a large distances leads to a large <span class="math inline">\(q_{ij}\)</span>, which is the opposite of how we’ve been thinking about things up until now.</p>
+<p>At any rate, the chain of dependencies is <span class="math inline">\(C \rightarrow q \rightarrow d \rightarrow \mathbf{y}\)</span>. As we wrote out for distance-based embeddings:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N \left(
+    \frac{\partial C}{\partial d_{ij}} +
+    \frac{\partial C}{\partial d_{ji}}
+   \right)
+   \frac{1}{d_{ij}}\left(\mathbf{y_i - y_j}\right)
+\]</span></p>
+<p>and our next (and final) step in the chain is to define <span class="math inline">\(\frac{\partial C}{\partial d_{ij}}\)</span> in terms of <span class="math inline">\(q_{ij}\)</span>, i.e.</p>
+<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} =
+\sum_k^N \sum_l^N \frac{\partial C}{\partial q_{kl}}
+  \frac{\partial q_{kl}}{\partial d_{ij}}\]</span></p>
+<p>Given that we’re normalizing over the distances, we once again have to decide if we want to do a point-wise or pair-wise normalization. Like before, I’ll stick with the pair-wise normalization. We can treat <span class="math inline">\(\frac{\partial q_{kl}}{\partial d_{ij}}\)</span> exactly like we did <span class="math inline">\(\frac{\partial q_{kl}}{\partial w_{ij}}\)</span> for probability-based embeddings, and to cut a long story short we get to:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} =
+-\frac{1}{S}
+  \left[
+    \sum_k^N \sum_l^N
+      \frac{\partial C}{\partial q_{kl}} q_{kl} +
+      \frac{\partial C}{\partial q_{ij}}
+  \right]
+\]</span></p>
+<p>where <span class="math inline">\(S\)</span> is now the sum of <span class="math inline">\(d_{ij}\)</span>. If we employ pair-wise normalization, then despite the normalization being present, with no weighting function involved, we can still be sure that <span class="math inline">\(\frac{\partial C}{\partial d_{ij}} = \frac{\partial C}{\partial d_{ji}}\)</span>, and the gradient can be written as: <span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  2\sum_j^N k_{ij} \left(\mathbf{y_i - y_j}\right)
+\]</span> and <span class="math display">\[k_{ij} =
+-\frac{1}{d_{ij}S}
+  \left[
+    \sum_k^N \sum_l^N
+      \frac{\partial C}{\partial q_{kl}} q_{kl} +
+      \frac{\partial C}{\partial q_{ij}}
+  \right]
+\]</span></p>
+<p>However, if you’re doing point-wise normalization, there is an asymmetry, so there’s no further simplification.</p>
+<p>We now have can be plugged in with metric MDS and Sammon-like cost function derivatives, but with the distances replaced by normalized distances.</p>
+</div>
+<div id="distance-based-gradient-with-transformed-distances" class="section level2">
+<h2>Distance-based gradient with transformed distances</h2>
+<p>We could also consider keeping with raw distances and their square loss, but transforming them. In this case, the chain of variable dependencies is <span class="math inline">\(C \rightarrow f \rightarrow d \rightarrow \mathbf{y}\)</span>.</p>
+<p>Once again, let’s start with:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  \sum_j^N \left(
+    \frac{\partial C}{\partial d_{ij}} +
+    \frac{\partial C}{\partial d_{ji}}
+   \right)
+   \frac{1}{d_{ij}}\left(\mathbf{y_i - y_j}\right)
+\]</span></p>
+<p>and now we use the chain rule to connect <span class="math inline">\(\frac{\partial C}{\partial d_{ij}}\)</span> with <span class="math inline">\(f_{ij}\)</span>. We don’t need to worry about any terms except the <span class="math inline">\(ij\)</span>th one:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} =
+  \frac{\partial C}{\partial f_{ij}}
+  \frac{\partial f_{ij}}{\partial d_{ij}}\]</span></p>
+<p>When we use the SNE-style transformation:</p>
+<p><span class="math display">\[f_{ij} = d_{ij}^2\]</span> <span class="math display">\[\frac{\partial f_{ij}}{\partial d_{ij}} = 2d_{ij}\]</span></p>
+<p>and the gradient becomes:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} =
+  2\sum_j^N \left(
+    \frac{\partial C}{\partial f_{ij}} +
+    \frac{\partial C}{\partial f_{ji}}
+   \right)
+   \left(\mathbf{y_i - y_j}\right)
+\]</span></p>
+<p>If we use a square loss, introducing <span class="math inline">\(g_{ij}\)</span> for the input space transformed distances:</p>
+<p><span class="math display">\[C_{ij} = \left(g_{ij} - f_{ij}\right)^2\]</span> <span class="math display">\[\frac{\partial C}{\partial f_{ij}} = -2\left(g_{ij} - f_{ij}\right)\]</span></p>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
