@@ -111,12 +111,13 @@ embed_plot <- function(coords, colors = NULL, x = NULL,
   }
 
   if (!is.null(text)) {
-    graphics::plot(coords, type = 'n', xlim = lims, ylim = lims)
+    graphics::plot(coords, type = 'n', xlim = lims, ylim = lims,
+                   xlab = 'X', ylab = 'Y')
     graphics::text(coords, labels = text, cex = cex, col = colors)
   }
   else {
     graphics::plot(coords, pch = 20, cex = cex, col = colors,
-                   xlim = lims, ylim = lims)
+                   xlim = lims, ylim = lims, xlab = 'X', ylab = 'Y')
   }
 }
 
