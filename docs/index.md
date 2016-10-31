@@ -32,7 +32,8 @@ that sneer will apply to your input.
 distances to probabilities or other parameterization needed for the optimization.
 * [Output Initialization](output-initialization.html) - how to create the initial
 output configuration.
-* [Optimization](optimization.html) - coming soon.
+* [Optimization](optimization.html) - controlling the type of optimization of
+the output coordinates.
 * [Embedding Methods](embedding-methods.html) - coming soon.
 * [Reporting](reporting.html) - coming soon.
 * [Exported Data](exported-data.html) - coming soon.
@@ -75,4 +76,8 @@ than I do. Off you go. Have fun.
 If you are at all curious about how the gradients are derived, perhaps because
 you would like to tweak a cost function or similarity function, take a look
 at the [gradients](gradients.html) page.
+
+## Source
+
+Available at https://github.com/jlmelville/sneer
 

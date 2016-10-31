@@ -136,6 +136,39 @@ $(document).ready(function () {
 <p class="caption"><code>iris_tsne &lt;- sneer(iris, max_iter = 1000)</code></p>
 </div>
 <p>Yes, they look different. But not that different that you would draw qualitatively the wrong conclusions.</p>
+<p>If you attempt to quantify the result of your embedding, for example by using some of the methods mentioned in the <a href="analysis.html">Analysis</a> section, these can be sensitive to the coordinates. So if you’re comparing different methods, ensure you are not unfairly maligning a method because you didn’t let it converge. But most of the time, if you’re just trying to eyeball a data set, don’t be afraid to crank down <code>max_iter</code>.</p>
+</div>
+<div id="tol" class="section level3">
+<h3><code>tol</code></h3>
+<p>Another way to stop the embedding early is to adjust the tolerance parameter, <code>tol</code>. If you jump ahead to the <a href="reporting.html">Reporting</a>, you’ll see a discussion of the messages logged to the console during the optimization phase. What you should know is that if the value of <code>rtol</code> reported in the output ever falls below <code>tol</code>, then optimization is considered converged. The default is 1.e-5, which once again errs on the side of caution. It pretty much ensures that if the formatted <code>cost</code> or <code>norm</code> values in the output log are still changing, it won’t stop early. But once again, you might want to turn that way down for simple visualizations. A <code>tol</code> of <code>0.01</code> is pretty reasonable:</p>
+<pre class="r"><code>iris_tsne &lt;- sneer(iris, tol = 0.01) # stops after 200 steps</code></pre>
+</div>
+<div id="opt" class="section level3">
+<h3><code>opt</code></h3>
+<p>Most t-SNE implementations follow the optimization technique given by the <a href="http://jmlr.org/papers/v9/vandermaaten08a.html">t-SNE paper</a>: the direction of optimization is basic gradient descent with a momentum term, and an adaptive step size, which requires setting a learning rate, epsilon.</p>
+<p>This works well for t-SNE, and it’s fast, but in my experience it can cause divergence when a non t-SNE embedding method is used. For this reason, it’s not the default. If you want to use it, set the <code>opt</code> parameter to <code>&quot;tsne&quot;</code> and the <code>epsilon</code> value for the learning rate:</p>
+<pre class="r"><code>iris_tsne &lt;- sneer(iris, opt = &quot;tsne&quot;, epsion = &quot;500&quot;, scale_type = &quot;m&quot;)</code></pre>
+<p>The default optimizer uses the Nesterov Accelerated Gradient scheme. A good description is given in this <a href="www.jmlr.org/proceedings/papers/v28/sutskever13.pdf">deep learning paper</a>. Additionally, it makes use of <a href="https://arxiv.org/abs/1204.3982">adaptive restart</a>. The step size is chosen by the “bold driver” method. This method tends to be a little slower than the <code>&quot;tsne&quot;</code> optimization method, but it gives good results for most combinations of scaling, embedding method and data set.</p>
+<p>There are some other optimization methods available if you want to try them, but they all have some slight drawbacks to them.</p>
+<p>The L-BFGS method is used in the <a href="http://dx.doi.org/10.1016/j.neucom.2012.12.036">JSE paper</a> and can be used by setting <code>opt</code> to <code>&quot;L-BFGS&quot;</code>:</p>
+<pre class="r"><code>s1k_tsne &lt;- sneer(s1k, opt = &quot;L-BFGS&quot;)</code></pre>
+<p>However, this relies on the <code>stats::optim</code> function in R, which disappears off for several steps of iteration. During this time, code external to <code>optim</code> that might depend on a particular iteration number won’t trigger. So I advise against using, for example, the <code>perp_scale</code> options described in the <a href="input-initialization.html">Input Initialization</a> section with this optimizer. Also, it just doesn’t do that much better than simpler options.</p>
+<p>Some further options are available to you if you install the <a href="https://github.com/jlmelville/rconjgrad">rconjgrad</a> package:</p>
+<pre class="r"><code>devtools::install_github(&quot;jlmelville/rconjgrad&quot;)
+library(&quot;rconjgrad&quot;)</code></pre>
+<p>This provides access to a couple of line search routines, that allow for the strong Wolfe conditions to be met (important for some optimization methods), one by More-Thuente and one by Rasmussen. If you want to try using the conjugate gradient optimization method (which is the method used in the <a href="http://www.jmlr.org/papers/v11/venna10a.html">NeRV</a> paper, you can:</p>
+<pre class="r"><code># conjugate gradient with More-Thuente line search
+s1k_tsne &lt;- sneer(s1k, opt = &quot;CG-MT&quot;) 
+# conjugate gradient with Rasmussen line search
+s1k_tsne &lt;- sneer(s1k, opt = &quot;CG-R&quot;) </code></pre>
+<p>In case you are curious, the specific flavor of CG used is the Polak-Ribiere update with restart (sometimes called ‘PR+’).</p>
+<p>The <a href="https://arxiv.org/abs/1206.4646">Spectral Directions</a> optimizer is specially crafted for certain neighbor embedding functions, including t-SNE. Specifically, using the jargon referenced in the <a href="gradients.html">gradients</a> theory page, only methods which use the “pairwise” normalization method work with it.</p>
+<p>The Spectral Directions method relies on sparsity for it to be performant, which is something <code>sneer</code> doesn’t currently support. You may therefore run into memory problems if you use it with large data sets, but you’re going to run into memory problems with large data sets anyway, so it may not make a massive difference. If you want to try it, it also needs the <code>rconjgrad</code> package to be loaded and is invoked similarly to the conjugate gradient optimizer:</p>
+<pre class="r"><code># spectral direction with More-Thuente line search
+s1k_tsne &lt;- sneer(s1k, opt = &quot;SPEC-MT&quot;) 
+# spectral direction with Rasmussen line search
+s1k_tsne &lt;- sneer(s1k, opt = &quot;SPEC-R&quot;) </code></pre>
+<p>But if in doubt, just use the default optimizer.</p>
 <p>Previous: <a href="output-initialization.html">Output Initialization</a>. Next: <a href="embedding-methods.html">Embedding Methods</a>. Up: <a href="index.html">Index</a>.</p>
 </div>
 

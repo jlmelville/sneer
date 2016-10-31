@@ -95,14 +95,50 @@ using, for example, the `perp_scale` options described in the
 [Input Initialization](input-initialization.html) section with this optimizer.
 Also, it just doesn't do that much better than simpler options.
 
+Some further options are available to you if you install the 
+[rconjgrad](https://github.com/jlmelville/rconjgrad) package:
 
+```R
+devtools::install_github("jlmelville/rconjgrad")
+library("rconjgrad")
+```
+
+This provides access to a couple of line search routines, that allow for the
+strong Wolfe conditions to be met (important for some optimization methods), 
+one by More-Thuente and one by Rasmussen. If you want to try using the 
+conjugate gradient optimization method (which is the method used in the 
+[NeRV](http://www.jmlr.org/papers/v11/venna10a.html) paper, you can:
+
+```R
+# conjugate gradient with More-Thuente line search
+s1k_tsne <- sneer(s1k, opt = "CG-MT") 
+# conjugate gradient with Rasmussen line search
+s1k_tsne <- sneer(s1k, opt = "CG-R") 
+```
+In case you are curious, the specific flavor of CG used is the Polak-Ribiere
+update with restart (sometimes called 'PR+').
 
 The [Spectral Directions](https://arxiv.org/abs/1206.4646) optimizer is 
-specially crafter for certain neighbor embedding function, including t-SNE.
-However, it relies on sparsity for it to be performant, which is something
-`sneer` doesn't currently support. So it may use up a lot of can't be used with large data sets. 
+specially crafted for certain neighbor embedding functions, including t-SNE.
+Specifically, using the jargon referenced in the [gradients](gradients.html)
+theory page, only methods which use the "pairwise" normalization method work
+with it.
 
+The Spectral Directions method relies on sparsity for it to be performant, 
+which is something `sneer` doesn't currently support. You may therefore run 
+into memory problems if you use it with large data sets, but you're going to 
+run into memory problems with large data sets anyway, so it may not make a 
+massive difference. If you want to try it, it also needs the `rconjgrad`
+package to be loaded and is invoked similarly to the conjugate gradient 
+optimizer:
 
+```R
+# spectral direction with More-Thuente line search
+s1k_tsne <- sneer(s1k, opt = "SPEC-MT") 
+# spectral direction with Rasmussen line search
+s1k_tsne <- sneer(s1k, opt = "SPEC-R") 
+```
 
+But if in doubt, just use the default optimizer.
 
 Previous: [Output Initialization](output-initialization.html). Next: [Embedding Methods](embedding-methods.html). Up: [Index](index.html).
