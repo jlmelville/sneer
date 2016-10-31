@@ -57,7 +57,7 @@ iris_tsne <- sneer(iris, tol = 0.01) # stops after 200 steps
 Most t-SNE implementations follow the optimization technique given by the 
 [t-SNE paper](http://jmlr.org/papers/v9/vandermaaten08a.html): the direction
 of optimization is basic gradient descent with a momentum term, and an 
-adaptive step size, which requires setting a learning rate, epsilon.
+adaptive step size, which requires setting a learning rate, `epsilon`.
 
 This works well for t-SNE, and it's fast, but in my experience it can 
 cause divergence when a non t-SNE embedding method is used. For this reason, 
@@ -65,7 +65,7 @@ it's not the default. If you want to use it, set the `opt` parameter to
 `"tsne"` and the `epsilon` value for the learning rate:
 
 ```R
-iris_tsne <- sneer(iris, opt = "tsne", epsion = "500", scale_type = "m")
+iris_tsne <- sneer(iris, opt = "tsne", epsilon = 500, scale_type = "m")
 ```
 
 The default optimizer uses the Nesterov Accelerated Gradient scheme. A good
