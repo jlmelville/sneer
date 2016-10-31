@@ -1,11 +1,11 @@
-# Integration code with the rcgmin package at
-# https://github.com/jlmelville/rcgmin
+# Integration code with the rconjgrad package at
+# https://github.com/jlmelville/rconjgrad
 
 # Conjugate Gradient Optimizer
 #
 # Function to create a conjugate gradient optimizer. Use of this optimizer
-# requires installing and loading the 'rcgmin' project from
-# https://github.com/jlmelville/rcgmin
+# requires installing and loading the 'rconjgrad' project from
+# https://github.com/jlmelville/rconjgrad
 #
 # @param line_search Type of line search to use: \code{"mt"} for the
 #  the method of More-Thuente, and \code{"r"} of Rasmussen.
@@ -36,10 +36,10 @@
 optim_rcg <- function(line_search = "r", batch_iter = 20, prplus = TRUE,
                       ortho_restart = FALSE, nu = 0.1, c1 = c2 / 2, c2 = 0.1,
                       inc_iter = FALSE) {
-  if (!requireNamespace("rcgmin",
+  if (!requireNamespace("rconjgrad",
                         quietly = TRUE,
                         warn.conflicts = FALSE)) {
-    stop("Using conjugate gradient optimizer requires 'rcgmin' package")
+    stop("Using conjugate gradient optimizer requires 'rconjgrad' package")
   }
   list(
     mat_name = "ym",
@@ -61,8 +61,8 @@ optim_rcg <- function(line_search = "r", batch_iter = 20, prplus = TRUE,
 
 # One Round of Optimization using the CG optimizer.
 #
-# @note This function requires installing and loading the 'rcgmin' project from
-# https://github.com/jlmelville/rcgmin
+# @note This function requires installing and loading the 'rconjgrad' project from
+# https://github.com/jlmelville/rconjgrad
 #
 # @param opt Optimizer
 # @param method Embedding method.
@@ -79,12 +79,12 @@ rcg_opt_step <- function(opt, method, inp, out, iter) {
 
   par <- mat_to_par(out$ym)
 
-  if (!requireNamespace("rcgmin",
+  if (!requireNamespace("rconjgrad",
                         quietly = TRUE,
                         warn.conflicts = FALSE)) {
-    stop("Using conjugate gradient optimizer requires 'rcgmin' package")
+    stop("Using conjugate gradient optimizer requires 'rconjgrad' package")
   }
-  result <- rcgmin::conj_grad(par = par, fn = fr, gr = grr,
+  result <- rconjgrad::conj_grad(par = par, fn = fr, gr = grr,
                       line_search = opt$line_search,
                       max_iter = opt$batch_iter,
                       prplus = opt$prplus,
@@ -111,8 +111,8 @@ rcg_opt_step <- function(opt, method, inp, out, iter) {
 #
 # Line search method.
 #
-# @note This function requires installing and loading the 'rcgmin' project from
-# https://github.com/jlmelville/rcgmin
+# @note This function requires installing and loading the 'rconjgrad' project from
+# https://github.com/jlmelville/rconjgrad
 #
 # @param c1 Constant used in sufficient decrease condition. Should take a value
 #   between 0 and 1.
@@ -127,12 +127,12 @@ more_thuente_ls <- function(c1 = c2 / 2, c2 = 0.1,
                             max_alpha_mult = 10,
                             min_step_size = .Machine$double.eps,
                             stop_at_min = TRUE) {
-  if (!requireNamespace("rcgmin",
+  if (!requireNamespace("rconjgrad",
                         quietly = TRUE,
                         warn.conflicts = FALSE)) {
-    stop("Using More-Thuente line search requires 'rcgmin' package")
+    stop("Using More-Thuente line search requires 'rconjgrad' package")
   }
-  rcg_line_search(rcgmin::more_thuente(c1 = c1, c2 = c2),
+  rcg_line_search(rconjgrad::more_thuente(c1 = c1, c2 = c2),
                   max_alpha_mult = max_alpha_mult,
                   min_step_size = min_step_size, stop_at_min = stop_at_min)
 }
@@ -141,8 +141,8 @@ more_thuente_ls <- function(c1 = c2 / 2, c2 = 0.1,
 #
 # Line search method.
 #
-# @note This function requires installing and loading the 'rcgmin' project from
-# https://github.com/jlmelville/rcgmin
+# @note This function requires installing and loading the 'rconjgrad' project from
+# https://github.com/jlmelville/rconjgrad
 #
 # @param c1 Constant used in sufficient decrease condition. Should take a value
 #   between 0 and 1.
@@ -160,20 +160,20 @@ rasmussen_ls <- function(c1 = c2 / 2, c2 = 0.1, int = 0.1, ext = 3.0,
                             max_alpha_mult = 10,
                             min_step_size = .Machine$double.eps,
                             stop_at_min = TRUE) {
-  if (!requireNamespace("rcgmin",
+  if (!requireNamespace("rconjgrad",
                         quietly = TRUE,
                         warn.conflicts = FALSE)) {
-    stop("Using Rasmussen line search requires 'rcgmin' package")
+    stop("Using Rasmussen line search requires 'rconjgrad' package")
   }
-  rcg_line_search(rcgmin::rasmussen(c1 = c1, c2 = c2, int = int, ext = ext),
+  rcg_line_search(rconjgrad::rasmussen(c1 = c1, c2 = c2, int = int, ext = ext),
                   max_alpha_mult = max_alpha_mult,
                   min_step_size = min_step_size, stop_at_min = stop_at_min)
 }
 
 # Wolfe Condition Step Size Factory Function
 #
-# @note This function requires installing and loading the 'rcgmin' project from
-# https://github.com/jlmelville/rcgmin
+# @note This function requires installing and loading the 'rconjgrad' project from
+# https://github.com/jlmelville/rconjgrad
 #
 # @param ls_fn Line search function.
 # @param max_alpha_mult Maximum scale factor to use when guessing the initial
