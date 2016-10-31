@@ -194,6 +194,15 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 # \deqn{\mu_{t} = 1-\frac{3}{t+5}}{mu_t = 1-[3/(t+5)]}
 # where \eqn{t} is the iteration number.
 #
+# @param burn_in an integer indicating the number of iterations that need to
+#   pass before returning the nesterov momentum value. Before that iteration,
+#   return 0 for the momentum. Because the Nesterov momentum schedule is so
+#   aggressive, if it takes the solution in a non-descent direction early, this
+#   can cause adaptive step size techniques like bold driver to fail repeatedly
+#   reducing their step size to 0, which in turn causes the momentum update
+#   to become small and leading to very premature convergence. By waiting a
+#   few iteration of pure steepest descent, a reasonable step size and update
+#   direction can be established.
 # @param ... Base momentum parameters to pass to the
 #  \code{momentum_scheme} factory function.
 # @return Nesterov momentum update method, to be used by the optimizer.
@@ -214,9 +223,12 @@ linear_momentum <- function(max_iter, init_momentum = 0,
 # \emph{Training recurrent neural networks}
 # (Doctoral dissertation, University of Toronto).
 # @family sneer optimization update methods
-nesterov_nsc_momentum <- function(...) {
+nesterov_nsc_momentum <- function(burn_in = 0, ...) {
   mu_fn <- function(iter) {
-    1 - (3 / (iter + 5))
+    if (iter < burn_in) {
+      return(0)
+    }
+    1 - (3 / ((iter - burn_in) + 5))
   }
   momentum_scheme(mu_fn, ...)
 }

@@ -937,6 +937,7 @@ sneer <- function(df,
   dec_mult <- 0.1
   # check if we are using an external optimization method
   ext_opt <- FALSE
+  burn_in <- 3
   if (toupper(opt) == "L-BFGS") {
     message("Optimizing with L-BFGS")
     optimizer <- ropt(method = "L-BFGS-B", batch_iter = report_every,
@@ -951,11 +952,11 @@ sneer <- function(df,
   }
   else if (toupper(opt) == "NAG-BOLD") {
     message("Optimizing with Adaptive NAG and bold driver step size")
-    optimizer <- bold_nag_adapt(dec_mult = dec_mult)
+    optimizer <- bold_nag_adapt(dec_mult = dec_mult, burn_in = burn_in)
   }
   else if (toupper(opt) == "NAG-BACK") {
     message("Optimizing with Adaptive NAG and backstepping step size")
-    optimizer <- back_nag_adapt(dec_mult = dec_mult)
+    optimizer <- back_nag_adapt(dec_mult = dec_mult, burn_in = burn_in)
   }
   else if (toupper(opt) == "NAG-MT") {
     if (!requireNamespace("rconjgrad",
@@ -964,7 +965,7 @@ sneer <- function(df,
       stop("Using More-Thuente line search requires 'rconjgrad' package")
     }
     message("Optimizing with Adaptive NAG and MT line search")
-    optimizer <- back_nag_adapt(dec_mult = dec_mult)
+    optimizer <- back_nag_adapt(dec_mult = dec_mult, burn_in = burn_in)
     optimizer$step_size <- more_thuente_ls(c1 = c1, c2 = c2)
   }
   else if (toupper(opt) == "NAG-R") {
@@ -974,7 +975,7 @@ sneer <- function(df,
       stop("Using Rasmussen line search requires 'rconjgrad' package")
     }
     message("Optimizing with Adaptive NAG and Rasmussen line search")
-    optimizer <- back_nag_adapt(dec_mult = dec_mult)
+    optimizer <- back_nag_adapt(dec_mult = dec_mult, burn_in = burn_in)
     optimizer$step_size <- rasmussen_ls(c1 = c1, c2 = c2)
   }
   else if (toupper(opt) == "CG-R") {

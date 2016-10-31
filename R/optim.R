@@ -168,6 +168,7 @@ tsne_opt <- function(epsilon = 1) {
 #  one.
 # @param linear_weight If \code{TRUE}, then the contribution of the gradient
 #  descent part of the update is scaled relative to the momentum part.
+# @param burn_in Number of iterations to run before applying momentum.
 # @return Optimizer with NAG parameters and bold driver step size.
 # @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #  this function for configuring an embedding.
@@ -181,12 +182,14 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
                      init_step_size = 1,
                      max_momentum = 1,
                      normalize_direction = TRUE,
-                     linear_weight = TRUE) {
+                     linear_weight = TRUE,
+                     burn_in = 0) {
   nag(
       step_size = bold_driver(min_step_size = min_step_size,
                               init_step_size = init_step_size),
       update = nesterov_nsc_momentum(max_momentum = max_momentum,
-                                     linear_weight = linear_weight),
+                                     linear_weight = linear_weight,
+                                     burn_in = burn_in),
       normalize_direction = normalize_direction)
 }
 
@@ -210,6 +213,7 @@ bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #  restarting.
 # @param restart If \code{TRUE}, then the momentum memory will be reset to zero
 #   whenever the cost does not decrease.
+# @param burn_in Number of iterations to run before applying momentum.
 # @return Optimizer with NAG parameters and bold driver step size.
 # @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #  this function for configuring an embedding.
@@ -225,12 +229,14 @@ bold_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
                       normalize_direction = TRUE,
                       linear_weight = TRUE,
                       dec_mult = 0,
-                      restart = TRUE) {
+                      restart = TRUE,
+                      burn_in = 0) {
   opt <- bold_nag(min_step_size = min_step_size,
                   init_step_size = init_step_size,
                   max_momentum = max_momentum,
                   normalize_direction = normalize_direction,
-                  linear_weight = linear_weight)
+                  linear_weight = linear_weight,
+                  burn_in = burn_in)
 
   opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
                                  restart = restart)
@@ -251,6 +257,7 @@ bold_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
 #  one.
 # @param linear_weight If \code{TRUE}, then the contribution of the gradient
 #  descent part of the update is scaled relative to the momentum part.
+# @param burn_in Number of iterations to run before applying momentum.
 # @return Optimizer with NAG parameters and backstepping step size.
 # @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #  this function for configuring an embedding.
@@ -263,11 +270,13 @@ bold_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
 back_nag <- function(min_step_size = sqrt(.Machine$double.eps),
                      max_momentum = 1,
                      normalize_direction = TRUE,
-                     linear_weight = TRUE) {
+                     linear_weight = TRUE,
+                     burn_in = 0) {
   nag(
     step_size = backtracking(min_step_size = min_step_size),
     update = nesterov_nsc_momentum(max_momentum = max_momentum,
-                                   linear_weight = linear_weight),
+                                   linear_weight = linear_weight,
+                                   burn_in = burn_in),
     normalize_direction = normalize_direction)
 }
 
@@ -290,6 +299,7 @@ back_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 #  restarting.
 # @param restart If \code{TRUE}, then the momentum memory will be reset to zero
 #   whenever the cost does not decrease.
+# @param burn_in Number of iterations to run before applying momentum.
 # @return Optimizer with NAG parameters and backstepping step size.
 # @seealso \code{embed_prob} and \code{embed_dist} for how to use
 #  this function for configuring an embedding.
@@ -304,11 +314,13 @@ back_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
                       normalize_direction = TRUE,
                       linear_weight = TRUE,
                       dec_mult = 0,
-                      restart = TRUE) {
+                      restart = TRUE,
+                      burn_in = 0) {
   opt <- back_nag(min_step_size = min_step_size,
                   max_momentum = max_momentum,
                   normalize_direction = normalize_direction,
-                  linear_weight = linear_weight)
+                  linear_weight = linear_weight,
+                  burn_in = burn_in)
 
   opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
                                  restart = restart)
