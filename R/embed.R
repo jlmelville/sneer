@@ -598,7 +598,7 @@ NULL
 sneer <- function(df,
                   indexes = NULL,
                   method = "tsne",
-                  alpha = 1,
+                  alpha = 0.5,
                   lambda = 0.5,
                   kappa = 0.5,
                   scale_type = "",

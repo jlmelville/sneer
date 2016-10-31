@@ -6,7 +6,7 @@
 \alias{sneer-package}
 \title{Probability-based Embedding}
 \usage{
-sneer(df, indexes = NULL, method = "tsne", alpha = 1, lambda = 0.5,
+sneer(df, indexes = NULL, method = "tsne", alpha = 0.5, lambda = 0.5,
   kappa = 0.5, scale_type = "", perplexity = 32, perp_scale = "single",
   perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
   init = "p", init_config = NULL, opt = "NAG-BOLD", epsilon = 1,
