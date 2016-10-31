@@ -3,7 +3,7 @@ Stochastic Neighbor Embedding Experiments in R
 
 An R package for experimenting with dimensionality reduction techniques, 
 including the popular 
-[t-Distributed Stochastic Neighbor Embedding]((https://lvdmaaten.github.io/tsne/)
+[t-Distributed Stochastic Neighbor Embedding](https://lvdmaaten.github.io/tsne/)
 (t-SNE).
 
 ### Installing
