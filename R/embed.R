@@ -31,7 +31,7 @@ NULL
 #'   Maaten and Hinton (2008).
 #'  \item \code{"asne"} Asymmetric Stochastic Neighbor Embedding of Hinton and
 #'   Roweis (2002).
-#'  \item \code{"ssne"} Symetric Stochastic Neighbor Embedding of Cook et al
+#'  \item \code{"ssne"} Symmetric Stochastic Neighbor Embedding of Cook et al
 #'   (2007).
 #'  \item \code{"wssne"} Weighted Symmetric Stochastic Neighbor Embedding of
 #'   Yang et al (2014). Note that despite its name this version is a
