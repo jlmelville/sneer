@@ -328,6 +328,15 @@ NULL
 #' @param tol Tolerance for comparing cost change (calculated according to the
 #'  interval determined by \code{report_every}). If the change falls below this
 #'  value, the optimization stops early.
+#' @param exaggerate If non-\code{NULL}, scales input probabilities by this
+#'  value from iteration 0 until \code{exaggerate_off_iter}. Normally a value
+#'  of \code{4} is used. Has no effect with PCA, Sammon mapping or metric MDS.
+#'  Works best when using random initialization with (\code{init = "r"} or
+#'  \code{"u"}. You probably don't want to use it if you are providing your own
+#'  initial configuration (\code{init = "m"}).
+#' @param exaggerate_off_iter Iteration number to stop the "early exaggeration"
+#'  scaling specified \code{exaggerate}. Has no effect if \code{exaggerate} is
+#'  \code{NULL}.
 #' @param plot_type String code indicating the type of plot of the embedding
 #'  to display: \code{"p"} to use the usual \code{\link[graphics]{plot}}
 #'  function; \code{"g"} to use the \code{ggplot2} package. You are responsible
@@ -612,6 +621,8 @@ sneer <- function(df,
                   max_iter = 1000,
                   report_every = 50,
                   tol = 1e-4,
+                  exaggerate = NULL,
+                  exaggerate_off_iter = 50,
                   plot_type = "p",
                   colors = NULL,
                   color_name = NULL,
@@ -1041,6 +1052,13 @@ sneer <- function(df,
          "probabilities (e.g. t-SNE), not '", method, "'")
   }
 
+  tricks <- NULL
+  if (!is.null(exaggerate)) {
+    tricks <- make_tricks(early_exaggeration(exaggeration = exaggerate,
+                                             off_iter = exaggerate_off_iter,
+                                             verbose = TRUE))
+  }
+
   if (class(df) == 'dist') {
     xm <- df
   }
@@ -1054,12 +1072,14 @@ sneer <- function(df,
     preprocess = preprocess,
     init_inp = init_inp,
     init_out = init_out,
+    tricks = tricks,
     reporter = make_reporter(
       normalize_cost = normalize_cost,
       report_every = report_every,
       extra_costs = extra_costs,
       plot = embed_plot,
-      reltol = tol
+      reltol = tol,
+      disttol = tol
     ),
     after_embed = after_embed,
     max_iter = max_iter,

@@ -10,8 +10,9 @@ sneer(df, indexes = NULL, method = "tsne", alpha = 0.5, lambda = 0.5,
   kappa = 0.5, scale_type = "", perplexity = 32, perp_scale = "single",
   perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
   init = "p", init_config = NULL, opt = "NAG-BOLD", epsilon = 1,
-  max_iter = 1000, report_every = 50, tol = 1e-04, plot_type = "p",
-  colors = NULL, color_name = NULL, labels = NULL, label_name = NULL,
+  max_iter = 1000, report_every = 50, tol = 1e-04, exaggerate = NULL,
+  exaggerate_off_iter = 50, plot_type = "p", colors = NULL,
+  color_name = NULL, labels = NULL, label_name = NULL,
   label_chars = NULL, point_size = 1, plot_labels = FALSE,
   color_scheme = grDevices::rainbow, equal_axes = FALSE, legend = TRUE,
   legend_rows = NULL, quality_measures = NULL, ret = c())
@@ -75,6 +76,17 @@ update plot and report the cost function.}
 \item{tol}{Tolerance for comparing cost change (calculated according to the
 interval determined by \code{report_every}). If the change falls below this
 value, the optimization stops early.}
+
+\item{exaggerate}{If non-\code{NULL}, scales input probabilities by this
+value from iteration 0 until \code{exaggerate_off_iter}. Normally a value
+of \code{4} is used. Has no effect with PCA, Sammon mapping or metric MDS.
+Works best when using random initialization with (\code{init = "r"} or
+\code{"u"}. You probably don't want to use it if you are providing your own
+initial configuration (\code{init = "m"}).}
+
+\item{exaggerate_off_iter}{Iteration number to stop the "early exaggeration"
+scaling specified \code{exaggerate}. Has no effect if \code{exaggerate} is
+\code{NULL}.}
 
 \item{plot_type}{String code indicating the type of plot of the embedding
 to display: \code{"p"} to use the usual \code{\link[graphics]{plot}}
