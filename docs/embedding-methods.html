@@ -155,6 +155,7 @@ $(document).ready(function () {
 <h4>t-Distributed SNE (t-SNE)</h4>
 <p>As mentioned, t-SNE is the default method. But to be really sure you can provide <code>&quot;tsne&quot;</code> as the argument:</p>
 <pre class="r"><code>iris_tsne &lt;- sneer(iris, method = &quot;tsne&quot;)</code></pre>
+<p>Compared to SSNE, the heavier tail of the output kernel in t-SNE allows close neighbors to take up larger distances in the output configuration.</p>
 </div>
 <div id="weighted-symmetric-sne-ws-sne" class="section level4">
 <h4>Weighted Symmetric SNE (ws-SNE)</h4>
@@ -167,7 +168,8 @@ $(document).ready(function () {
 <pre class="r"><code>iris_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, alpha = 0) # SSNE
 iris_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, alpha = 0.5) # default HSSNE
 iris_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, alpha = 1) # t-SNE</code></pre>
-<p>If t-SNE tends to spend a lot of the optimization slowly separating clusters, I suggest trying HSSNE with a value of <code>alpha</code> below <code>1</code> - you may find it produces a better, more compact final result.</p>
+<p>Actually, you can set <code>alpha</code> to values &gt; 1, for those times when the tail-heaviness of t-SNE just isn’t heavy enough. It would be interesting to see a data set where a value of alpha much greater than <code>1</code> helped significantly.</p>
+<p>Conversely, for lower-dimensional data sets, if t-SNE tends to spend a lot of the optimization slowly separating clusters, that might mean that t-SNE is just too heavy. I suggest trying HSSNE with a value of <code>alpha</code> below <code>1</code> - you may find it produces a better, more compact final result.</p>
 </div>
 <div id="neighbor-retrieval-visualizer-nerv" class="section level4">
 <h4>Neighbor Retrieval Visualizer (NeRV)</h4>

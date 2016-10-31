@@ -94,6 +94,9 @@ provide `"tsne"` as the argument:
 iris_tsne <- sneer(iris, method = "tsne")
 ```
 
+Compared to SSNE, the heavier tail of the output kernel in t-SNE allows close
+neighbors to take up larger distances in the output configuration.
+
 #### Weighted Symmetric SNE (ws-SNE)
 
 This method scales each weight by its "importance", which is related to the
@@ -111,7 +114,7 @@ iris_wssne <- sneer(iris, method = "wssne")
 [HSSNE](http://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding)
 generalizes SSNE and t-SNE, by introducing a tail-heaviness parameter, `alpha`,
 which takes a value between `0` (behaves like `method = "ssne"`),
-and `1` (in which case you will get the behavior of `method = "tsne"`). 
+and `1` (in which case you will get the behavior of `method = "tsne"`).
 
 ```R
 iris_hssne <- sneer(iris, method = "hssne", alpha = 0) # SSNE
@@ -119,9 +122,15 @@ iris_hssne <- sneer(iris, method = "hssne", alpha = 0.5) # default HSSNE
 iris_hssne <- sneer(iris, method = "hssne", alpha = 1) # t-SNE
 ```
 
-If t-SNE tends to spend a lot of the optimization slowly separating clusters,
-I suggest trying HSSNE with a value of `alpha` below `1` - you may find it 
-produces a better, more compact final result.
+Actually, you can set `alpha` to values > 1, for those times when the 
+tail-heaviness of t-SNE just isn't heavy enough. It would be interesting to
+see a data set where a value of alpha much greater than `1` helped 
+significantly.
+
+Conversely, for lower-dimensional data sets, if t-SNE tends to spend a lot of the 
+optimization slowly separating clusters, that might mean that t-SNE is just
+too heavy. I suggest trying HSSNE with a value of `alpha` below `1` - you may 
+find it produces a better, more compact final result.
 
 #### Neighbor Retrieval Visualizer (NeRV)
 
