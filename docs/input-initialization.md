@@ -57,7 +57,6 @@ too high and you will end up with a homogeneous embedding which ignores local
 structure. Set it too low and you'll get a series of overlapping, disconnected
 regions.
 
-
 ### `perp_scale`
 
 Apart from the annoyance of having to work out a good value of the perplexity,
@@ -68,7 +67,7 @@ a larger perplexity would be useful initially to avoid falling into local
 optima.
 
 There have been a few suggestions made in the literature to ameliorate or
-even remove these issuess with the perplexity. The 
+even remove these issues with the perplexity. The 
 [NeRV](http://www.jmlr.org/papers/v11/venna10a.html) paper suggests starting 
 the optimization with a fairly high perplexity value and then recalculating the
 input probabilities at progressively lower perplexities as the optimization 
@@ -121,6 +120,10 @@ want the scaling to occur over:
 s1k_tsne <- sneer(s1k, perp_scale = "step", perp_scale_iter = 150)
 ```
 
+The default number of total iterations is 1000, and is controlled by the
+`max_iter` parameter. See the [Optimization](optimization.html) section if you 
+want to know more.
+
 ### `prec_scale`
 
 This option controls how the free parameter (if it exists) on the output kernel
@@ -141,12 +144,13 @@ This can be accomodated by using the `prec_scale` argument with the argument
 `"t"` (for "transfer"):
 
 ```R
-s1k_ssne <-  sneer(s1k, prec_scale = "t", method = "ssne")
+s1k_ssne <- sneer(s1k, prec_scale = "t", method = "ssne")
 ```
 
 Note also that I've explicitly changed the embedding `method` from t-SNE to 
 the related SSNE method, which has a free parameter on the output kernel to
-make use of the bandwidths.
+make use of the bandwidths. For more on the `method` parameter, see the section
+on [Embedding Methods](embedding-methods.html).
 
 In conjunction with the multiscale perplexity scaling, a more complex approach 
 to the output kernel scaling is advocated in the 
