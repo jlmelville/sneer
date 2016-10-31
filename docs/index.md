@@ -34,7 +34,8 @@ distances to probabilities or other parameterization needed for the optimization
 output configuration.
 * [Optimization](optimization.html) - controlling the type of optimization of
 the output coordinates.
-* [Embedding Methods](embedding-methods.html) - coming soon.
+* [Embedding Methods](embedding-methods.html) - there's a whole family of 
+embedding methods related to t-SNE out there. Let me introduce you.
 * [Reporting](reporting.html) - coming soon.
 * [Exported Data](exported-data.html) - coming soon.
 * [Analysis](analysis.html) - coming soon.
