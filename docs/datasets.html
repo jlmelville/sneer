@@ -163,13 +163,13 @@ $(document).ready(function () {
 <p>So there you go. s1k passes my low bar for being a useful data set. We could (and probably should) make life a bit harder for ourselves. Real data will differ from s1k by having different numbers of points per cluster, different distances between clusters, different spreads of data in the cluster, and being anisotropic (the spread won’t be symmetric in all dimensions).</p>
 <p>There are some other data sets out there you may find useful. In a fit of shameless self-promotion, I will mention some other R packages I wrote that help wrangle them into a sneer-able form.</p>
 <p>None of the following packages are on CRAN, but are on github. To install them, install the <code>devtools</code> package:</p>
-<p><code>install.packages(&quot;devtools&quot;)</code></p>
+<pre class="r"><code>install.packages(&quot;devtools&quot;)</code></pre>
 <p>Then use the <code>devtools::install_github</code> function to fetch them from github.</p>
 </div>
 <div id="snedata" class="section level3">
 <h3>snedata</h3>
 <p>Find the snedata package at <a href="https://github.com/jlmelville/snedata" class="uri">https://github.com/jlmelville/snedata</a> and install it with:</p>
-<p><code>devtools::install_github(&quot;jlmelville/snedata&quot;)</code></p>
+<pre class="r"><code>devtools::install_github(&quot;jlmelville/snedata&quot;)</code></pre>
 <p>Under the snedata umbrella, there are three sources of data here you might be interested in:</p>
 <div id="jse-simulation-data." class="section level4">
 <h4>JSE simulation data.</h4>
@@ -178,7 +178,7 @@ $(document).ready(function () {
 </div>
 <div id="how-to-use-t-sne-effectively" class="section level4">
 <h4>“How to Use t-SNE Effectively”</h4>
-<p>A team at Google (Cloud and Brain) published an interactive article <a href="http://distill.pub/2016/misread-tsne/">How to use t-SNE Effectively</a>, containing some tips on the effect of parameters on t-SNE embeddings. You can run t-SNE directly in the browser on that page on a set of simulation data, much of it based around various gaussian clusters. I converted JavaScript code which generated these datasets, also available on github at <a href="https://github.com/distillpub/post--misread-tsne"></a>, into R, so these are also available for you to use.</p>
+<p>A team at Google (Cloud and Brain) published an interactive article <a href="http://distill.pub/2016/misread-tsne/">How to use t-SNE Effectively</a>, containing some tips on the effect of parameters on t-SNE embeddings. You can run t-SNE directly in the browser on that page on a set of simulation data, much of it based around various gaussian clusters. I converted JavaScript code which generated these datasets, also available on github at <a href="https://github.com/distillpub/post--misread-tsne" class="uri">https://github.com/distillpub/post--misread-tsne</a>, into R, so these are also available for you to use.</p>
 </div>
 <div id="olivetti-and-frey-faces" class="section level4">
 <h4>Olivetti and Frey Faces</h4>
@@ -188,16 +188,16 @@ $(document).ready(function () {
 <div id="mnist" class="section level3">
 <h3>mnist</h3>
 <p>Find the mnist package at <a href="https://github.com/jlmelville/mnist" class="uri">https://github.com/jlmelville/mnist</a> and install it with:</p>
-<p><code>devtools::install_github(&quot;jlmelville/mnist&quot;)</code></p>
+<pre class="r"><code>devtools::install_github(&quot;jlmelville/mnist&quot;)</code></pre>
 <p>The MNIST dataset is a set of images of hand written digits. It (or a subset) is probably the most commonly used dataset used in the literature.</p>
 <p>This package doesn’t distribute the MNIST dataset directly, but downloads it from its website and then formats it, so you’ll need internet access to get hold of it. Like the Frey and Olivetti data sets, there are also functions to view each digit.</p>
 </div>
 <div id="coil20" class="section level3">
 <h3>coil20</h3>
 <p>Find the coil20 package at <a href="https://github.com/jlmelville/coil20" class="uri">https://github.com/jlmelville/coil20</a> and install it with:</p>
-<p><code>devtools::install_github(&quot;jlmelville/coil20&quot;)</code></p>
+<pre class="r"><code>devtools::install_github(&quot;jlmelville/coil20&quot;)</code></pre>
 <p>Another image dataset (you may be detecting a pattern here), this time of 3D objects. Once again, this dataset doesn’t distribute the images, just downloads them and formats them for you. And it provides a function for viewing the images.</p>
-<p>Between all these data sets, that should be enough data to be getting on with. Watch out for the large data sets - due to sneer’s design and pure-R nature, it’s easy to slow your system to a crawl or just run out of memory. I suggest experimenting with sub sets of 100-1000 data points before committing to embedding the entire MNIST data set (hint: you probably don’t want to do that).</p>
+<p>Between all these data sets, that should be enough data to be getting on with. Watch out for the large data sets - due to sneer’s design and pure-R nature, it’s easy to have it sit there churning away for hours, or just run out of memory. I suggest experimenting with sub sets of 100-1000 data points before committing to embedding the entire MNIST data set (hint: you probably don’t want to do that).</p>
 <p>Previous: <a href="concepts.html">Concepts</a>. Next: <a href="preprocessing.html">Preprocessing</a>. Up: <a href="index.html">Index</a>.</p>
 </div>
 </div>

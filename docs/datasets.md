@@ -94,7 +94,9 @@ help wrangle them into a sneer-able form.
 None of the following packages are on CRAN, but are on github. To install them,
 install the `devtools` package:
 
-```install.packages("devtools")```
+```R
+install.packages("devtools")
+```
 
 Then use the `devtools::install_github` function to fetch them from github.
 
@@ -103,7 +105,9 @@ Then use the `devtools::install_github` function to fetch them from github.
 Find the snedata package at https://github.com/jlmelville/snedata and install
 it with:
 
-```devtools::install_github("jlmelville/snedata")```
+```R
+devtools::install_github("jlmelville/snedata")
+```
 
 Under the snedata umbrella, there are three sources of data here you might be 
 interested in:
@@ -128,7 +132,7 @@ containing some tips on the effect of parameters on t-SNE embeddings. You can
 run t-SNE directly in the browser on that page on a set of simulation data,
 much of it based around various gaussian clusters. I converted JavaScript code
 which generated these datasets, also available on github at 
-[](https://github.com/distillpub/post--misread-tsne), into R, so these are
+https://github.com/distillpub/post--misread-tsne, into R, so these are
 also available for you to use.
 
 #### Olivetti and Frey Faces
@@ -146,7 +150,9 @@ you want to do this, you'll need to install RnavGraphImageData manually via
 Find the mnist package at https://github.com/jlmelville/mnist and install it 
 with:
 
-```devtools::install_github("jlmelville/mnist")```
+```R
+devtools::install_github("jlmelville/mnist")
+```
 
 The MNIST dataset is a set of images of hand written digits. It (or a subset)
 is probably the most commonly used dataset used in the literature.
@@ -161,7 +167,9 @@ to view each digit.
 Find the coil20 package at https://github.com/jlmelville/coil20 and install it
 with:
 
-```devtools::install_github("jlmelville/coil20")```
+```R
+devtools::install_github("jlmelville/coil20")
+```
 
 Another image dataset (you may be detecting a pattern here), this time of 3D 
 objects. Once again, this dataset doesn't distribute the images, just downloads
@@ -170,8 +178,9 @@ images.
 
 Between all these data sets, that should be enough data to be getting on with.
 Watch out for the large data sets - due to sneer's design and pure-R nature,
-it's easy to slow your system to a crawl or just run out of memory. I suggest
-experimenting with sub sets of 100-1000 data points before committing to 
-embedding the entire MNIST data set (hint: you probably don't want to do that).
+it's easy to have it sit there churning away for hours, or just run out of 
+memory. I suggest experimenting with sub sets of 100-1000 data points before 
+committing to embedding the entire MNIST data set (hint: you probably don't 
+want to do that).
 
 Previous: [Concepts](concepts.html). Next: [Preprocessing](preprocessing.html). Up: [Index](index.html).
