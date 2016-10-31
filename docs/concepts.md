@@ -33,6 +33,7 @@ The process of generating probabilities from distances goes like this:
   the bigger the weight, the shorter the distances, so you can also think of
   them as similarities. I'll call the function that generates the weights from 
   the distances the **kernel function** or the **weight function**.
+  
 * The weights are then normalized into probabilities. For more about the 
   normalizations that are often used, see the [gradients](gradients.html) page.
 

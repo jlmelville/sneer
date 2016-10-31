@@ -126,11 +126,11 @@ $(document).ready(function () {
 <p>Traditional embedding methods like metric MDS or Sammon mapping have cost functions where the distances in the input and output spaces appear directly: give or take a weighting, they are attempting to match the distances in the input and output space. I’ll call these <strong>distance-based</strong> embedding methods.</p>
 <p>But if you look at the cost function of t-SNE, you won’t see any distances. Instead you see probabilities. These are related to the distances via a series of transformations, but it’s not a direct connection and this seems to have a significant effect on the results. I’ll call these <strong>probability-based</strong> embedding methods.</p>
 <p>The process of generating probabilities from distances goes like this:</p>
-<div id="create-a-weight-matrix-from-the-distances.-the-weights-are-generally-such-that" class="section level1">
-<h1>Create a weight matrix from the distances. The weights are generally such that</h1>
-<p>the bigger the weight, the shorter the distances, so you can also think of them as similarities. I’ll call the function that generates the weights from the distances the <strong>kernel function</strong> or the <strong>weight function</strong>. # The weights are then normalized into probabilities.</p>
+<ul>
+<li><p>Create a weight matrix from the distances. The weights are generally such that the bigger the weight, the shorter the distances, so you can also think of them as similarities. I’ll call the function that generates the weights from the distances the <strong>kernel function</strong> or the <strong>weight function</strong>.</p></li>
+<li><p>The weights are then normalized into probabilities. For more about the normalizations that are often used, see the <a href="gradients.html">gradients</a> page.</p></li>
+</ul>
 <p>Next: <a href="datasets.html">Data Sets</a>. Up: <a href="index.html">Index</a>.</p>
-</div>
 
 
 
