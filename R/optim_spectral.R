@@ -26,8 +26,8 @@
 # complexity.
 #
 # Also, use of the More-Thuente or Rasmussen line search methods requires
-# installing and loading the 'rcgmin' project from
-# \url{https://github.com/jlmelville/rcgmin}. The bold driver algorithm works
+# installing and loading the 'rconjgrad' project from
+# \url{https://github.com/jlmelville/rconjgrad}. The bold driver algorithm works
 # surprisingly well (surprising to me, anyway) with it, though.
 #
 # @seealso
@@ -36,7 +36,7 @@
 #
 # @param line_search Type of line search to use: \code{"bold"} for Bold Driver,
 #  \code{"back"} for backstepping, \code{"mt"} for the method of More-Thuente,
-#  and \code{"r"} for that of Rasmussen. The last two require the rcgmin
+#  and \code{"r"} for that of Rasmussen. The last two require the rconjgrad
 #  package to be loaded.
 # @param c1 Constant used in sufficient decrease condition. Should take a value
 #   between 0 and 1.
@@ -46,18 +46,18 @@
 optim_spectral <- function(line_search = "mt", c1 = 1e-4, c2 = 0.1) {
 
   if (line_search == "mt") {
-    if (!requireNamespace("rcgmin",
+    if (!requireNamespace("rconjgrad",
                           quietly = TRUE,
                           warn.conflicts = FALSE)) {
-      stop("Using More-Thuente line search requires 'rcgmin' package")
+      stop("Using More-Thuente line search requires 'rconjgrad' package")
     }
     step_size <- more_thuente_ls(c1 = c1, c2 = c2)
   }
   else if (line_search == "r") {
-    if (!requireNamespace("rcgmin",
+    if (!requireNamespace("rconjgrad",
                           quietly = TRUE,
                           warn.conflicts = FALSE)) {
-      stop("Using Rasmussen line search requires 'rcgmin' package")
+      stop("Using Rasmussen line search requires 'rconjgrad' package")
     }
     step_size <- rasmussen_ls(c1 = c1, c2 = c2)
   }

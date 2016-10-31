@@ -83,11 +83,11 @@ reproducibility.
 * s1k, a small (1000 points) 9-dimensional synthetic dataset that exemplifies
 the "crowding problem".
 
-If you install and load the [rcgmin](https://github.com/jlmelville/rcgmin) 
+If you install and load the [rconjgrad](https://github.com/jlmelville/rconjgrad) 
 package:
 ```R
-devtools::install_github("jlmelville/rcgmin")
-library("rcgmin")
+devtools::install_github("jlmelville/rconjgrad")
+library("rconjgrad")
 ```
 
 You can also access some extra optimization options:

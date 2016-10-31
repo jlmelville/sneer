@@ -33,8 +33,8 @@
 #' \itemize{
 #'  \item{The low-memory BFGS method from the \code{optim} function.}
 #'  \item{A Polak-Ribiere Conjugate Gradient optimizer, if you install and load
-#'  the rcgmin package from https://github.com/jlmelville/rcgmin}
-#'  \item{If you install rcgmin, you can also use the two line search algorithms
+#'  the rconjgrad package from https://github.com/jlmelville/rconjgrad}
+#'  \item{If you install rconjgrad, you can also use the two line search algorithms
 #'  it implements with the NAG optimizer, instead of the bold driver approach.}
 #'  \item{The Spectral Direction method of Vladymyrov and Carreira-Perpinan.
 #'  This can only be applied to probability-based embedding methods that use a
@@ -45,7 +45,7 @@
 #'  support for sparse matrices in sneer restricts its applicability to smaller
 #'  datasets. This can be used with the bold driver line search method, but
 #'  to be on the safe side, you might want to also consider the line search
-#'  methods provided by the rcgmin package.}
+#'  methods provided by the rconjgrad package.}
 #' }
 #'
 #' @section Visualization:

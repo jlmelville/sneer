@@ -283,7 +283,7 @@ There are some caveats to using these optimization routines:
 \itemize{
  \item To use the conjugate gradient method or the
   Rasmussen or More-Thuente step size methods, you must install and load the
-  \code{rcgmin} package from \url{https://github.com/jlmelville/rcgmin}.
+  \code{rconjgrad} package from \url{https://github.com/jlmelville/rconjgrad}.
  \item The external optimization routines (\code{L-BFGS} and \code{CG-}
   methods) run in batches of \code{report_every}. For example, if you want to
   report every 50 iterations, the optimization routine will be run for 50
@@ -450,8 +450,8 @@ Some other optimization methods are also available:
 \itemize{
  \item{The low-memory BFGS method from the \code{optim} function.}
  \item{A Polak-Ribiere Conjugate Gradient optimizer, if you install and load
- the rcgmin package from https://github.com/jlmelville/rcgmin}
- \item{If you install rcgmin, you can also use the two line search algorithms
+ the rconjgrad package from https://github.com/jlmelville/rconjgrad}
+ \item{If you install rconjgrad, you can also use the two line search algorithms
  it implements with the NAG optimizer, instead of the bold driver approach.}
  \item{The Spectral Direction method of Vladymyrov and Carreira-Perpinan.
  This can only be applied to probability-based embedding methods that use a
@@ -462,7 +462,7 @@ Some other optimization methods are also available:
  support for sparse matrices in sneer restricts its applicability to smaller
  datasets. This can be used with the bold driver line search method, but
  to be on the safe side, you might want to also consider the line search
- methods provided by the rcgmin package.}
+ methods provided by the rconjgrad package.}
 }
 }
 
@@ -554,11 +554,11 @@ for more details.
   # Use the Spectral Directions method with bold driver
   res <- sneer(iris, scale_type = "a", opt = "SPEC-BOLD")
 
-  # Load the rcgmin library: make use of other line search algorithms and
+  # Load the rconjgrad library: make use of other line search algorithms and
   # conjugate gradient optimizer
   install.packages("devtools")
-  devtools::install_github("jlmelville/rcgmin")
-  library("rcgmin")
+  devtools::install_github("jlmelville/rconjgrad")
+  library("rconjgrad")
   # Use More-Thuente line search with NAG optimizer instead of bold driver
   res <- sneer(iris, scale_type = "a", opt = "NAG-MT")
   # Use Rasmussen line search

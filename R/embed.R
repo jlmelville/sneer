@@ -149,7 +149,7 @@ NULL
 #' \itemize{
 #'  \item To use the conjugate gradient method or the
 #'   Rasmussen or More-Thuente step size methods, you must install and load the
-#'   \code{rcgmin} package from \url{https://github.com/jlmelville/rcgmin}.
+#'   \code{rconjgrad} package from \url{https://github.com/jlmelville/rconjgrad}.
 #'  \item The external optimization routines (\code{L-BFGS} and \code{CG-}
 #'   methods) run in batches of \code{report_every}. For example, if you want to
 #'   report every 50 iterations, the optimization routine will be run for 50
@@ -471,11 +471,11 @@ NULL
 #'   # Use the Spectral Directions method with bold driver
 #'   res <- sneer(iris, scale_type = "a", opt = "SPEC-BOLD")
 #'
-#'   # Load the rcgmin library: make use of other line search algorithms and
+#'   # Load the rconjgrad library: make use of other line search algorithms and
 #'   # conjugate gradient optimizer
 #'   install.packages("devtools")
-#'   devtools::install_github("jlmelville/rcgmin")
-#'   library("rcgmin")
+#'   devtools::install_github("jlmelville/rconjgrad")
+#'   library("rconjgrad")
 #'   # Use More-Thuente line search with NAG optimizer instead of bold driver
 #'   res <- sneer(iris, scale_type = "a", opt = "NAG-MT")
 #'   # Use Rasmussen line search
@@ -947,30 +947,30 @@ sneer <- function(df,
     optimizer <- back_nag_adapt(dec_mult = dec_mult)
   }
   else if (toupper(opt) == "NAG-MT") {
-    if (!requireNamespace("rcgmin",
+    if (!requireNamespace("rconjgrad",
                           quietly = TRUE,
                           warn.conflicts = FALSE)) {
-      stop("Using More-Thuente line search requires 'rcgmin' package")
+      stop("Using More-Thuente line search requires 'rconjgrad' package")
     }
     message("Optimizing with Adaptive NAG and MT line search")
     optimizer <- back_nag_adapt(dec_mult = dec_mult)
     optimizer$step_size <- more_thuente_ls(c1 = c1, c2 = c2)
   }
   else if (toupper(opt) == "NAG-R") {
-    if (!requireNamespace("rcgmin",
+    if (!requireNamespace("rconjgrad",
                           quietly = TRUE,
                           warn.conflicts = FALSE)) {
-      stop("Using Rasmussen line search requires 'rcgmin' package")
+      stop("Using Rasmussen line search requires 'rconjgrad' package")
     }
     message("Optimizing with Adaptive NAG and Rasmussen line search")
     optimizer <- back_nag_adapt(dec_mult = dec_mult)
     optimizer$step_size <- rasmussen_ls(c1 = c1, c2 = c2)
   }
   else if (toupper(opt) == "CG-R") {
-    if (!requireNamespace("rcgmin",
+    if (!requireNamespace("rconjgrad",
                           quietly = TRUE,
                           warn.conflicts = FALSE)) {
-      stop("Using conjugate gradient optimizer requires 'rcgmin' package")
+      stop("Using conjugate gradient optimizer requires 'rconjgrad' package")
     }
     message("Optimizing with CG and Rasmussen line search")
     c2 <- 0.1
@@ -980,10 +980,10 @@ sneer <- function(df,
     ext_opt <- TRUE
   }
   else if (toupper(opt) == "CG-MT") {
-    if (!requireNamespace("rcgmin",
+    if (!requireNamespace("rconjgrad",
                           quietly = TRUE,
                           warn.conflicts = FALSE)) {
-      stop("Using conjugate gradient optimizer requires 'rcgmin' package")
+      stop("Using conjugate gradient optimizer requires 'rconjgrad' package")
     }
     message("Optimizing with CG and More-Thuente line search")
     c2 <- 0.1
@@ -993,19 +993,19 @@ sneer <- function(df,
     ext_opt <- TRUE
   }
   else if (toupper(opt) == "SPEC-R") {
-    if (!requireNamespace("rcgmin",
+    if (!requireNamespace("rconjgrad",
                           quietly = TRUE,
                           warn.conflicts = FALSE)) {
-      stop("Using spectral direction optimizer requires 'rcgmin' package")
+      stop("Using spectral direction optimizer requires 'rconjgrad' package")
     }
     message("Optimizing with Spectral Direction and Rasmussen line search")
     optimizer <- optim_spectral(line_search = "r", c1 = c1, c2 = c2)
   }
   else if (toupper(opt) == "SPEC-MT") {
-    if (!requireNamespace("rcgmin",
+    if (!requireNamespace("rconjgrad",
                           quietly = TRUE,
                           warn.conflicts = FALSE)) {
-      stop("Using More-Thuente optimizer requires 'rcgmin' package")
+      stop("Using More-Thuente optimizer requires 'rconjgrad' package")
     }
     message("Optimizing with Spectral Direction and More-Thuente line search")
     optimizer <- optim_spectral(line_search = "mt", c1 = c1, c2 = c2)
