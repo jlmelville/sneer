@@ -37,11 +37,13 @@ iris_mmds <- sneer(iris, method = "mmds")
 ```
 
 I don't exactly commend this as a shining example of an efficient MDS routine.
-But it's the very simplest possible distance-based embedding.
+But it's the very simplest possible distance-based embedding. I recommend 
+trying this and/or PCA as a sanity check with new data sets before embarking
+on the more exotic methods on offer.
 
 #### Sammon Map
 
-Sammon maps are like metric MDS but it adds an extra weighting to put more
+Sammon mapping works like metric MDS but it adds an extra weighting to put more
 emphasis on reproducing short distances rather than long distances. In practice
 it doesn't produce results that are all that different from metric MDS.
 
@@ -67,9 +69,17 @@ iris_asne <- sneer(iris, method = "asne")
 
 #### Symmetric Stochastic Neighbor Embedding (SSNE)
 
-The [SSNE paper](https://www.cs.toronto.edu/~amnih/papers/sne_am.pdf) 
+The [SSNE paper (PDF)](https://www.cs.toronto.edu/~amnih/papers/sne_am.pdf) 
 differentiates itself from ASNE by changing how the normalization procedure
-works. See the [Gradient](gradients.html) theory page for the difference.
+works: it does it using the entire weight matrix, rather than per-row of the
+matrix. See the [Gradient](gradients.html) theory page for the difference. 
+
+In general, I find "symmetric" methods that use the SSNE version of 
+normalization versus the ASNE version tend to optimize a little more easily
+and show detectable, albeit often very minor, differences in the final 
+configuration. Not everyone agrees, though. For instance, the authors
+of [JSE](http://dx.doi.org/10.1016/j.neucom.2012.12.036) noted "no significant
+effect" of the normalization procedure on the results they presented.
 
 ```R
 iris_ssne <- sneer(iris, method = "ssne")
@@ -175,8 +185,13 @@ iris_jse <- sneer(iris, method = "jse", kappa = 0) # ASNE
 
 Due to numerical issues with how the JSE cost function and gradient is 
 calculated, don't expect to get results exactly like ASNE/NeRV when setting
-`kappa` to its minimum and maximum, but it gets close. 
+`kappa` to its minimum and maximum, but it gets close.
 
+If you find it confusing that there are two separate parameters with Greek 
+letter names, that do nearly the same thing, but apply to two different
+embedding methods, you're not alone, but I decided to try and stick with
+the nomenclature used in the original publications wherever possible, to make
+comparison with literature results easier.
 
 #### Console log
 
