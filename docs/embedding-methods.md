@@ -98,7 +98,7 @@ iris_wssne <- sneer(iris, method = "wssne")
 
 #### Heavy-tailed Symmetric Stochastic Neighbor Embedding (HSSNE)
 
-[HSSNE (PDF)](http://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding.pdf)
+[HSSNE](http://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding)
 generalizes SSNE and t-SNE, by introducing a tail-heaviness parameter, `alpha`,
 which takes a value between `0` (behaves like `method = "ssne"`),
 and `1` (in which case you will get the behavior of `method = "tsne"`). 

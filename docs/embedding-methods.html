@@ -162,7 +162,7 @@ $(document).ready(function () {
 </div>
 <div id="heavy-tailed-symmetric-stochastic-neighbor-embedding-hssne" class="section level4">
 <h4>Heavy-tailed Symmetric Stochastic Neighbor Embedding (HSSNE)</h4>
-<p><a href="http://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding.pdf">HSSNE (PDF)</a> generalizes SSNE and t-SNE, by introducing a tail-heaviness parameter, <code>alpha</code>, which takes a value between <code>0</code> (behaves like <code>method = &quot;ssne&quot;</code>), and <code>1</code> (in which case you will get the behavior of <code>method = &quot;tsne&quot;</code>).</p>
+<p><a href="http://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding">HSSNE</a> generalizes SSNE and t-SNE, by introducing a tail-heaviness parameter, <code>alpha</code>, which takes a value between <code>0</code> (behaves like <code>method = &quot;ssne&quot;</code>), and <code>1</code> (in which case you will get the behavior of <code>method = &quot;tsne&quot;</code>).</p>
 <pre class="r"><code>iris_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, alpha = 0) # SSNE
 iris_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, alpha = 0.5) # default HSSNE
 iris_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, alpha = 1) # t-SNE</code></pre>
