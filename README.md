@@ -2,20 +2,26 @@
 Stochastic Neighbor Embedding Experiments in R
 
 An R package for experimenting with dimensionality reduction techniques, 
-including the popular t-Distributed Stochastic Neighbor Embedding (t-SNE).
+including the popular 
+[t-Distributed Stochastic Neighbor Embedding]((https://lvdmaaten.github.io/tsne/)
+(t-SNE).
 
-### Installing:
+### Installing
 ```R
 # install.packages("devtools")
 devtools::install_github("jlmelville/sneer")
 ```
 
-### Documentation:
+### Documentation
 ```R
 package?sneer
 # sneer function knows how to do lots of embedding
 ?sneer
 ```
+
+Also see the (currently under-construction) 
+[documentation web pages](http://jlmelville.github.io/sneer/) for
+a more detailed explanation.
 
 ### Examples
 ```R
