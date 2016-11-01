@@ -11,9 +11,11 @@
 # @param reltol If the relative tolerance of the cost function between
 #  consecutive reports falls below this value, the optimization process is
 #  halted.
-# @param disttol If the RMSD between output distance matrices calculated
-#  between consecutive reports falls below this value, the optimization
-#  process is halted.
+# @param disttol If not \code{NULL}, should be a numeric value that represents
+#  the minimum allowed RMSD between output distance matrices calculated
+#  between consecutive reports. If the RMSD falls below this value, the
+#  optimization process is halted. If \code{verbose} is \code{TRUE} the RMSD
+#  will be logged to console as the \code{dtol} value.
 # @param plot Function for plotting embedding. Signature should be
 #  \code{plot(out)} where \code{out} is the output data list. Return value
 #  of this function is ignored.
@@ -111,7 +113,7 @@
 # }
 make_reporter <- function(report_every = 100, min_cost = 0,
                           reltol = sqrt(.Machine$double.eps),
-                          disttol = sqrt(.Machine$double.eps),
+                          disttol = NULL,
                           plot = NULL,
                           normalize_cost = TRUE, keep_costs = FALSE,
                           extra_costs = NULL, opt_report = FALSE,
@@ -156,25 +158,27 @@ make_reporter <- function(report_every = 100, min_cost = 0,
     }
 
     rmsd <- NULL
-    if (is.null(result$dm)) {
-      if (!is.null(out$dm)) {
-        result$dm <- upper_tri(out$dm)
+    if (!is.null(disttol)) {
+      if (is.null(result$dm)) {
+        if (!is.null(out$dm)) {
+          result$dm <- upper_tri(out$dm)
+        }
+        else {
+          result$dm <- upper_tri(distance_matrix(out$ym))
+        }
       }
       else {
-        result$dm <- upper_tri(distance_matrix(out$ym))
-      }
-    }
-    else {
-      if (!is.null(out$dm)) {
-        dm <- upper_tri(out$dm)
-      }
-      else {
-        dm <- upper_tri(distance_matrix(out$ym))
-      }
-      rmsd <- sqrt(sum((result$dm - dm) ^ 2) / length(dm))
-      result$dm <- dm
-      if (verbose) {
-        cost_str <- paste0(cost_str, " dtol = ", formatC(rmsd))
+        if (!is.null(out$dm)) {
+          dm <- upper_tri(out$dm)
+        }
+        else {
+          dm <- upper_tri(distance_matrix(out$ym))
+        }
+        rmsd <- sqrt(sum((result$dm - dm) ^ 2) / length(dm))
+        result$dm <- dm
+        if (verbose) {
+          cost_str <- paste0(cost_str, " dtol = ", formatC(rmsd))
+        }
       }
     }
 

@@ -1084,8 +1084,7 @@ sneer <- function(df,
       report_every = report_every,
       extra_costs = extra_costs,
       plot = embed_plot,
-      reltol = tol,
-      disttol = tol
+      reltol = tol
     ),
     after_embed = after_embed,
     max_iter = max_iter,
