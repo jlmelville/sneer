@@ -292,6 +292,7 @@ NULL
 #' @param indexes Indexes of the columns of the numerical variables to use in
 #'  the embedding. The default of \code{NULL} will use all the numeric
 #'  variables.
+#' @param ndim Number of output dimensions (normally 2).
 #' @param method Embedding method. See 'Details'.
 #' @param alpha Heavy tailedness parameter. Used only if the method is
 #'  \code{"hssne"}.
@@ -607,6 +608,7 @@ NULL
 #' @export
 sneer <- function(df,
                   indexes = NULL,
+                  ndim = 2,
                   method = "tsne",
                   alpha = 0.5,
                   lambda = 0.5,
@@ -828,69 +830,70 @@ sneer <- function(df,
 
   init_out <- NULL
   if (init == "p") {
-    init_out <- out_from_PCA()
+    init_out <- out_from_PCA(k = ndim)
   }
   else if (init == "r") {
-    init_out <- out_from_rnorm()
+    init_out <- out_from_rnorm(k = ndim)
   }
   else if (init == "u") {
-    init_out <- out_from_runif()
+    init_out <- out_from_runif(k = ndim)
   }
   else if (init == "m") {
-    init_out <- out_from_matrix(init_config = init_config)
+    init_out <- out_from_matrix(init_config = init_config, k = ndim)
   }
   else {
     stop("No initialization method '", init, "'")
   }
 
-
-  color_res <- process_color_options(df,
-                                     colors = colors, color_name = color_name,
-                                     labels = labels, label_name = label_name,
-                                     color_scheme = color_scheme,
-                                     verbose = TRUE)
-  colors <- color_res$colors
-  labels <- color_res$labels
-  if (!plot_labels) {
-    # If not asked to explicitly plot the labels as text, our need for these
-    # labels is done
-    labels <- NULL
-  }
-
   embed_plot <- NULL
-  if (is.null(plot_type)) { plot_type <- "n" }
-  if (plot_type == "g") {
-    if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
-      stop("plot type 'g' requires 'ggplot2' package")
-    }
-    if (!requireNamespace("RColorBrewer",
-                          quietly = TRUE,
-                          warn.conflicts = FALSE)) {
-      stop("plot type 'g' requires 'RColorBrewer' package")
-    }
-    embed_plot <-
-      make_qplot(
-        df,
-        labels = labels, label_name = label_name,
-        color_scheme = color_scheme,
-        size = point_size,
-        legend = legend,
-        legend_rows = legend_rows
-      )
-  }
-  else if (plot_type == 'p') {
-    label_fn <- NULL
-    if (!is.null(label_chars)) {
-      label_fn <- make_label(label_chars)
+  if (ndim == 2) {
+    color_res <- process_color_options(df,
+                                       colors = colors, color_name = color_name,
+                                       labels = labels, label_name = label_name,
+                                       color_scheme = color_scheme,
+                                       verbose = TRUE)
+    colors <- color_res$colors
+    labels <- color_res$labels
+    if (!plot_labels) {
+      # If not asked to explicitly plot the labels as text, our need for these
+      # labels is done
+      labels <- NULL
     }
 
-    embed_plot <- make_plot(x = df,
-                            colors = colors,
-                            labels = labels,
-                            label_fn = label_fn,
-                            color_scheme = color_scheme,
-                            cex = point_size,
-                            equal_axes = equal_axes)
+    if (is.null(plot_type)) { plot_type <- "n" }
+    if (plot_type == "g") {
+      if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
+        stop("plot type 'g' requires 'ggplot2' package")
+      }
+      if (!requireNamespace("RColorBrewer",
+                            quietly = TRUE,
+                            warn.conflicts = FALSE)) {
+        stop("plot type 'g' requires 'RColorBrewer' package")
+      }
+      embed_plot <-
+        make_qplot(
+          df,
+          labels = labels, label_name = label_name,
+          color_scheme = color_scheme,
+          size = point_size,
+          legend = legend,
+          legend_rows = legend_rows
+        )
+    }
+    else if (plot_type == 'p') {
+      label_fn <- NULL
+      if (!is.null(label_chars)) {
+        label_fn <- make_label(label_chars)
+      }
+
+      embed_plot <- make_plot(x = df,
+                              colors = colors,
+                              labels = labels,
+                              label_fn = label_fn,
+                              color_scheme = color_scheme,
+                              cex = point_size,
+                              equal_axes = equal_axes)
+    }
   }
 
   after_embed <- NULL
@@ -1094,7 +1097,12 @@ sneer <- function(df,
   result <- list(coords = embed_result$ym,
                  cost = embed_result$cost,
                  method = method)
-  colnames(result$coords) <- c("X", "Y")
+  if (ndim == 2) {
+    colnames(result$coords) <- c("X", "Y")
+  }
+  else {
+    colnames(result$coords) <- paste0("X", 1:ndim)
+  }
 
   if (!is.null(embed_result$quality)) {
     for (qual_name in names(embed_result$quality)) {

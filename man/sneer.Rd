@@ -6,13 +6,13 @@
 \alias{sneer-package}
 \title{Probability-based Embedding}
 \usage{
-sneer(df, indexes = NULL, method = "tsne", alpha = 0.5, lambda = 0.5,
-  kappa = 0.5, scale_type = "", perplexity = 32, perp_scale = "single",
-  perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
-  init = "p", init_config = NULL, opt = "NAG-BOLD", epsilon = 1,
-  max_iter = 1000, report_every = 50, tol = 1e-04, exaggerate = NULL,
-  exaggerate_off_iter = 50, plot_type = "p", colors = NULL,
-  color_name = NULL, labels = NULL, label_name = NULL,
+sneer(df, indexes = NULL, ndim = 2, method = "tsne", alpha = 0.5,
+  lambda = 0.5, kappa = 0.5, scale_type = "", perplexity = 32,
+  perp_scale = "single", perp_scale_iter = NULL, perp_kernel_fun = "exp",
+  prec_scale = "", init = "p", init_config = NULL, opt = "NAG-BOLD",
+  epsilon = 1, max_iter = 1000, report_every = 50, tol = 1e-04,
+  exaggerate = NULL, exaggerate_off_iter = 50, plot_type = "p",
+  colors = NULL, color_name = NULL, labels = NULL, label_name = NULL,
   label_chars = NULL, point_size = 1, plot_labels = FALSE,
   color_scheme = grDevices::rainbow, equal_axes = FALSE, legend = TRUE,
   legend_rows = NULL, quality_measures = NULL, ret = c())
@@ -23,6 +23,8 @@ sneer(df, indexes = NULL, method = "tsne", alpha = 0.5, lambda = 0.5,
 \item{indexes}{Indexes of the columns of the numerical variables to use in
 the embedding. The default of \code{NULL} will use all the numeric
 variables.}
+
+\item{ndim}{Number of output dimensions (normally 2).}
 
 \item{method}{Embedding method. See 'Details'.}
 
