@@ -50,7 +50,8 @@ NULL
 out_from_PCA <- function(k = 2, verbose = TRUE) {
   init_out(function(inp, out) {
     if (is.null(inp$xm)) {
-      message("PCA: Calculating PCA scores plot by classical MDS on distance matrix")
+      message("PCA: Calculating ", k,
+              " scores by classical MDS on distance matrix")
       x <- stats::as.dist(inp$dm)
     }
     else {
@@ -205,7 +206,7 @@ scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
                           verbose = TRUE) {
   ncomp <- ncol
   if (class(xm) == "dist") {
-    res_mds <- stats::cmdscale(xm, x.ret = TRUE, eig = TRUE)
+    res_mds <- stats::cmdscale(xm, x.ret = TRUE, eig = TRUE, k = ncol)
     if (verbose) {
       lambda <- res_mds$eig
       varex <- sum(lambda[1:ncomp]) / sum(lambda)
