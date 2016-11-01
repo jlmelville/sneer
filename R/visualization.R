@@ -122,7 +122,8 @@ embed_plot <- function(coords, colors = NULL, x = NULL,
 }
 
 # Helper function for generating color (and maybe factor) vectors from a data
-# frame, df, for use in an embedding plot, via multiple possible avenues.
+# frame or distance matrix, df, for use in an embedding plot, via multiple
+# possible avenues.
 #
 # Users may provide any of the following, which are tested in the following
 #  order. As soon as one succeeds, that's the column that will be used.
@@ -138,6 +139,9 @@ embed_plot <- function(coords, colors = NULL, x = NULL,
 # we look for a factor column. If more than one is found, we use the last column
 # found.
 #
+# If df is a distance matrix, then the label_name and color_name parameters
+# are ignored.
+#
 # A list is returned containing:
 #   colors - the colors that are going to be used
 #   labels - if label_name was used or we found a factor column ourselves, this
@@ -152,7 +156,7 @@ process_color_options <- function(df,
                                   verbose = FALSE) {
   if (is.null(colors)) {
     # if no color vector was provided, look for a color name
-    if (!is.null(color_name)) {
+    if (!is.null(color_name) && class(df) == "data.frame") {
       colors <- df[[color_name]]
       if (is.null(colors)) {
         stop("Couldn't find color column '", color_name, "'")
@@ -165,7 +169,7 @@ process_color_options <- function(df,
 
   if (is.null(colors)) {
     # Neither colors nor color_name was specified, let's try with labels
-    if (is.null(labels) && !is.null(label_name)) {
+    if (is.null(labels) && !is.null(label_name) && class(df) == "data.frame") {
       # No labels provided, but there was a label name
       labels <- df[[label_name]]
       if (is.null(labels)) {
@@ -182,7 +186,7 @@ process_color_options <- function(df,
   }
   # Neither labels nor colors provided (or names to look up)
   # Let's go look ourselves
-  if (is.null(colors)) {
+  if (is.null(colors) && class(df) == "data.frame") {
     res <- color_helper_df(df = df, color_scheme = color_scheme,
                            ret_labels = TRUE, verbose = verbose)
     if (is.null(colors)) {
