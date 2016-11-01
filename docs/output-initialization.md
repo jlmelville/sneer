@@ -15,8 +15,8 @@ The most important thing to do is to make sure the points aren't too far away
 initially, or otherwise the gradients are very small and no optimization occurs.
 
 The [t-SNE paper](http://jmlr.org/papers/v9/vandermaaten08a.html) suggests
-initialization from a small (standard deviation of 1e-4) gaussian distribution.
-Set `init` to `"r"` for that:
+initialization from a small (standard deviation of `1e-4`) gaussian 
+distribution. Set `init` to `"r"` for that:
 
 ```R
 set.seed(1337) # if you want to be reproducible
@@ -31,11 +31,15 @@ sneer is for:
 s1k_tsne <- sneer(s1k, init = "u")
 ```
 
-The default (because it's my personal preference, but it's also used for 
-initialization in the 
-[JSE paper](http://dx.doi.org/10.1016/j.neucom.2012.12.036)) is to use the 
-first two score vectors (principal components) from carrying out PCA on the 
-input data:
+These small random distributions do well with probability-based embeddings, but 
+they produce pretty horrible results for Sammon Mapping.
+
+For Sammon Mapping, and in my opinion most embedding methods, a better choice 
+is the default initialization method, which uses PCA. It's the default because 
+it's my personal preference, but it's also used for initialization in the 
+[JSE paper](http://dx.doi.org/10.1016/j.neucom.2012.12.036)). The first two 
+score vectors (principal components) from a PCA of the input data is used. No
+scaling is done to the data, although it is centered.
 
 ```R
 s1k_tsne <- sneer(s1k, init = "p")

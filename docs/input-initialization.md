@@ -204,6 +204,25 @@ the console during input initialization (see the 'Console Output' section
 below), don't use this kernel function, as the intrinsic dimensionality is only 
 defined for gaussian functions.
 
+### `exaggerate`
+
+The early exaggeration "trick" is akin to perplexity scaling in the sense
+that it causes the input probabilities to change. Set the `exaggerate` 
+parameter to the value that the input probabilities should be multiplied by
+(normally `4`). The scaling will be turned off at the iteration number given
+by `exaggerate_off_iter` (normally `50` or `100`).
+
+```R
+s1k_tsne <- sneer(s1k, exaggerate = 4, exaggerate_off_iter = 100)
+```
+
+The effect of the exaggeration is to encourage tight, widely-spaced clusters,
+so it will disrupt the initial configuration. This makes sense if you are 
+initializing from random, but may make less sense for a PCA initialization
+or initializing from a fixed set of coordinates. See the use of `init`
+parameter in [Output Initialization](output-initialization.html) for more on
+output initialization.
+
 ### Console Output
 
 The results of the perplexity scaling will result in some summary statistic

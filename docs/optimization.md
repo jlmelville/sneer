@@ -43,7 +43,7 @@ Another way to stop the embedding early is to adjust the tolerance parameter,
 discussion of the messages logged to the console during the optimization phase.
 What you should know is that if the value of `rtol` reported in the output
 ever falls below `tol`, then optimization is considered converged. The
-default is 1.e-5, which once again errs on the side of caution. It pretty much
+default is `1e-5`, which once again errs on the side of caution. It pretty much
 ensures that if the formatted `cost` or `norm` values in the output log are still
 changing, it won't stop early. But once again, you might want to turn that way
 down for simple visualizations. A `tol` of `0.01` is pretty reasonable:
@@ -57,7 +57,7 @@ iris_tsne <- sneer(iris, tol = 0.01) # stops after 200 steps
 Most t-SNE implementations follow the optimization technique given by the 
 [t-SNE paper](http://jmlr.org/papers/v9/vandermaaten08a.html): the direction
 of optimization is basic gradient descent with a momentum term, and an 
-adaptive step size, which requires setting a learning rate, `epsilon`.
+adaptive step size, which requires setting an initial learning rate, `epsilon`.
 
 This works well for t-SNE, and it's fast, but in my experience it can 
 cause divergence when a non t-SNE embedding method is used. For this reason, 
@@ -68,14 +68,35 @@ it's not the default. If you want to use it, set the `opt` parameter to
 iris_tsne <- sneer(iris, opt = "tsne", epsilon = 500, scale_type = "m")
 ```
 
+This form of optimization is usually combined with early exaggeration and 
+random initialization. See the [Input Initialization](input-initialization.html)
+and [Output Initialization](output-initialization.html) sections for more 
+details, but for an authentic-ish t-SNE experience, run:
+
+```R
+iris_tsne <- sneer(iris, opt = "tsne", epsilon = 100, exaggerate = 4,
+                  exaggerate_off_iter = 50, perplexity = 30, init = "r")
+```
+
 The default optimizer uses the Nesterov Accelerated Gradient scheme. A good
 description is given in this 
 [deep learning paper](www.jmlr.org/proceedings/papers/v28/sutskever13.pdf).
 Additionally, it makes use of 
-[adaptive restart](https://arxiv.org/abs/1204.3982). The step size is chosen
-by the "bold driver" method. This method tends to be a little slower than
-the `"tsne"` optimization method, but it gives good results for most
-combinations of scaling, embedding method and data set.
+[adaptive restart](https://arxiv.org/abs/1204.3982). Due to the rather 
+aggressive momentum schedule, there's a "burn in" period of a couple of steps 
+of plain steepest descent to establish a sensible step size and direction. 
+Otherwise, a poor start can cause premature convergence.
+
+The step size is by the "bold driver" method, for which you can also use the 
+`epsilon` parameter to set the initial learning rate.
+
+```R
+iris_tsne <- sneer(iris, epsilon = 10)
+```
+
+This method tends to be a little slower than the `"tsne"` optimization method, 
+because it calculates the cost at each step size but it gives good results for 
+most combinations of scaling, embedding method and data set.
 
 There are some other optimization methods available if you want to try them, but
 they all have some slight drawbacks to them.

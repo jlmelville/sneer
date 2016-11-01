@@ -124,12 +124,13 @@ $(document).ready(function () {
 <div id="init" class="section level3">
 <h3><code>init</code></h3>
 <p>A common approach to initialization is to start with a random configuration. The most important thing to do is to make sure the points aren’t too far away initially, or otherwise the gradients are very small and no optimization occurs.</p>
-<p>The <a href="http://jmlr.org/papers/v9/vandermaaten08a.html">t-SNE paper</a> suggests initialization from a small (standard deviation of 1e-4) gaussian distribution. Set <code>init</code> to <code>&quot;r&quot;</code> for that:</p>
+<p>The <a href="http://jmlr.org/papers/v9/vandermaaten08a.html">t-SNE paper</a> suggests initialization from a small (standard deviation of <code>1e-4</code>) gaussian distribution. Set <code>init</code> to <code>&quot;r&quot;</code> for that:</p>
 <pre class="r"><code>set.seed(1337) # if you want to be reproducible
 s1k_tsne &lt;- sneer(s1k, init = &quot;r&quot;)</code></pre>
 <p>The <a href="http://www.jmlr.org/papers/v11/venna10a.html">NeRV paper</a> uses a uniform distribution instead. I can’t imagine it makes much difference, but that’s what sneer is for:</p>
 <pre class="r"><code>s1k_tsne &lt;- sneer(s1k, init = &quot;u&quot;)</code></pre>
-<p>The default (because it’s my personal preference, but it’s also used for initialization in the <a href="http://dx.doi.org/10.1016/j.neucom.2012.12.036">JSE paper</a>) is to use the first two score vectors (principal components) from carrying out PCA on the input data:</p>
+<p>These small random distributions do well with probability-based embeddings, but they produce pretty horrible results for Sammon Mapping.</p>
+<p>For Sammon Mapping, and in my opinion most embedding methods, a better choice is the default initialization method, which uses PCA. It’s the default because it’s my personal preference, but it’s also used for initialization in the <a href="http://dx.doi.org/10.1016/j.neucom.2012.12.036">JSE paper</a>). The first two score vectors (principal components) from a PCA of the input data is used. No scaling is done to the data, although it is centered.</p>
 <pre class="r"><code>s1k_tsne &lt;- sneer(s1k, init = &quot;p&quot;)
 s1k_tsne &lt;- sneer(s1k)  # same thing as the above</code></pre>
 <p>If you provide a distance matrix instead of a data frame, classical MDS is carried out instead of PCA, which is effectively the same thing as PCA if the input distances are Euclidean.</p>
