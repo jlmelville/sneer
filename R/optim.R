@@ -268,12 +268,14 @@ bold_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
 # }
 # @family sneer optimization methods
 back_nag <- function(min_step_size = sqrt(.Machine$double.eps),
+                     init_step_size = 1,
                      max_momentum = 1,
                      normalize_direction = TRUE,
                      linear_weight = TRUE,
                      burn_in = 0) {
   nag(
-    step_size = backtracking(min_step_size = min_step_size),
+    step_size = backtracking(min_step_size = min_step_size,
+                             init_step_size = init_step_size),
     update = nesterov_nsc_momentum(max_momentum = max_momentum,
                                    linear_weight = linear_weight,
                                    burn_in = burn_in),
@@ -310,13 +312,15 @@ back_nag <- function(min_step_size = sqrt(.Machine$double.eps),
 # }
 # @family sneer optimization methods
 back_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
-                      max_momentum = 1,
-                      normalize_direction = TRUE,
-                      linear_weight = TRUE,
-                      dec_mult = 0,
-                      restart = TRUE,
-                      burn_in = 0) {
+                           init_step_size = 1,
+                           max_momentum = 1,
+                           normalize_direction = TRUE,
+                           linear_weight = TRUE,
+                           dec_mult = 0,
+                           restart = TRUE,
+                           burn_in = 0) {
   opt <- back_nag(min_step_size = min_step_size,
+                  init_step_size = init_step_size,
                   max_momentum = max_momentum,
                   normalize_direction = normalize_direction,
                   linear_weight = linear_weight,

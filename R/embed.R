@@ -319,8 +319,9 @@ NULL
 #' @param init_config Coordinates to use for initial configuration. Used only
 #'  if \code{init} is \code{"m"}.
 #' @param opt Type of optimizer. See 'Details'.
-#' @param epsilon Learning rate. Used only when \code{opt} is set to
-#'  \code{"TSNE"}.
+#' @param epsilon Learning rate when \code{opt} is set to \code{"TSNE"} and
+#'  the initial step size for the bold driver and back tracking step search
+#'  methods.
 #' @param max_iter Maximum number of iterations to carry out optimization of
 #'  the embedding. Ignored if the \code{method} is \code{"pca"}.
 #' @param report_every Frequency (in terms of iteration number) with which to
@@ -952,11 +953,13 @@ sneer <- function(df,
   }
   else if (toupper(opt) == "NAG-BOLD") {
     message("Optimizing with Adaptive NAG and bold driver step size")
-    optimizer <- bold_nag_adapt(dec_mult = dec_mult, burn_in = burn_in)
+    optimizer <- bold_nag_adapt(dec_mult = dec_mult, burn_in = burn_in,
+                                init_step_size = epsilon)
   }
   else if (toupper(opt) == "NAG-BACK") {
     message("Optimizing with Adaptive NAG and backstepping step size")
-    optimizer <- back_nag_adapt(dec_mult = dec_mult, burn_in = burn_in)
+    optimizer <- back_nag_adapt(dec_mult = dec_mult, burn_in = burn_in,
+                                init_step_size = epsilon)
   }
   else if (toupper(opt) == "NAG-MT") {
     if (!requireNamespace("rconjgrad",
@@ -965,7 +968,8 @@ sneer <- function(df,
       stop("Using More-Thuente line search requires 'rconjgrad' package")
     }
     message("Optimizing with Adaptive NAG and MT line search")
-    optimizer <- back_nag_adapt(dec_mult = dec_mult, burn_in = burn_in)
+    optimizer <- back_nag_adapt(dec_mult = dec_mult, burn_in = burn_in,
+                                init_step_size = epsilon)
     optimizer$step_size <- more_thuente_ls(c1 = c1, c2 = c2)
   }
   else if (toupper(opt) == "NAG-R") {
@@ -975,7 +979,8 @@ sneer <- function(df,
       stop("Using Rasmussen line search requires 'rconjgrad' package")
     }
     message("Optimizing with Adaptive NAG and Rasmussen line search")
-    optimizer <- back_nag_adapt(dec_mult = dec_mult, burn_in = burn_in)
+    optimizer <- back_nag_adapt(dec_mult = dec_mult, burn_in = burn_in,
+                                init_step_size = epsilon)
     optimizer$step_size <- rasmussen_ls(c1 = c1, c2 = c2)
   }
   else if (toupper(opt) == "CG-R") {

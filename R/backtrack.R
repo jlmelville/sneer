@@ -26,10 +26,11 @@
 backtracking <- function(c1 = 0.1, rho = 0.8,
                          max_step_size = 1,
                          min_step_size = .Machine$double.eps,
+                         init_step_size = 1,
                          stop_at_min = TRUE) {
   list(
     init = function(opt, inp, out, method) {
-      opt$step_size$value <- 1
+      opt$step_size$value <- init_step_size
       opt$step_size$max <- max_step_size
       opt
     },

@@ -64,8 +64,9 @@ if \code{init} is \code{"m"}.}
 
 \item{opt}{Type of optimizer. See 'Details'.}
 
-\item{epsilon}{Learning rate. Used only when \code{opt} is set to
-\code{"TSNE"}.}
+\item{epsilon}{Learning rate when \code{opt} is set to \code{"TSNE"} and
+the initial step size for the bold driver and back tracking step search
+methods.}
 
 \item{max_iter}{Maximum number of iterations to carry out optimization of
 the embedding. Ignored if the \code{method} is \code{"pca"}.}
