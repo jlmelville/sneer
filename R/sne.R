@@ -43,8 +43,9 @@ NULL
 #  \item{\code{qm}}{Row probability matrix based on embedded coordinates.}
 # }
 #
-# @param beta Precision parameter of the exponential similarity kernel
-#  function. This is usually left at its default value of 1.
+# @param beta Precision-like parameter of the exponential similarity kernel
+#  function: the larger it is, the steeper the curve. This is usually left at
+#  its default value of 1.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -100,8 +101,9 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
 # }
 #
-# @param beta Precision parameter of the exponential similarity kernel
-#  function. This is usually left at its default value of 1.
+# @param beta Precision-like parameter of the exponential similarity kernel
+#  function: the larger it is, the steeper the curve. This is usually left at
+#  its default value of 1.
 # @param eps Small floating point value used to prevent numerical problems,
 #  e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -290,7 +292,7 @@ tpsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 # of functions with even heavier tails.
 #
 # Additionally, HSSNE allows control over \eqn{\beta}{beta}, the degree of
-# precision (inverse of the spread) of the function. Normally, this set to one
+# precision (inverse of the bandwidth) of the function. Normally, this set to one
 # for the output distances in t-SNE and related methods.
 #
 # The probability matrix used in HSSNE:
@@ -316,7 +318,7 @@ tpsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 # greater than zero. When set to a small value this method is equivalent to
 # SSNE. When set to one to one, this method behaves like t-SNE.
 # @param beta The precision of the kernel similarity function. Becomes
-# equivalent to the precision in the Gaussian distribution of distances as
+# equivalent to half the precision in the Gaussian distribution of distances as
 # \code{alpha} approaches zero. Leave at the default value of 1 if you want
 # consistency with SSNE and ASNE.
 # @param eps Small floating point value used to prevent numerical problems,
@@ -377,8 +379,9 @@ hssne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
 #  \item{\code{qm}}{Row probability matrix based on embedded coordinates.}
 # }
 #
-# @param beta Precision parameter of the exponential similarity kernel
-#  function.
+# @param beta Precision-like parameter of the exponential similarity kernel
+#  function: the larger it is, the steeper the curve. This is usually left at
+#  its default value of 1.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -427,8 +430,9 @@ rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #  \item{\code{qm}}{Joint probability matrix based on embedded coordinates.}
 # }
 #
-# @param beta Precision parameter of the exponential similarity kernel
-#  function.
+# @param beta Precision-like parameter of the exponential similarity kernel
+#  function: the larger it is, the steeper the curve. This is usually left at
+#  its default value of 1.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
