@@ -1174,7 +1174,9 @@ sneer <- function(df,
         result$deg  <- inp$deg
       }
       else {
-        result$deg <- centrality(inp, embed_result$method)
+        if (!is.null(inp$pm)) {
+          result$deg <- centrality(inp, embed_result$method)
+        }
       }
     }
     else {
