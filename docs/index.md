@@ -38,7 +38,8 @@ the output coordinates.
 embedding methods related to t-SNE out there. Let me introduce you.
 * [Reporting](reporting.html) - understanding the logging info during 
 optimization.
-* [Exported Data](exported-data.html) - coming soon.
+* [Exported Data](exported-data.html) - what data you can expect to be returned
+from calling `sneer` (and the extra data you can ask for).
 * [Analysis](analysis.html) - coming soon.
 * [Visualization](visualization.html) - coming soon.
 * [References](reference.html) - links to the research that introduced the various
