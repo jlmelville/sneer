@@ -6,16 +6,13 @@
 # Provides summary of the distribution of the beta parameter used to
 # generate input probabilities in SNE.
 #
-# Mainly useful for debugging. Also expresses beta as sigma, i.e. the
-# Gaussian bandwidth \eqn{\frac{1}{\sqrt{2\beta}}}{1/sqrt(2*beta)}.
-#
-# @param betas Vector of parameters
+# @param betas Vector of half-precisions
 summarize_betas <- function(betas) {
-  summarize(prec_to_bandwidth(betas), "sigma")
-  summarize(betas, "beta")
+  #summarize(beta_to_bandwidth(betas), "sigma")
+  summarize(2 * betas, "prec")
 }
 
-# Convert Precisions to Sigma (Bandwidths)
+# Convert Betas (Half-Precisions) to Sigmas (Bandwidths)
 #
 # Gaussian-type functions have a parameter associated with them
 # that is either thought of as a "precision", i.e. how "tight" the distribution
@@ -27,7 +24,7 @@ summarize_betas <- function(betas) {
 #
 # \deqn{e(-\beta D^2)}{exp(-beta * D^2)}
 #
-# where \eqn{\beta}{beta} is the precision, or alternatively:
+# where \eqn{\beta}{beta} is the half-precision, or alternatively:
 #
 # \deqn{e^{-\frac{D^2}{2\sigma^2}}}{exp[-(D ^ 2)/(2 * sigma ^ 2)]}
 #
@@ -36,10 +33,13 @@ summarize_betas <- function(betas) {
 # This function performs the conversion of the parameter between precision and
 # bandwidth.
 #
-# @param prec Precision (beta).
+# Wouldn't it be nice if people just defined the precision as beta without the
+# blasted factor of two? But they don't.
+#
+# @param beta Half-Precision (beta).
 # @return Bandwidth (sigma).
-prec_to_bandwidth <- function(prec) {
-  1 / sqrt(2 * prec)
+beta_to_bandwidth <- function(beta) {
+  1 / sqrt(2 * beta)
 }
 
 # Find Row Probabilities by Perplexity Bisection Search
