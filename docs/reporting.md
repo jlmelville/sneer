@@ -7,7 +7,7 @@ Previous: [Embedding Methods](embedding-methods.html). Next:[Exported Data](expo
 One of the most useful things `sneer` does during optimization is provide
 a plot of the current state of the output configuration. Details of that
 gets its own section: [Visualization](visualization.html). This section
-covers both the textual part of the logging, it's frequency and how it knows
+covers both the textual part of the logging, its frequency and how it knows
 when to stop.
 
 During optimization, various information is logged to the screen. Some of it
