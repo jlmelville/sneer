@@ -270,7 +270,8 @@ NULL
 #'  \item \code{"dy"} The output distance matrix. Calculated if not present.
 #'  \item \code{"p"} The input probability matrix.
 #'  \item \code{"q"} The output probability matrix.
-#'  \item \code{"prec"} The input similarity kernel precisions.
+#'  \item \code{"prec"} The input kernel precisions (inverse of the squared
+#'  bandwidth).
 #'  \item \code{"dim"} The intrinsic dimensionality for each observation,
 #'  calculated according to the method of Lee et al (2015). These are
 #'  meaningless if not using the default exponential \code{perp_kernel_fun}.
@@ -1161,7 +1162,7 @@ sneer <- function(df,
     }
     else if (r == "prec") {
       if (!is.null(inp$beta)) {
-        result$prec <- inp$beta
+        result$prec <- 2 * inp$beta
       }
     }
     else if (r == "dim") {
