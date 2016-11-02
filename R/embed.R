@@ -1122,7 +1122,6 @@ sneer <- function(df,
 
   inp <- embed_result$inp
   out <- embed_result$out
-  result$inp <- inp
   for (r in unique(ret)) {
     if (r == "x") {
       if (!is.null(inp$xm)) {
