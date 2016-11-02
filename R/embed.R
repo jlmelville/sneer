@@ -83,13 +83,12 @@ NULL
 #' by 4, if the dataset is smaller than 65 observations.)
 #'
 #' The \code{prec_scale} parameter determines if the input weighting kernel
-#' parameters should be used to modify the output kernel parameter after the
-#' input probability calculation for a given perplexity value completes.
-#' values are:
+#' precision parameters should be used to modify the output kernel parameter
+#' after the input probability calculation for a given perplexity value
+#' completes values are:
 #' \itemize{
 #'  \item \code{"n"} Do nothing. Most embedding methods follow this strategy,
-#'    leaving the output similarity kernels to all have unit precision
-#'    parameters.
+#'    leaving the output similarity kernels to all have unit precision.
 #'  \item \code{"t"} Transfer the input similarity kernel parameters to the
 #'    output similarity kernel. This method was suggesed by Venna et al (2010).
 #'  \item \code{"s"} Scale the output kernel precisions based on the target

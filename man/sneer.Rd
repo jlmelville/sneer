@@ -232,13 +232,12 @@ observations divided by 2 down to 32 (or the number of observations divided
 by 4, if the dataset is smaller than 65 observations.)
 
 The \code{prec_scale} parameter determines if the input weighting kernel
-parameters should be used to modify the output kernel parameter after the
-input probability calculation for a given perplexity value completes.
-values are:
+precision parameters should be used to modify the output kernel parameter
+after the input probability calculation for a given perplexity value
+completes values are:
 \itemize{
  \item \code{"n"} Do nothing. Most embedding methods follow this strategy,
-   leaving the output similarity kernels to all have unit precision
-   parameters.
+   leaving the output similarity kernels to all have unit precision.
  \item \code{"t"} Transfer the input similarity kernel parameters to the
    output similarity kernel. This method was suggesed by Venna et al (2010).
  \item \code{"s"} Scale the output kernel precisions based on the target
@@ -419,7 +418,8 @@ following options can be supplied:
  \item \code{"dy"} The output distance matrix. Calculated if not present.
  \item \code{"p"} The input probability matrix.
  \item \code{"q"} The output probability matrix.
- \item \code{"prec"} The input similarity kernel precisions.
+ \item \code{"prec"} The input kernel precisions (inverse of the squared
+ bandwidth).
  \item \code{"dim"} The intrinsic dimensionality for each observation,
  calculated according to the method of Lee et al (2015). These are
  meaningless if not using the default exponential \code{perp_kernel_fun}.
