@@ -26,13 +26,22 @@ you don't even have to do that.
 
 But you are probably carrying out a probability-based embedding. In this case
 you have to generate the input probabilities from the input distances. Normally
-the input kernel function is a gaussian, and there is a free parameter, the
-bandwidth, to tune.
+the input kernel function is a gaussian, and there is a free parameter to tune
+that control the spread of the function. Sometimes this parameter is defined
+as the bandwidth or variance, and as it gets larger, the spread of the gaussian
+increases. Other times you'll see the parameter referred to as the "precision", 
+which is the inverse of the squared bandwidth, and hence the larger the 
+precision is, the "tighter" the distribution. The `sneer` options refer to it 
+as the precision, so I'll try not to refer to it in other ways, unless it makes 
+the discussion clearer.
 
-This is where the perplexity comes in, which is usually described as being a
-continuous analog to the number of nearest neighbors of a point. The user sets
-the perplexity, and then the bandwidth of the kernel is adjusted so that the 
-probability associated with each point generates the desired perplexity.
+### Perplexity and precision
+
+The precision of the kernel function is not set directly. It's done by 
+specifying a desired value for the perplexity, which is usually described as 
+being a continuous analog to the number of nearest neighbors of a point. The 
+user sets the perplexity, and then the precision of the kernel is adjusted so 
+that theprobability associated with each point generates the desired perplexity.
 
 You may be wondering at this point if there's a free parameter associated with
 the output kernel function. The answer is, for t-SNE, no. But for other
@@ -128,17 +137,18 @@ want to know more.
 
 This option controls how the free parameter (if it exists) on the output kernel
 is scaled, relative to the input kernel. The "prec" in the option name is short
-for "precision", which is the inverse of the bandwidth. I'll probably just 
-keep on referring to the more familiar term bandwidth.
+for "precision", which as discussed above, is inversely related to the spread
+of the kernel function.
 
 SNE and its variants go to great pains to ensure that each point in the input
-space has its own bandwidth to match the density of points in its neighborhood.
-But for the output space, the bandwidths are all set to the same value: 1. Or
-in the case of t-SNE, there isn't even a bandwidth to ignore.
+space has its own precision to match the density of points in its neighborhood.
+But for the output space, the precisions are all set so the corresponding 
+bandwidths are 1. And in the case of t-SNE, there isn't even a free parameter to 
+adjust.
 
 Some approaches take a different view. The 
 [NeRV](http://www.jmlr.org/papers/v11/venna10a.html) paper suggests 
-transferring the bandwidth values from the input kernel to the output kernel.
+transferring the precisions from the input kernel to the output kernel.
 
 This can be accomodated by using the `prec_scale` argument with the argument
 `"t"` (for "transfer"):
@@ -149,7 +159,7 @@ s1k_ssne <- sneer(s1k, prec_scale = "t", method = "ssne")
 
 Note also that I've explicitly changed the embedding `method` from t-SNE to 
 the related SSNE method, which has a free parameter on the output kernel to
-make use of the bandwidths. For more on the `method` parameter, see the section
+make use of the precisions. For more on the `method` parameter, see the section
 on [Embedding Methods](embedding-methods.html).
 
 In conjunction with the multiscale perplexity scaling, a more complex approach 
@@ -160,7 +170,7 @@ methods).
 
 This involves taking "intrinsic dimensionality" values (which you can see 
 summaries of logged to the console during initialization) and using them
-to scale the output kernel bandwidth for each perplexity. See the "Console
+to scale the output kernel precision for each perplexity. See the "Console
 Output" section below for a bit more explanation of intrinsic dimensionality,
 but the full procedure is sufficiently complex that you should read the 
 multscale JSE paper if you want the gory details. To just turn it on and
@@ -169,9 +179,9 @@ try it out, set the `prec_scale` parameter to `"s"` (for "scale").
 For this setting to do anything, you must be using an embedding method which 
 has a free parameter in the output kernel (i.e. not t-SNE). Additionally, you 
 should be using multiple perplexities by setting the `perp_scale` parameter 
-to `"step"` or  `"multi"`. Otherwise, although the output bandwidth is changed, 
-all kernels get the same value, and this will have no effect on the relative 
-distances in the final configuration.
+to `"step"` or  `"multi"`. Otherwise, although the output kernel precision is 
+changed,  all kernels get the same value, and this will have no effect on the 
+relative distances in the final configuration.
 
 An example of a valid combination is:
 
@@ -230,17 +240,29 @@ being logged to the console. They'll look a bit like this:
 
 ```
 Parameter search for perplexity = 32
-sigma: Min. : 0.3143 |1st Qu. : 0.4587 |Median : 0.4953 |Mean : 0.503 |3rd Qu. : 0.5441 |Max. : 0.8183 |
-beta: Min. : 0.7466 |1st Qu. : 1.689 |Median : 2.038 |Mean : 2.075 |3rd Qu. : 2.376 |Max. : 5.061 |
+prec: Min. : 1.493 |1st Qu. : 3.377 |Median : 4.077 |Mean : 4.149 |3rd Qu. : 4.753 |Max. : 10.12 |
 P: Min. : 0 |1st Qu. : 2.233e-09 |Median : 2.355e-07 |Mean : 0.001 |3rd Qu. : 1.449e-05 |Max. : 0.3655 |
 dims: Min. : 2.306 |1st Qu. : 4.133 |Median : 4.813 |Mean : 4.941 |3rd Qu. : 5.56 |Max. : 9.686 |
 ```
 
 This gives the results for setting the perplexity to 32 for the `s1k` data set.
-`sigma` and `beta` provide summaries of the precision and bandwidth, 
-respectively. They're alternative views of the same data, but if you're looking
-to compare or troubleshoot results with other t-SNE implementation, different
-programs use different ways to represent those parameters, so I provide both.
+`prec` provide summaries of the precisions calculated for each input 
+observation. Different implementations of t-SNE and related embedding methods
+can define the parameter associated with the gaussian in different ways. 
+In `sneer`, the gaussian is defined as:
+
+$$e^{-\tau x^2 / 2} \equiv e^{-\beta x^2} \equiv e^{-x^2 / 2\sigma^2}$$
+
+where $\tau$ is the precision and $\sigma$ is the bandwidth. The form with
+$\beta$ in is the most convenient to use computationally and that's what you'll
+see if you go looking in the source code for t-SNE implementations. 
+Unfortunately there isn't a convenient name for $\beta$. Informally, you'll see 
+it referred to as the precision too, but let's agree to call it the 
+"half-precision" if we ever need to refer to it again where the distinction
+is important. Oh, and sometimes $\sigma$ is reported with the factor of two 
+folded into it. This can make comparing output between different programs
+difficult!
+
 `P` is a summary of the resulting probabilities. Mainly it can help you ensure
 that the normalization procedure is doing what you think (there are two main
 ways to normalize the probabilities, see the [Gradients](gradients.html) page
@@ -248,12 +270,11 @@ for more.
 
 Finally, the `dims` line summarizes the "intrinsic dimensionality", which is
 used in the multiscale JSE embedding method (see the section on the 
-`prec_scale` for more on that).
-
-Briefly, the input probability and perplexities are used to estimate the 
-dimensionality of the input space neighborhood around each point. For example, 
-if the data is distributed in a 2D gaussian in a 10D space, you would expect 
-the intrinsic dimensionality of each point to be closer to 2 than 10.
+`prec_scale` for more on that). Briefly, the input probability and perplexities 
+are used to estimate the dimensionality of the input space neighborhood around 
+each point. For example, if the data is distributed in a 2D gaussian in a 10D 
+space, you would expect the intrinsic dimensionality of each point to be closer 
+to 2 than 10.
 
 Edge effects, data set size, clustering and sparseness of the neighborhood 
 can have an effect on the reported values, but there might be some value in
