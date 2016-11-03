@@ -155,8 +155,8 @@ iris_nerv <- sneer(iris, method = "nerv", lambda = 0) # "reverse" ASNE
 
 See the [NeRV](http://www.jmlr.org/papers/v11/venna10a.html) paper for more
 details. In that publication, they suggest transferring the input kernel
-bandwidths to the output kernel. To do this, set the `prec_scale` parameter 
-with an argument of `"t"`
+precisions directly to the output kernel. To do this, set the `prec_scale` 
+parameter with an argument of `"t"`
 
 ```R
 iris_nerv <- sneer(iris, method = "nerv", prec_scale = "t") # original NeRV

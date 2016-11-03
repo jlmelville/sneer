@@ -180,7 +180,7 @@ iris_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, alpha = 1) # t-SNE</cod
 <pre class="r"><code>iris_nerv &lt;- sneer(iris, method = &quot;nerv&quot;, lambda = 0.5) # default NeRV
 iris_nerv &lt;- sneer(iris, method = &quot;nerv&quot;, lambda = 1) # ASNE
 iris_nerv &lt;- sneer(iris, method = &quot;nerv&quot;, lambda = 0) # &quot;reverse&quot; ASNE</code></pre>
-<p>See the <a href="http://www.jmlr.org/papers/v11/venna10a.html">NeRV</a> paper for more details. In that publication, they suggest transferring the input kernel bandwidths to the output kernel. To do this, set the <code>prec_scale</code> parameter with an argument of <code>&quot;t&quot;</code></p>
+<p>See the <a href="http://www.jmlr.org/papers/v11/venna10a.html">NeRV</a> paper for more details. In that publication, they suggest transferring the input kernel precisions directly to the output kernel. To do this, set the <code>prec_scale</code> parameter with an argument of <code>&quot;t&quot;</code></p>
 <pre class="r"><code>iris_nerv &lt;- sneer(iris, method = &quot;nerv&quot;, prec_scale = &quot;t&quot;) # original NeRV</code></pre>
 <p>Later publications (see, for example, the <a href="http://jmlr.org/proceedings/papers/v32/yange14.pdf">ws-SNE paper (PDF)</a>) don’t mention this difference and I recommend not setting <code>prec_scale</code>. See the <a href="input-initialization.html">Input Initialization</a> section for more on <code>prec_scale</code>.</p>
 </div>

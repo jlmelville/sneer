@@ -31,7 +31,7 @@ that control the spread of the function. Sometimes this parameter is defined
 as the bandwidth or variance, and as it gets larger, the spread of the gaussian
 increases. Other times you'll see the parameter referred to as the "precision", 
 which is the inverse of the squared bandwidth, and hence the larger the 
-precision is, the "tighter" the distribution. The `sneer` options refer to it 
+precision is, the faster it decays. The `sneer` options refer to it 
 as the precision, so I'll try not to refer to it in other ways, unless it makes 
 the discussion clearer.
 

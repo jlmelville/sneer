@@ -129,7 +129,7 @@ $(document).ready(function () {
 </div>
 <div id="probability-based-embedding" class="section level3">
 <h3>Probability-based embedding</h3>
-<p>But you are probably carrying out a probability-based embedding. In this case you have to generate the input probabilities from the input distances. Normally the input kernel function is a gaussian, and there is a free parameter to tune that control the spread of the function. Sometimes this parameter is defined as the bandwidth or variance, and as it gets larger, the spread of the gaussian increases. Other times you’ll see the parameter referred to as the “precision”, which is the inverse of the squared bandwidth, and hence the larger the precision is, the “tighter” the distribution. The <code>sneer</code> options refer to it as the precision, so I’ll try not to refer to it in other ways, unless it makes the discussion clearer.</p>
+<p>But you are probably carrying out a probability-based embedding. In this case you have to generate the input probabilities from the input distances. Normally the input kernel function is a gaussian, and there is a free parameter to tune that control the spread of the function. Sometimes this parameter is defined as the bandwidth or variance, and as it gets larger, the spread of the gaussian increases. Other times you’ll see the parameter referred to as the “precision”, which is the inverse of the squared bandwidth, and hence the larger the precision is, the faster it decays. The <code>sneer</code> options refer to it as the precision, so I’ll try not to refer to it in other ways, unless it makes the discussion clearer.</p>
 </div>
 <div id="perplexity-and-precision" class="section level3">
 <h3>Perplexity and precision</h3>
