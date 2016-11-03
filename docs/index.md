@@ -40,7 +40,8 @@ embedding methods related to t-SNE out there. Let me introduce you.
 optimization.
 * [Exported Data](exported-data.html) - what data you can expect to be returned
 from calling `sneer` (and the extra data you can ask for).
-* [Analysis](analysis.html) - coming soon.
+* [Analysis](analysis.html) - if you don't trust your lyin' eyes, some 
+functions to help with quantitative evaluation of embeddings.
 * [Visualization](visualization.html) - coming soon.
 * [References](reference.html) - links to the research that introduced the various
 methods in sneer. Coming soon.
