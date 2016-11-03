@@ -78,9 +78,13 @@ optima.
 
 There have been a few suggestions made in the literature to ameliorate or
 even remove these issues with the perplexity. The 
-[NeRV](http://www.jmlr.org/papers/v11/venna10a.html) paper suggests starting 
-the optimization with a fairly high perplexity value and then recalculating the
-input probabilities at progressively lower perplexities as the optimization 
+[NeRV](http://www.jmlr.org/papers/v11/venna10a.html) paper suggests starting
+with large bandwidths on the input kernel functions, and scaling them to the
+final values defined for the target perplexity in a series of steps.
+
+`sneer` doesn't exactly offer this option, but can do something similar: 
+start the optimization with a fairly high perplexity value and then recalculate 
+the input probabilities at progressively lower perplexities as the optimization 
 continues. Set the `perp_scale` parameter to `"step"` to try this. However,
 you must now pass the `perplexity` parameter a vector containing the 
 perplexities to use or rely on sneer choosing some reasonable values for you:
