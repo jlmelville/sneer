@@ -29,11 +29,11 @@ d[i, j] is taken to be the distance between observation i and j.
 \details{
 The neighborhood preservation can vary between 0 (no neighbors in common)
 and 1 (perfect preservation). However, random performance gives an
-approximate value of K / K - 1.
+approximate value of k / (k - 1), where k is the size of the neighborhood.
 }
 \note{
 This is not a very efficient way to calculate the preservation if you
  want to calculate the value for multiple values of \code{k}. For more
- global measures of preservation, see \code{rnx_auc}.
+ global measures of preservation, see \code{\link{rnx_auc_embed}}.
 }
 
