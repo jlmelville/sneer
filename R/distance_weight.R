@@ -12,7 +12,7 @@
 # \deqn{W = e^{-\beta D^2}}{exp(-beta * D2)}
 #
 # @param d2m Matrix of squared distances.
-# @param beta exponential parameter.
+# @param beta exponential (precision) parameter.
 # @return Weight matrix.
 # @family sneer weight functions
 exp_weight <- function(d2m, beta = 1) {
@@ -208,9 +208,9 @@ tdist_gr <- function(d2m) {
 # Creates a list implementing a heavy tailed (compared to an exponential)
 # function and gradient.
 #
-# @param beta The bandwidth of the function. Becomes equivalent to the
-# precision of the exponential distribution of squared distances as
-# \code{alpha} approaches zero.
+# @param beta Decay constant of the function. Becomes equivalent to the
+# exponential decay constant a \code{alpha} approaches zero. The larger the
+# value, the faster the function decays.
 # @param alpha Tail heaviness. Must be greater than zero.
 # @return Heavy tailed function and gradient.
 # @family sneer similiarity kernels

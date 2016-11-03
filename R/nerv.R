@@ -30,7 +30,7 @@
 # text). NeRV already uses the term "precision" as defined in terms of
 # information retrieval, so when referring to the output weighting kernel
 # function, what's called the "precision" in other parts of the documentation
-# is just called the kernel parameter (or "bandwidth") when talking about NeRV.
+# is just called the kernel parameter (or "bandwidth") when discussing NeRV.
 #
 # The probability matrix used in NeRV:
 #
@@ -97,14 +97,14 @@ nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 #
 # This method behaves like \code{nerv} in terms of its cost function,
 # but treats the output weighting function like \code{asne} and
-# \code{ssne} by setting the weight function bandwidth parameter
+# \code{ssne} by setting the weight function decay parameter
 # \code{beta} to 1. If you want to compare the NeRV cost function with the ASNE
 # cost function directly, UNeRV is a better method to use than NeRV.
 #
 # @param lambda Weighting factor controlling the emphasis placed on precision
 #   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 #   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
-# @param beta Controls the "bandwidth" of the exponential similarity kernel
+# @param beta Controls the rate of decay of the exponential similarity kernel
 #  function. Leave at the default value of 1 to compare with SSNE and ASNE.
 # @param eps Small floating point value used to prevent numerical problems,
 #   e.g. in gradients and cost functions.
@@ -137,10 +137,10 @@ unerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 # SNeRV is a "symmetric" variant of \code{nerv}. Rather than use the
 # conditional point-based probabilities of \code{asne}, it uses the
 # joint pair-based probabilities of \code{ssne}. However, it uses a
-# non-uniform exponential kernel in its output space (the bandwidth parameter
-# \code{beta} is allowed to vary per point by using the value calculated
-# from the input data). As a result, there is an extra step required to
-# produce the joint probability output: like the input probability matrix,
+# non-uniform exponential kernel in its output space (the decay
+# parameter \code{beta} is allowed to vary per point by using the value
+# calculated from the input data). As a result, there is an extra step required
+# to produce the joint probability output: like the input probability matrix,
 # the joint probabilities are generated from the conditional probabilities by
 # averaging \code{q[i, j]} and \code{q[j, i]}.
 #
@@ -194,7 +194,7 @@ snerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 # USNeRV is a "symmetric" variant of \code{unerv}. Rather than use the
 # conditional point-based probabilities of \code{asne}, it uses the
 # joint pair-based probabilities of \code{ssne}. It differs from
-# \code{snerv} by only using a uniform bandwidth parameter to generate
+# \code{snerv} by only using a uniform kernel decay parameter to generate
 # the output weight matrix.
 #
 # When \code{lambda = 1}, this method is equivalent to SSNE.
@@ -217,8 +217,8 @@ snerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 # @param lambda Weighting factor controlling the emphasis placed on precision
 #   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 #   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
-# @param beta Bandwidth parameter of the exponential similarity kernel
-#  function.
+# @param beta Decay parameter of the exponential similarity kernel
+#  function. The larger the value, the faster the function decreases.
 # @param eps Small floating point value used to prevent numerical problems,
 #   e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -265,8 +265,8 @@ usnerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 # give the behavior of SNeRV when \code{alpha} is close to zero,
 # and behavior somewhat like that of t-NeRV when \code{alpha = 1}.
 #
-# Like NeRV and SNeRV, the kernel bandwidth parameters are non-uniform and
-# taken from the input data.
+# Like NeRV and SNeRV, the kernel parameters are non-uniform and taken from the
+# input data.
 #
 # The probability matrix used in HSNeRV:
 #
@@ -356,7 +356,8 @@ hsnerv <- function(lambda = 0.5, alpha = 0,
 #   value this method is equivalent to SSNE or SNeRV (depending on the value
 #   of \code{lambda}. When set to one to one, this method behaves like
 #   t-SNE/t-NeRV.
-# @param beta The bandwidth of the function.
+# @param beta Controls the rate of decay of the function. Equivalent to the
+#   exponential decay parameter when \code{alpha} approaches 0.
 # @param eps Small floating point value used to prevent numerical problems,
 #   e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -494,7 +495,7 @@ tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 # @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
 # @param lambda NeRV weighting factor controlling the emphasis placed on
 # precision versus recall.
-# @param beta Bandwidth of the weighting function.
+# @param beta Decay parameter of the weighting function.
 # @param eps Small floating point value used to avoid numerical problems.
 # @return Stiffness matrix.
 nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5, beta = 1,
@@ -506,13 +507,13 @@ nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5, beta = 1,
 
 # USNeRV Stiffness Function
 #
-# If using uniform bandwidths, the stiffness function for USNeRV is
+# If using uniform decay parameters, the stiffness function for USNeRV is
 # simplified compared to the generic non-uniform case for SNeRV.
 #
 # @param pm Input joint probability matrix.
 # @param qm Output joint probabilty matrix.
 # @param rev_kl "Reverse" KL divergence between \code{pm} and \code{qm}.
-# @param beta Bandwidth of the weighting function.
+# @param beta Decay parameter of the exponential weighting function.
 # @param lambda NeRV weighting factor controlling the emphasis placed on
 # precision versus recall.
 # @param eps Small floating point value used to avoid numerical problems.
@@ -542,7 +543,7 @@ tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
 
 # UHSNeRV Stiffness Function
 #
-# If using uniform bandwidths, the stiffness function for UHSNeRV is
+# If using uniform decay parameters, the stiffness function for UHSNeRV is
 # simplified compared to the generic non-uniform case for HSNeRV.
 #
 # @param pm Input joint probability matrix.
@@ -552,7 +553,8 @@ tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
 # @param lambda NeRV weighting factor controlling the emphasis placed on
 # precision versus recall.
 # @param alpha Tail heaviness of the weighting function.
-# @param beta The bandwidth of the weighting function.
+# @param beta The decay parameter of the weighting function, equivalent to
+#  the exponential decay parameter when \code{alpha} approaches zero.
 # @param eps Small floating point value used to avoid numerical problems.
 # @return Stiffness matrix.
 uhsnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,

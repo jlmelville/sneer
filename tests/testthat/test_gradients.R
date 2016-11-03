@@ -117,7 +117,7 @@ test_that("NeRV gradients", {
   expect_grad(hsnerv(), label = "hsnerv", inp_init = inp_aw())
 })
 
-test_that("NeRV gradients with fixed (or no) bandwidth", {
+test_that("NeRV gradients with fixed (or no) precision", {
   expect_grad(unerv(beta = 1), label = "unerv b=1")
   expect_grad(usnerv(beta = 1), label = "usnerv b=1")
   expect_grad(uhsnerv(beta = 1), label = "uhsnerv b=1", diff = 1e-4)

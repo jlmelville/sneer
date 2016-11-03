@@ -79,8 +79,7 @@ plugin <- function(cost = kl_fg(),
 #
 # An implementation of ASNE using the plugin gradient.
 #
-# @param beta Bandwidth parameter of the exponential similarity kernel
-#  function.
+# @param beta Decay constant of the exponential similarity kernel function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -105,8 +104,7 @@ asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 #
 # An implementation of SSNE using the plugin gradient.
 #
-# @param beta Bandwidth parameter of the exponential similarity kernel
-#  function.
+# @param beta Decay constant of the exponential similarity kernel function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -149,7 +147,8 @@ tsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #
 # An implementation of HSSNE using the plugin gradient.
 #
-# @param beta The bandwidth of the kernel similarity function.
+# @param beta Decay parameter of the kernel similarity function. Equivalent
+#  to the exponential decay parameter when \code{alpha} approaches zero.
 # @param alpha Tail heaviness of the kernel similarity function. Must be
 # greater than zero. When set to a small value this method is equivalent to
 # SSNE. When set to one to one, this method behaves like t-SNE.
@@ -210,7 +209,7 @@ tpsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #
 # An implementation of RASNE using the plugin gradient.
 #
-# @param beta Bandwidth of the exponential similarity kernel
+# @param beta Decay constant of the exponential similarity kernel
 #  function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
@@ -229,7 +228,7 @@ rasne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 
 # An implementation of RSSNE using the plugin gradient.
 #
-# @param beta Bandwidth of the exponential similarity kernel function.
+# @param beta Decay constant of the exponential similarity kernel function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -359,7 +358,7 @@ tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
 # @param lambda Weighting factor controlling the emphasis placed on precision
 #   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 #   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
-# @param beta Bandwidth of the exponential similarity kernel function.
+# @param beta Decay constant of the exponential similarity kernel function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -381,7 +380,7 @@ unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 # @param lambda Weighting factor controlling the emphasis placed on precision
 #   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1).
 #   Must be a value between 0 and 1.
-# @param beta Bandwidth of the exponential similarity kernel function.
+# @param beta Decay constant of the exponential similarity kernel function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -403,7 +402,8 @@ usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 # @param lambda Weighting factor controlling the emphasis placed on precision
 #   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). Must be
 #   a value between 0 and 1.
-# @param beta The bandwidth of the kernel similarity function.
+# @param beta Decay constant of the kernel similarity function. Becomes
+# equivalent to the exponential decay constant as \code{alpha} approaches zero.
 # @param alpha Tail heaviness of the kernel similarity function. Must be
 # greater than zero. When set to a small value this method is equivalent to
 # SSNE. When set to one to one, this method behaves like t-SNE.
@@ -427,8 +427,7 @@ uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
 #
 # @param kappa Mixture parameter. If set to 0, then JSE behaves like ASNE. If
 #  set to 1, then JSE behaves like RASNE.
-# @param beta Bandwidth parameter of the exponential similarity kernel
-#  function.
+# @param beta Decay constant of the exponential similarity kernel function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -450,8 +449,7 @@ jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 #
 # @param kappa Mixture parameter. If set to 0, then JSE behaves like SSNE. If
 #  set to 1, then JSE behaves like RSSNE.
-# @param beta Bandwidth parameter of the exponential similarity kernel
-#  function.
+# @param beta Decay constant of the exponential similarity kernel function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -472,8 +470,8 @@ sjse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 #
 # @param kappa Mixture parameter. If set to 0, then JSE behaves like SSNE. If
 #  set to 1, then JSE behaves like RSSNE.
-# @param beta Bandwidth parameter of the exponential similarity kernel
-#  function.
+# @param beta Decay constant of the similarity kernel. Equivalent to the
+#  exponential decay constant as \code{alpha} approaches zero.
 # @param alpha Tail heaviness of the weighting function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.

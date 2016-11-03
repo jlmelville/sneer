@@ -15,8 +15,8 @@ summarize_betas <- function(betas) {
 # Convert Betas (Half-Precisions) to Sigmas (Bandwidths)
 #
 # Gaussian-type functions have a parameter associated with them
-# that is either thought of as a "precision", i.e. how "tight" the distribution
-# is, or its counterpart, the bandwidth, which measure how spread-out the
+# that is either thought of as a "precision", i.e. how quickly the distribution
+# decays, or its counterpart, the bandwidth, which measure how spread-out the
 # distribution is. For gaussian functions, a direct comparison can be made
 # with the standard deviation of the function. Exact definitions of the
 # parameters differ in different discussions. In sneer, the gaussian function
