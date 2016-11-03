@@ -10,11 +10,11 @@
 #'
 #' The neighborhood preservation can vary between 0 (no neighbors in common)
 #' and 1 (perfect preservation). However, random performance gives an
-#' approximate value of K / K - 1.
+#' approximate value of k / (k - 1), where k is the size of the neighborhood.
 #'
 #' @note This is not a very efficient way to calculate the preservation if you
 #'  want to calculate the value for multiple values of \code{k}. For more
-#'  global measures of preservation, see \code{rnx_auc}.
+#'  global measures of preservation, see \code{\link{rnx_auc_embed}}.
 #'
 #' @param din Distance matrix. The "ground truth" or reference distances.
 #' @param dout Distance matrix. A set of distances to compare to the reference
@@ -148,7 +148,6 @@ rnx_auc_crm <- function(crm) {
   num <- 0
   den <- 0
   for (k in 1:(n - 2)) {
-
     num <- num + rnx_crm(crm, k) / k
     den <- den + (1 / k)
   }
