@@ -41,7 +41,8 @@ The precision of the kernel function is not set directly. It's done by
 specifying a desired value for the perplexity, which is usually described as 
 being a continuous analog to the number of nearest neighbors of a point. The 
 user sets the perplexity, and then the precision of the kernel is adjusted so 
-that theprobability associated with each point generates the desired perplexity.
+that the probability associated with each point generates the desired 
+perplexity.
 
 You may be wondering at this point if there's a free parameter associated with
 the output kernel function. The answer is, for t-SNE, no. But for other

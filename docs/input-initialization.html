@@ -133,7 +133,7 @@ $(document).ready(function () {
 </div>
 <div id="perplexity-and-precision" class="section level3">
 <h3>Perplexity and precision</h3>
-<p>The precision of the kernel function is not set directly. It’s done by specifying a desired value for the perplexity, which is usually described as being a continuous analog to the number of nearest neighbors of a point. The user sets the perplexity, and then the precision of the kernel is adjusted so that theprobability associated with each point generates the desired perplexity.</p>
+<p>The precision of the kernel function is not set directly. It’s done by specifying a desired value for the perplexity, which is usually described as being a continuous analog to the number of nearest neighbors of a point. The user sets the perplexity, and then the precision of the kernel is adjusted so that the probability associated with each point generates the desired perplexity.</p>
 <p>You may be wondering at this point if there’s a free parameter associated with the output kernel function. The answer is, for t-SNE, no. But for other embedding methods there is. For example, the original SNE method also uses a gaussian kernel for the output distances, but just sets all the bandwidths to unity. For more exotic treatments, look for the discussion of the <code>prec_scale</code> parameter below.</p>
 </div>
 <div id="perplexity" class="section level3">

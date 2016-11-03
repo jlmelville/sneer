@@ -6,8 +6,8 @@ output: html_document
 Previous: [Output Initialization](output-initialization.html). Next: [Embedding Methods](embedding-methods.html). Up: [Index](index.html).
 
 I have exposed a lot of options to do with optimization, but I don't really
-recommend using them, except out of mordant curiosity. Here are the ones that 
-matter:
+recommend using most of them, except out of mordant curiosity. Here are the 
+ones that matter:
 
 ### `max_iter`
 
