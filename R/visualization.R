@@ -713,7 +713,9 @@ make_plot <- function(x,
                         labels
                       },
                       color_scheme = grDevices::rainbow,
-                      cex = 1, equal_axes = FALSE,
+                      cex = 1,
+                      show_labels = FALSE,
+                      equal_axes = FALSE,
                       mat_name = "ym") {
 
   embedding_plot <- make_embedding_plot(x,
@@ -722,6 +724,7 @@ make_plot <- function(x,
                                         label_fn = label_fn,
                                         color_scheme = color_scheme,
                                         cex = cex,
+                                        show_labels = show_labels,
                                         equal_axes = equal_axes)
   function(out) {
     embedding_plot(out[[mat_name]])
@@ -751,6 +754,8 @@ make_plot <- function(x,
 #   not used.
 # cex The size of the points or text (if labels or label_name is supplied).
 #   Has the usual meaning when used with the graphics::plot command.
+# show_labels if TRUE, then if labels are provided, plot them (or the output
+#   of label_fn if that is non-NULL) instead of points.
 # equal_axes if TRUE, then the range of x and y axes will be the same.
 #
 # Returns a function which takes a matrix of 2D coordinates and produces a 2D
@@ -761,19 +766,28 @@ make_embedding_plot <- function(x,
                                 label_fn = NULL,
                                 color_scheme = grDevices::rainbow,
                                 cex = 1,
+                                show_labels = FALSE,
                                 equal_axes = FALSE) {
   # If labels were provided but no colors, let's map labels to colors now
   if (!is.null(labels)) {
     if (is.null(colors)) {
       colors <- factor_to_colors(x = labels, color_scheme = color_scheme)
     }
-    if (!is.null(label_fn)) {
-      labels <- label_fn(labels)
+    if (show_labels) {
+      if (!is.null(label_fn)) {
+        text <- label_fn(labels)
+      }
+      else {
+        text <- labels
+      }
+    }
+    else {
+      text <- NULL
     }
   }
 
   function(ym) {
-    embed_plot(ym, colors = colors, cex = cex, text = labels,
+    embed_plot(ym, colors = colors, cex = cex, text = text,
                equal_axes = equal_axes)
   }
 }

@@ -854,11 +854,6 @@ sneer <- function(df,
                                        verbose = TRUE)
     colors <- color_res$colors
     labels <- color_res$labels
-    if (!plot_labels) {
-      # If not asked to explicitly plot the labels as text, our need for these
-      # labels is done
-      labels <- NULL
-    }
 
     if (is.null(plot_type)) { plot_type <- "n" }
     if (plot_type == "g") {
@@ -892,6 +887,7 @@ sneer <- function(df,
                               label_fn = label_fn,
                               color_scheme = color_scheme,
                               cex = point_size,
+                              show_labels = plot_labels,
                               equal_axes = equal_axes)
     }
   }
@@ -920,8 +916,8 @@ sneer <- function(df,
         stop("No quality measure '", name,"'")
       }
     }
-    if (length(qs) > 0) {
-      after_embed <- make_quality_reporter(qs, df[[label_name]])
+    if (length(qs) > 0 && !is.null(labels)) {
+      after_embed <- make_quality_reporter(qs, labels)
     }
   }
 
