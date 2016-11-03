@@ -200,7 +200,7 @@ test_that("Can combine multiscaling with asymmetric weights", {
     init_inp = inp_from_perps_multi(perplexities = seq(8, 4, length.out = 3),
                                     num_scale_iters = 10,
                                     modify_kernel_fn =
-                                      transfer_kernel_bandwidths,
+                                      transfer_kernel_precisions,
                                     verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 2,
@@ -236,7 +236,7 @@ test_that("Can combine multiscaling with asymmetric weights", {
     init_inp = inp_from_perps_multi(perplexities = seq(8, 4, length.out = 3),
                                     num_scale_iters = 0,
                                     modify_kernel_fn =
-                                      transfer_kernel_bandwidths,
+                                      transfer_kernel_precisions,
                                     verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,

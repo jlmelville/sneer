@@ -677,7 +677,7 @@ reverse_kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
 # Updates the output kernel in response to a change in input probability.
 #
 # This function is called when the input probability has changed. It transfers
-# the bandwidth parameters from the input data to the output kernel. This is
+# the precision parameters from the input data to the output kernel. This is
 # used in the NeRV family of embedding routines where the precisions of the
 # output exponential kernel are set to those of the input kernel.
 #
@@ -700,9 +700,9 @@ reverse_kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
 # @param method Embedding method.
 # @return Updated kernel.
 # @family sneer kernel modifiers
-transfer_kernel_bandwidths <- function(inp, out, method) {
+transfer_kernel_precisions <- function(inp, out, method) {
   if (method$verbose) {
-    message("Transferring input beta parameters to output kernel")
+    message("Transferring input precisions to output kernel")
   }
   method$kernel$beta <- inp[["beta"]]
   method$kernel <- check_symmetry(method$kernel)
@@ -723,7 +723,7 @@ transfer_kernel_bandwidths <- function(inp, out, method) {
 # parameters have been updated to be the same as that for the \code{input}
 # data.
 nerv_inp_update <- function(inp, out, method) {
-  method$kernel <- transfer_kernel_bandwidths(inp, out, method)
+  method$kernel <- transfer_kernel_precisions(inp, out, method)
   list(method = method)
 }
 

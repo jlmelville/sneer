@@ -755,7 +755,7 @@ sneer <- function(df,
         modify_kernel_fn <- scale_prec_to_perp
       }
       else if (prec_scale == "t") {
-        modify_kernel_fn <- transfer_kernel_bandwidths
+        modify_kernel_fn <- transfer_kernel_precisions
       }
       else {
         stop("Unknown prec_scale value: '", prec_scale, "'")

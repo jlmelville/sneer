@@ -15,7 +15,7 @@ inp_ums <- function() { inp_from_perps_multi(perplexities = seq(45, 25, length.o
                                verbose = FALSE) }
 inp_tms <- function() { inp_from_perps_multi(perplexities = seq(45, 25, length.out = 3),
                                 num_scale_iters = 0,
-                                modify_kernel_fn = transfer_kernel_bandwidths,
+                                modify_kernel_fn = transfer_kernel_precisions,
                                 verbose = FALSE) }
 
 aw <- function(method) {
