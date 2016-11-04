@@ -672,6 +672,7 @@ sneer <- function(df,
     jse_plugin = function() { jse_plugin(kappa = kappa) }
   )
 
+  method <- tolower(method)
   if (!method %in% names(embed_methods)) {
     stop("Unknown embedding method '",
          method,
