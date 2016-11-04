@@ -880,7 +880,8 @@ sneer <- function(df,
           color_scheme = color_scheme,
           size = point_size,
           legend = legend,
-          legend_rows = legend_rows
+          legend_rows = legend_rows,
+          equal_axes = equal_axes
         )
     }
     else if (plot_type == 'p') {

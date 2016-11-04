@@ -598,12 +598,15 @@ scores_qplot <- function(df, pca_indexes = NULL, label_name = NULL,
 #  the legend items in. If the legend is taking up too much space, you may
 #  want to experiment with setting the number of rows manually, rather than
 #  just setting the \code{legend} parameter to \code{FALSE}.
+# @param equal_axes If \code{TRUE}, the X and Y axes are set to have the
+#  same extents.
 # @seealso
 # More information on ColorBrewer is available at its website,
 # \url{http://www.colorbrewer2.org}.
 scatterqplot <- function(df, x, y, label_name = NULL, labels = NULL, size = 1,
                          color_scheme = "Set1", x_label = "x", y_label = "y",
-                         legend = TRUE, legend_rows = NULL) {
+                         legend = TRUE, legend_rows = NULL,
+                         equal_axes = FALSE) {
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
     stop("scatterqplot function requires 'ggplot2' package")
   }
@@ -638,8 +641,17 @@ scatterqplot <- function(df, x, y, label_name = NULL, labels = NULL, size = 1,
     color_palette <- color_brewer_palette(color_scheme, ncolors)
   }
 
+  if (equal_axes) {
+    xlims <- range(x, y)
+    ylims <- xlims
+  }
+  else {
+    xlims <- range(x)
+    ylims <- range(y)
+  }
   score_plot <-
-    ggplot2::qplot(x, y, colour = labels, size = I(size)) +
+    ggplot2::qplot(x, y, colour = labels, size = I(size),
+                   xlim = xlims, ylim = ylims) +
     ggplot2::scale_color_manual(values = color_palette, name = label_name) +
     ggplot2::theme(legend.position = "bottom",
                    panel.grid.major = ggplot2::element_blank(),
@@ -839,6 +851,8 @@ make_label <- function(num_label_chars = 1) {
 #  the legend items in. If the legend is taking up too much space, you may
 #  want to experiment with setting the number of rows manually, rather than
 #  just setting the \code{legend} parameter to \code{FALSE}.
+# @param equal_axes If \code{TRUE}, the X and Y axes are set to have the
+#  same extents.
 # @return Function with signature \code{plot_fn(out)} where \code{out} is
 # a return value from a sneer embedding function. On invocation, the
 # data will be plotted.
@@ -855,7 +869,8 @@ make_label <- function(num_label_chars = 1) {
 make_qplot <- function(df, label_name = "Label", labels = NULL, mat_name = "ym",
                        size = 1,
                        color_scheme = "Set1",
-                       legend = TRUE, legend_rows = NULL) {
+                       legend = TRUE, legend_rows = NULL,
+                       equal_axes = FALSE) {
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
     stop("make_qplot function requires 'ggplot2' package")
   }
@@ -868,7 +883,8 @@ make_qplot <- function(df, label_name = "Label", labels = NULL, mat_name = "ym",
                                          size = size,
                                          color_scheme = color_scheme,
                                          legend = legend,
-                                         legend_rows = legend_rows)
+                                         legend_rows = legend_rows,
+                                         equal_axes = equal_axes)
 
   function(out) {
       embedding_plot(out[[mat_name]])
@@ -908,6 +924,8 @@ make_qplot <- function(df, label_name = "Label", labels = NULL, mat_name = "ym",
 #  the legend items in. If the legend is taking up too much space, you may
 #  want to experiment with setting the number of rows manually, rather than
 #  just setting the \code{legend} parameter to \code{FALSE}.
+# @param equal_axes If \code{TRUE}, the X and Y axes are set to have the
+#  same extents.
 # @return Function with signature \code{plot_fn(ym)} where \code{ym} is a
 # 2D matrix of embedded coordinates of data set \code{x}. On invocation, the
 # data will be plotted.
@@ -930,7 +948,8 @@ make_qplot <- function(df, label_name = "Label", labels = NULL, mat_name = "ym",
 make_embedding_qplot <- function(df, label_name = "Label", labels = NULL,
                                  size = 1,
                                  color_scheme = "Set1",
-                                 legend = TRUE, legend_rows = NULL) {
+                                 legend = TRUE, legend_rows = NULL,
+                                 equal_axes = FALSE) {
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
     stop("make_embedding_qplot function requires 'ggplot2' package")
   }
@@ -945,8 +964,9 @@ make_embedding_qplot <- function(df, label_name = "Label", labels = NULL,
     scatterqplot(df, x = ym[, 1], y = ym[, 2], label_name = label_name,
                  labels = labels,
                  size = size, color_scheme = color_scheme,
-                 x_label = "D1", y_label = "D2",
-                 legend = legend, legend_rows = legend_rows)
+                 x_label = "X", y_label = "Y",
+                 legend = legend, legend_rows = legend_rows,
+                 equal_axes = equal_axes)
   }
 }
 
