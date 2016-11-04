@@ -768,6 +768,8 @@ make_embedding_plot <- function(x,
                                 cex = 1,
                                 show_labels = FALSE,
                                 equal_axes = FALSE) {
+
+  text <- NULL
   # If labels were provided but no colors, let's map labels to colors now
   if (!is.null(labels)) {
     if (is.null(colors)) {
@@ -780,9 +782,6 @@ make_embedding_plot <- function(x,
       else {
         text <- labels
       }
-    }
-    else {
-      text <- NULL
     }
   }
 
