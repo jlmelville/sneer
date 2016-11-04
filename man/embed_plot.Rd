@@ -4,7 +4,7 @@
 \alias{embed_plot}
 \title{Embedding Plot, Colored By Category}
 \usage{
-embed_plot(coords, colors = NULL, x = NULL,
+embed_plot(coords, x = NULL, colors = NULL,
   color_scheme = grDevices::rainbow, num_colors = 15, limits = NULL,
   top = NULL, cex = 1, text = NULL, equal_axes = FALSE)
 }
@@ -12,10 +12,10 @@ embed_plot(coords, colors = NULL, x = NULL,
 \item{coords}{Matrix of embedded coordinates, with as many rows as
 observations, and 2 columns.}
 
-\item{colors}{Vector containing colors for each coordinate.}
-
 \item{x}{Either a data frame or a column that can be used to derive a
 suitable vector of colors. Ignored if \code{colors} is provided.}
+
+\item{colors}{Vector containing colors for each coordinate.}
 
 \item{color_scheme}{Either a color ramp function, or the name of a
 ColorBrewer scheme. See 'Details'.}

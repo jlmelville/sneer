@@ -29,9 +29,9 @@
 #'
 #' @param coords Matrix of embedded coordinates, with as many rows as
 #'  observations, and 2 columns.
-#' @param colors Vector containing colors for each coordinate.
 #' @param x Either a data frame or a column that can be used to derive a
 #'  suitable vector of colors. Ignored if \code{colors} is provided.
+#' @param colors Vector containing colors for each coordinate.
 #' @param color_scheme Either a color ramp function, or the name of a
 #'  ColorBrewer scheme. See 'Details'.
 #' @param num_colors Number of unique colors to map to from \code{x}, if
@@ -88,7 +88,7 @@
 #' # visualize 10 points with the hightest degree centrality
 #' embed_plot(tsne_iris$coords, x = tsne_iris$deg, top = 10)
 #' }
-embed_plot <- function(coords, colors = NULL, x = NULL,
+embed_plot <- function(coords, x = NULL, colors = NULL,
                        color_scheme = grDevices::rainbow,
                        num_colors = 15, limits = NULL, top = NULL,
                        cex = 1, text = NULL, equal_axes = FALSE) {
