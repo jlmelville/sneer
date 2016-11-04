@@ -43,7 +43,6 @@
 #' @param top If not \code{NULL}, only the specified number of points will be
 #'  displayed, corresponding to those with the highest values in \code{vec},
 #'  after sorting by decreasing order.
-#'  num_colors = 15, limits = NULL, top = NULL,
 #' @param cex Size of the points. Ignored if \code{as_text} is \code{TRUE}.
 #' @param text Vector of label text to display instead of a point. If the labels
 #'  are long or the data set is large, this is unlikely to be very legible, but

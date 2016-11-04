@@ -30,8 +30,7 @@ if there is some external absolute scale that should be used. Ignored if
 
 \item{top}{If not \code{NULL}, only the specified number of points will be
 displayed, corresponding to those with the highest values in \code{vec},
-after sorting by decreasing order.
-num_colors = 15, limits = NULL, top = NULL,}
+after sorting by decreasing order.}
 
 \item{cex}{Size of the points. Ignored if \code{as_text} is \code{TRUE}.}
 
