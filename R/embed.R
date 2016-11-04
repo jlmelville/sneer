@@ -814,8 +814,15 @@ sneer <- function(df,
     else {
       # no perplexity scaling asked for
       if (length(perplexity) == 1) {
-        if (perplexity >= nrow(df)) {
-          perplexity <- nrow(df) / 4
+        if (class(df) == "dist") {
+          # length = (nr * (nr + 1)) / 2; solve for nr by quadratic equation
+          nr <- (1 + sqrt(1 + (8 * length(df)))) / 2
+        }
+        else {
+          nr <- nrow(df)
+        }
+        if (perplexity >= nr) {
+          perplexity <- nr / 4
           message("Setting perplexity to ", perplexity)
         }
         init_inp <- inp_from_perp(perplexity = perplexity,
