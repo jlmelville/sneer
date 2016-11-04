@@ -42,7 +42,7 @@ optimization.
 from calling `sneer` (and the extra data you can ask for).
 * [Analysis](analysis.html) - if you don't trust your lyin' eyes, some 
 functions to help with quantitative evaluation of embeddings.
-* [Visualization](visualization.html) - coming soon.
+* [Visualization](visualization.html) - options for conveniently viewing embeddings.
 * [References](reference.html) - links to the research that introduced the various
 methods in sneer. Coming soon.
 
