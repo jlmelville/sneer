@@ -135,7 +135,7 @@ scaled so that both the X and Y axes have the same extents. Only applies if
 Applies when \code{plot_type} is \code{"g"} only.}
 
 \item{legend_rows}{Number of rows to use for displaying the legend in
-an embedding plot.}
+an embedding plot. Applies when \code{plot_type} is \code{"g"} only.}
 
 \item{quality_measures}{Vector of names of quality measures to apply to the
 finished embedding. See 'Details'. Values of the quality measures will

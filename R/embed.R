@@ -372,7 +372,7 @@ NULL
 #' @param legend if \code{TRUE}, display the legend in the embedding plot.
 #'  Applies when \code{plot_type} is \code{"g"} only.
 #' @param legend_rows Number of rows to use for displaying the legend in
-#'  an embedding plot.
+#'  an embedding plot. Applies when \code{plot_type} is \code{"g"} only.
 #' @param quality_measures Vector of names of quality measures to apply to the
 #'  finished embedding. See 'Details'. Values of the quality measures will
 #'  be printed to screen after embedding and retained in the list that is
