@@ -3,7 +3,7 @@ title: "Sneer"
 output: html_document
 ---
 
-Welcome to the documentation for Sneer: Stochastic Neighbor Embedding 
+Welcome to the documentation for `sneer`: Stochastic Neighbor Embedding 
 Experiments in R. It's a pure R package for carrying out not only the 
 popular [t-distributed SNE](https://lvdmaaten.github.io/tsne/), but also other 
 related dimensionality reduction methods.
@@ -44,7 +44,7 @@ from calling `sneer` (and the extra data you can ask for).
 functions to help with quantitative evaluation of embeddings.
 * [Visualization](visualization.html) - options for conveniently viewing embeddings.
 * [References](reference.html) - links to the research that introduced the various
-methods in sneer. Coming soon.
+methods in sneer.
 
 The [examples](examples.html) page brings most of this together. The same 
 examples can be found in the R documentation for the `sneer` function, i.e.
