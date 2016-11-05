@@ -43,7 +43,7 @@ from calling `sneer` (and the extra data you can ask for).
 * [Analysis](analysis.html) - if you don't trust your lyin' eyes, some 
 functions to help with quantitative evaluation of embeddings.
 * [Visualization](visualization.html) - options for conveniently viewing embeddings.
-* [References](reference.html) - links to the research that introduced the various
+* [References](references.html) - links to the research that introduced the various
 methods in sneer.
 
 The [examples](examples.html) page brings most of this together. The same 
