@@ -77,12 +77,12 @@ https://dx.doi.org/10.1016/j.neucom.2012.12.036
 ### Perplexity and Input Initialization
 
 #### Multiscale Embedding
-Lee, J. A., Peluffo-Ordo'nez, D. H., & Verleysen, M. (2014).
+Lee, J. A., Peluffo-Ordónez, D. H., & Verleysen, M. (2014).
 Multiscale stochastic neighbor embedding: Towards parameter-free
 dimensionality reduction. In ESANN.
 https://www.elen.ucl.ac.be/Proceedings/esann/esannpdf/es2014-64.pdf
 
-Lee, J. A., Peluffo-Ordo'nez, D. H., & Verleysen, M. (2015).
+Lee, J. A., Peluffo-Ordónez, D. H., & Verleysen, M. (2015).
 Multi-scale similarities in stochastic neighbour embedding: Reducing
 dimensionality while preserving both local and global structure.
 *Neurocomputing*, *169*, 246-261.
