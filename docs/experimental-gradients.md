@@ -6,7 +6,7 @@ output: html_document
 Back: [Gradients](gradients.html) Up: [Index](index.html)
 
 Weirdo gradients that don't correspond to any current literature method, but
-may provide inspiration for future research.
+may provide inspiration for future directions for `sneer`.
 
 ## Generalized Divergences
 
@@ -171,3 +171,6 @@ distances:
 
 $$C_{ij} = \left(g_{ij} - f_{ij}\right)^2$$
 $$\frac{\partial C}{\partial f_{ij}} = -2\left(g_{ij} - f_{ij}\right)$$
+
+Back: [Gradients](gradients.html) Up: [Index](index.html)
+
