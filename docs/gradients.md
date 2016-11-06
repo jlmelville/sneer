@@ -3,11 +3,15 @@ title: "Deriving Embedding Gradients"
 output: html_document
 ---
 
-There's no R code in this document. Instead, here's my attempt to derive
-the gradient for various embedding methods. There are a few papers which attempt
-something like this, the clearest in my opinion being the treatment by 
-Lee et al. The version I give here is very similar, but with a bit less 
-notation.
+Next: [Experimental Gradients](experimental-gradients.html) Up: [Index](index.html)
+
+There are lots of different approaches to deriving the t-SNE gradient and 
+related methods in the literature. The one that helped me the most is the
+one given by Lee and co-workers in the 
+[JSE paper](https://dx.doi.org/10.1016/j.neucom.2012.12.036).
+
+The following discussion attempts to do something similar, but taking things
+even slower. Also, I am a lot less rigorous and I've tried to use less notation.
 
 The only mathematical ability you should need for this is the ability to do 
 basic partial differentiation, and know the chain rule for partial derivatives,
@@ -24,8 +28,8 @@ $$\frac{\partial x}{\partial z_j} =
 
 ## Notation
 
-I assume you are familiar with the basics of the approach of SNE and related 
-methods. I'll use the following notation:
+I assume you are familiar with the basic [concepts](concepts.html) of the 
+approach of SNE and related methods. I'll use the following notation:
 
 * $\mathbf{y_i}$ is the $i$th embedded coordinate in the lower dimension.
 * $P$ is the matrix of input probabilities, $Q$ is the matrix of output 
@@ -85,25 +89,30 @@ Another way to convert the weights is:
 $$q_{ij} = \frac{w_{ij}}{\sum_k^N \sum_l^N w_{kl}}$$
 
 This normalizes by using _all_ pairs of points, so we'll call this the pair-wise
-approach. The resulting matrix $Q$ contains a single probability distribution, 
-i.e. the grand sum of the matrix is one. Using this normalization, it's still
-true that, in general, $q_{ij} \neq q_{ji}$, but when creating the input 
-probabilities $p_{ij}$, $p_{ij}$ and $p_{ji}$ are averaged so that they are 
-equal to each other. In the case of the output weights, the function that 
-generates them  always produces symmetric weights, so that $w_{ij} = w_{ji}$ 
-which naturally leads to $q_{ij} = q_{ji}$, so the resulting matrix is 
-symmetric without having to do any extra work.
+approach (in the 
+[ws-SNE paper](http://jmlr.org/proceedings/papers/v32/yange14.html), it's 
+referred to as "matrix-wise"). The resulting matrix $Q$ contains a single 
+probability distribution, i.e. the grand sum of the matrix is one. Using this 
+normalization, it's still true that, in general, $q_{ij} \neq q_{ji}$, but when 
+creating the input probabilities $p_{ij}$, $p_{ij}$ and $p_{ji}$ are averaged 
+so that they are equal to each other. In the case of the output weights, the 
+function that generates them  always produces symmetric weights, so that 
+$w_{ij} = w_{ji}$ which naturally leads to $q_{ij} = q_{ji}$, so the resulting 
+matrix is symmetric without having to do any extra work.
 
 This pair-wise scheme is used in what is called Symmetric SNE and t-distributed
 SNE.
 
 Obviously these two schemes are very similar to each other, but it's easy to
 get confused when looking at how different embedding methods are implemented.
-As to whether it makes much of a practical difference, Lee and co-workers say 
-that it has "no significant effect" on JSE, whereas van der Maaten and Hinton 
-note that SSNE sometimes produced results that were "a little better" than ASNE.
-Not a ringing endorsement either way, but in my experiments with sneer, the
-symmetrized (pair-wise) normalization seems to produce better results.
+As to whether it makes much of a practical difference, in the 
+[JSE paper]((https://dx.doi.org/10.1016/j.neucom.2012.12.036) Lee and 
+co-workers say that it has "no significant effect" on JSE, whereas in the 
+[t-SNE paper](http://www.jmlr.org/papers/v9/vandermaaten08a.html), 
+van der Maaten and Hinton note that SSNE sometimes produced results that were 
+"a little better" than ASNE. Not a ringing endorsement either way, but in my 
+experiments with `sneer`, the symmetrized (pair-wise) normalization seems to 
+produce better results.
 
 ## Breaking down the cost function
 
@@ -420,7 +429,8 @@ $$
 Further, we can put to good use the expression we came up with for 
 $\frac{\partial f_{ij}}{\partial d_{ij}}
 \frac{\partial d_{ij}}{\partial \mathbf{y_i}}$ earlier (the one that assumes 
-the use of squared Euclidean distances) to get:
+the use of squared Euclidean distances) to get a probability-based embedding
+master equation:
 
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
   2
@@ -431,6 +441,18 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   \left(
    \mathbf{y_i - y_j}
   \right)
+$$
+
+where
+
+$$k_{ij} =
+-\frac{1}{S} 
+  \left[ 
+    \sum_k^N \sum_l^N 
+      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
+      \frac{\partial C}{\partial q_{ij}} 
+  \right]
+    \frac{\partial w_{ij}}{\partial f_{ij}}
 $$
 
 This is now looking more like the expected "points on springs" interpretation of
@@ -444,9 +466,121 @@ cost function with respect to the embedded coordinates without too much trouble,
 which is all you need to optimize the coordinates with a standard gradient
 descent algorithm.
 
-## Other Cost Functions
+### Some Cost Functions and their Derivatives
 
-### Distance-based embedding
+#### Kullback-Leibler Divergence
+
+Used by the ASNE, SSNE, t-SNE and variants:
+
+$$C_{ij} = D_{KL}(p_{ij}||q_{ij}) = p_{ij}\ln\left(\frac{p_{ij}}{q_{ij}}\right)$$
+$$\frac{\partial C}{\partial q_{ij}} = - \frac{p_{ij}}{q_{ij}}$$
+
+#### "Reverse" Kullback-Leibler Divergence
+
+[NeRV](http://www.jmlr.org/papers/v11/venna10a.html) symmetrizes the KL 
+divergence by also considering the cost when $q_{ij}$ is the "reference" 
+probability distribution:
+
+$$C_{ij} = D_{KL}(q_{ij}||p_{ij}) = q_{ij}\ln\left(\frac{q_{ij}}{p_{ij}}\right)$$
+$$\frac{\partial C}{\partial q_{ij}} = \ln\left(\frac{p_{ij}}{q_{ij}}\right) + 1$$
+
+#### Jensen-Shannon Divergence
+
+The Jensen-Shannon Divergence, as defined in 
+[JSE](https://dx.doi.org/10.1016/j.neucom.2012.12.036) is:
+
+$$C_{ij} = D_{JS}(p_{ij}||q_{ij}) = 
+\frac{1}{1-\kappa}D_{KL}(p_{ij}||z_{ij}) + 
+\frac{1}{\kappa}D_{KL}(q_{ij}||z_{ij})$$
+where $Z$ is a mixture of P and Q:
+$$Z = \kappa P + \left(1-\kappa \right)Q$$
+
+Rather than invoke the chain rule to couple $Z$ to $Q$, I'm just going to write
+out the derivatives for the two parts of the JS divergence with respect to $Q$
+(ignoring the $\kappa$ weighting for now):
+
+$$\frac{\partial D_{KL}(p_{ij}||z_{ij})}{\partial q_{ij}} = 
+- \left(1 - \kappa \right) \frac{p_{ij}}{z_{ij}}$$
+$$\frac{\partial D_{KL}(q_{ij}||z_{ij})}{\partial q_{ij}} = 
+\kappa \left(\frac{p_{ij}}{z_{ij}}\right) 
+- \ln\left(\frac{q_{ij}}{z_{ij}}\right)$$
+
+Once you add these derivatives together, multiplying by the $\kappa$ values in
+the cost function, terms cancel to leave a surprisingly simple derivative:
+
+$$\frac{\partial C}{\partial q_{ij}} = 
+\frac{\partial D_{JS}(p_{ij}||q_{ij})}{\partial q_{ij}} =
+-\frac{1}{\kappa}\ln\left(\frac{q_{ij}}{z_{ij}}\right)$$
+
+### Some Similarity Kernels and their Derivatives
+
+#### Exponential/Gaussian Kernel
+
+The weighting function most commonly encountered is a gaussian kernel, although
+because I've separated the distance transformation from the weighting, it's 
+actually exponential with respect to the transformed distances:
+
+$$w_{ij} = \exp\left(-\beta_{i} f_{ij}\right)$$
+
+Also, I've thrown in the exponential decay factor, $\beta_{i}$ which is used in
+the [Input Initialization](input-initialization.html) for the input kernel
+only, as part of the perplexity-based calibration (aka entropic affinities). 
+As discussed further in that section, the output kernel function normally
+just sets all the $beta$ values to one, so it effectively disappears from
+the output kernel gradient. However, so methods do make use of an output
+$\beta$, so here is the general gradient:
+
+$$\frac{\partial w_{ij}}{\partial f_{ij}} 
+= -\beta_{i} \exp\left(-\beta_{i} f_{ij}\right)
+= -\beta_{i} f_{ij}
+$$
+
+#### t-Distribution Kernel
+
+As used in the output kernel of t-SNE. Also referred to as the Cauchy 
+distribution sometimes.
+
+$$w_{ij} = \frac{1}{1 + f_{ij}}$$
+$$\frac{\partial w_{ij}}{\partial f_{ij}} 
+= -\frac{1}{\left(1 + f_{ij}\right)^2}
+= -f_{ij}^2
+$$
+
+#### Heavy-tailed Kernel
+
+A generalization of the exponential and t-distributed kernel, and described in
+the 
+[HSSNE paper](https://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding).
+
+$$w_{ij} = \frac{1}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{1}{\alpha}}}$$
+$$\frac{\partial w_{ij}}{\partial f_{ij}} 
+= - \frac{\beta_{i}}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{\alpha+1}{\alpha}}}
+= -\beta_{i} f_{ij} ^ \left(\alpha + 1\right)
+$$
+
+The degree of heavy-tailedness is controlled by $\alpha$: when $\alpha = 1$, the
+kernel behaves like the t-distributed kernel. As it approaches 0, it approaches
+the exponential kernel. $\alpha > 1$ allows output distances to stretch even
+more than t-SNE. I am unaware of any research that looks at seeing if there is
+a way to find an optimal value of $\alpha$ for a given dataset. 
+
+I have also included the precision parameter $\beta$ in the equation. This isn't
+present in the original HSSNE paper, but it's fairly easy to do the integration 
+to work out how to include it. This shouldn't be taken as a suggestion to use
+it as an input kernel - heavy-tailedness can make it very easy for it to be
+impossible to get lower values of perplexity. However, it does allow for an 
+output kernel that behaves like t-SNE, but has the free precision parameter 
+that would allow t-SNE to be used with the method described in 
+[multiscale JSE](https://dx.doi.org/10.1016/j.neucom.2014.12.095). See the
+sections on [Input Initialization](input-initialization.html) and
+[Embedding Methods](embedding-methods.html) for how to do that in `sneer`.
+
+
+## Distance-based embedding
+
+For completeness, here's the derivation of gradients for distance-based
+embeddings, such as metric MDS and Sammon Maps. The gradients for these
+are well known, so if we can't derive them, we're in big trouble.
 
 An embedding where the cost function is written in terms of the distances
 is delightfully straightforward compared to what we just went through. The
@@ -480,13 +614,22 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   2\sum_j^N
     \frac{\partial C}{\partial d_{ij}} 
    \frac{1}{d_{ij}}\left(\mathbf{y_i - y_j}\right)
-  =
-  2\sum_j^N k_{ij} \left(\mathbf{y_i - y_j}\right)
 $$
 
-where
+which makes our master equation for distance-based embeddings:
 
+$$
+\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2\sum_j^N k_{ij} \left(\mathbf{y_i - y_j}\right)
+$$
+where
 $$k_{ij} = \frac{\partial C}{\partial d_{ij}}\frac{1}{d_{ij}}$$
+  
+### Distance-based Costs
+
+Let's run over some distance-based cost functions, plug them into the  and see what comes.
+
+#### Metric MDS
 
 For a standard metric MDS, the cost for a pair is just the square loss between 
 the input distances $r_{ij}$ and the output distances $d_{ij}$:
@@ -508,7 +651,7 @@ cost functions take advantage of the symmetry of the distance matrix and
 generally only sum where the indices are $i < j$. In order to be consistent
 with non-symmetric cost functions, I'm considering the entire matrix.
 
-### SSTRESS
+#### SSTRESS
 
 The SSTRESS criterion is
 
@@ -524,7 +667,11 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   -8\sum_j^N \left(r_{ij}^2 - d_{ij}^2\right) \left(\mathbf{y_i - y_j}\right)
 $$
 
-### Sammon Mapping
+There is some interesting discussion of artefactual structure that can result 
+from the use of the SSTRESS criterion in a paper by 
+[Hughes and Lowe](https://papers.nips.cc/paper/2239-artefactual-structure-from-least-squares-multidimensional-scaling).
+
+#### Sammon Mapping
 
 Sammon Mapping is very similar to metric MDS, except that it tries to put
 more weight on preserving short distances (and hence local structure), by
@@ -544,173 +691,16 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   -4\sum_j^N \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}
 $$
 
-Once again, as normally written (e.g. in Sammon's original paper), the constant
-term is twice too big (i.e. you'll normally see a $-2$, not a $-4$), because you
-wouldn't normally bother to sum over $i > j$. Also, the Sammon error includes
-a normalization term (the sum of all $\frac{1}{r_{ij}}$), but that's a constant
-for any configuration, so irrelevant for the purposes of deriving a gradient.
+Once again, as normally written (e.g. in 
+[Sammon's original paper](https://dx.doi.org/10.1109/T-C.1969.222678)), the 
+constant term is twice too big (i.e. you'll normally see a $-2$, not a $-4$), 
+because you wouldn't normally bother to sum over $i > j$. Also, the Sammon 
+error includes a normalization term (the sum of all $\frac{1}{r_{ij}}$), but 
+that's a constant for any configuration, so irrelevant for the purposes of 
+deriving a gradient.
 
-## Generalized Divergences
+If you've been able to follow along with this, you surely are now practiced 
+enough to derive gradients for more experimental embedding methods. The
+next section gives some examples.
 
-Divergences are normally applied to probabilities. But they have been 
-generalized to work with other values. Some of this is discussed by Yang and 
-co-workers (in Optimization Equivalence of Divergences Improves Neighbor
-Embedding), using definitions by Cichocki and co-workers.
-
-We can therefore define a set of algorithms, halfway between the distance-based 
-embeddings like Sammon Mapping, and probability-based embeddings like SNE, that
-use the un-normalized weights. I can't think of a good name for these: 
-un-normalized embeddings? Weight-based embeddings? Similarity-based embeddings?
-
-Anyway, the chain of variable dependencies is 
-$C \rightarrow w \rightarrow f \rightarrow d \rightarrow \mathbf{y}$. We can
-re-use all the derivations we calculated for probability-based embeddings,
-including assuming that we're going to use squared Euclidean distances as input
-to the weighting function, to get to:
-
-$$\frac{\partial C}{\partial \mathbf{y_i}} = 
-  2\sum_j^N \left(
-    \frac{\partial C}{\partial w_{ij}} 
-    \frac{\partial w_{ij}}{\partial f_{ij}} 
-    +
-    \frac{\partial C}{\partial w_{ji}} 
-    \frac{\partial w_{ji}}{\partial f_{ji}} 
-   \right) 
-   \left(\mathbf{y_i - y_j}\right)
-$$
-
-Without any probabilities involved, we can go straight to defining:
-
-$$k_{ij} = \frac{\partial C}{\partial w_{ij}}
-\frac{\partial w_{ij}}{\partial f_{ij}}$$
-
-The generalized divergences are defined in terms of the output weights, 
-$w_{ij}$ and the input weights, which I've not had to come up with a symbol 
-before now. Let's call them $v_{ij}$. The generalized Kullback Leibler 
-divergence (also known as the I-divergence, and apparently used in non-negative
-matrix factorization) and its derivative with respect to the output weights is:
-
-$$C_{ij} = v_{ij}\ln\left(\frac{v_{ij}}{w_{ij}}\right) - v_{ij} + w_{ij}$$
-$$\frac{\partial C}{\partial w_{ij}} = 1 - \frac{v_{ij}}{w_{ij}}$$
-
-I'm not aware of any embedding algorithms that define their cost function in 
-this way, although the Yang paper shows that elastic embedding can be considered
-a variant of this.
-
-## Normalized Distances
-
-Taking the opposite tack, if normalization is so important for 
-probability-based embeddings, what about normalizing the distances directly?
-In this case, we'll use $q_{ij}$ as a symbol, but it's better to think of it
-as a normalized distance, even though the sum of the distances will indeed
-sum to one. However, because the distances haven't been converted to 
-similarities, a large distances leads to a large $q_{ij}$, which is the opposite
-of how we've been thinking about things up until now.
-
-At any rate, the chain of dependencies is 
-$C \rightarrow q \rightarrow d \rightarrow \mathbf{y}$. As we wrote out for
-distance-based embeddings:
-
-$$\frac{\partial C}{\partial \mathbf{y_i}} = 
-  \sum_j^N \left(
-    \frac{\partial C}{\partial d_{ij}} +
-    \frac{\partial C}{\partial d_{ji}}
-   \right) 
-   \frac{1}{d_{ij}}\left(\mathbf{y_i - y_j}\right)
-$$
-
-and our next (and final) step in the chain is to define 
-$\frac{\partial C}{\partial d_{ij}}$ in terms of $q_{ij}$, i.e.
-
-$$\frac{\partial C}{\partial d_{ij}} = 
-\sum_k^N \sum_l^N \frac{\partial C}{\partial q_{kl}} 
-  \frac{\partial q_{kl}}{\partial d_{ij}}$$
-
-
-Given that we're normalizing over the distances, we once again have to decide
-if we want to do a point-wise or pair-wise normalization. Like before, I'll 
-stick with the pair-wise normalization. We can treat 
-$\frac{\partial q_{kl}}{\partial d_{ij}}$ exactly like we did 
-$\frac{\partial q_{kl}}{\partial w_{ij}}$ for probability-based embeddings, and
-to cut a long story short we get to:
-
-$$\frac{\partial C}{\partial d_{ij}} = 
--\frac{1}{S} 
-  \left[ 
-    \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
-  \right]
-$$
-
-where $S$ is now the sum of $d_{ij}$. If we employ pair-wise normalization, 
-then despite the normalization being present, with no weighting function 
-involved, we can still be sure that 
-$\frac{\partial C}{\partial d_{ij}} = \frac{\partial C}{\partial d_{ji}}$, and
-the gradient can be written as:
-$$\frac{\partial C}{\partial \mathbf{y_i}} = 
-  2\sum_j^N k_{ij} \left(\mathbf{y_i - y_j}\right)
-$$
-and
-$$k_{ij} = 
--\frac{1}{d_{ij}S} 
-  \left[ 
-    \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
-  \right]
-$$
-
-However, if you're doing point-wise normalization, there is an asymmetry, so
-there's no further simplification.
-
-We now have can be plugged in with metric MDS and Sammon-like cost function 
-derivatives, but with the distances replaced by normalized distances.
-
-## Distance-based gradient with transformed distances
-
-We could also consider keeping with raw distances and their square loss, but
-transforming them. In this case, the chain of variable dependencies is 
-$C \rightarrow f \rightarrow d \rightarrow \mathbf{y}$. 
-
-Once again, let's start with:
-
-$$\frac{\partial C}{\partial \mathbf{y_i}} = 
-  \sum_j^N \left(
-    \frac{\partial C}{\partial d_{ij}} +
-    \frac{\partial C}{\partial d_{ji}}
-   \right) 
-   \frac{1}{d_{ij}}\left(\mathbf{y_i - y_j}\right)
-$$
-
-and now we use the chain rule to connect $\frac{\partial C}{\partial d_{ij}}$
-with $f_{ij}$. We don't need to worry about any terms except the $ij$th one:
-
-$$\frac{\partial C}{\partial d_{ij}} = 
-  \frac{\partial C}{\partial f_{ij}}
-  \frac{\partial f_{ij}}{\partial d_{ij}}$$
-
-When we use the SNE-style transformation:
-
-$$f_{ij} = d_{ij}^2$$
-$$\frac{\partial f_{ij}}{\partial d_{ij}} = 2d_{ij}$$
-
-and the gradient becomes:
-
-$$\frac{\partial C}{\partial \mathbf{y_i}} = 
-  2\sum_j^N \left(
-    \frac{\partial C}{\partial f_{ij}} +
-    \frac{\partial C}{\partial f_{ji}}
-   \right) 
-   \left(\mathbf{y_i - y_j}\right)
-$$
-
-If we use a square loss, introducing $g_{ij}$ for the input space transformed
-distances:
-
-$$C_{ij} = \left(g_{ij} - f_{ij}\right)^2$$
-$$\frac{\partial C}{\partial f_{ij}} = -2\left(g_{ij} - f_{ij}\right)$$
-
-
-
-
+Next: [Experimental Gradients](experimental-gradients.html) Up: [Index](index.html)
