@@ -1,7 +1,7 @@
 # Functions to help with visualizing embedding during the optimization
 # procedure.
 
-#' Embedding Plot, Colored By Category
+#' Embedding Plot
 #'
 #' Plots the embedded coordinates, with each point colored by a specified
 #' color.
@@ -43,7 +43,7 @@
 #' @param top If not \code{NULL}, only the specified number of points will be
 #'  displayed, corresponding to those with the highest values in \code{vec},
 #'  after sorting by decreasing order.
-#' @param cex Size of the points. Ignored if \code{as_text} is \code{TRUE}.
+#' @param cex Size of the points. Ignored if \code{text} is provided.
 #' @param text Vector of label text to display instead of a point. If the labels
 #'  are long or the data set is large, this is unlikely to be very legible, but
 #'  is occasionally useful.
@@ -75,7 +75,7 @@
 #'
 #' # Can plot the category names instead of points, but looks bad if they're
 #' # long (or the dataset is large)
-#' embed_plot(pca_iris$coords, x = iris$Species, cex = 0.5, as_text = TRUE)
+#' embed_plot(pca_iris$coords, x = iris$Species, cex = 0.5, text = iris$Species)
 #'
 #' tsne_iris <- sneer(iris, method = "tsne", scale_type = "a",
 #'                    ret = c("dx", "dy", "deg"))
@@ -96,7 +96,7 @@ embed_plot <- function(coords, x = NULL, colors = NULL,
     if (!is.null(x)) {
       colors <- color_helper(x, color_scheme = color_scheme,
                              num_colors = num_colors, limits = limits,
-                             top = top)
+                             top = top)$colors
     }
     else {
       colors <- make_palette(ncolors = nrow(coords),
@@ -118,6 +118,168 @@ embed_plot <- function(coords, x = NULL, colors = NULL,
     graphics::plot(coords, pch = 20, cex = cex, col = colors,
                    xlim = lims, ylim = lims, xlab = 'X', ylab = 'Y')
   }
+}
+
+#' Embedding Plot Using the JavaScript Library Plotly
+#'
+#' Plots the embedded coordinates, with each point colored by a specified
+#' color, using Plotly.
+#'
+#' This will open a web browser if you are using the R CLI. In RStudio, it
+#' will put the plot in RStudio's Plots tab.
+#'
+#' The \code{x} argument can be used to provide a suitable vector of colors
+#' from either a data frame or vector.
+#'
+#' If a data frame is provided, then a vector of colors will be looked for. If
+#' it's present, it will be used as the \code{colors} argument directly.
+#' Otherwise, a factor column will be looked for, and each level will be mapped
+#' to a different color. Otherwise, one color will be used for each point. If
+#' more than one column of a type is found in the data frame, the last one
+#' encountered is used.
+#'
+#' If a vector is provided, a similar procedure to the data frame is used when
+#' mapping from its content to a vector of colors. Additionally, a numeric vector
+#' can be provided, which will be linearly mapped to a color scheme.
+#'
+#' The \code{color_scheme} parameter can be one of either a color ramp function,
+#' accepting an integer n as an argument and returning n colors, or the name of
+#' a ColorBrewer color scheme. Probably should be one of the "Qualitative" set.
+#'
+#' For some applicable color ramp functions, see the \code{Palettes} help page
+#' in the \code{grDevices} package (e.g. by running the \code{?rainbow} command).
+#'
+#' @param coords Matrix of embedded coordinates, with as many rows as
+#'  observations, and 2 columns.
+#' @param x Either a data frame or a column that can be used to derive a
+#'  suitable vector of colors. Ignored if \code{colors} is provided.
+#' @param colors Vector containing colors for each coordinate.
+#' @param color_scheme Either a color ramp function, or the name of a
+#'  ColorBrewer scheme. See 'Details'.
+#' @param cex Size of the points. Ignored if \code{text} is provided.
+#' @param text Vector of label text to display instead of a point. If the labels
+#'  are long or the data set is large, this is unlikely to be very legible, but
+#'  is occasionally useful.
+#' @param equal_axes If \code{TRUE}, the X and Y axes are set to have the
+#'  same extents.
+#' @note Use of this function requires installing and loading the
+#' \code{plotly} package, using version 4 or above.
+#'
+#' More information on plotly is available at its website,
+#' \url{https://plot.ly}.
+#' @export
+#' @examples
+#' \dontrun{
+#' # Embed with PCA
+#' pca_iris <- sneer(iris, method = "pca", scale_type = "a", ret = c("dy"))
+#'
+#' #' library("plotly")
+#' # Visualize the resulting embedding, colored by iris species, using the
+#' # rainbow color scheme
+#' embed_plotly(pca_iris$coords, iris$Species, color_scheme = rainbow)
+#'
+#' # topo.colors scheme
+#' embed_plotly(pca_iris$coords, iris$Species, color_scheme = topo.colors)
+#'
+#' # Pass in data frame and it will use any factor column it finds
+#' embed_plotly(pca_iris$coords, iris)
+#'
+#' # Use the "Dark2" ColorBrewer scheme
+#' embed_plotly(pca_iris$coords, iris, color_scheme = "Dark2")
+#'
+#' # Can plot the category names instead of points, but looks bad if they're
+#' # long (or the dataset is large)
+#' embed_plotly(pca_iris$coords, iris$Species, cex = 0.5, text = iris$Species)
+#'
+#' tsne_iris <- sneer(iris, method = "tsne", scale_type = "a",
+#'                    ret = c("dx", "dy", "deg"))
+#' # how well is the 32 nearest neighborhood preserved for each point?
+#' nbr_pres_32 <- nbr_pres(tsne_iris$dx, tsne_iris$dy, 32)
+#' # Project preservation onto each point with a sequential color scheme
+#' embed_plot(tsne_iris$coords, nbr_pres_32, color_scheme = "Blues")
+#' }
+embed_plotly <- function(coords, x = NULL, colors = NULL,
+                         color_scheme = grDevices::rainbow,
+                         cex = 1, text = NULL, equal_axes = FALSE) {
+  if (!requireNamespace("plotly", quietly = TRUE, warn.conflicts = FALSE)) {
+    stop("embed_plotly function requires 'plotly' package")
+  }
+
+  if (!is.null(text)) {
+    mode <- "text"
+    labels <- text
+    marker <- NULL
+  }
+  else {
+    mode <- "markers"
+    marker = list(size = cex * 6)
+    labels <- NULL
+  }
+
+  show_legend <- TRUE
+  if (!is.null(colors) && is.null(labels)) {
+    labels <- colors
+  }
+
+  if (is.null(colors)) {
+    if (!is.null(x)) {
+      if (class(x) == "numeric") {
+        labels <- x
+        if (class(color_scheme) == "character") {
+          colors <- color_scheme
+        }
+        else {
+          colors <- color_scheme(length(x))
+        }
+        mode <- "markers"
+        marker = list(size = cex * 6)
+      }
+      else {
+        res <- color_helper(x, color_scheme = color_scheme,
+                               ret_labels = TRUE)
+        colors <- res$colors
+        if (!is.null(res$labels)) {
+          labels <- res$labels
+        }
+        else {
+          labels <- colors
+        }
+      }
+    }
+    else {
+      colors <- make_palette(ncolors = nrow(coords),
+                             color_scheme = color_scheme)
+      labels <- colors
+      show_legend <- FALSE
+    }
+  }
+
+  lims <- NULL
+  if (equal_axes) {
+    lims <- range(coords)
+  }
+
+  if (is.null(text)) {
+    text <- labels
+  }
+  p <- plotly::plot_ly(
+    x = coords[, 1], y = coords[, 2],
+    color = labels,
+    colors = colors,
+    type = "scatter", mode = mode,
+    text = text,
+    marker = NULL
+     )
+  p <-
+  plotly::layout(p,
+    xaxis = list(title = "X",
+                 zeroline = FALSE, showline = TRUE, showgrid = FALSE,
+                 range = lims * 1.15),
+    yaxis = list(title = "Y",
+                 zeroline = FALSE, showline = TRUE, showgrid = FALSE,
+                 range = lims),
+    showlegend = show_legend)
+  p
 }
 
 # Helper function for generating color (and maybe factor) vectors from a data
@@ -210,17 +372,30 @@ process_color_options <- function(df,
 color_helper <- function(x,
                         color_scheme = grDevices::rainbow,
                         num_colors = 15, limits = NULL, top = NULL,
+                        ret_labels = FALSE,
                         verbose = FALSE) {
   if (class(x) == 'data.frame') {
-    color_helper_df(x, color_scheme = color_scheme, ret_labels = FALSE,
-                    verbose = verbose)
+    res <- color_helper_df(x, color_scheme = color_scheme,
+                           ret_labels = ret_labels,
+                           verbose = verbose)
+    if (!ret_labels) {
+      res <- list(colors = res, labels = NULL)
+    }
   }
   else {
-    color_helper_column(x,
-                        color_scheme = color_scheme,
-                        num_colors = num_colors, limits = limits, top = top,
-                        verbose = verbose)
+    if (class(x) == 'factor') {
+      labels <- x
+    }
+    else {
+      labels <- NULL
+    }
+    res <- list(colors = color_helper_column(x,
+                         color_scheme = color_scheme,
+                         num_colors = num_colors, limits = limits, top = top,
+                         verbose = verbose),
+                labels = labels)
   }
+  res
 }
 
 # Try and find a meaningful vector of colors from a data frame.

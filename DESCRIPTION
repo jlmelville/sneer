@@ -15,6 +15,7 @@ Suggests:
     testthat,
     ggplot2,
     RColorBrewer,
+    plotly,
     PRROC,
     rconjgrad,
     knitr,
