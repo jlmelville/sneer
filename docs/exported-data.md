@@ -55,7 +55,7 @@ The names you can ask for are:
   \code{perp_kernel_fun}. See the 
   [Input Initialization](input-initialization.html) section for more.
 * `deg` Vector of degree centrality of the input observations as used in 
-  [ws-SNE (PDF)](http://jmlr.org/proceedings/papers/v32/yange14.pdf). 
+  [ws-SNE](http://jmlr.org/proceedings/papers/v32/yange14.html). 
   Calculated if not present. A summary of this vector appears in the console 
   log after input initialization if carrying out ws-SNE (by setting 
   `method = "wssne"`).
