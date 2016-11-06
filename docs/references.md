@@ -90,7 +90,7 @@ value.
 #### Multiscale Embedding
 Lee, J. A., Peluffo-Ordónez, D. H., & Verleysen, M. (2014).
 Multiscale stochastic neighbor embedding: Towards parameter-free
-dimensionality reduction. In ESANN.
+dimensionality reduction. In *Proceedings of 2014 European Symposium on Artificial Neural Networks, Computational Intelligence and Machine Learning (ESANN 2014)* (pp. 177-182), 
 https://www.elen.ucl.ac.be/Proceedings/esann/esannpdf/es2014-64.pdf
 
 Lee, J. A., Peluffo-Ordónez, D. H., & Verleysen, M. (2015).
@@ -204,7 +204,7 @@ Cichocki, A., Cruces, S., & Amari, S. I. (2011).
 Generalized alpha-beta divergences and their application to robust nonnegative 
 matrix factorization. 
 *Entropy*, *13*(1), 134-170.
-http://www.mdpi.com/1099-4300/13/1/134
+https://dx.doi.org/10.3390/e13010134
 
 Generalizes divergences (including the Kullback-Leibler divergence used in the 
 SNE family) to non-normalized weights.
