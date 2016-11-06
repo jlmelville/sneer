@@ -151,7 +151,7 @@ $(document).ready(function () {
 </div>
 <div id="weighted-symmetric-stochastic-neighbor-embedding-ws-sne" class="section level4">
 <h4>Weighted Symmetric Stochastic Neighbor Embedding (ws-SNE)</h4>
-<p>Yang, Z., Peltonen, J., &amp; Kaski, S. (2014). Optimization equivalence of divergences improves neighbor embedding. In <em>Proceedings of the 31st International Conference on Machine Learning (ICML-14)</em> (pp. 460-468). <a href="http://jmlr.org/proceedings/papers/v32/yange14.pdf" class="uri">http://jmlr.org/proceedings/papers/v32/yange14.pdf</a></p>
+<p>Yang, Z., Peltonen, J., &amp; Kaski, S. (2014). Optimization equivalence of divergences improves neighbor embedding. In <em>Proceedings of the 31st International Conference on Machine Learning (ICML-14)</em> (pp. 460-468). <a href="http://jmlr.org/proceedings/papers/v32/yange14.html" class="uri">http://jmlr.org/proceedings/papers/v32/yange14.html</a></p>
 </div>
 <div id="neighbor-retrieval-visualizer-nerv" class="section level4">
 <h4>Neighbor Retrieval Visualizer (NeRV)</h4>
@@ -164,6 +164,8 @@ $(document).ready(function () {
 </div>
 <div id="perplexity-and-input-initialization" class="section level3">
 <h3>Perplexity and Input Initialization</h3>
+<p>Vladymyrov, M., &amp; Carreira-Perpinán, M. A. (2013, June). Entropic Affinities: Properties and Efficient Numerical Computation. <em>Proceedings of the 30th international conference on machine learning (ICML-13)</em>, pp. 477-485. <a href="http://jmlr.org/proceedings/papers/v28/vladymyrov13.html" class="uri">http://jmlr.org/proceedings/papers/v28/vladymyrov13.html</a></p>
+<p>Not implemented in <code>sneer</code>, but describes fast ways to calculate the input probabilities for large data sets. Also, coins the term “entropic affinities” to describe the process of calibrating probabilities via setting a perplexity value.</p>
 <div id="multiscale-embedding" class="section level4">
 <h4>Multiscale Embedding</h4>
 <p>Lee, J. A., Peluffo-Ordónez, D. H., &amp; Verleysen, M. (2014). Multiscale stochastic neighbor embedding: Towards parameter-free dimensionality reduction. In ESANN. <a href="https://www.elen.ucl.ac.be/Proceedings/esann/esannpdf/es2014-64.pdf" class="uri">https://www.elen.ucl.ac.be/Proceedings/esann/esannpdf/es2014-64.pdf</a></p>
@@ -183,11 +185,12 @@ $(document).ready(function () {
 </div>
 <div id="nesterov-accelerated-gradient" class="section level4">
 <h4>Nesterov Accelerated Gradient</h4>
-<p>On the importance of initialization and momentum in deep learning. In <em>Proceedings of the 30th international conference on machine learning (ICML-13)</em> (pp. 1139-1147). <a href="http://www.jmlr.org/proceedings/papers/v28/sutskever13.pdf" class="uri">http://www.jmlr.org/proceedings/papers/v28/sutskever13.pdf</a></p>
+<p>On the importance of initialization and momentum in deep learning. In <em>Proceedings of the 30th international conference on machine learning (ICML-13)</em> (pp. 1139-1147). <a href="http://www.jmlr.org/proceedings/papers/v28/sutskever13.html" class="uri">http://www.jmlr.org/proceedings/papers/v28/sutskever13.html</a></p>
 </div>
 <div id="adaptive-restart" class="section level4">
 <h4>Adaptive Restart</h4>
-<p>O’Donoghue, B., &amp; Candes, E. (2013). Adaptive restart for accelerated gradient schemes. <em>Foundations of computational mathematics</em>, <em>15</em>(3), 715-732. <a href="https://arxiv.org/abs/1204.3982" class="uri">https://arxiv.org/abs/1204.3982</a></p>
+<p>O’Donoghue, B., &amp; Candes, E. (2013). Adaptive restart for accelerated gradient schemes. <em>Foundations of computational mathematics</em>, <em>15</em>(3), 715-732. <a href="https://dx.doi.org/10.1007/s10208-013-9150-3" class="uri">https://dx.doi.org/10.1007/s10208-013-9150-3</a>, <a href="https://arxiv.org/abs/1204.3982" class="uri">https://arxiv.org/abs/1204.3982</a></p>
+<p>Su, W., Boyd, S., &amp; Candes, E. J. (2016). A differential equation for modeling nesterov’s accelerated gradient method: theory and insights. <em>Journal of Machine Learning Research</em>, <em>17</em>(153), 1-43. <a href="http://jmlr.org/papers/v17/15-084.html" class="uri">http://jmlr.org/papers/v17/15-084.html</a></p>
 </div>
 </div>
 <div id="evaluation" class="section level3">
@@ -204,10 +207,43 @@ $(document).ready(function () {
 </div>
 <div id="miscellany" class="section level3">
 <h3>Miscellany</h3>
-<p>Two excellent interactive web pages:</p>
+<p>Things that aren’t in <code>sneer</code>, but piqued my interest, or don’t fit into the other categories.</p>
+<div id="distance-approximations" class="section level4">
+<h4>Distance Approximations</h4>
+<p>The bottle-neck in embedding methods is the requirement to calculate the all-against-all distance matrix. A variety of work-arounds have been suggested. The most popular is to group distant points together and treat them as a single point via a multipole method.</p>
+<p>This is not currently implemented in <code>sneer</code>, and I suggest looking at the <a href="https://cran.r-project.org/package=Rtsne">Rtsne</a> package for the most popular implementation using the Barnes-Hut algorithm. It’s a wrapper around C++ code, so it’s fast too! Might as well throw in a few references, while we’re here:</p>
+<p>Van Der Maaten, L. (2013). Barnes-Hut-SNE. <em>arXiv preprint</em> <em>arXiv</em>:1301.3342. <a href="https://arxiv.org/abs/1301.3342" class="uri">https://arxiv.org/abs/1301.3342</a></p>
+<p>Yang, Z., Peltonen, J., &amp; Kaski, S. (2013, June). Scalable Optimization of Neighbor Embedding for Visualization. In <em>Proceedings of the 30th international conference on machine learning (ICML-13)</em> (pp. 127-135). <a href="http://www.jmlr.org/proceedings/papers/v28/yang13b.html" class="uri">http://www.jmlr.org/proceedings/papers/v28/yang13b.html</a></p>
+<p>Van Der Maaten, L. (2014). Accelerating t-SNE using tree-based algorithms. <em>Journal of machine learning research</em>, <em>15</em>(1), 3221-3245. <a href="http://www.jmlr.org/papers/v15/vandermaaten14a.html" class="uri">http://www.jmlr.org/papers/v15/vandermaaten14a.html</a></p>
+<p>Vladymyrov, M., &amp; Carreira-Perpinán, M. A. (2014). Linear-time training of nonlinear low-dimensional embeddings. In <em>17th International Conference on Artificial Intelligence and Statistics (AISTATS 2014)</em> (pp. 968-977). <a href="http://jmlr.org/proceedings/papers/v33/vladymyrov14.html" class="uri">http://jmlr.org/proceedings/papers/v33/vladymyrov14.html</a></p>
+</div>
+<div id="divergences" class="section level4">
+<h4>Divergences</h4>
+<p>Cichocki, A., Cruces, S., &amp; Amari, S. I. (2011). Generalized alpha-beta divergences and their application to robust nonnegative matrix factorization. <em>Entropy</em>, <em>13</em>(1), 134-170. <a href="http://www.mdpi.com/1099-4300/13/1/134" class="uri">http://www.mdpi.com/1099-4300/13/1/134</a></p>
+<p>Generalizes divergences (including the Kullback-Leibler divergence used in the SNE family) to non-normalized weights.</p>
+<p>Bunte, K., Haase, S., Biehl, M., &amp; Villmann, T. (2012). Stochastic neighbor embedding (SNE) for dimension reduction and visualization using arbitrary divergences. <em>Neurocomputing</em>, <em>90</em>, 23-45. <a href="http://dx.doi.org/10.1016/j.neucom.2012.02.034" class="uri">http://dx.doi.org/10.1016/j.neucom.2012.02.034</a></p>
+<p>If you like divergences, this paper has you covered.</p>
+</div>
+<div id="why-do-probability-based-embeddings-work" class="section level4">
+<h4>Why Do Probability-Based Embeddings Work?</h4>
+<p>Lee, J. A., &amp; Verleysen, M. (2011). Shift-invariant similarities circumvent distance concentration in stochastic neighbor embedding and variants. <em>Procedia Computer Science</em>, 4, 538-547. <a href="http://dx.doi.org/10.1016/j.procs.2011.04.056" class="uri">http://dx.doi.org/10.1016/j.procs.2011.04.056</a></p>
+<p>Lee, J. A., &amp; Verleysen, M. (2014, December). Two key properties of dimensionality reduction methods. In <em>Computational Intelligence and Data Mining (CIDM), 2014 IEEE Symposium on</em> (pp. 163-170). IEEE. <a href="http://dx.doi.org/10.1109/CIDM.2014.7008663" class="uri">http://dx.doi.org/10.1109/CIDM.2014.7008663</a></p>
+<p>Two papers which try and work out why the probability-based embedding methods work so much better than other algorithms. They suggest that it’s because of the normalization that occurs when converting weights to probabilities, and the ability to ignore or modify specific input distances (which they term “plasticity”).</p>
+<p>Demartines, P., &amp; Hérault, J. (1997). Curvilinear component analysis: A self-organizing neural network for nonlinear mapping of data sets. <em>IEEE Transactions on neural networks</em>, <em>8</em>(1), 148-154. <a href="http://dx.doi.org/10.1109/72.554199" class="uri">http://dx.doi.org/10.1109/72.554199</a></p>
+<p>CCA is interesting for two reasons: first, it uses a cutoff parameter, so that distances beyond a certain value are ignored in the gradient. Second, it uses a random pair-wise update to optimize the embedding, effectively using stochastic gradient descent. The Lee &amp; Verleysen 2014 paper points to the first property as an important component in dimensionality reduction.</p>
+<p>Agrafiotis, D. K., &amp; Xu, H. (2002). A self-organizing principle for learning nonlinear manifolds. <em>Proceedings of the National Academy of Sciences</em>, <em>99</em>(25), 15869-15872. <a href="http://dx.doi.org/10.1073/pnas.242424399" class="uri">http://dx.doi.org/10.1073/pnas.242424399</a></p>
+<p>This paper describes Stochastic Proximity Embedding (SPE), which despite its name is much more related to CCA than SNE. It seems to be an independent rediscovery of many of the principles of CCA, although there are some important differences (particularly with respect to the Lee &amp; Verleysen concept of plasticity mentioned above). There is an R <a href="https://cran.r-project.org/package=spe">spe package</a> to play with if you’re interested.</p>
+</div>
+<div id="majorization-minimization" class="section level4">
+<h4>Majorization-Minimization</h4>
+<p>Yang, Z., Peltonen, J., &amp; Kaski, S. (2015). Majorization-Minimization for Manifold Embedding. In <em>Proceedings of the 18th International Conference on Artificial Intelligence and Statistics (AISTATS 2015)</em> (pp. 1088-1097). <a href="http://www.jmlr.org/proceedings/papers/v38/yang15a.html" class="uri">http://www.jmlr.org/proceedings/papers/v38/yang15a.html</a></p>
+</div>
+<div id="two-excellent-interactive-web-pages" class="section level4">
+<h4>Two excellent interactive web pages</h4>
 <p>Visualizing MNIST: An Exploration of Dimensionality Reduction <a href="http://colah.github.io/posts/2014-10-Visualizing-MNIST/" class="uri">http://colah.github.io/posts/2014-10-Visualizing-MNIST/</a></p>
 <p>How to Use t-SNE Effectively <a href="http://distill.pub/2016/misread-tsne/" class="uri">http://distill.pub/2016/misread-tsne/</a></p>
 <p>Previous: <a href="visualization.html">Visualization</a>. Up: <a href="index.html">Index</a>.</p>
+</div>
 </div>
 
 

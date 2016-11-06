@@ -101,7 +101,7 @@ neighbors to take up larger distances in the output configuration.
 
 This method scales each weight by its "importance", which is related to the
 input probability. The higher the probability, the more important it is.
-See the [ws-SNE paper (PDF)](http://jmlr.org/proceedings/papers/v32/yange14.pdf)
+See the [ws-SNE paper](http://jmlr.org/proceedings/papers/v32/yange14.html)
 for the details. Also, note that this is a modification of t-SNE, rather than
 SSNE.
 
@@ -163,7 +163,7 @@ iris_nerv <- sneer(iris, method = "nerv", prec_scale = "t") # original NeRV
 ```
 
 Later publications (see, for example, the 
-[ws-SNE paper (PDF)](http://jmlr.org/proceedings/papers/v32/yange14.pdf)) don't
+[ws-SNE paper](http://jmlr.org/proceedings/papers/v32/yange14.html)) don't
 mention this difference and I recommend not setting `prec_scale`. See the
 [Input Initialization](input-initialization.html) section for more on 
 `prec_scale`.

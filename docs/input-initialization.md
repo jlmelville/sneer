@@ -42,7 +42,10 @@ specifying a desired value for the perplexity, which is usually described as
 being a continuous analog to the number of nearest neighbors of a point. The 
 user sets the perplexity, and then the precision of the kernel is adjusted so 
 that the probability associated with each point generates the desired 
-perplexity.
+perplexity. Generating input probabilities in this way (by specifying a 
+perplexity value, rather than directly setting the parameters of the input 
+kernel function) has been termed
+[entropic affinities](http://jmlr.org/proceedings/papers/v28/vladymyrov13.html).
 
 You may be wondering at this point if there's a free parameter associated with
 the output kernel function. The answer is, for t-SNE, no. But for other
@@ -199,7 +202,7 @@ s1k_mssne <- sneer(s1k, perp_scale = "multi", prec_scale = "s", method = "ssne")
 Some methods directly or indirectly use a sparse representation of the input
 probabilities, which substantially helps with memory and speed issues. See,
 for instance, the [Spectral Directions](https://arxiv.org/abs/1206.4646) and
-[ws-SNE (PDF)](http://jmlr.org/proceedings/papers/v32/yange14.pdf) papers.
+[ws-SNE](http://jmlr.org/proceedings/papers/v32/yange14.html) papers.
 
 Sneer doesn't support any sparse representations, but if you want to see what 
 the effect of replacing the gaussian kernel with a step-function kernel 

@@ -160,7 +160,7 @@ $(document).ready(function () {
 </div>
 <div id="weighted-symmetric-sne-ws-sne" class="section level4">
 <h4>Weighted Symmetric SNE (ws-SNE)</h4>
-<p>This method scales each weight by its “importance”, which is related to the input probability. The higher the probability, the more important it is. See the <a href="http://jmlr.org/proceedings/papers/v32/yange14.pdf">ws-SNE paper (PDF)</a> for the details. Also, note that this is a modification of t-SNE, rather than SSNE.</p>
+<p>This method scales each weight by its “importance”, which is related to the input probability. The higher the probability, the more important it is. See the <a href="http://jmlr.org/proceedings/papers/v32/yange14.html">ws-SNE paper</a> for the details. Also, note that this is a modification of t-SNE, rather than SSNE.</p>
 <pre class="r"><code>iris_wssne &lt;- sneer(iris, method = &quot;wssne&quot;)</code></pre>
 </div>
 <div id="heavy-tailed-symmetric-stochastic-neighbor-embedding-hssne" class="section level4">
@@ -182,7 +182,7 @@ iris_nerv &lt;- sneer(iris, method = &quot;nerv&quot;, lambda = 1) # ASNE
 iris_nerv &lt;- sneer(iris, method = &quot;nerv&quot;, lambda = 0) # &quot;reverse&quot; ASNE</code></pre>
 <p>See the <a href="http://www.jmlr.org/papers/v11/venna10a.html">NeRV</a> paper for more details. In that publication, they suggest transferring the input kernel precisions directly to the output kernel. To do this, set the <code>prec_scale</code> parameter with an argument of <code>&quot;t&quot;</code></p>
 <pre class="r"><code>iris_nerv &lt;- sneer(iris, method = &quot;nerv&quot;, prec_scale = &quot;t&quot;) # original NeRV</code></pre>
-<p>Later publications (see, for example, the <a href="http://jmlr.org/proceedings/papers/v32/yange14.pdf">ws-SNE paper (PDF)</a>) don’t mention this difference and I recommend not setting <code>prec_scale</code>. See the <a href="input-initialization.html">Input Initialization</a> section for more on <code>prec_scale</code>.</p>
+<p>Later publications (see, for example, the <a href="http://jmlr.org/proceedings/papers/v32/yange14.html">ws-SNE paper</a>) don’t mention this difference and I recommend not setting <code>prec_scale</code>. See the <a href="input-initialization.html">Input Initialization</a> section for more on <code>prec_scale</code>.</p>
 </div>
 <div id="jensen-shannon-embedding-jse" class="section level4">
 <h4>Jensen-Shannon Embedding (JSE)</h4>

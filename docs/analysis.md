@@ -87,7 +87,7 @@ data.
 
 Using the embedding as a retrieval experiment and evaluating the PR AUC was
 done in the 
-[ws-SNE paper (PDF)](http://jmlr.org/proceedings/papers/v32/yange14.pdf).
+[ws-SNE paper](http://jmlr.org/proceedings/papers/v32/yange14.html).
 
 ### `nbr_pres`
 

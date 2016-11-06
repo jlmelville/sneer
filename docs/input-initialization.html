@@ -133,7 +133,7 @@ $(document).ready(function () {
 </div>
 <div id="perplexity-and-precision" class="section level3">
 <h3>Perplexity and precision</h3>
-<p>The precision of the kernel function is not set directly. It’s done by specifying a desired value for the perplexity, which is usually described as being a continuous analog to the number of nearest neighbors of a point. The user sets the perplexity, and then the precision of the kernel is adjusted so that the probability associated with each point generates the desired perplexity.</p>
+<p>The precision of the kernel function is not set directly. It’s done by specifying a desired value for the perplexity, which is usually described as being a continuous analog to the number of nearest neighbors of a point. The user sets the perplexity, and then the precision of the kernel is adjusted so that the probability associated with each point generates the desired perplexity. Generating input probabilities in this way (by specifying a perplexity value, rather than directly setting the parameters of the input kernel function) has been termed <a href="http://jmlr.org/proceedings/papers/v28/vladymyrov13.html">entropic affinities</a>.</p>
 <p>You may be wondering at this point if there’s a free parameter associated with the output kernel function. The answer is, for t-SNE, no. But for other embedding methods there is. For example, the original SNE method also uses a gaussian kernel for the output distances, but just sets all the bandwidths to unity. For more exotic treatments, look for the discussion of the <code>prec_scale</code> parameter below.</p>
 </div>
 <div id="perplexity" class="section level3">
@@ -182,7 +182,7 @@ s1k_tsne &lt;- sneer(s1k, perp_scale = &quot;step&quot;, perp_scale_iter = 150)<
 </div>
 <div id="perp_kernel_fun" class="section level3">
 <h3><code>perp_kernel_fun</code></h3>
-<p>Some methods directly or indirectly use a sparse representation of the input probabilities, which substantially helps with memory and speed issues. See, for instance, the <a href="https://arxiv.org/abs/1206.4646">Spectral Directions</a> and <a href="http://jmlr.org/proceedings/papers/v32/yange14.pdf">ws-SNE (PDF)</a> papers.</p>
+<p>Some methods directly or indirectly use a sparse representation of the input probabilities, which substantially helps with memory and speed issues. See, for instance, the <a href="https://arxiv.org/abs/1206.4646">Spectral Directions</a> and <a href="http://jmlr.org/proceedings/papers/v32/yange14.html">ws-SNE</a> papers.</p>
 <p>Sneer doesn’t support any sparse representations, but if you want to see what the effect of replacing the gaussian kernel with a step-function kernel (which effectively sets all the non-nearest neighbor probabilities to zero), you can do so:</p>
 <pre class="r"><code># Only the 50 nearest neighbors of a point will have a non-zero probability
 s1k_tsne &lt;- sneer(s1k, perplexity = 50, perp_scale_fun = &quot;step&quot;)</code></pre>

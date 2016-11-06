@@ -67,12 +67,12 @@ and its variants ASNE and SSNE.
 * [Neighbor Retrieval Visualizer](http://www.jmlr.org/papers/v11/venna10a.html) (NeRV).
 * [Jensen-Shannon Embedding](http://www.sciencedirect.com/science/article/pii/S0925231213001471) (JSE).
 * [Multiscale SNE](http://www.sciencedirect.com/science/article/pii/S0925231215003641) (msSNE).
-* [Weighted SNE using degree centrality (PDF)](http://www.jmlr.org/proceedings/papers/v32/yange14.pdf) (wSSNE).
+* [Weighted SNE using degree centrality](http://www.jmlr.org/proceedings/papers/v32/yange14.html) (ws-SSNE).
 * Nesterov Accelerated Gradient method for optimization.
 * The usual t-SNE Steepest descent with momentum and Jacobs adaptive step size
 if NAG is too racy for you.
 * The bold driver adaptive step algorithm if you want to mix it up a little.
-* The [Spectral Directions (PDF)](http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml12.pdf)
+* The [Spectral Directions]((https://arxiv.org/abs/1206.4646)
 optimization method of Vladymyrov and Carreira-Perpiñán, although in a 
 non-sparse form.
 * The L-BFGS method from the R `optim` function.
