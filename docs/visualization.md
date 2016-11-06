@@ -396,4 +396,42 @@ If `TRUE`, whatever factor column provided to `sneer` (or it finds itself)
 will be plotted as labels on the embedding plot. As discussed under the 
 `text` parameter of `embed_plot`, has limited (but not zero) use.
 
+### `embed_plotly`
+
+As an alternative to `embed_plot`, you can try out `embed_plotly`, which 
+uses the JavaScript charting library [plotly](https://plot.ly) and its R API
+to generate embedding plots. You will need to install the 
+[plotly](https://cran.r-project.org/package=plotly) package, ensuring the
+version you are using is at least version 4:
+
+```R
+install.package("plotly")
+library("plotly")
+packageVersion("plotly") # This needs to begin with '4.'
+```
+
+If you're using [RStudio](https://www.rstudio.com/), calling `embed_plotly`
+won't seem all that different to using `embed_plot`. However, if you're using
+the usual R shell, then it will open the plot in your default web browser. If
+you can handle that, then there are a few advantages to using plotly.
+First:
+
+![`embed_plotly(tsne_iris$coords, iris$Species, color_scheme = "Accent")`](embed-plotly-categorical.png)
+
+Yep, you get a legend.
+
+Second:
+
+![`embed_plotly(tsne_iris$coords, tsne_iris$deg, color_scheme = "Blues")`](embed-plotly-numeric.png)
+
+And numeric vectors gets a color scale. Also, if you pass in some labels as
+the `text` argument, they will show up in a tooltip if you hover over a point.
+
+Third, there are lots of panning and zooming options if you want to 
+interactively explore different areas of the plot in more detail.
+
+The only minor downside to the use of `embed_plotly` is that it doesn't support
+the `limits` and `top` arguments when used with a numeric vector. A small
+price to pay.
+
 Previous: [Analysis](analysis.html). Next: [References](references.html). Up: [Index](index.html).
