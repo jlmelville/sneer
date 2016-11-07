@@ -121,152 +121,275 @@ $(document).ready(function () {
 
 <div id="examples" class="section level3">
 <h3>Examples</h3>
-<p>More examples than you can shake a stick at:</p>
-<pre class="r"><code># PCA on iris dataset and plot result using Species label name
-res &lt;- sneer(iris, indexes = 1:4, label_name = &quot;Species&quot;, method = &quot;pca&quot;)
+<p>Provides a sampling of what’s available through <code>sneer</code>. But see the full <a href="index.html">Documentation</a> for the available options.</p>
+<div id="run-t-sne-by-default" class="section level4">
+<h4>Run t-SNE By Default</h4>
+<pre class="r"><code>res &lt;- sneer(iris)</code></pre>
+</div>
+<div id="pca-on-iris-dataset-and-plot-result-using-species-label-name" class="section level4">
+<h4>PCA on iris dataset and plot result using Species label name</h4>
+<pre class="r"><code>res &lt;- sneer(iris, indexes = 1:4, label_name = &quot;Species&quot;, method = &quot;pca&quot;)
 
 # Same as above, but with sensible defaults (use all numeric columns, plot
 # with first factor column found)
-res &lt;- sneer(iris, method = &quot;pca&quot;)
-
-# scale columns so each one has mean 0 and variance 1
-res &lt;- sneer(iris, method = &quot;pca&quot;, scale_type = &quot;a&quot;)
-
-# full species name on plot is cluttered, so just use the first two
+res &lt;- sneer(iris, method = &quot;pca&quot;)</code></pre>
+</div>
+<div id="scale-columns-to-mean-0-and-unit-variance" class="section level4">
+<h4>Scale Columns to Mean 0 and Unit Variance</h4>
+<pre class="r"><code>res &lt;- sneer(iris, method = &quot;pca&quot;, scale_type = &quot;a&quot;)</code></pre>
+</div>
+<div id="range-scale-each-column" class="section level4">
+<h4>Range Scale Each Column</h4>
+<pre class="r"><code>res &lt;- sneer(iris, method = &quot;pca&quot;, scale_type = &quot;r&quot;)</code></pre>
+</div>
+<div id="range-scale-entire-matrix" class="section level4">
+<h4>Range Scale Entire Matrix</h4>
+<pre class="r"><code>res &lt;- sneer(iris, method = &quot;pca&quot;, scale_type = &quot;m&quot;)</code></pre>
+</div>
+<div id="only-run-plot-for-200-iterations" class="section level4">
+<h4>Only Run Plot for 200 Iterations</h4>
+<pre class="r"><code>res &lt;- sneer(iris, max_iter = 200)</code></pre>
+</div>
+<div id="plotting-category-names" class="section level4">
+<h4>Plotting Category Names</h4>
+<pre class="r"><code># full species name on plot is cluttered, so just use the first two
 # letters and half size
-res &lt;- sneer(iris, method = &quot;pca&quot;, scale_type = &quot;a&quot;, label_chars = 2,
-             label_size = 0.5)
-
-# You need to install and load ggplot2 and RColorBrewer yourself
-library(ggplot2)
-library(RColorBrewer)
-# Optionally use ggplot2 and RColorBrewer palettes for the plot
-res &lt;- sneer(iris, method = &quot;pca&quot;, scale_type = &quot;a&quot;, plot_type = &quot;g&quot;)
-
-# Use a different ColorBrewer palette, bigger points, and range scale each
-# column
-res &lt;- sneer(iris, method = &quot;pca&quot;, scale_type = &quot;r&quot;, plot_type = &quot;g&quot;,
-             color_scheme = &quot;Dark2&quot;, label_size = 2)
-
-# metric MDS starting from the PCA
-res &lt;- sneer(iris, method = &quot;mmds&quot;, scale_type = &quot;a&quot;, init = &quot;p&quot;)
-
-# Sammon map starting from random distribution
-res &lt;- sneer(iris, method = &quot;sammon&quot;, scale_type = &quot;a&quot;, init = &quot;r&quot;)
-
-# TSNE with a perplexity of 32, initialize from PCA
-res &lt;- sneer(iris, method = &quot;tsne&quot;, scale_type = &quot;a&quot;, init = &quot;p&quot;,
-             perplexity = 32)
-# default settings are to use TSNE with perplexity 32 and initialization
-# from PCA so the following is the equivalent of the above
-res &lt;- sneer(iris, scale_type = &quot;a&quot;)
-
-# Use the standard tSNE optimization method (Jacobs step size method) with
-# step momentum. Range scale the matrix and use an aggressive learning
-# rate (epsilon).
-res &lt;- sneer(iris, scale_type = &quot;m&quot;, perplexity = 25, opt = &quot;tsne&quot;,
-             epsilon = 500)
-
-# NeRV method, starting at a more global perplexity and slowly stepping
-# towards a value of 32 (might help avoid local optima)
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;nerv&quot;, perp_scale = &quot;step&quot;)
-
-# NeRV method has a lambda parameter - closer to 1 it gets, the more it
-# tries to avoid false positives (close points in the map that aren't close
-# in the input space):
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;nerv&quot;, perp_scale = &quot;step&quot;,
-             lambda = 1)
-
-# Original NeRV paper transferred input exponential similarity kernel
-# precisions to the output kernel, and initialized from a uniform random
-# distribution
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;nerv&quot;, perp_scale = &quot;step&quot;,
-             lambda = 1, prec_scale = &quot;t&quot;, init = &quot;u&quot;)
-
-# Like NeRV, the JSE method also has a controllable parameter that goes
-# between 0 and 1, called kappa. It gives similar results to NeRV at 0 and
-# 1 but unfortunately the opposite way round! The following gives similar
-# results to the NeRV embedding above:
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;jse&quot;, perp_scale = &quot;step&quot;,
-             kappa = 0)
-
-# Rather than step perplexities, use multiscaling to combine and average
-# probabilities across multiple perplexities. Output kernel precisions
-# can be scaled based on the perplexity value (compare to NeRV example
-# which transferred the precision directly from the input kernel)
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;jse&quot;, perp_scale = &quot;multi&quot;,
-             prec_scale = &quot;s&quot;)
-
-# HSSNE has a controllable parameter, alpha, that lets you control how
-# much extra space to give points compared to the input distances.
-# Setting it to 1 is equivalent to TSNE, so 1.1 is a bit of an extra push:
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;hssne&quot;, alpha = 1.1)
-
-# wTSNE treats the input probability like a graph where the probabilities
-# are weighted edges and adds extra repulsion to nodes with higher degrees
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;)
-
-# can use a step-function input kernel to make input probability more like
-# a k-nearest neighbor graph (but note that we don't take advantage of the
-# sparsity for performance purposes, sadly)
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;, perp_kernel_fun = &quot;step&quot;)
-
-# Some quality measures are available to quantify embeddings
-# The area under the RNX curve measures whether neighbors in the input
-# are still neighors in the output space
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;,
-             quality_measures =  c(&quot;n&quot;))
-
-# Create a 5D gaussian with its own column specifying colors to use
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, label_chars = 2, 
+                   point_size = 0.5, plot_labels = TRUE)</code></pre>
+</div>
+<div id="use-pre-chosen-colors-in-the-embedding-plot" class="section level4">
+<h4>Use Pre-Chosen Colors in the Embedding Plot</h4>
+<pre class="r"><code># Create a 5D gaussian with its own column specifying colors to use
 # for each point (in this case, random)
 g5d &lt;- data.frame(matrix(rnorm(100 * 5), ncol = 5),
                   color = rgb(runif(100), runif(100), runif(100)),
                   stringsAsFactors = FALSE)
 # Specify the name of the color column and the plot will use it rather than
 # trying to map factor levels to colors
-res &lt;- sneer(g5d, method = &quot;pca&quot;, color_name = &quot;color&quot;)
-
-# If your dataset labels divide the data into natural classes, can calculate
-# average area under the ROC and/or precision-recall curve too, but you need to
-# have installed the PRROC package. And all these techniques can be slow (scale
-# with the square of the number of observations).
-library(PRROC)
-res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;,
-             quality_measures =  c(&quot;n&quot;, &quot;r&quot;, &quot;p&quot;))
-
-# export the distance matrices and do whatever quality measures we want at our
+res &lt;- sneer(g5d, method = &quot;pca&quot;, color_name = &quot;color&quot;)</code></pre>
+</div>
+<div id="use-ggplot2-for-the-embedding-plot" class="section level4">
+<h4>Use <code>ggplot2</code> for the Embedding Plot</h4>
+<pre class="r"><code># You need to install and load ggplot2 and RColorBrewer yourself
+library(&quot;ggplot2&quot;)
+res &lt;- sneer(iris, method = &quot;pca&quot;, scale_type = &quot;a&quot;, plot_type = &quot;g&quot;)</code></pre>
+</div>
+<div id="use-colorbrewer-color-schemes-for-the-embedding-plot" class="section level4">
+<h4>Use ColorBrewer color schemes for the embedding plot</h4>
+<pre class="r"><code># Use a different ColorBrewer palette, bigger points, and range scale each
+# column
+res &lt;- sneer(iris, method = &quot;pca&quot;, scale_type = &quot;r&quot;, plot_type = &quot;g&quot;,
+             color_scheme = &quot;Dark2&quot;, label_size = 2)</code></pre>
+</div>
+<div id="no-plot-at-all" class="section level4">
+<h4>No plot at all</h4>
+<pre class="r"><code>res &lt;- sneer(iris, plot_type = &quot;n&quot;)</code></pre>
+</div>
+<div id="metric-mds" class="section level4">
+<h4>Metric MDS</h4>
+<pre class="r"><code>res &lt;- sneer(iris, method = &quot;mmds&quot;)</code></pre>
+</div>
+<div id="sammon-map" class="section level4">
+<h4>Sammon Map</h4>
+<pre class="r"><code># Sammon map starting from random distribution
+res &lt;- sneer(iris, method = &quot;sammon&quot;, scale_type = &quot;a&quot;, init = &quot;r&quot;)</code></pre>
+</div>
+<div id="t-sne" class="section level4">
+<h4>t-SNE</h4>
+<pre class="r"><code># TSNE with a perplexity of 32, initialize from PCA
+res &lt;- sneer(iris, method = &quot;tsne&quot;, scale_type = &quot;a&quot;, init = &quot;p&quot;,
+             perplexity = 32)
+             
+# default settings are to use TSNE with perplexity 32 and initialization
+# from PCA so the following is the equivalent of the above
+res &lt;- sneer(iris, scale_type = &quot;a&quot;)</code></pre>
+</div>
+<div id="t-sne-with-jacobs-step-size-method" class="section level4">
+<h4>t-SNE with Jacobs Step Size method</h4>
+<pre class="r"><code># Use the standard tSNE optimization method (Jacobs step size method) with
+# step momentum. Range scale the matrix and use an aggressive learning
+# rate (epsilon).
+res &lt;- sneer(iris, scale_type = &quot;m&quot;, perplexity = 25, opt = &quot;tsne&quot;,
+             epsilon = 500)</code></pre>
+</div>
+<div id="t-sne-with-jacobs-step-size-and-early-exaggeration" class="section level4">
+<h4>t-SNE with Jacobs Step Size and Early Exaggeration</h4>
+<pre class="r"><code>res &lt;- sneer(iris, scale_type = &quot;m&quot;, perplexity = 25, opt = &quot;tsne&quot;,
+             epsilon = 500, exaggerate = 4, exaggerate_off_iter = 100)</code></pre>
+</div>
+<div id="t-sne-with-jacobs-step-size-early-exaggeration-and-random-initialization" class="section level4">
+<h4>t-SNE with Jacobs Step Size, Early Exaggeration and Random Initialization</h4>
+<pre class="r"><code># By default we initialize from a PCA scores plot, but we can initialize
+# from random too
+res &lt;- sneer(iris, scale_type = &quot;m&quot;, perplexity = 25, opt = &quot;tsne&quot;,
+             epsilon = 500, exaggerate = 4, exaggerate_off_iter = 100,
+             init = &quot;r&quot;)</code></pre>
+</div>
+<div id="nerv-with-perplexity-stepping" class="section level4">
+<h4>NeRV with perplexity stepping</h4>
+<pre class="r"><code># Will step from a global-ish perplexity value towards a perplexity of 32
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;nerv&quot;, perp_scale = &quot;step&quot;)</code></pre>
+</div>
+<div id="nerv-with-adjusted-lamda-parameter" class="section level4">
+<h4>NeRV with adjusted lamda parameter</h4>
+<pre class="r"><code># NeRV method has a lambda parameter - closer to 1 it gets, the more it
+# tries to avoid false positives (close points in the map that aren't close
+# in the input space):
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;nerv&quot;, perp_scale = &quot;step&quot;,
+             lambda = 1)</code></pre>
+</div>
+<div id="nerv-with-transferred-input-kernel-precisions" class="section level4">
+<h4>NeRV with transferred input kernel precisions</h4>
+<pre class="r"><code># Original NeRV paper transferred input exponential similarity kernel
+# precisions to the output kernel, and initialized from a uniform random
+# distribution
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;nerv&quot;, perp_scale = &quot;step&quot;,
+             lambda = 1, prec_scale = &quot;t&quot;, init = &quot;u&quot;)</code></pre>
+</div>
+<div id="jse" class="section level4">
+<h4>JSE</h4>
+<pre class="r"><code># Like NeRV, the JSE method also has a controllable parameter that goes
+# between 0 and 1, called kappa. It gives similar results to NeRV at 0 and
+# 1 but unfortunately the opposite way round! The following gives similar
+# results to the NeRV embedding above:
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;jse&quot;, perp_scale = &quot;step&quot;,
+             kappa = 0)</code></pre>
+</div>
+<div id="multiscale-jse" class="section level4">
+<h4>Multiscale JSE</h4>
+<pre class="r"><code># Rather than step perplexities, use multiscaling to combine and average
+# probabilities across multiple perplexities. Output kernel precisions
+# can be scaled based on the perplexity value (compare to NeRV example
+# which transferred the precision directly from the input kernel)
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;jse&quot;, perp_scale = &quot;multi&quot;,
+             prec_scale = &quot;s&quot;)</code></pre>
+</div>
+<div id="heavy-tailed-sne" class="section level4">
+<h4>Heavy-tailed SNE</h4>
+<pre class="r"><code># HSSNE has a controllable parameter, alpha, that lets you control how
+# much extra space to give points compared to the input distances.
+# Setting it to 1 is equivalent to TSNE, so 1.1 is a bit of an extra push:
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;hssne&quot;, alpha = 1.1)</code></pre>
+</div>
+<div id="importance-weighted-sne" class="section level4">
+<h4>Importance-weighted SNE</h4>
+<pre class="r"><code># ws-SNE treats the input probability like a graph where the probabilities
+# are weighted edges and adds extra repulsion to nodes with higher degrees
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wssne&quot;)</code></pre>
+</div>
+<div id="use-step-function-for-input-probabilities" class="section level4">
+<h4>Use step function for input probabilities</h4>
+<pre class="r"><code># can use a step-function input kernel to make input probability more like
+# a k-nearest neighbor graph (but note that we don't take advantage of the
+# sparsity for performance purposes, sadly)
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;, perp_kernel_fun = &quot;step&quot;)</code></pre>
+</div>
+<div id="export-data-for-later-analysis" class="section level4">
+<h4>Export Data For Later Analysis</h4>
+<pre class="r"><code># export the distance matrices and do whatever quality measures we want at our
 # leisure
 res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;, ret = c(&quot;dx&quot;, &quot;dy&quot;))
 
 # export degree centrality, input weight function precision parameters,
 # and intrinsic dimensionality
 res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;,
-  ret = c(&quot;deg&quot;, &quot;prec&quot;, &quot;dim&quot;))
+  ret = c(&quot;deg&quot;, &quot;prec&quot;, &quot;dim&quot;))</code></pre>
+</div>
+<div id="quality-measures" class="section level4">
+<h4>Quality Measures</h4>
+<p>If your dataset labels divide the data into natural classes, can calculate average area under the ROC and/or precision-recall curve too, but you need to have installed the PRROC package.</p>
+<p>You can also calculate the Area Under the RNX Curve, which is a measure of neighborhood preservation between the upper and lower dimensions, which doesn’t need any categorization.</p>
+<p>All these techniques can be slow (scale with the square of the number of observations).</p>
+<pre class="r"><code># &quot;n&quot; - RNX AUC
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;,
+             quality_measures =  c(&quot;n&quot;))
+
+# Install and load the PRROC package
+library(PRROC)
+
+# &quot;r&quot; - ROC AUC
+# &quot;p&quot; - Precision Recall AUC
+res &lt;- sneer(iris, quality_measures =  c(&quot;n&quot;, &quot;r&quot;, &quot;p&quot;))</code></pre>
+</div>
+<div id="quality-measures-as-separate-functions" class="section level4">
+<h4>Quality Measures as Separate Functions</h4>
+<pre class="r"><code># export input (dx) and output (dy) distance matrices
+res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;,
+             ret - c(&quot;dx&quot;, &quot;dy&quot;))
+             
+rnx_auc &lt;- rnx_auc_embed(res$dx, res$dy)
+
+pr_auc &lt;- pr_auc_embed(res$dy, iris$Species)
+
+roc_auc &lt;- roc_auc_embed(res$dy, iris$Species)</code></pre>
+</div>
+<div id="visualizing-the-results" class="section level4">
+<h4>Visualizing the Results</h4>
+<pre class="r"><code>res &lt;- sneer(iris)
 
 # Plot the embedding as points colored by category, using the rainbow
 # color ramp function:
 embed_plot(res$coords, iris$Species, color_scheme = rainbow)
 
+# You can pass in the entire data frame and sneer will try and find a suitable
+# column
+embed_plot(res$coords, iris, color_scheme = rainbow)</code></pre>
+</div>
+<div id="using-rcolorbrewer-color-scheme-names" class="section level4">
+<h4>Using RColorBrewer Color Scheme Names</h4>
+<pre class="r"><code>res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;,
+  ret = c(&quot;deg&quot;, &quot;prec&quot;, &quot;dim&quot;))
+
 # Load the RColorBrewer Library
 library(RColorBrewer)
 
-# Use a ColorBrewer Qualitative palette
-# NB: ColorBrewer as a string)
-embed_plot(res$coords, iris$Species, color_scheme = &quot;Dark2&quot;)
+# Use a ColorBrewer Qualitative palette using the name
+# NB: string not a function!
+embed_plot(res$coords, iris$Species, color_scheme = &quot;Dark2&quot;)</code></pre>
+</div>
+<div id="visualize-plot-with-projected-quality-results" class="section level4">
+<h4>Visualize Plot With Projected Quality Results</h4>
+<pre class="r"><code>res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;wtsne&quot;,
+  ret = c(&quot;deg&quot;, &quot;prec&quot;, &quot;dim&quot;))
 
-# Visualize embedding colored by various values:
+# Load the RColorBrewer Library
+library(RColorBrewer)
+
 # Degree centrality
-embed_plot(res$coords, x = res$deg)
+embed_plot(res$coords, res$deg)
+
 # Intrinsic Dimensionality using the PRGn palette
 # (requires RColorBrewer package to be installed)
-embed_plot(res$coords, x = res$dim, color_scheme = &quot;PRGn&quot;)
+embed_plot(res$coords, res$dim, color_scheme = &quot;PRGn&quot;)
+
 # Input weight function precision parameter with the Spectral palette
-embed_plot(res$coords, x = res$prec, color_scheme = &quot;Spectral&quot;)
+embed_plot(res$coords, res$prec, color_scheme = &quot;Spectral&quot;)
+
 # Calculate the 32-nearest neighbor preservation for each observation
 # 0 means no neighbors preserved, 1 means all of them
 pres32 &lt;- nbr_pres(res$dx, res$dy, 32)
-embed_plot(res$coords, x = pres32, cex = 1.5)
-</code></pre>
+embed_plot(res$coords, pres32, cex = 1.5)</code></pre>
+</div>
+<div id="view-embeddings-with-plotly" class="section level4">
+<h4>View Embeddings with Plotly</h4>
+<p>Using the <code>embed_plotly</code> function will open a browser window (unless you’re using RStudio, in which case it will appear in the Plots tab as usual).</p>
+<pre class="r"><code># You need to install and load plotly yourself
+library(&quot;plotly&quot;)
+
+res &lt;- sneer(iris, ret = c(&quot;deg&quot;, &quot;prec&quot;, &quot;dim&quot;))
+  
+# Get a nice legend if you use categorical values to map colors
+embed_plotly(res$coords, iris)
+
+# Get a color scale if you use a numeric vector
+embed_plotly(res$coords, res$dim)
+
+# Can use different color schemes
+embed_plotly(res$coords, iris, color_scheme = topo.colors)
+
+# Can Use ColorBrewer names too
+embed_plotly(res$coords, res$dim, color_scheme = &quot;Blues&quot;)</code></pre>
+</div>
 </div>
 
 
