@@ -72,7 +72,7 @@ and its variants ASNE and SSNE.
 * The usual t-SNE Steepest descent with momentum and Jacobs adaptive step size
 if NAG is too racy for you.
 * The bold driver adaptive step algorithm if you want to mix it up a little.
-* The [Spectral Directions]((https://arxiv.org/abs/1206.4646)
+* The [Spectral Directions](https://arxiv.org/abs/1206.4646)
 optimization method of Vladymyrov and Carreira-Perpiñán, although in a 
 non-sparse form.
 * The L-BFGS method from the R `optim` function.
