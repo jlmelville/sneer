@@ -672,49 +672,56 @@ sneer <- function(df,
     jse_plugin = function() { jse_plugin(kappa = kappa) }
   )
 
-  method <- tolower(method)
-  if (!method %in% names(embed_methods)) {
-    stop("Unknown embedding method '",
-         method,
-         "', should be one of: ",
-         paste(names(embed_methods), collapse = ", "))
-  }
-
-  # Need to use plugin method if precisions can be non-uniform
-  if (prec_scale == "t") {
-    new_method <- paste0(method, "_plugin")
-    if (!new_method %in% names(embed_methods)) {
-      stop("Method '", method, "' is not compatible with prec_scale option 't'")
+  extra_costs <- NULL
+  # Usually, method is a name of a method that needs to be created
+  if (class(method) == "character") {
+    method <- tolower(method)
+    if (!method %in% names(embed_methods)) {
+      stop("Unknown embedding method '",
+           method,
+           "', should be one of: ",
+           paste(names(embed_methods), collapse = ", "))
     }
-    message("Switching to plugin method for non-uniform output precisions")
-    embed_method <- embed_methods[[new_method]]()
+
+    # Need to use plugin method if precisions can be non-uniform
+    if (prec_scale == "t") {
+      new_method <- paste0(method, "_plugin")
+      if (!new_method %in% names(embed_methods)) {
+        stop("Method '", method, "' is not compatible with prec_scale option 't'")
+      }
+      message("Switching to plugin method for non-uniform output precisions")
+      embed_method <- embed_methods[[new_method]]()
+    }
+    else {
+      embed_method <- embed_methods[[method]]()
+    }
+
+    # special casing for different methods
+    if (method == "pca") {
+      max_iter <- 0
+      perplexity <- NULL
+      init <- "p"
+      if (is.null(extra_costs)) {
+        extra_costs <- c("kruskal_stress")
+      }
+    }
+    else if (method == "mmds") {
+      perplexity <- NULL
+      if (is.null(extra_costs)) {
+        extra_costs <- c("kruskal_stress")
+      }
+    }
+    else if (method == "sammon") {
+      perplexity <- NULL
+      if (is.null(extra_costs)) {
+        extra_costs <- c("kruskal_stress")
+      }
+      normalize_cost <- FALSE
+    }
   }
   else {
-    embed_method <- embed_methods[[method]]()
-  }
-
-  extra_costs <- NULL
-  # special casing for different methods
-  if (method == "pca") {
-    max_iter <- 0
-    perplexity <- NULL
-    init <- "p"
-    if (is.null(extra_costs)) {
-      extra_costs <- c("kruskal_stress")
-    }
-  }
-  else if (method == "mmds") {
-    perplexity <- NULL
-    if (is.null(extra_costs)) {
-      extra_costs <- c("kruskal_stress")
-    }
-  }
-  else if (method == "sammon") {
-    perplexity <- NULL
-    if (is.null(extra_costs)) {
-      extra_costs <- c("kruskal_stress")
-    }
-    normalize_cost <- FALSE
+    # Allow masters of the dark arts to pass in a method directly
+    embed_method <- method
   }
 
   preprocess <- make_preprocess()
