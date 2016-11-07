@@ -96,8 +96,7 @@ You can also access some extra optimization options:
 * A choice of the More-Thuente or Rasmussen line search algorithm when using
 CG, spectral direction or NAG.
 
-Again, see the documentation and examples for the `embed` function for more 
-details.
+See the documentation for more details.
 
 ### Limitations and Issues
 * It's in pure R, so it's slow. 
