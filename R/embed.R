@@ -770,75 +770,80 @@ sneer <- function(df,
       }
     }
 
-    if (!is.null(perp_scale) && perp_scale != "single") {
-      if (is.null(perp_scale_iter)) {
-        perp_scale_iter <- ceiling(max_iter / 5)
-      }
-      else {
-        if (perp_scale_iter > max_iter) {
-          stop("Parameter perp_scale_iter must be <= max_iter")
+    if (!is.null(perp_scale) && class(perp_scale) == "function") {
+      init_inp <- perp_scale
+    }
+    else {
+      if (!is.null(perp_scale) && perp_scale != "single") {
+        if (is.null(perp_scale_iter)) {
+          perp_scale_iter <- ceiling(max_iter / 5)
         }
-      }
-      if (perp_scale == "max") {
-        if (length(perplexity) == 1) {
-          perplexity <- ms_perps(df)
+        else {
+          if (perp_scale_iter > max_iter) {
+            stop("Parameter perp_scale_iter must be <= max_iter")
+          }
         }
-        init_inp <- inp_from_dint_max(perplexities = perplexity,
-                                      modify_kernel_fn = modify_kernel_fn,
-                                      input_weight_fn = weight_fn)
-      }
-      else if (perp_scale == "multi") {
-        if (length(perplexity) == 1) {
-          perplexity <- ms_perps(df)
+        if (perp_scale == "max") {
+          if (length(perplexity) == 1) {
+            perplexity <- ms_perps(df)
+          }
+          init_inp <- inp_from_dint_max(perplexities = perplexity,
+                                        modify_kernel_fn = modify_kernel_fn,
+                                        input_weight_fn = weight_fn)
         }
-        init_inp <- inp_from_perps_multi(perplexities = perplexity,
+        else if (perp_scale == "multi") {
+          if (length(perplexity) == 1) {
+            perplexity <- ms_perps(df)
+          }
+          init_inp <- inp_from_perps_multi(perplexities = perplexity,
+                                           num_scale_iters = perp_scale_iter,
+                                           modify_kernel_fn = modify_kernel_fn,
+                                           input_weight_fn = weight_fn)
+        }
+        else if (perp_scale == "multil") {
+          if (length(perplexity) == 1) {
+            perplexity <- ms_perps(df)
+          }
+          init_inp <- inp_from_perps_multil(perplexities = perplexity,
+                                            num_scale_iters = perp_scale_iter,
+                                            modify_kernel_fn = modify_kernel_fn,
+                                            input_weight_fn = weight_fn)
+        }
+        else if (perp_scale == "step") {
+          if (length(perplexity) == 1) {
+            perplexity = step_perps(df)
+          }
+          init_inp <- inp_from_step_perp(perplexities = perplexity,
                                          num_scale_iters = perp_scale_iter,
                                          modify_kernel_fn = modify_kernel_fn,
                                          input_weight_fn = weight_fn)
-      }
-      else if (perp_scale == "multil") {
-        if (length(perplexity) == 1) {
-          perplexity <- ms_perps(df)
-        }
-        init_inp <- inp_from_perps_multil(perplexities = perplexity,
-                                          num_scale_iters = perp_scale_iter,
-                                          modify_kernel_fn = modify_kernel_fn,
-                                          input_weight_fn = weight_fn)
-      }
-      else if (perp_scale == "step") {
-        if (length(perplexity) == 1) {
-          perplexity = step_perps(df)
-        }
-        init_inp <- inp_from_step_perp(perplexities = perplexity,
-                                       num_scale_iters = perp_scale_iter,
-                                       modify_kernel_fn = modify_kernel_fn,
-                                       input_weight_fn = weight_fn)
-      }
-      else {
-        stop("No perplexity scaling method '", perp_scale, "'")
-      }
-    }
-    else {
-      # no perplexity scaling asked for
-      if (length(perplexity) == 1) {
-        if (class(df) == "dist") {
-          # length = (nr * (nr + 1)) / 2; solve for nr by quadratic equation
-          nr <- (1 + sqrt(1 + (8 * length(df)))) / 2
         }
         else {
-          nr <- nrow(df)
+          stop("No perplexity scaling method '", perp_scale, "'")
         }
-        if (perplexity >= nr) {
-          perplexity <- nr / 4
-          message("Setting perplexity to ", perplexity)
-        }
-        init_inp <- inp_from_perp(perplexity = perplexity,
-                                  modify_kernel_fn = modify_kernel_fn,
-                                  input_weight_fn = weight_fn)
       }
       else {
-        stop("Must provide 'perp_scale' argument if using multiple perplexity ",
-             "values")
+        # no perplexity scaling asked for
+        if (length(perplexity) == 1) {
+          if (class(df) == "dist") {
+            # length = (nr * (nr + 1)) / 2; solve for nr by quadratic equation
+            nr <- (1 + sqrt(1 + (8 * length(df)))) / 2
+          }
+          else {
+            nr <- nrow(df)
+          }
+          if (perplexity >= nr) {
+            perplexity <- nr / 4
+            message("Setting perplexity to ", perplexity)
+          }
+          init_inp <- inp_from_perp(perplexity = perplexity,
+                                    modify_kernel_fn = modify_kernel_fn,
+                                    input_weight_fn = weight_fn)
+        }
+        else {
+          stop("Must provide 'perp_scale' argument if using multiple perplexity ",
+               "values")
+        }
       }
     }
   }
