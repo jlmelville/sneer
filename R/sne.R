@@ -84,7 +84,7 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 # SSNE is a variant of \code{asne} where the probabilities are with
 # respect to pairs of points, not individual points. The element
 # \code{P[i, j]} in matrix P should be thought of as the probability of
-# selecting a pair of points i and j as close neighbours. As a result, unlike
+# selecting a pair of points i and j as close neighbors. As a result, unlike
 # ASNE, the probability matrix in SSNE:
 #
 # \itemize{

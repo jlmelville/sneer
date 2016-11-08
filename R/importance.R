@@ -101,7 +101,7 @@ degree_centrality <- function(m) {
 # version.
 # @param centrality_fn The importance function. By default, the
 # degree centrality. Must be a function with the signature
-# \code{centrality_fn(m)} where \code{m} is the nearest neighbour graph based
+# \code{centrality_fn(m)} where \code{m} is the nearest neighbor graph based
 # on the input probabilities, and returning a vector with the same length
 # as the number of rows of the matrix, where the ith element represent the
 # centrality measure of the ith observation.
@@ -148,7 +148,7 @@ imp_kernel <- function(kernel) {
 # nearest neighbor adjancency graph is the same as the weight matrix that would
 # result if a step function was used, rather than the usual exponential
 # weighting. Given a row probability matrix we can then map back to the nearest
-# neighbor graph by multiplying each probability by the number of neighbours
+# neighbor graph by multiplying each probability by the number of neighbors
 # required, which is equivalent to the perplexity.
 #
 # If the matrix is already normalized and symmetrized then the resulting
@@ -165,7 +165,7 @@ nn_graph <- function(m, k) {
 
 # Centrality Measure for Input Probability
 #
-# Converts the input probability to a nearest neighbour adjacency matrix
+# Converts the input probability to a nearest neighbor adjacency matrix
 # and then calculates a centrality measure.
 #
 # @param inp Input method

@@ -15,7 +15,7 @@
 #'  \item{Stochastic Neighbor Embedding and variants (ASNE, SSNE and TSNE)}
 #'  \item{Metric MDS using the STRESS and SSTRESS functions}
 #'  \item{Sammon Mapping}
-#'  \item{Heavy-tailed Symmetric Stochastic Neighbour Embedding (HSSNE)}
+#'  \item{Heavy-tailed Symmetric Stochastic Neighbor Embedding (HSSNE)}
 #'  \item{Neigbor Retrieval Visualizer (NeRV)}
 #'  \item{Jensen-Shannon Embedding (JSE)}
 #' }

@@ -99,6 +99,8 @@ dimensionality while preserving both local and global structure.
 *Neurocomputing*, *169*, 246-261.
 https://dx.doi.org/10.1016/j.neucom.2014.12.095
 
+Fun fact: just noticed that this is the only paper on the list where 
+"neighbour" is spelt in the British English style.
 
 ### Optimization
 
