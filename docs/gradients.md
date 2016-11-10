@@ -591,6 +591,24 @@ that would allow t-SNE to be used with the method described in
 sections on [Input Initialization](input-initialization.html) and
 [Embedding Methods](embedding-methods.html) for how to do that in `sneer`.
 
+#### Inhomogeneous t-SNE
+
+[Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) defines
+a kernel closely related to the gamma function with $\nu$ degrees of freedom:
+
+$$w_{ij} = \left(1 + \frac{f_{ij}}{\nu_{i}}\right)^{-\frac{\nu_{i} + 1}{2}}$$
+
+where $\nu_{i} = \infty$ gives SNE-like behavior and $\nu_{i} = 1$ gives 
+t-SNE behavior. This is very similar in concept to the tail-heaviness function 
+used in HSSNE, although as the $i$ subscript indicates, the degrees of freedom
+is allowed to vary per-point, rather than the global value HSSNE uses.
+
+The derivative is:
+
+$$\frac{\partial w_{ij}}{\partial f_{ij}} 
+= - \frac{\nu_{i} + 1}{2\left(f_{ij} + \nu_{i}\right)}w_{ij}
+$$
+
 ### Deriving the SNE and t-SNE Gradient
 
 With a master equation and an expression for the derivative of the cost function
@@ -723,9 +741,10 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   \right)
 $$
 
-In asymmetric SNE, the probability matrices are not symmetric due to the 
+In asymmetric SNE, the input probability matrix is not symmetric due to the 
 point-wise normalization, so that's the final gradient. Feel free to write
-$p_{ij}$ as $p_{j|i}$ and you are done.
+$p_{ij}$ as $p_{j|i}$, $p_{ji}$ as $p_{i|j}$, and the same for $q_{ij}$ (even 
+though $Q$ *is* symmetric), and you are done.
 
 For Symmetric SNE, both the $P$ and $Q$ matrices are symmetric, 
 so $p_{ij} = p_{ji}$, and $q_{ij} = q_{ji}$, leading to:
@@ -762,9 +781,9 @@ Also familiar. For t-SNE, we get:
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
   2
   \sum_j^N 
-  \left(
+  \left[
     w_{ij}\left(p_{ij} - q_{ij}\right) + w_{ji}\left(p_{ji} - q_{ji}\right)
-  \right)
+  \right]
   \left(
    \mathbf{y_i - y_j}
   \right)

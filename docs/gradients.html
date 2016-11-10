@@ -445,6 +445,16 @@ $(document).ready(function () {
 <p>The degree of heavy-tailedness is controlled by <span class="math inline">\(\alpha\)</span>: when <span class="math inline">\(\alpha = 1\)</span>, the kernel behaves like the t-distributed kernel. As it approaches 0, it approaches the exponential kernel. <span class="math inline">\(\alpha &gt; 1\)</span> allows output distances to stretch even more than t-SNE. I am unaware of any research that looks at seeing if there is a way to find an optimal value of <span class="math inline">\(\alpha\)</span> for a given dataset.</p>
 <p>I have also included the precision parameter <span class="math inline">\(\beta\)</span> in the equation. This isn’t present in the original HSSNE paper, but it’s fairly easy to do the integration to work out how to include it. This shouldn’t be taken as a suggestion to use it as an input kernel - heavy-tailedness can make it very easy for it to be impossible to get lower values of perplexity. However, it does allow for an output kernel that behaves like t-SNE, but has the free precision parameter that would allow t-SNE to be used with the method described in <a href="https://dx.doi.org/10.1016/j.neucom.2014.12.095">multiscale JSE</a>. See the sections on <a href="input-initialization.html">Input Initialization</a> and <a href="embedding-methods.html">Embedding Methods</a> for how to do that in <code>sneer</code>.</p>
 </div>
+<div id="inhomogeneous-t-sne" class="section level4">
+<h4>Inhomogeneous t-SNE</h4>
+<p><a href="http://dx.doi.org/10.1007/978-3-319-46675-0_14">Inhomogeneous t-SNE</a> defines a kernel closely related to the gamma function with <span class="math inline">\(\nu\)</span> degrees of freedom:</p>
+<p><span class="math display">\[w_{ij} = \left(1 + \frac{f_{ij}}{\nu_{i}}\right)^{-\frac{\nu_{i} + 1}{2}}\]</span></p>
+<p>where <span class="math inline">\(\nu_{i} = \infty\)</span> gives SNE-like behavior and <span class="math inline">\(\nu_{i} = 1\)</span> gives t-SNE behavior. This is very similar in concept to the tail-heaviness function used in HSSNE, although as the <span class="math inline">\(i\)</span> subscript indicates, the degrees of freedom is allowed to vary per-point, rather than the global value HSSNE uses.</p>
+<p>The derivative is:</p>
+<p><span class="math display">\[\frac{\partial w_{ij}}{\partial f_{ij}} 
+= - \frac{\nu_{i} + 1}{2\left(f_{ij} + \nu_{i}\right)}w_{ij}
+\]</span></p>
+</div>
 </div>
 <div id="deriving-the-sne-and-t-sne-gradient" class="section level3">
 <h3>Deriving the SNE and t-SNE Gradient</h3>
@@ -548,7 +558,7 @@ w_{ij}^{n-1}
    \mathbf{y_i - y_j}
   \right)
 \]</span></p>
-<p>In asymmetric SNE, the probability matrices are not symmetric due to the point-wise normalization, so that’s the final gradient. Feel free to write <span class="math inline">\(p_{ij}\)</span> as <span class="math inline">\(p_{j|i}\)</span> and you are done.</p>
+<p>In asymmetric SNE, the input probability matrix is not symmetric due to the point-wise normalization, so that’s the final gradient. Feel free to write <span class="math inline">\(p_{ij}\)</span> as <span class="math inline">\(p_{j|i}\)</span>, <span class="math inline">\(p_{ji}\)</span> as <span class="math inline">\(p_{i|j}\)</span>, and the same for <span class="math inline">\(q_{ij}\)</span> (even though <span class="math inline">\(Q\)</span> <em>is</em> symmetric), and you are done.</p>
 <p>For Symmetric SNE, both the <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span> matrices are symmetric, so <span class="math inline">\(p_{ij} = p_{ji}\)</span>, and <span class="math inline">\(q_{ij} = q_{ji}\)</span>, leading to:</p>
 <p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
   2
@@ -580,9 +590,9 @@ w_{ij}^{n-1}
 <p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
   2
   \sum_j^N 
-  \left(
+  \left[
     w_{ij}\left(p_{ij} - q_{ij}\right) + w_{ji}\left(p_{ji} - q_{ji}\right)
-  \right)
+  \right]
   \left(
    \mathbf{y_i - y_j}
   \right)
