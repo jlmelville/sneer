@@ -321,16 +321,32 @@ $$\frac{\partial q_{kl}}{\partial w_{ij}} =
   -\frac{w_{kl}}{S^2} = 
   -\frac{q_{kl}}{S}$$
 
+They're nearly the same expression, there's just one extra $\frac{1}{S}$ term 
+to consider when $i=k$ and $j=l$.
+
 Inserting these expressions into the one we had for the chain rule applied to
 $\frac{\partial C}{\partial w_{ij}}$, we get:
 
+$$
+\frac{\partial C}{\partial w_{ij}} = 
+\sum_k^N \sum_l^N \frac{\partial C}{\partial q_{kl}} 
+  \frac{\partial q_{kl}}{\partial w_{ij}} =
+\left[\frac{\partial C}{\partial q_{ij}}\frac{1}{S} +
+\sum_k^N \sum_l^N \frac{\partial C}{\partial q_{kl}} \left(- \frac{q_{kl}}{S}\right)
+\right]
+ \frac{\partial q_{kl}}{\partial w_{ij}}
+$$
+
+Extract a $\frac{1}{S}$ factor and we're left with:
+
 $$\frac{\partial C}{\partial w_{ij}} = 
--\frac{1}{S} 
+\frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
+ \frac{\partial q_{kl}}{\partial w_{ij}}
 $$
 
 I'll admit, that doesn't look great, but we're over the worst.
@@ -351,19 +367,19 @@ write:
 
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
   \sum_j^N \left(
-    -\frac{1}{S} 
+  \frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ij}}{\partial f_{ij}}
     \frac{\partial f_{ij}}{\partial d_{ij}}
-    -\frac{1}{S} 
+  +\frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ji}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ji}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ji}}{\partial f_{ji}}
     \frac{\partial f_{ji}}{\partial d_{ji}}    
@@ -379,21 +395,21 @@ $\frac{\partial f_{ij}}{\partial d_{ij}} =
  
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
   \sum_j^N \left(
-    -\frac{1}{S} 
+  \frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ij}}{\partial f_{ij}}
-    -\frac{1}{S} 
+  +\frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ji}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ji}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ji}}{\partial f_{ji}}
-   \right)
+  \right)
    \frac{\partial f_{ij}}{\partial d_{ij}}
    \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
     $$
@@ -407,11 +423,11 @@ in their still mildly intimidating forms. Instead, we'll just hide their full
 "glory" by defining:
 
 $$k_{ij} =
--\frac{1}{S} 
+  \frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ij}}{\partial f_{ij}}
 $$
@@ -446,11 +462,11 @@ $$
 where
 
 $$k_{ij} =
--\frac{1}{S} 
+  \frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ij}}{\partial f_{ij}}
 $$
@@ -532,7 +548,7 @@ $\beta$, so here is the general gradient:
 
 $$\frac{\partial w_{ij}}{\partial f_{ij}} 
 = -\beta_{i} \exp\left(-\beta_{i} f_{ij}\right)
-= -\beta_{i} f_{ij}
+= -\beta_{i} w_{ij}
 $$
 
 #### t-Distribution Kernel
@@ -543,7 +559,7 @@ distribution sometimes.
 $$w_{ij} = \frac{1}{1 + f_{ij}}$$
 $$\frac{\partial w_{ij}}{\partial f_{ij}} 
 = -\frac{1}{\left(1 + f_{ij}\right)^2}
-= -f_{ij}^2
+= -w_{ij}^2
 $$
 
 #### Heavy-tailed Kernel
@@ -555,7 +571,7 @@ the
 $$w_{ij} = \frac{1}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{1}{\alpha}}}$$
 $$\frac{\partial w_{ij}}{\partial f_{ij}} 
 = - \frac{\beta_{i}}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{\alpha+1}{\alpha}}}
-= -\beta_{i} f_{ij} ^ \left(\alpha + 1\right)
+= -\beta_{i} w_{ij} ^ \left(\alpha + 1\right)
 $$
 
 The degree of heavy-tailedness is controlled by $\alpha$: when $\alpha = 1$, the
@@ -575,6 +591,201 @@ that would allow t-SNE to be used with the method described in
 sections on [Input Initialization](input-initialization.html) and
 [Embedding Methods](embedding-methods.html) for how to do that in `sneer`.
 
+### Deriving the SNE and t-SNE Gradient
+
+With a master equation and an expression for the derivative of the cost function
+and kernel function, we have all we need to mix and match various costs and
+kernels to our heart's content. But it would be nice to see the familiar SNE
+and t-SNE gradient fall out of that mixture. Normally, due to reasons of space,
+this doesn't get shown and we're left with something like "and then a miracle 
+of algebra occurs!" before being shown the final gradient.
+
+Plenty of space on this web page, though. Let's do it. This is the master
+equation again:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    k_{ij} + k_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+$$
+
+where
+
+$$k_{ij} =
+  \frac{1}{S} 
+  \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
+    \sum_k^N \sum_l^N 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
+  \right]
+    \frac{\partial w_{ij}}{\partial f_{ij}}
+$$
+
+Time to simplify the expression for $k_{ij}$. Both SNE and t-SNE use the 
+Kullback-Leibler Divergence, which as noted above, has the following
+gradient:
+
+$$\frac{\partial C}{\partial q_{ij}} = - \frac{p_{ij}}{q_{ij}}$$
+
+$k_{ij}$ therefore becomes:
+
+$$k_{ij} =
+\frac{1}{S}
+  \left[ 
+  -\frac{p_{ij}}{q_{ij}} -
+    \sum_k^N \sum_l^N 
+      -\frac{p_{kl}}{q_{kl}} q_{kl}
+  \right]
+  \frac{\partial w_{ij}}{\partial f_{ij}} =
+\frac{1}{S} 
+\left[
+  -\frac{p_{ij}}{q_{ij}} +
+  \sum_k^N \sum_l^N -p_{kl}
+\right]
+\frac{\partial w_{ij}}{\partial f_{ij}} =
+\frac{1}{S} 
+\left[
+  -\frac{p_{ij}}{q_{ij}} +
+  1
+\right]
+\frac{\partial w_{ij}}{\partial f_{ij}}
+$$
+
+At this point, notice that both the SNE and t-SNE output kernel (Gaussian and
+t-Distribution respectively), have a derivative that has the general form
+
+$$
+\frac{\partial w_{ij}}{\partial f_{ij}} = w_{ij}^n
+$$
+
+where $n = 1$ in the case of SNE, and $n = 2$ for t-SNE. Substituting that in, 
+we now get:
+
+$$
+k_{ij} =
+\frac{1}{S} 
+\left[
+  -\frac{p_{ij}}{q_{ij}} +
+  1
+\right]
+\frac{\partial w_{ij}}{\partial f_{ij}} = 
+-\frac{w_{ij}^n}{S} 
+\left[
+  -\frac{p_{ij}}{q_{ij}} +
+  1
+\right] = 
+-w_{ij}^{n-1}q_{ij}
+\left(
+  -\frac{p_{ij}}{q_{ij}} +
+  1
+\right)
+$$
+
+using the fact that $\frac{w_{ij}}{S} = q_{ij}$. Now, we can move $-q_{ij}$ 
+inside the expression in parentheses to get:
+
+$$
+k_{ij} =
+w_{ij}^{n-1}
+\left(
+  {p_{ij}} - {q_{ij}}
+\right)
+$$
+
+At this point, we refer back to the master equation:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    k_{ij} + k_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+$$
+
+For SNE, $w_{ij}^{n-1} = 1$ because $n = 1$ and we get:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    p_{ij} - q_{ij} + p_{ji} - q_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+$$
+
+In asymmetric SNE, the probability matrices are not symmetric due to the 
+point-wise normalization, so that's the final gradient. Feel free to write
+$p_{ij}$ as $p_{j|i}$ and you are done.
+
+For Symmetric SNE, both the $P$ and $Q$ matrices are symmetric, 
+so $p_{ij} = p_{ji}$, and $q_{ij} = q_{ji}$, leading to:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    p_{ij} - q_{ij} + p_{ji} - q_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right) =
+  2
+  \sum_j^N 
+  \left(
+    2 p_{ij} - 2 q_{ij}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right) =
+  4
+  \sum_j^N 
+  \left(
+    p_{ij} - q_{ij}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+$$
+
+Also familiar. For t-SNE, we get:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    w_{ij}\left(p_{ij} - q_{ij}\right) + w_{ji}\left(p_{ji} - q_{ji}\right)
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+$$
+
+but the t-distributed kernel also creates a symmetric $W$ matrix so we can 
+still simplify to:
+
+$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+  4
+  \sum_j^N 
+  w_{ij}
+  \left(
+    p_{ij} - q_{ij}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+$$
+
+I think we all deserve a long lie down now.
 
 ## Distance-based embedding
 

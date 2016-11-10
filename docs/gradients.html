@@ -272,14 +272,26 @@ $(document).ready(function () {
   \frac{1}{S} - \frac{q_{ij}}{S}\]</span> and: <span class="math display">\[\frac{\partial q_{kl}}{\partial w_{ij}} = 
   -\frac{w_{kl}}{S^2} = 
   -\frac{q_{kl}}{S}\]</span></p>
+<p>They’re nearly the same expression, there’s just one extra <span class="math inline">\(\frac{1}{S}\)</span> term to consider when <span class="math inline">\(i=k\)</span> and <span class="math inline">\(j=l\)</span>.</p>
 <p>Inserting these expressions into the one we had for the chain rule applied to <span class="math inline">\(\frac{\partial C}{\partial w_{ij}}\)</span>, we get:</p>
+<p><span class="math display">\[
+\frac{\partial C}{\partial w_{ij}} = 
+\sum_k^N \sum_l^N \frac{\partial C}{\partial q_{kl}} 
+  \frac{\partial q_{kl}}{\partial w_{ij}} =
+\left[\frac{\partial C}{\partial q_{ij}}\frac{1}{S} +
+\sum_k^N \sum_l^N \frac{\partial C}{\partial q_{kl}} \left(- \frac{q_{kl}}{S}\right)
+\right]
+ \frac{\partial q_{kl}}{\partial w_{ij}}
+\]</span></p>
+<p>Extract a <span class="math inline">\(\frac{1}{S}\)</span> factor and we’re left with:</p>
 <p><span class="math display">\[\frac{\partial C}{\partial w_{ij}} = 
--\frac{1}{S} 
+\frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
+ \frac{\partial q_{kl}}{\partial w_{ij}}
 \]</span></p>
 <p>I’ll admit, that doesn’t look great, but we’re over the worst.</p>
 </div>
@@ -293,19 +305,19 @@ $(document).ready(function () {
 <p>By substituting in the various expressions, starting with <span class="math inline">\(\frac{\partial C}{\partial {d_{ij}}}\)</span> and then recursively replacing any expressions until we hit <span class="math inline">\(\frac{\partial C}{\partial q_{ij}}\)</span>, we can now write:</p>
 <p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
   \sum_j^N \left(
-    -\frac{1}{S} 
+  \frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ij}}{\partial f_{ij}}
     \frac{\partial f_{ij}}{\partial d_{ij}}
-    -\frac{1}{S} 
+  +\frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ji}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ji}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ji}}{\partial f_{ji}}
     \frac{\partial f_{ji}}{\partial d_{ji}}    
@@ -315,31 +327,31 @@ $(document).ready(function () {
 <p>Well, that looks terrifying. Let’s tidy up a bit. First, let’s use the fact that the definition of <span class="math inline">\(f_{ij}\)</span> is symmetric and therefore <span class="math inline">\(\frac{\partial f_{ij}}{\partial d_{ij}} =  \frac{\partial f_{ji}}{\partial d_{ji}}\)</span> to pull that part of the equation out of those parentheses:</p>
 <p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
   \sum_j^N \left(
-    -\frac{1}{S} 
+  \frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ij}}{\partial f_{ij}}
-    -\frac{1}{S} 
+  +\frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ji}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ji}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ji}}{\partial f_{ji}}
-   \right)
+  \right)
    \frac{\partial f_{ij}}{\partial d_{ij}}
    \frac{\partial d_{ij}}{\partial \mathbf{y_i}}
     \]</span></p>
 <p>That leaves the two functional forms that get varied the most, <span class="math inline">\(\frac{\partial C}{\partial q_{ij}}\)</span> (derivative of the cost function) and <span class="math inline">\(\frac{\partial w_{ij}}{\partial f_{ij}}\)</span> (derivative of the similarity function), together. There are some common choices of cost and similarity function that would let us simplify these further, but for now we’ll leave them in their still mildly intimidating forms. Instead, we’ll just hide their full “glory” by defining:</p>
 <p><span class="math display">\[k_{ij} =
--\frac{1}{S} 
+  \frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ij}}{\partial f_{ij}}
 \]</span></p>
@@ -364,11 +376,11 @@ $(document).ready(function () {
 \]</span></p>
 <p>where</p>
 <p><span class="math display">\[k_{ij} =
--\frac{1}{S} 
+  \frac{1}{S} 
   \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
     \sum_k^N \sum_l^N 
-      \frac{\partial C}{\partial q_{kl}} q_{kl} + 
-      \frac{\partial C}{\partial q_{ij}} 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
   \right]
     \frac{\partial w_{ij}}{\partial f_{ij}}
 \]</span></p>
@@ -412,7 +424,7 @@ $(document).ready(function () {
 <p>Also, I’ve thrown in the exponential decay factor, <span class="math inline">\(\beta_{i}\)</span> which is used in the <a href="input-initialization.html">Input Initialization</a> for the input kernel only, as part of the perplexity-based calibration (aka entropic affinities). As discussed further in that section, the output kernel function normally just sets all the <span class="math inline">\(beta\)</span> values to one, so it effectively disappears from the output kernel gradient. However, so methods do make use of an output <span class="math inline">\(\beta\)</span>, so here is the general gradient:</p>
 <p><span class="math display">\[\frac{\partial w_{ij}}{\partial f_{ij}} 
 = -\beta_{i} \exp\left(-\beta_{i} f_{ij}\right)
-= -\beta_{i} f_{ij}
+= -\beta_{i} w_{ij}
 \]</span></p>
 </div>
 <div id="t-distribution-kernel" class="section level4">
@@ -420,7 +432,7 @@ $(document).ready(function () {
 <p>As used in the output kernel of t-SNE. Also referred to as the Cauchy distribution sometimes.</p>
 <p><span class="math display">\[w_{ij} = \frac{1}{1 + f_{ij}}\]</span> <span class="math display">\[\frac{\partial w_{ij}}{\partial f_{ij}} 
 = -\frac{1}{\left(1 + f_{ij}\right)^2}
-= -f_{ij}^2
+= -w_{ij}^2
 \]</span></p>
 </div>
 <div id="heavy-tailed-kernel" class="section level4">
@@ -428,11 +440,166 @@ $(document).ready(function () {
 <p>A generalization of the exponential and t-distributed kernel, and described in the <a href="https://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding">HSSNE paper</a>.</p>
 <p><span class="math display">\[w_{ij} = \frac{1}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{1}{\alpha}}}\]</span> <span class="math display">\[\frac{\partial w_{ij}}{\partial f_{ij}} 
 = - \frac{\beta_{i}}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{\alpha+1}{\alpha}}}
-= -\beta_{i} f_{ij} ^ \left(\alpha + 1\right)
+= -\beta_{i} w_{ij} ^ \left(\alpha + 1\right)
 \]</span></p>
 <p>The degree of heavy-tailedness is controlled by <span class="math inline">\(\alpha\)</span>: when <span class="math inline">\(\alpha = 1\)</span>, the kernel behaves like the t-distributed kernel. As it approaches 0, it approaches the exponential kernel. <span class="math inline">\(\alpha &gt; 1\)</span> allows output distances to stretch even more than t-SNE. I am unaware of any research that looks at seeing if there is a way to find an optimal value of <span class="math inline">\(\alpha\)</span> for a given dataset.</p>
 <p>I have also included the precision parameter <span class="math inline">\(\beta\)</span> in the equation. This isn’t present in the original HSSNE paper, but it’s fairly easy to do the integration to work out how to include it. This shouldn’t be taken as a suggestion to use it as an input kernel - heavy-tailedness can make it very easy for it to be impossible to get lower values of perplexity. However, it does allow for an output kernel that behaves like t-SNE, but has the free precision parameter that would allow t-SNE to be used with the method described in <a href="https://dx.doi.org/10.1016/j.neucom.2014.12.095">multiscale JSE</a>. See the sections on <a href="input-initialization.html">Input Initialization</a> and <a href="embedding-methods.html">Embedding Methods</a> for how to do that in <code>sneer</code>.</p>
 </div>
+</div>
+<div id="deriving-the-sne-and-t-sne-gradient" class="section level3">
+<h3>Deriving the SNE and t-SNE Gradient</h3>
+<p>With a master equation and an expression for the derivative of the cost function and kernel function, we have all we need to mix and match various costs and kernels to our heart’s content. But it would be nice to see the familiar SNE and t-SNE gradient fall out of that mixture. Normally, due to reasons of space, this doesn’t get shown and we’re left with something like “and then a miracle of algebra occurs!” before being shown the final gradient.</p>
+<p>Plenty of space on this web page, though. Let’s do it. This is the master equation again:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    k_{ij} + k_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+\]</span></p>
+<p>where</p>
+<p><span class="math display">\[k_{ij} =
+  \frac{1}{S} 
+  \left[ 
+    \frac{\partial C}{\partial q_{ij}} -
+    \sum_k^N \sum_l^N 
+      \frac{\partial C}{\partial q_{kl}} q_{kl}
+  \right]
+    \frac{\partial w_{ij}}{\partial f_{ij}}
+\]</span></p>
+<p>Time to simplify the expression for <span class="math inline">\(k_{ij}\)</span>. Both SNE and t-SNE use the Kullback-Leibler Divergence, which as noted above, has the following gradient:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = - \frac{p_{ij}}{q_{ij}}\]</span></p>
+<p><span class="math inline">\(k_{ij}\)</span> therefore becomes:</p>
+<p><span class="math display">\[k_{ij} =
+\frac{1}{S}
+  \left[ 
+  -\frac{p_{ij}}{q_{ij}} -
+    \sum_k^N \sum_l^N 
+      -\frac{p_{kl}}{q_{kl}} q_{kl}
+  \right]
+  \frac{\partial w_{ij}}{\partial f_{ij}} =
+\frac{1}{S} 
+\left[
+  -\frac{p_{ij}}{q_{ij}} +
+  \sum_k^N \sum_l^N -p_{kl}
+\right]
+\frac{\partial w_{ij}}{\partial f_{ij}} =
+\frac{1}{S} 
+\left[
+  -\frac{p_{ij}}{q_{ij}} +
+  1
+\right]
+\frac{\partial w_{ij}}{\partial f_{ij}}
+\]</span></p>
+<p>At this point, notice that both the SNE and t-SNE output kernel (Gaussian and t-Distribution respectively), have a derivative that has the general form</p>
+<p><span class="math display">\[
+\frac{\partial w_{ij}}{\partial f_{ij}} = w_{ij}^n
+\]</span></p>
+<p>where <span class="math inline">\(n = 1\)</span> in the case of SNE, and <span class="math inline">\(n = 2\)</span> for t-SNE. Substituting that in, we now get:</p>
+<p><span class="math display">\[
+k_{ij} =
+\frac{1}{S} 
+\left[
+  -\frac{p_{ij}}{q_{ij}} +
+  1
+\right]
+\frac{\partial w_{ij}}{\partial f_{ij}} = 
+-\frac{w_{ij}^n}{S} 
+\left[
+  -\frac{p_{ij}}{q_{ij}} +
+  1
+\right] = 
+-w_{ij}^{n-1}q_{ij}
+\left(
+  -\frac{p_{ij}}{q_{ij}} +
+  1
+\right)
+\]</span></p>
+<p>using the fact that <span class="math inline">\(\frac{w_{ij}}{S} = q_{ij}\)</span>. Now, we can move <span class="math inline">\(-q_{ij}\)</span> inside the expression in parentheses to get:</p>
+<p><span class="math display">\[
+k_{ij} =
+w_{ij}^{n-1}
+\left(
+  {p_{ij}} - {q_{ij}}
+\right)
+\]</span></p>
+<p>At this point, we refer back to the master equation:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    k_{ij} + k_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+\]</span></p>
+<p>For SNE, <span class="math inline">\(w_{ij}^{n-1} = 1\)</span> because <span class="math inline">\(n = 1\)</span> and we get:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    p_{ij} - q_{ij} + p_{ji} - q_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+\]</span></p>
+<p>In asymmetric SNE, the probability matrices are not symmetric due to the point-wise normalization, so that’s the final gradient. Feel free to write <span class="math inline">\(p_{ij}\)</span> as <span class="math inline">\(p_{j|i}\)</span> and you are done.</p>
+<p>For Symmetric SNE, both the <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span> matrices are symmetric, so <span class="math inline">\(p_{ij} = p_{ji}\)</span>, and <span class="math inline">\(q_{ij} = q_{ji}\)</span>, leading to:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    p_{ij} - q_{ij} + p_{ji} - q_{ji}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right) =
+  2
+  \sum_j^N 
+  \left(
+    2 p_{ij} - 2 q_{ij}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right) =
+  4
+  \sum_j^N 
+  \left(
+    p_{ij} - q_{ij}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+\]</span></p>
+<p>Also familiar. For t-SNE, we get:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2
+  \sum_j^N 
+  \left(
+    w_{ij}\left(p_{ij} - q_{ij}\right) + w_{ji}\left(p_{ji} - q_{ji}\right)
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+\]</span></p>
+<p>but the t-distributed kernel also creates a symmetric <span class="math inline">\(W\)</span> matrix so we can still simplify to:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
+  4
+  \sum_j^N 
+  w_{ij}
+  \left(
+    p_{ij} - q_{ij}
+  \right)
+  \left(
+   \mathbf{y_i - y_j}
+  \right)
+\]</span></p>
+<p>I think we all deserve a long lie down now.</p>
 </div>
 </div>
 <div id="distance-based-embedding" class="section level2">
