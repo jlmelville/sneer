@@ -149,6 +149,11 @@ $(document).ready(function () {
 <h4>Heavy-Tailed Symmetric Stochastic Neighbor Embedding (HSSNE)</h4>
 <p>Yang, Z., King, I., Xu, Z., &amp; Oja, E. (2009). Heavy-tailed symmetric stochastic neighbor embedding. In <em>Advances in neural information processing systems</em> (pp. 2169-2177). <a href="https://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding" class="uri">https://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding</a></p>
 </div>
+<div id="inhomogeneous-t-sne" class="section level4">
+<h4>Inhomogeneous t-SNE</h4>
+<p>Kitazono, J., Grozavu, N., Rogovschi, N., Omori, T., &amp; Ozawa, S. (2016, October). t-Distributed Stochastic Neighbor Embedding with Inhomogeneous Degrees of Freedom. In <em>Proceedings of the 23rd International Conference on Neural Information Processing (ICONIP 2016)</em> (pp. 119-128). <a href="http://dx.doi.org/10.1007/978-3-319-46675-0_14" class="uri">http://dx.doi.org/10.1007/978-3-319-46675-0_14</a></p>
+<p>Not implemented in <code>sneer</code>, but advocates a similar approach to HSSNE, although unfortunately the authors seem unaware of that publication. Also, they are too modest to give their method a snappy name, so I have dubbed it Inhomogeneous t-SNE or “it-SNE” (unless you really prefer “t-SNE-wIDoF’). One of the main differences is that the degree of tail-heaviness is allowed to vary per-point in the output kernel, and these values are optimized simultaneously with the output coordinates, rather than being fixed by the user.</p>
+</div>
 <div id="weighted-symmetric-stochastic-neighbor-embedding-ws-sne" class="section level4">
 <h4>Weighted Symmetric Stochastic Neighbor Embedding (ws-SNE)</h4>
 <p>Yang, Z., Peltonen, J., &amp; Kaski, S. (2014). Optimization equivalence of divergences improves neighbor embedding. In <em>Proceedings of the 31st International Conference on Machine Learning (ICML-14)</em> (pp. 460-468). <a href="http://jmlr.org/proceedings/papers/v32/yange14.html" class="uri">http://jmlr.org/proceedings/papers/v32/yange14.html</a></p>
@@ -217,6 +222,7 @@ $(document).ready(function () {
 <p>Yang, Z., Peltonen, J., &amp; Kaski, S. (2013, June). Scalable Optimization of Neighbor Embedding for Visualization. In <em>Proceedings of the 30th international conference on machine learning (ICML-13)</em> (pp. 127-135). <a href="http://www.jmlr.org/proceedings/papers/v28/yang13b.html" class="uri">http://www.jmlr.org/proceedings/papers/v28/yang13b.html</a></p>
 <p>Van Der Maaten, L. (2014). Accelerating t-SNE using tree-based algorithms. <em>Journal of machine learning research</em>, <em>15</em>(1), 3221-3245. <a href="http://www.jmlr.org/papers/v15/vandermaaten14a.html" class="uri">http://www.jmlr.org/papers/v15/vandermaaten14a.html</a></p>
 <p>Vladymyrov, M., &amp; Carreira-Perpinán, M. A. (2014). Linear-time training of nonlinear low-dimensional embeddings. In <em>17th International Conference on Artificial Intelligence and Statistics (AISTATS 2014)</em> (pp. 968-977). <a href="http://jmlr.org/proceedings/papers/v33/vladymyrov14.html" class="uri">http://jmlr.org/proceedings/papers/v33/vladymyrov14.html</a></p>
+<p>Parviainen, E. (2016). A graph-based N-body approximation with application to stochastic neighbor embedding. <em>Neural Networks</em>, <em>75</em>, 1-11. <a href="http://dx.doi.org/10.1016/j.neunet.2015.11.007" class="uri">http://dx.doi.org/10.1016/j.neunet.2015.11.007</a></p>
 </div>
 <div id="divergences" class="section level4">
 <h4>Divergences</h4>

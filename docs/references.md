@@ -53,6 +53,21 @@ Heavy-tailed symmetric stochastic neighbor embedding.
 In *Advances in neural information processing systems* (pp. 2169-2177).
 https://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding
 
+#### Inhomogeneous t-SNE
+Kitazono, J., Grozavu, N., Rogovschi, N., Omori, T., & Ozawa, S. (2016, October).
+t-Distributed Stochastic Neighbor Embedding with Inhomogeneous Degrees of Freedom. 
+In *Proceedings of the 23rd International Conference on Neural Information Processing (ICONIP 2016)* 
+(pp. 119-128).
+http://dx.doi.org/10.1007/978-3-319-46675-0_14
+
+Not implemented in `sneer`, but advocates a similar approach to HSSNE, although
+unfortunately the authors seem unaware of that publication. Also, they are too 
+modest to give their method a snappy name, so I have dubbed it Inhomogeneous 
+t-SNE or "it-SNE" (unless you really prefer "t-SNE-wIDoF'). One of the main
+differences is that the degree of tail-heaviness is allowed to vary per-point
+in the output kernel, and these values are optimized simultaneously with the
+output coordinates, rather than being fixed by the user.
+
 #### Weighted Symmetric Stochastic Neighbor Embedding (ws-SNE)
 Yang, Z., Peltonen, J., & Kaski, S. (2014).
 Optimization equivalence of divergences improves neighbor embedding.
@@ -199,6 +214,12 @@ Linear-time training of nonlinear low-dimensional embeddings.
 In *17th International Conference on Artificial Intelligence and Statistics (AISTATS 2014)* 
 (pp. 968-977).
 http://jmlr.org/proceedings/papers/v33/vladymyrov14.html
+
+Parviainen, E. (2016). 
+A graph-based N-body approximation with application to stochastic neighbor 
+embedding. 
+*Neural Networks*, *75*, 1-11.
+http://dx.doi.org/10.1016/j.neunet.2015.11.007
 
 #### Divergences
 
