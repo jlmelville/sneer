@@ -53,6 +53,11 @@ indegree_centrality <- function(m) {
 # probability matrices, row i is interpreted as containing the weighted
 # edges that are directed from node i.
 #
+# For a typical input row-based probability matrix created using entropic
+# affinities, the outdegree centrality is the same for all nodes, and sums to 1.
+# Equivalently, once converted to a knn graph, each outdegree centrality will
+# sum to k.
+#
 # @param m Nearest neighbor graph matrix.
 # @return Outdegree centrality of \code{m}.
 outdegree_centrality <- function(m) {
@@ -145,7 +150,7 @@ imp_kernel <- function(kernel) {
 #
 # Weights a probability matrix so that it approximates a (possibly symmetrized)
 # nearest neighbor graph. In the context of probability-based embedding, the
-# nearest neighbor adjancency graph is the same as the weight matrix that would
+# nearest neighbor adjacency graph is the same as the weight matrix that would
 # result if a step function was used, rather than the usual exponential
 # weighting. Given a row probability matrix we can then map back to the nearest
 # neighbor graph by multiplying each probability by the number of neighbors
