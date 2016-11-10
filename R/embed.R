@@ -971,6 +971,17 @@ sneer <- function(df,
                       inc_iter = TRUE)
     ext_opt <- TRUE
   }
+  else if (toupper(opt) == "NAG") {
+    message("Optimizing with Adaptive NAG and constant learning rate")
+    optimizer <- const_nag_adapt(dec_mult = dec_mult, burn_in = burn_in,
+                                 step_size = epsilon)
+
+  }
+  else if (toupper(opt) == "NAG-JACOBS") {
+    message("Optimizing with Adaptive NAG and Jacobs adaptive step size")
+    optimizer <- jacobs_nag_adapt(dec_mult = dec_mult, burn_in = burn_in,
+                                step_size = epsilon)
+  }
   else if (toupper(opt) == "NAG-BOLD") {
     message("Optimizing with Adaptive NAG and bold driver step size")
     optimizer <- bold_nag_adapt(dec_mult = dec_mult, burn_in = burn_in,

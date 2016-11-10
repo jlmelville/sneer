@@ -147,6 +147,72 @@ tsne_opt <- function(epsilon = 1) {
            mat_name = "ym")
 }
 
+# Jacobs Step Size with NAG
+jacobs_nag <- function(step_size = 1,
+                       max_momentum = 1,
+                       normalize_direction = TRUE,
+                       linear_weight = TRUE,
+                       burn_in = 0) {
+  nag(
+    step_size = tsne_jacobs(epsilon = step_size),
+    update = nesterov_nsc_momentum(max_momentum = max_momentum,
+                                   linear_weight = linear_weight,
+                                   burn_in = burn_in),
+    normalize_direction = normalize_direction)
+}
+
+# Adaptive Jacobs Step Size with NAG
+jacobs_nag_adapt <- function(step_size = 1,
+                            max_momentum = 1,
+                            normalize_direction = TRUE,
+                            linear_weight = TRUE,
+                            dec_mult = 0,
+                            restart = TRUE,
+                            burn_in = 0) {
+  opt <- jacobs_nag(step_size = step_size,
+                   max_momentum = max_momentum,
+                   normalize_direction = normalize_direction,
+                   linear_weight = linear_weight,
+                   burn_in = burn_in)
+
+  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
+                                 restart = restart)
+  opt
+}
+
+# NAG with constant step size
+const_nag <- function(step_size = 1,
+                     max_momentum = 1,
+                     normalize_direction = TRUE,
+                     linear_weight = TRUE,
+                     burn_in = 0) {
+  nag(
+    step_size = constant_step_size(step_size = step_size),
+    update = nesterov_nsc_momentum(max_momentum = max_momentum,
+                                   linear_weight = linear_weight,
+                                   burn_in = burn_in),
+    normalize_direction = normalize_direction)
+}
+
+# Adaptive NAG with constant step size
+const_nag_adapt <- function(step_size = 1,
+                           max_momentum = 1,
+                           normalize_direction = TRUE,
+                           linear_weight = TRUE,
+                           dec_mult = 0,
+                           restart = TRUE,
+                           burn_in = 0) {
+  opt <- const_nag(step_size = step_size,
+                  max_momentum = max_momentum,
+                  normalize_direction = normalize_direction,
+                  linear_weight = linear_weight,
+                  burn_in = burn_in)
+
+  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
+                                 restart = restart)
+  opt
+}
+
 # Nesterov Accelerated Gradient Optimizer with Bold Driver
 #
 # Optimizer factory function.
