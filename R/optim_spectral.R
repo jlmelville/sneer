@@ -43,7 +43,7 @@
 # @param c2 Constant used in curvature condition. Should take a value between
 #   \code{c1} and 1.
 # @return Optimizer.
-optim_spectral <- function(line_search = "mt", c1 = 1e-4, c2 = 0.1) {
+optim_spectral <- function(line_search = "mt", c1 = 1e-4, c2 = 0.9) {
 
   if (line_search == "mt") {
     if (!requireNamespace("rconjgrad",
@@ -111,9 +111,9 @@ spectral_direction <- function() {
       # Now we can solve by:
       # R'y = -g solve for y by forward solve
       # Rp = y solve for p by back solve
-      y <- forwardsolve(t(opt$rm), -opt$gm)
-      opt$direction$value <- backsolve(opt$rm, y)
-
+      rm <- opt$rm
+      opt$direction$value <- backsolve(rm,
+                                       backsolve(rm, -opt$gm, transpose = TRUE))
       list(opt = opt)
     }
   )
