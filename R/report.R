@@ -118,6 +118,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
                           normalize_cost = TRUE, keep_costs = FALSE,
                           extra_costs = NULL, opt_report = FALSE,
                           out_report = FALSE,
+                          show_time = TRUE,
                           verbose = TRUE) {
   reporter <- list()
 
@@ -183,7 +184,11 @@ make_reporter <- function(report_every = 100, min_cost = 0,
     }
 
     if (verbose) {
-      message("Iteration #", iter, cost_str)
+      it_msg <- ""
+      if (show_time) {
+        it_msg <- paste0(format(Sys.time(), "%H:%M:%S"), " ")
+      }
+      message(it_msg, "Iteration #", iter, cost_str)
       utils::flush.console()
     }
 
