@@ -185,3 +185,13 @@ centrality <- function(inp, method) {
   method$centrality_fn(m)
 }
 
+# Calculate three centralities: indegree-, outdegree- and degree-centrality
+# as indeg, outdeg and deg values in inp. Returns modified inp.
+centralities <- function(inp, method) {
+  m <- nn_graph(inp$pm, inp$perp)
+  list(
+    deg = degree_centrality(m),
+    indeg = indegree_centrality(m),
+    outdeg = outdegree_centrality(m)
+  )
+}

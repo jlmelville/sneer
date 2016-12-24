@@ -9,7 +9,7 @@ Description: Pure R implementation of similarity preserving embedding
     algorithms, including t-Distributed Stochastic Neighbour Embedding (TSNE).
 Depends:
     R (>= 3.2.2)
-License: GPL-2 | GPL-3
+License: file LICENSE
 LazyData: TRUE
 Suggests:
     testthat,

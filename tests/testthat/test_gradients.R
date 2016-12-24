@@ -44,7 +44,7 @@ hgan <- function(method, inp_init = inp_from_perp(perplexity = 20,
                          preprocess = preprocess,
                          init_inp = inp_init,
                          init_out = out_init,
-                         opt = gradient_descent())
+                         opt = mizer_grad_descent())
   head(gan(embedder))
 }
 
@@ -57,7 +57,7 @@ hgfd <- function(method,
                          preprocess = preprocess,
                          init_inp = inp_init,
                          init_out = out_init,
-                         opt = gradient_descent())
+                         opt = mizer_grad_descent())
   head(gfd(embedder, diff = diff))
 }
 
@@ -74,7 +74,7 @@ expect_grad <- function(method,
                          preprocess = preprocess,
                          init_inp = inp_init,
                          init_out = out_init,
-                         opt = gradient_descent())
+                         opt = mizer_grad_descent())
   grad_fd <- gfd(embedder, diff = diff)
   grad_an <- gan(embedder)
 

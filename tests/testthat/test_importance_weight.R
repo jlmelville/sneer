@@ -11,7 +11,7 @@ do_embed <- function(method, input_weight_fn = exp_weight) {
            reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                     verbose = FALSE),
            export = c("report", "inp", "method"),
-           verbose = FALSE, opt = gradient_descent())
+           verbose = FALSE, opt = mizer_grad_descent())
 }
 
 test_that("wSSNE gives different results to SSNE", {

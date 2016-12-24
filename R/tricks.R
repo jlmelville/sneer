@@ -134,49 +134,6 @@ early_exaggeration <- function(exaggeration = 4, off_iter = 50,
   }
 }
 
-# Late Momentum
-#
-# A "trick" for improving the quality of the embedding.
-#
-# Replaces the momentum scheme of an optimizer with a fixed value. This may
-# be useful when using an optimizer with a very aggressive momentum schedule,
-# such as Nesterov Accelerated Gradient method. Reducing the momentum for the
-# final stage of the embedding may help the optimizer refine a solution.
-#
-# @param momentum Value of the fixed momentum to use.
-# @param on_iter Iteration step at which to apply the new momentum value.
-# @param verbose If \code{TRUE} report a message when the new momentum is
-# applied.
-# @return Trick callback. Should be passed to \code{make_tricks} when
-# configuring an embedding.
-# @examples
-# \dontrun{
-# # Apply new momentum after 800 iterations
-# embed_prob(make_tricks(late_exaggeration(momentum = 0.5, on_iter = 800)),
-#            ...)
-# }
-# @references
-# Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
-# On the importance of initialization and momentum in deep learning.
-# In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
-# (pp. 1139-1147).
-#
-# @family sneer tricks
-late_momentum <- function(momentum = 0.9, on_iter = 900, verbose = TRUE) {
-  function(inp, out, method, opt, iter) {
-    if (iter == on_iter) {
-      if (!is.null(opt$update$momentum) && opt$update$momentum > momentum) {
-        if (verbose) {
-          message("Late momentum on at iter: ", iter)
-        }
-        opt$update <- constant_momentum(momentum)
-        opt <- opt$update$init(opt, inp, out, method)
-      }
-    }
-    list(opt = opt)
-  }
-}
-
 # t-SNE Tricks
 #
 # Tricks configured according to the details in the t-SNE paper.

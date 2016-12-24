@@ -6,7 +6,7 @@ output: html_document
 Previous: [Output Initialization](output-initialization.html). Next: [Embedding Methods](embedding-methods.html). Up: [Index](index.html).
 
 I have exposed a lot of options to do with optimization, but I don't really
-recommend using most of them, except out of mordant curiosity. Here are the 
+recommend using most of them, except out of morbid curiosity. Here are the 
 ones that matter:
 
 ### `max_iter`
@@ -78,63 +78,20 @@ iris_tsne <- sneer(iris, opt = "tsne", epsilon = 100, exaggerate = 4,
                   exaggerate_off_iter = 50, perplexity = 30, init = "r")
 ```
 
-The default optimizer uses the Nesterov Accelerated Gradient scheme. A good
-description is given in this 
-[deep learning paper](www.jmlr.org/proceedings/papers/v28/sutskever13.pdf).
-Additionally, it makes use of 
-[adaptive restart](https://arxiv.org/abs/1204.3982). Due to the rather 
-aggressive momentum schedule, there's a "burn in" period of a couple of steps 
-of plain steepest descent to establish a sensible step size and direction. 
-Otherwise, a poor start can cause premature convergence.
-
-The step size is by the "bold driver" method, for which you can also use the 
-`epsilon` parameter to set the initial learning rate.
-
-```R
-iris_tsne <- sneer(iris, epsilon = 10)
-```
-
-This method tends to be a little slower than the `"tsne"` optimization method, 
-because it calculates the cost at each step size but it gives good results for 
-most combinations of scaling, embedding method and data set.
-
-There are some other optimization methods available if you want to try them, but
-they all have some slight drawbacks to them.
-
-The L-BFGS method is used in the 
-[JSE paper](http://dx.doi.org/10.1016/j.neucom.2012.12.036) and can be used
-by setting `opt` to `"L-BFGS"`:
+The default optimizer uses the limited-memory Broyden-Fletcher-Goldfarb-Shanno
+(L-BFGS) optimizer and is used in the 
+[JSE paper](http://dx.doi.org/10.1016/j.neucom.2012.12.036). 
 
 ```R
 s1k_tsne <- sneer(s1k, opt = "L-BFGS")
 ```
 
-However, this relies on the `stats::optim` function in R, which disappears off
-for several steps of iteration. During this time, code external to `optim` that
-might depend on a particular iteration number won't trigger. So I advise against
-using, for example, the `perp_scale` options described in the 
-[Input Initialization](input-initialization.html) section with this optimizer.
-Also, it just doesn't do that much better than simpler options.
-
-Some further options are available to you if you install the 
-[rconjgrad](https://github.com/jlmelville/rconjgrad) package:
+If you want to try using the conjugate gradient optimization method (which is 
+the method used in the [NeRV](http://www.jmlr.org/papers/v11/venna10a.html) 
+paper, use:
 
 ```R
-devtools::install_github("jlmelville/rconjgrad")
-library("rconjgrad")
-```
-
-This provides access to a couple of line search routines, that allow for the
-strong Wolfe conditions to be met (important for some optimization methods), 
-one by More-Thuente and one by Rasmussen. If you want to try using the 
-conjugate gradient optimization method (which is the method used in the 
-[NeRV](http://www.jmlr.org/papers/v11/venna10a.html) paper, you can:
-
-```R
-# conjugate gradient with More-Thuente line search
-s1k_tsne <- sneer(s1k, opt = "CG-MT") 
-# conjugate gradient with Rasmussen line search
-s1k_tsne <- sneer(s1k, opt = "CG-R") 
+s1k_tsne <- sneer(s1k, opt = "CG") 
 ```
 In case you are curious, the specific flavor of CG used is the Polak-Ribiere
 update with restart (sometimes called 'PR+').
@@ -149,17 +106,35 @@ The Spectral Directions method relies on sparsity for it to be performant,
 which is something `sneer` doesn't currently support. You may therefore run 
 into memory problems if you use it with large data sets, but you're going to 
 run into memory problems with large data sets anyway, so it may not make a 
-massive difference. If you want to try it, it also needs the `rconjgrad`
-package to be loaded and is invoked similarly to the conjugate gradient 
-optimizer:
+massive difference.
 
 ```R
-# spectral direction with More-Thuente line search
-s1k_tsne <- sneer(s1k, opt = "SPEC-MT") 
-# spectral direction with Rasmussen line search
-s1k_tsne <- sneer(s1k, opt = "SPEC-R") 
+s1k_tsne <- sneer(s1k, opt = "SPEC") 
 ```
 
-But if in doubt, just use the default optimizer.
+The L-BFGS, CG and Spectral Directions methods are all gradient descent methods
+that rely on a strong Wolfe line search to make progress. An alternative 
+approach using an adaptive step size and a momentum scheme that emulates
+the Nesterov Accelerated Gradient (NAG) is also available, which is closer to 
+the original t-SNE optimization method in spirit, while being a bit more robust
+when using other embedding methods.
+
+A description of the connection between momentum and NAG is given in this 
+[deep learning paper](www.jmlr.org/proceedings/papers/v28/sutskever13.pdf).
+Additionally, it makes use of 
+[adaptive restart](https://arxiv.org/abs/1204.3982). 
+
+The step size is by the "bold driver" method, for which you can also use the 
+`epsilon` parameter to set the initial learning rate.
+
+```R
+iris_tsne <- sneer(iris, epsilon = 10)
+```
+
+This method tends to be a little slower than the `"tsne"` optimization method, 
+but it gives good results for most combinations of scaling, embedding method 
+and data set.
+
+But if in doubt, just use the default L-BFGS optimizer.
 
 Previous: [Output Initialization](output-initialization.html). Next: [Embedding Methods](embedding-methods.html). Up: [Index](index.html).

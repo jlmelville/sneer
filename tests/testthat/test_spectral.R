@@ -6,7 +6,6 @@ test_that("characterizes spectral direction performance", {
 # external data
 tsne_iris <- embed_prob(iris[, 1:4],
                         method = tsne(verbose = FALSE),
-                        opt = optim_spectral(line_search = "bold"),
                         opt = mizer_opt("PHESS", c2 = 0.9),
                         init_inp = inp_from_perp(
                           perplexity = 50,
@@ -14,7 +13,6 @@ tsne_iris <- embed_prob(iris[, 1:4],
                           verbose = FALSE),
                         preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                      verbose = FALSE),
-                        max_iter = 200,
                         max_iter = 50,
                         reporter = make_reporter(verbose = FALSE),
                         export = c("report"),

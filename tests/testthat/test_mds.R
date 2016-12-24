@@ -9,7 +9,7 @@ test_that("mmds is close to smacof::mds result", {
 
 mds_iris <- embed_dist(iris[, 1:4],
                        method = mmds(),
-                       opt = bold_nag_adapt(),
+                       opt = mizer_bold_nag_adapt(),
                        reporter = make_reporter(
                          extra_costs = c("kruskal_stress"), verbose = FALSE),
                        export = c("report"), verbose = FALSE, max_iter = 40)
@@ -33,7 +33,7 @@ expect_equal(mds_iris$report$kruskal_stress, 0.03273, tolerance = 1e-4,
 test_that("sammon map gives results close to MASS::sammon", {
 sammon_iris <- embed_dist(iris[c(1:142, 144:150), 1:4],
                           method = sammon_map(),
-                          opt = bold_nag(),
+                          opt = mizer_bold_nag(),
                           reporter = make_reporter(verbose = FALSE),
                           export = c("report"), verbose = FALSE, max_iter = 40)
 expect_equal(sammon_iris$report$cost, 0.00396, tolerance = 1e-4, scale = 1)
@@ -43,7 +43,7 @@ expect_equal(sammon_iris$report$cost, 0.00396, tolerance = 1e-4, scale = 1)
 test_that("SMMDS", {
 smds_iris <- embed_dist(iris[, 1:4],
                        method = smmds(),
-                       opt = bold_nag_adapt(),
+                       opt = mizer_bold_nag_adapt(),
                        reporter = make_reporter(
                          extra_costs = c("kruskal_stress"), verbose = FALSE),
                        export = c("report"), verbose = FALSE, max_iter = 30)

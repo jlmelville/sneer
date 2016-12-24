@@ -4,7 +4,7 @@ context("Plugin")
 embed_with <- function(method) {
   embed_prob(iris[1:50, 1:4],
              method = method,
-             init_inp =   inp_from_perp(
+             init_inp = inp_from_perp(
                perplexity = 15,
                input_weight_fn = sqrt_exp_weight,
                verbose = FALSE),
@@ -14,7 +14,7 @@ embed_with <- function(method) {
              reporter = make_reporter(verbose = FALSE),
              export = c("report"),
              verbose = FALSE,
-             opt = bold_nag_adapt())
+             opt = mizer_bold_nag_adapt())
 }
 
 expect_plugin_equal <- function(method_name, tolerance = .Machine$double.eps) {

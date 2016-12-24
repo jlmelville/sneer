@@ -1,827 +1,161 @@
-# Optimization configuration.
+# Bridges Sneer and Mizer
+make_optim_fg <- function(opt, inp, out, method, iter) {
+  if (!is.null(inp$xm)) {
+    nr <- nrow(inp$xm)
+  }
+  else {
+    nr <- nrow(inp$dm)
+  }
 
-# Optimization Methods
-#
-# The available methods and wrappers that can be used to create optimization
-# routines in sneer.
-#
-# @examples
-# make_opt(step_size = bold_driver())
-# make_opt(step_size = jacobs())
-# @keywords internal
-# @name optimization_methods
-# @family sneer optimization methods
-NULL
-
-# Optimizer
-#
-# Function to create an optimization method, used in an embedding function.
-#
-# The optimizer consists of
-# \itemize{
-#  \item A method to calculate the gradient at a certain position.
-#  \item A method to calculate the direction to move in from the gradient
-#  position.
-#  \item A method to calculate the size of the step to move.
-#  \item A method to calculate the update of the solution, consisting of the
-#  gradient descent (as calculated by the previous three functions) and any
-#  extra modifiers, normally a momentum term based on the previous solution
-#  step.
-# }
-#
-# Normalizing the direction vector (by setting \code{normalize_direction} to
-# \code{TRUE}) will scale it to length 1 before the optimization step. This
-# has the effect of making the size of the gradient descent dependent only on
-# the step size, rather than the product of the step size and the size of the
-# gradient. This can increase the stability of step size methods like Bold
-# Driver and the Jacobs method which iteratively update the step size based on
-# previous values rather than doing a search, or with methods where the
-# gradients can get extremely large (e.g. in traditional distance-based
-# embeddings like MDS and Sammon mapping which involve dividing by potentially
-# very small distances).
-#
-# The optimizer can validate the proposed solution, rejecting it
-# if the solution is not acceptable of the methods it is comprised of. It also
-# control updating the internal state of the methods (e.g. step size and
-# momentum).
-#
-# @param gradient Method to calculate the gradient at a solution
-#   position. Set by calling one of the configuration functions listed in
-#   \code{optimization_gradient}.
-# @param direction Method to calculate the direction to move. Set
-#   by calling one of the configuration functions listed in
-#   \code{optimization_direction}.
-# @param step_size Method to calculate the step size of the direction. Set
-#   by calling one of the configuration functions listed in
-#   \code{optimization_step_size}.
-# @param update Method to combine a gradient descent with other terms (e.g.
-#   momentum) to produce the final update. Set by calling one of the
-#   configuration functions listed in \code{optimization_update}.
-# @param normalize_direction If \code{TRUE} the gradient matrix is normalized to
-#   a length of one before step size calculation.
-# @param mat_name Name of the matrix in the output list \code{out} which
-#   contains the embedded coordinates.
-# @param recenter If \code{TRUE}, recenter the coordinates after each
-#   optimization step.
-# @return Optimizer.
-# @seealso \code{embed_prob} for how to use this function for configuring
-#   an embedding.
-# @examples
-# # Steepest descent with Jacobs adaptive step size and step momentum, as
-# # used in the t-SNE paper.
-# make_opt(step_size = jacobs(inc_fn = partial(`+`, 0.2), dec_mult = 0.8,
-#                             min_step_size = 0.1),
-#          update = step_momentum(init_momentum = 0.5, final_momentum = 0.8,
-#                                 switch_iter = 250),
-#          normalize_direction = FALSE)
-#
-# # Use bold driver adaptive step size (1% step size increase, 25% decrease)
-# # with step momentum and normalizing gradients.
-# make_opt(step_size = bold_driver(inc_mult = 1.01, dec_mult = 0.75),
-#          update = step_momentum(init_momentum = 0.5, final_momentum = 0.8,
-#                                 switch_iter = 250),
-#          normalize_direction = TRUE)
-#
-# # Nesterov Accelerated Gradient optimizer with bold driver adaptive step size
-# make_opt(gradient = nesterov_gradient(), step_size = bold_driver(),
-#          update = nesterov_nsc_momentum())
-#
-# # Should be passed to the opt argument of an embedding function:
-# \dontrun{
-#  embed_prob(opt = make_opt(gradient = nesterov_gradient(),
-#                           step_size = bold_driver(),
-#                           update = nesterov_nsc_momentum()), ...)
-# }
-# @family sneer optimization methods
-# @export
-make_opt <- function(gradient = classical_gradient(),
-                     direction = steepest_descent(),
-                     step_size = bold_driver(),
-                     update = no_momentum(),
-                     normalize_direction = TRUE, recenter = TRUE,
-                     mat_name = "ym") {
   list(
-    optimize_step = optimize_step,
-    mat_name = mat_name,
-    normalize_direction = normalize_direction,
-    recenter = recenter,
-
-    gradient = gradient,
-    direction = direction,
-    step_size = step_size,
-    update = update,
-
-    init = initialize_optimizer,
-    validate = validate_solution,
-    after_step = after_step,
-
-    report = opt_report,
-    old_cost_dirty = TRUE,
-    grad_dirty = TRUE
+    fn = function(par) {
+      out <- par_to_out(par, opt, inp, out, method, nr)
+      calculate_cost(method, inp, out)
+    },
+    gr = function(par) {
+      out <- par_to_out(par, opt, inp, out, method, nr)
+      mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+    },
+    fg = function(par) {
+      out <- par_to_out(par, opt, inp, out, method, nr)
+      list(
+        fn = calculate_cost(method, inp, out),
+        gr = mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+      )
+    }
   )
 }
 
-# t-SNE Optimizer
+# Convert 1D Parameter to Sneer Output
 #
-# Optimizer factory function.
+# This function converts the 1D parameter format expected by
+# \code{\link[stats]{optim}} into the matrix format used by sneer.
 #
-# Wrapper around \code{make_opt} which sets the optimizer parameters to
-# that from the t-SNE paper.
-# @param epsilon Learning rate. Multiplies the Jacobs step size by this
-#   value.
-# @return optimizer with parameters from the t-SNE paper.
-# @seealso \code{embed_prob} and \code{embed_dist} for how to use
-#  this function for configuring an embedding.
-# @examples
-# # Should be passed to the opt argument of an embedding function:
-# \dontrun{
-#  embed_prob(opt = tsne_opt(), ...)
-# }
-# @family sneer optimization methods
-tsne_opt <- function(epsilon = 1) {
-  make_opt(gradient = classical_gradient(),
-           direction = steepest_descent(),
-           step_size = tsne_jacobs(epsilon = epsilon),
-           update = step_momentum(),
-           normalize_direction = FALSE, recenter = TRUE,
-           mat_name = "ym")
-}
-
-# Jacobs Step Size with NAG
-jacobs_nag <- function(step_size = 1,
-                       max_momentum = 1,
-                       normalize_direction = TRUE,
-                       linear_weight = TRUE,
-                       burn_in = 0) {
-  nag(
-    step_size = tsne_jacobs(epsilon = step_size),
-    update = nesterov_nsc_momentum(max_momentum = max_momentum,
-                                   linear_weight = linear_weight,
-                                   burn_in = burn_in),
-    normalize_direction = normalize_direction)
-}
-
-# Adaptive Jacobs Step Size with NAG
-jacobs_nag_adapt <- function(step_size = 1,
-                            max_momentum = 1,
-                            normalize_direction = TRUE,
-                            linear_weight = TRUE,
-                            dec_mult = 0,
-                            restart = TRUE,
-                            burn_in = 0) {
-  opt <- jacobs_nag(step_size = step_size,
-                   max_momentum = max_momentum,
-                   normalize_direction = normalize_direction,
-                   linear_weight = linear_weight,
-                   burn_in = burn_in)
-
-  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
-                                 restart = restart)
-  opt
-}
-
-# NAG with constant step size
-const_nag <- function(step_size = 1,
-                     max_momentum = 1,
-                     normalize_direction = TRUE,
-                     linear_weight = TRUE,
-                     burn_in = 0) {
-  nag(
-    step_size = constant_step_size(step_size = step_size),
-    update = nesterov_nsc_momentum(max_momentum = max_momentum,
-                                   linear_weight = linear_weight,
-                                   burn_in = burn_in),
-    normalize_direction = normalize_direction)
-}
-
-# Adaptive NAG with constant step size
-const_nag_adapt <- function(step_size = 1,
-                           max_momentum = 1,
-                           normalize_direction = TRUE,
-                           linear_weight = TRUE,
-                           dec_mult = 0,
-                           restart = TRUE,
-                           burn_in = 0) {
-  opt <- const_nag(step_size = step_size,
-                  max_momentum = max_momentum,
-                  normalize_direction = normalize_direction,
-                  linear_weight = linear_weight,
-                  burn_in = burn_in)
-
-  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
-                                 restart = restart)
-  opt
-}
-
-# Nesterov Accelerated Gradient Optimizer with Bold Driver
-#
-# Optimizer factory function.
-#
-# Wrapper around \code{make_opt} which mixes the NAG descent method and
-# momentum for non-strongly convex problems formulated by Sutskever et al.,
-# along with the bold driver method for step size.
-#
-# @note This optimizer is prone to converge prematurely in the face of sudden
-# changes to the solution landscape, such as can happen when certain
-# \code{tricks} are applied. In these cases, substantially increasing
-# the \code{min_step_size} parameter so that the bold driver doesn't reduce
-# the step size is highly recommended.
-#
-# @param min_step_size Minimum step size allowed.
-# @param init_step_size Initial step size.
-# @param max_momentum Maximum value the momentum may take.
-# @param normalize_direction If \code{TRUE}, scale the length of the gradient to
-#  one.
-# @param linear_weight If \code{TRUE}, then the contribution of the gradient
-#  descent part of the update is scaled relative to the momentum part.
-# @param burn_in Number of iterations to run before applying momentum.
-# @return Optimizer with NAG parameters and bold driver step size.
-# @seealso \code{embed_prob} and \code{embed_dist} for how to use
-#  this function for configuring an embedding.
-# @examples
-# # Should be passed to the opt argument of an embedding function:
-# \dontrun{
-#  embed_prob(opt = bold_nag(), ...)
-# }
-# @family sneer optimization methods
-bold_nag <- function(min_step_size = sqrt(.Machine$double.eps),
-                     init_step_size = 1,
-                     max_momentum = 1,
-                     normalize_direction = TRUE,
-                     linear_weight = TRUE,
-                     burn_in = 0) {
-  nag(
-      step_size = bold_driver(min_step_size = min_step_size,
-                              init_step_size = init_step_size),
-      update = nesterov_nsc_momentum(max_momentum = max_momentum,
-                                     linear_weight = linear_weight,
-                                     burn_in = burn_in),
-      normalize_direction = normalize_direction)
-}
-
-# Nesterov Accelerated Gradient Optimizer with Bold Driver and Adaptive Restart
-#
-# Optimizer factory function.
-#
-# Wrapper around \code{make_opt} which mixes the NAG descent method and
-# momentum for non-strongly convex problems formulated by Sutskever et al.,
-# along with the bold driver method for step size. Additionally the adaptive
-# restart method of O'Donoghue and Candes.
-#
-# @param min_step_size Minimum step size allowed.
-# @param init_step_size Initial step size.
-# @param max_momentum Maximum value the momentum may take.
-# @param normalize_direction If \code{TRUE}, scale the length of the direction
-#  to one.
-# @param linear_weight If \code{TRUE}, then the contribution of the gradient
-#  descent part of the update is scaled relative to the momentum part.
-# @param dec_mult Degree to downweight the momentum iteration number when
-#  restarting.
-# @param restart If \code{TRUE}, then the momentum memory will be reset to zero
-#   whenever the cost does not decrease.
-# @param burn_in Number of iterations to run before applying momentum.
-# @return Optimizer with NAG parameters and bold driver step size.
-# @seealso \code{embed_prob} and \code{embed_dist} for how to use
-#  this function for configuring an embedding.
-# @examples
-# # Should be passed to the opt argument of an embedding function:
-# \dontrun{
-#  embed_prob(opt = bold_nag_adapt(), ...)
-# }
-# @family sneer optimization methods
-bold_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
-                      init_step_size = 1,
-                      max_momentum = 1,
-                      normalize_direction = TRUE,
-                      linear_weight = TRUE,
-                      dec_mult = 0,
-                      restart = TRUE,
-                      burn_in = 0) {
-  opt <- bold_nag(min_step_size = min_step_size,
-                  init_step_size = init_step_size,
-                  max_momentum = max_momentum,
-                  normalize_direction = normalize_direction,
-                  linear_weight = linear_weight,
-                  burn_in = burn_in)
-
-  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
-                                 restart = restart)
-  opt
-}
-
-# Nesterov Accelerated Gradient Optimizer with Backstepping Step Search
-#
-# Optimizer factory function.
-#
-# Wrapper around \code{make_opt} which mixes the NAG descent method and
-# momentum for non-strongly convex problems formulated by Sutskever et al.,
-# along with a backstepping method for step size.
-#
-# @param min_step_size Minimum step size allowed.
-# @param max_momentum Maximum value the momentum may take.
-# @param normalize_direction If \code{TRUE}, scale the length of the gradient to
-#  one.
-# @param linear_weight If \code{TRUE}, then the contribution of the gradient
-#  descent part of the update is scaled relative to the momentum part.
-# @param burn_in Number of iterations to run before applying momentum.
-# @return Optimizer with NAG parameters and backstepping step size.
-# @seealso \code{embed_prob} and \code{embed_dist} for how to use
-#  this function for configuring an embedding.
-# @examples
-# # Should be passed to the opt argument of an embedding function:
-# \dontrun{
-#  embed_prob(opt = back_nag(), ...)
-# }
-# @family sneer optimization methods
-back_nag <- function(min_step_size = sqrt(.Machine$double.eps),
-                     init_step_size = 1,
-                     max_momentum = 1,
-                     normalize_direction = TRUE,
-                     linear_weight = TRUE,
-                     burn_in = 0) {
-  nag(
-    step_size = backtracking(min_step_size = min_step_size,
-                             init_step_size = init_step_size),
-    update = nesterov_nsc_momentum(max_momentum = max_momentum,
-                                   linear_weight = linear_weight,
-                                   burn_in = burn_in),
-    normalize_direction = normalize_direction)
-}
-
-# Nesterov Accelerated Gradient Optimizer with Backstepping Step Search and
-# Adaptive Restart
-#
-# Optimizer factory function.
-#
-# Wrapper around \code{make_opt} which mixes the NAG descent method and
-# momentum for non-strongly convex problems formulated by Sutskever et al.,
-# along with a backstepping method for step size.
-#
-# @param min_step_size Minimum step size allowed.
-# @param max_momentum Maximum value the momentum may take.
-# @param normalize_direction If \code{TRUE}, scale the length of the gradient to
-#  one.
-# @param linear_weight If \code{TRUE}, then the contribution of the gradient
-#  descent part of the update is scaled relative to the momentum part.
-# @param dec_mult Degree to downweight the momentum iteration number when
-#  restarting.
-# @param restart If \code{TRUE}, then the momentum memory will be reset to zero
-#   whenever the cost does not decrease.
-# @param burn_in Number of iterations to run before applying momentum.
-# @return Optimizer with NAG parameters and backstepping step size.
-# @seealso \code{embed_prob} and \code{embed_dist} for how to use
-#  this function for configuring an embedding.
-# @examples
-# # Should be passed to the opt argument of an embedding function:
-# \dontrun{
-#  embed_prob(opt = back_nag_adapt(), ...)
-# }
-# @family sneer optimization methods
-back_nag_adapt <- function(min_step_size = sqrt(.Machine$double.eps),
-                           init_step_size = 1,
-                           max_momentum = 1,
-                           normalize_direction = TRUE,
-                           linear_weight = TRUE,
-                           dec_mult = 0,
-                           restart = TRUE,
-                           burn_in = 0) {
-  opt <- back_nag(min_step_size = min_step_size,
-                  init_step_size = init_step_size,
-                  max_momentum = max_momentum,
-                  normalize_direction = normalize_direction,
-                  linear_weight = linear_weight,
-                  burn_in = burn_in)
-
-  opt$update <- adaptive_restart(opt$update, dec_mult = dec_mult,
-                                 restart = restart)
-  opt
-}
-
-# Steepest Descent Optimizer with No Momentum
-#
-# Optimizer factory function.
-#
-# Wrapper around \code{make_opt} that creates a simple (some might say
-# boring) optimizer that only does steepest descent, without any momentum
-# term. The gradient is normalized to length 1 and the bold driver step
-# size method is used to adaptively select the step size.
-#
-# @return Pure gradient (steepest) descent optimizer.
-# @seealso \code{embed_prob} and \code{embed_dist} for how to use
-#  this function for configuring an embedding.
-# @examples
-# # Should be passed to the opt argument of an embedding function:
-# \dontrun{
-#  embed_prob(opt = gradient_descent(), ...)
-# }
-# @family sneer optimization methods
-gradient_descent <- function(min_step_size = sqrt(.Machine$double.eps),
-                             update = no_momentum()) {
-  make_opt(gradient = classical_gradient(), direction = steepest_descent(),
-           step_size = bold_driver(
-             min_step_size = min_step_size
-             ),
-           update = update,
-           normalize_direction = TRUE)
-}
-
-# Nesterov Accelerated Gradient (Toronto Formulation)
-#
-# Wrapper to create a NAG optimizer.
-#
-# Create an optimizer implementing the Nesterov Accelerated Gradient method.
-# This uses the formulation suggested by the Hinton group at Toronto, which
-# involves evaluating the gradient at the position after the momentum update.
-#
-# @param ... step size and update parameters for creating an optimizer.
-# @return Optimizer implementing the NAG method.
-# @references
-# Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
-# On the importance of initialization and momentum in deep learning.
-# In \emph{Proceedings of the 30th international conference on machine learning (ICML-13)}
-# (pp. 1139-1147).
-#
-# Sutskever, I. (2013).
-# \emph{Training recurrent neural networks}
-# (Doctoral dissertation, University of Toronto).
-# @examples
-# # boring old optimizer
-# opt <- make_opt(step_size = constant_step_size(0.1),
-#                 update = constant_momentum(0.8))
-#
-# # nesterov accelerated version
-# opt <- nag(step_size = constant_step_size(0.1),
-#            update = constant_momentum(0.8))
-# @family sneer optimization methods
-nag <- function(...) {
-  opt <- make_opt(...)
-  opt$gradient <- nesterov_gradient()
-  opt$update$update_fn <- momentum_update
-  opt
-}
-
-# Optimizer Initialization.
-#
-# The direction, step size and update components of the optimizer may all
-# provide initialization methods to set their internal state before the first
-# optimization iteration This function will run those initialization functions
-# as part of the overall optimizer intialization step.
-#
-# @param opt Optimizer to initialize.
-# @param inp Input data.
-# @param out Output data.
-# @param method Embedding method.
-# @return a list containing:
-# \item{\code{opt}}{Optimizer with its components initialized.}
-initialize_optimizer <- function(opt, inp, out, method) {
-  init <- remove_nulls(list(
-    direction = opt$direction$init,
-    step_size = opt$step_size$init,
-    update = opt$update$init
-  ))
-
-  for (name in names(init)) {
-    opt <- init[[name]](opt, inp, out, method)
-  }
-  opt
-}
-
-# Optimizer Solution Validation
-#
-# Validation function of an optimization iteration.
-#
-# The direction, step size or update part of the optimization step can "veto"
-# a particular solution if it's not to their liking. For example, the bold
-# driver step size method will flag an update as not ok if the cost increases.
-# If the solution does not validate, then it will not be applied to the
-# solution and the next iteration step takes place from the same position as
-# the current iteration.
-#
-# When invoked, this function will call the validation functions provided by
-# the different components of the optimizer. If any of them return \code{FALSE}
-# this function will also return \code{FALSE} (i.e. all parts of the optimizer
-# must agree that the proposed solution is a good one). The optimizer will
-# reject a solution which fails this validation function and start the next
-# iteration with the same solution as it started the current iteration with.
-# To avoid the optimizer getting permanently stuck, any part of the optimizer
-# that can fail the validation should also update its internal state so that
-# a different update will be attempted on the next iteration.
-#
-# @param opt Optimizer.
-# @param inp Input data.
-# @param out Output data from the start of the iteration.
-# @param proposed_out Proposed updated output for this iteration.
-# @param method Embedding method.
-# @param iter Iteration number.
-# @return A list containing:
-# \item{\code{opt}}{Optimizer.}
-# \item{\code{inp}}{Input data.}
-# \item{\code{out}}{Output data from the start of the iteration.}
-# \item{\code{proposed_out}}{Proposed updated output for this iteration.}
-# \item{\code{method}}{Embedding method.}
-# \item{\code{ok}}{Logical value, \code{TRUE} if \code{proposed_out} passed
-# validation, \code{FALSE} otherwise}
-validate_solution <- function(opt, inp, out, proposed_out, method, iter) {
-  validate <- remove_nulls(list(
-    direction = opt$direction$validate,
-    step_size = opt$step_size$validate,
-    update = opt$update$validate
-  ))
-
-  all_good <- TRUE
-
-  for (name in names(validate)) {
-    result <- validate[[name]](opt, inp, out, proposed_out, method, iter)
-    if (!is.null(result$opt)) {
-      opt <- result$opt
-    }
-    if (!is.null(result$inp)) {
-      inp <- result$inp
-    }
-    if (!is.null(result$out)) {
-      out <- result$out
-    }
-    if (!is.null(result$proposed_out)) {
-      proposed_out <- result$proposed_out
-    }
-    if (!is.null(result$method)) {
-      method <- result$method
-    }
-    if (!is.null(result$ok)) {
-      if (!result$ok) {
-        all_good <- FALSE
-      }
-    }
-  }
-  list(ok = all_good, opt = opt, inp = inp, out = out,
-       proposed_out = proposed_out, method = method)
-}
-
-# Post Optimization Step
-#
-# A function for the optimizer to run after updating the solution on each
-# iteration. As part of this process it will run any \code{after_step}
-# functions provided by the direction, step size and update methods of the
-# optimizer.
-#
-# @param opt Optimizer.
-# @param inp Input data.
-# @param out Output data from the start of the iteration.
-# @param new_out Output data which will be the starting solution for the next
-#   iteration of optimization. If the validation stage failed, then this may be
-#   the same solution as \code{out}.
-# @param ok \code{TRUE} if the current iteration passed validation,
-#   \code{FALSE} otherwise.
-# @param iter Current iteration number.
-# @return A list containing
-#   \item{\code{opt}}{Updated optimizer.}
-#   \item{\code{inp}}{Input data.}
-#   \item{\code{out}}{Output data from the start of the iteration.}
-#   \item{\code{new_out}}{New output to be used in the next iteration.}
-after_step <- function(opt, inp, out, new_out, ok, iter) {
-  after_step <- remove_nulls(list(
-    direction = opt$direction$after_step,
-    step_size = opt$step_size$after_step,
-    update = opt$update$after_step
-  ))
-
-  for (name in names(after_step)) {
-    result <- after_step[[name]](opt, inp, out, new_out, ok, iter)
-    if (!is.null(result$opt)) {
-      opt <- result$opt
-    }
-    if (!is.null(result$inp)) {
-      inp <- result$inp
-    }
-    if (!is.null(result$out)) {
-      out <- result$out
-    }
-    if (!is.null(result$new_out)) {
-      new_out <- result$new_out
-    }
-  }
-
-  if (opt$recenter) {
-    new_out[[opt$mat_name]] <- scale(new_out[[opt$mat_name]], center = TRUE,
-                                     scale = FALSE)
-  }
-
-  list(opt = opt, inp = inp, out = out, new_out = new_out)
-}
-
-# One Step of Optimization
-#
+# @param par Vector of embedded coordinates.
 # @param opt Optimizer
-# @param method Embedding method.
 # @param inp Input data.
-# @param out Output data.
-# @param iter Iteration number.
-# @return List consisting of:
-#   \item{\code{opt}}{Updated optimizer.}
-#   \item{\code{inp}}{Updated input.}
-#   \item{\code{out}}{Updated output.}
-optimize_step <- function(opt, method, inp, out, iter) {
+# @param method Embedding method.
+# @param nrow Number of rows in the sneer output matrix.
+# @return Output data with coordinates converted from \code{par}.
+par_to_out <- function(par, opt, inp, out, method, nrow) {
+  dim(par) <- c(nrow, length(par) / nrow)
+  out <- set_solution(inp, par, method, mat_name = opt$mat_name, out = out)
+  out$dirty <- TRUE
+  out
+}
+
+# Convert Matrix to 1D Parameter Vector
+#
+# This function takes a matrix used by sneer internally (e.g. output
+# coordinates or gradient matrix) and converts into a 1D vector, as used
+# by \code{\link[stats]{optim}}. The matrix is converted columnwise.
+#
+# @param mat Matrix to convert.
+# @return Matrix in vector form.
+mat_to_par <- function(mat) {
+  dim(mat) <- NULL
+  mat
+}
+
+mizer_opt_step <- function(opt, method, inp, out, iter) {
+
+  fg <- make_optim_fg(opt, inp, out, method, iter)
+  if ((iter == 0 && toupper(opt$name) == "PHESS") || toupper(opt$name) == "NEWTON") {
+    # Using Newton is super pointless with standard spectral direction
+    # Get the same Hessian approximation at every iteration
+    # D+
+    dm <- diag(indegree_centrality(inp$pm))
+    # Graph Laplacian , L+ = D+ - W+
+    lm <- dm - inp$pm
+    # enforce positive definiteness by adding a small number
+    mu <- min(lm[lm > 0]) * 1e-10
+    # Cholesky decomposition of graph Laplacian
+    fg$hs <- function(par) { 4 * (lm + mu) }
+  }
+
+  par <- mat_to_par(out$ym)
+  # par0 <- par
+  mizer <- opt$mizer
+
   if (iter == 0) {
-    opt <- opt$init(opt, inp, out, method)
+    mizer <- opt$mizer_module$opt_init(mizer, par, fg)
+    opt$mizer <- mizer
   }
 
-  grad_result <- opt$gradient$calculate(opt, inp, out, method, iter)
-
-  if (any(is.nan(grad_result$gm))) {
-    stop("NaN in grad. descent at iter ", iter)
+  if (!is.null(opt$old_cost_dirty) && opt$old_cost_dirty) {
+    mizer <- opt$mizer_module$opt_clear_cache(mizer)
   }
-  opt$gm <- grad_result$gm
+  step_res <- opt$mizer_module$opt_step(mizer, par, fg, iter)
+  mizer <- step_res$opt
+  opt$mizer <- mizer
 
-  # Save stiffness matrix if available for later reporting if requested
-  if (!is.null(grad_result$km)) {
-    opt$km <- grad_result$km
-  }
+  par <- step_res$par
 
-  direction_result <- opt$direction$calculate(opt, inp, out, method, iter)
-  opt <- direction_result$opt
-
-  if (opt$normalize_direction) {
-    opt$direction$value <- normalize(opt$direction$value)
-  }
-
-  step_size_result <- opt$step_size$calculate(opt, inp, out, method, iter)
-  opt <- step_size_result$opt
-
-  update_result <- opt$update$calculate(opt, inp, out, method, iter)
-  opt <- update_result$opt
-
-  proposed_out <- update_solution(opt, inp, out, method)
-
-  # intercept whether we want to accept the new solution e.g. bold driver
-  ok <- TRUE
-  if (!is.null(opt$validate)) {
-    validation_result <- opt$validate(opt, inp, out, proposed_out, method, iter)
-    opt <- validation_result$opt
-    inp <- validation_result$inp
-    out <- validation_result$out
-    proposed_out <- validation_result$proposed_out
-    method <- validation_result$method
-    ok <- validation_result$ok
-  }
-
-  # If the this solution was vetoed, roll back to the previous one.
-  # There's also a possibility that we won't have to recalculate the
-  # gradient on the next step, although an after_step function can
-  # mark the gradient as dirty if we're using NAG and the update changes
-  # e.g. adaptive restart resets the previous update. Also a change to inp
-  # or out in a trick can dirty the gradient.
-  if (ok) {
-    new_out <- proposed_out
-  } else {
-    new_out <- out
-  }
-
-  if (!is.null(opt$after_step)) {
-    after_step_result <- opt$after_step(opt, inp, out, new_out, ok, iter)
-    opt <- after_step_result$opt
-    inp <- after_step_result$inp
-    out <- after_step_result$out
-    new_out <- after_step_result$new_out
-  }
-
-  if (ok) {
-    if (!is.null(opt$cost)) {
-      opt$old_cost <- opt$cost
-    }
-  }
-
-  # mark cached cost data as valid as we exit
-  # (tricks can make it dirty before next step)
-  opt$old_cost_dirty <- FALSE
-  list(opt = opt, inp = inp, out = new_out)
-}
-
-# Output Data Update
-#
-# This function updates the embedded coordinates in the output data, based
-# on the update information in the Optimizer, as well as updating any
-# auxiliary output data that is dependent on the coordinates (e.g. distances
-# and probabilities)
-#
-# @param opt Optimizer.
-# @param inp Input data.
-# @param out Output data.
-# @param method Embedding method.
-# @return Updated \code{out}.
-update_solution <- function(opt, inp, out, method) {
-  new_out <- out
-  new_solution <- new_out[[opt$mat_name]] + opt$update$value
-  set_solution(inp, new_solution, method, mat_name = opt$mat_name, out = out)
-}
-
-# Cost Validation
-#
-# Validation function for assessing a proposed solution from the optimizer.
-#
-# This function validates a solution by looking for a non-increasing cost
-# function between iterations. Used by adaptive schemes, e.g. the
-# \code{bold_driver} step size method and the
-# \code{adaptive_restart} momentum scheme.
-#
-# Because multiple methods may use this function, some caching is carried out
-# to prevent wasteful recalculation of the cost function. This function will
-# set the following members on the \code{opt} object:
-# \describe{
-#  \item{\code{old_cost_dirty}}{The cost associated with the previous solution,
-#    \code{out}. If this value already exists, and \code{opt$old_cost_dirty} is
-#    \code{FALSE}, it is assumed that the old cost is up to date and it won't
-#    be recalculated.}
-#  \item{\code{cost}}{The cost associated with the proposed solution,
-#    \code{proposed_out}. If this value already exists, and
-#    \code{opt$cost_iter} exists and is equal to the current value of
-#    \code{iter}, it is assumed that the cost is up to data and it won't be
-#    recalculated.}
-#  \item{\code{old_cost_dirty}}{A flag indicating that cost data from the
-#    previous iteration has been invalidated. If the function recalculates the
-#    old cost, this flag will be reset to false.}
-#  \item{\code{cost_iter}}{The iteration at which the current cost was
-#    calculated. If the function recalculates the cost of the proposed
-#    solution, this value will be set to the current value of \code{iter}.}
-#  \item{\code{cost_ok}}{\code{TRUE} if the cost for the proposed solution has not
-#    increased that of the old solution.}
-# }
-#
-# @param opt Optimizer.
-# @param inp Input data.
-# @param out Output data.
-# @param method Embedding method.
-# @param iter Iteration number.
-# @return List containing:
-# \item{ok}{\code{TRUE} if the cost did not increase with the proposed
-#  solution.}
-# \item{opt}{Optimizer with any updated data (e.g. cached costs).}
-# @keywords internal
-cost_validate <- function(opt, inp, out, proposed_out, method, iter) {
-  # ocd <- opt$old_cost_dirty
-  # ooc <- opt[["old_cost"]]
-  # if (is.null(ooc)) {
-  #   ooc <- 1.e99
-  # }
-  if (opt$old_cost_dirty) {
-    # might have to also re-evaluate other matrices
-    out <- update_out(inp, out, method)
-    opt$old_cost <- calculate_cost(method, inp, out)
-    opt$old_cost_dirty <- FALSE
-  }
-  old_cost <- opt$old_cost
-
-  if (is.null(opt$cost_iter) || opt$cost_iter != iter) {
-    opt$cost <- calculate_cost(method, inp, proposed_out)
-    opt$cost_iter <- iter
-  }
-  cost <- opt$cost
-  ok <- cost <= old_cost
-  opt$cost_ok <- ok
-#  message("cost_validate: iter ", iter,
-#          " old cost = ", formatC(old_cost),
-#          " cost = ", formatC(cost), " ok = ", ok,
-#          " step size = ", formatC(opt$step_size$value),
-#          " ocd = ", ocd, " ooc = ", formatC(ooc),
-#          " out = ", formatC(out$ym[1,1]),
-#          " prp = ", formatC(proposed_out$ym[1,1]))
-  list(ok = ok, out = out, opt = opt)
-}
-
-# Optimizer Diagnostics
-#
-# Simple diagnostics of the state of the optimization.
-#
-# @param opt Optimizer to report on.
-# @return a list containing (very) brief numeric summary of parts of the
-# optimizer:
-# \item{\code{grad_length}}{Length of the gradient.}
-# \item{\code{step_size}}{Value of the step size (or length of the step size
-#  vector).}
-# \item{\code{momentum}}{Momentum (if any).}
-opt_report <- function(opt) {
-  result <- list()
-  if (!is.null(opt$gm)) {
-    result$grad_length <- length_vec(opt$gm)
-    result$grad_min <- min(opt$gm)
-    result$grad_max <- max(opt$gm)
-  }
-
-  if (!is.null(opt$gm)) {
-    result$stiff_length <- length_vec(opt$km)
-    result$stiff_min <- min(opt$km)
-    result$stiff_max <- max(opt$km)
-  }
-
-  if (class(opt$step_size$value) == "matrix") {
-    result$step_size <- length_vec(opt$step_size$value)
+  if (!is.null(inp$xm)) {
+    nr <- nrow(inp$xm)
   }
   else {
-    result$step_size <- opt$step_size$value
+    nr <- nrow(inp$dm)
+  }
+  out <- par_to_out(par, opt, inp, out, method, nr)
+
+  if (!is.null(opt$mizer$cache$gr_curr) &&
+      length_vec(opt$mizer$cache$gr_curr) < sqrt(.Machine$double.eps)) {
+    opt$stop_early <- TRUE
   }
 
-  if (!is.null(opt$update$momentum)) {
-    result$momentum <- opt$update$momentum
+  list(opt = opt, inp = inp, out = out, iter = iter)
+}
+
+mizer_opt <- function(opt_name, ...) {
+  mizer_module <- mizer()
+
+  if (class(opt_name) == "list") {
+    opt <- opt_name
+  }
+  else {
+    opt <- mizer_module$make_mizer(method = opt_name, ...)
   }
 
-  result
+  list(
+    name = opt_name,
+    mat_name = "ym",
+    optimize_step = mizer_opt_step,
+    mizer_module = mizer_module,
+    mizer = opt
+  )
+}
+
+mizer_bold_nag_adapt <- function() {
+  mizer_opt("SD", line_search = "bold", norm_direction = TRUE,
+            mom_schedule = "nesterov", mom_type = "nesterov",
+            mom_linear_weight = TRUE, nest_convex_approx = TRUE,
+            nest_burn_in = 1, use_nest_mu_zero = TRUE, restart = "fn")
+}
+
+mizer_bold_nag <- function() {
+  mizer_opt("SD", line_search = "bold", norm_direction = TRUE,
+            mom_schedule = "nesterov", mom_type = "nesterov",
+            mom_linear_weight = TRUE, nest_convex_approx = TRUE,
+            nest_burn_in = 1, use_nest_mu_zero = TRUE)
+}
+
+mizer_back_nag <- function() {
+  mizer_opt("SD", line_search = "back", norm_direction = TRUE,
+            mom_schedule = "nesterov", mom_type = "nesterov",
+            mom_linear_weight = TRUE, nest_convex_approx = TRUE,
+            nest_burn_in = 1, use_nest_mu_zero = TRUE,
+            c1 = 0.1, step_down = 0.8)
+}
+
+mizer_back_nag_adapt <- function() {
+  mizer_opt("SD", line_search = "back", norm_direction = TRUE,
+            mom_schedule = "nesterov", mom_type = "nesterov",
+            mom_linear_weight = TRUE, nest_convex_approx = TRUE,
+            nest_burn_in = 1, use_nest_mu_zero = TRUE, restart = "fn",
+            c1 = 0.1, step_down = 0.8)
+}
+
+mizer_grad_descent <- function() {
+  mizer_opt("SD", line_search = "bold", norm_direction = TRUE)
 }

@@ -250,11 +250,16 @@ iembed <- function(method,
                                    verbose = FALSE),
                    init_inp = inp_from_perp(perplexity = 20, verbose = FALSE),
                    init_out = out_from_PCA(verbose = FALSE),
-                   opt = gradient_descent()
+                   opt = mizer_grad_descent()
 ) {
 
   init_embed(xm, method, preprocess = preprocess,
              init_inp = init_inp,
              init_out = init_out,
              opt = opt)
+}
+
+
+vec_formatC <- function(v) {
+  paste(Map(function(x) { formatC(x) }, v), collapse = ", ")
 }
