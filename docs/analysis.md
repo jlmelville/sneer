@@ -140,11 +140,12 @@ The RNX AUC was used as an evaluation method in the
 If you know for sure you definitely want to calculate all these values, then
 you can ask `sneer` to calculate them automatically after the embedding. Pass
 a character vector to the `quality_measures` parameter containing one or more
-of: `r` (ROC AUC), `p` (PR AUC) or `n` (RNX AUC):
+of: `rocauc` (ROC AUC), `prauc` (PR AUC) or `rnxauc` (RNX AUC) (these can be
+abbreviated):
 
 ```R
 # ROC AUC, PR AUC and RNX AUC
-s1k_tsne <- sneer(s1k, quality_measures = c("r", "p", "n"))
+s1k_tsne <- sneer(s1k, quality_measures = c("rocauc", "prauc", "rnxauc"))
 
 # Just the PR AUC
 s1k_tsne <- sneer(s1k, quality_measures = c("p"))

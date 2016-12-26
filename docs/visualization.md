@@ -349,7 +349,7 @@ function like `rainbow` or the *name* of a ColorBrewer color scheme, e.g.
 #### `plot_type`
 
 If you embed in other than 2 dimensions, you won't see a plot. You can also
-turn off plotting by setting `plot_type = "n"`.
+turn off plotting by setting `plot_type = "none"`.
 
 There is also support for using `ggplot2`. As usual, you need to install and
 load it yourself:
@@ -359,9 +359,9 @@ install.package("ggplot2")
 library(ggplot2)
 ```
 
-Then, set `plot_type = "g"`
+Then, set `plot_type = "ggplot2"` (or just `"g"`):
 
-![`tsne_iris <- sneer(iris, plot_type = "g")`](tsne-iris-ggplot2.png)
+![`tsne_iris <- sneer(iris, plot_type = "ggplot2")`](tsne-iris-ggplot2.png)
 
 Could that be... yes it is. It's a legend at long, long last. This is the big
 advantage of using the `ggplot2` plotting during the embedding. It's not

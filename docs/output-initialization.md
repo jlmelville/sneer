@@ -16,11 +16,11 @@ initially, or otherwise the gradients are very small and no optimization occurs.
 
 The [t-SNE paper](http://jmlr.org/papers/v9/vandermaaten08a.html) suggests
 initialization from a small (standard deviation of `1e-4`) gaussian 
-distribution. Set `init` to `"r"` for that:
+distribution. Set `init` to `"random"` for that:
 
 ```R
 set.seed(1337) # if you want to be reproducible
-s1k_tsne <- sneer(s1k, init = "r")
+s1k_tsne <- sneer(s1k, init = "random")
 ```
 
 The [NeRV paper](http://www.jmlr.org/papers/v11/venna10a.html) uses a uniform
@@ -28,7 +28,7 @@ distribution instead. I can't imagine it makes much difference, but that's what
 sneer is for:
 
 ```R
-s1k_tsne <- sneer(s1k, init = "u")
+s1k_tsne <- sneer(s1k, init = "uniform")
 ```
 
 These small random distributions do well with probability-based embeddings, but 
@@ -42,7 +42,7 @@ score vectors (principal components) from a PCA of the input data is used. No
 scaling is done to the data, although it is centered.
 
 ```R
-s1k_tsne <- sneer(s1k, init = "p")
+s1k_tsne <- sneer(s1k, init = "pca")
 s1k_tsne <- sneer(s1k)  # same thing as the above
 ```
 
@@ -59,7 +59,7 @@ directly:
 
 ```R
 input_coords <- some_other_initialization_method(s1k)
-s1k_tsne <- sneer(s1k, init = "m", init_config = input_coords)
+s1k_tsne <- sneer(s1k, init = "matrix", init_config = input_coords)
 ```
 
 In the example above, `input_coords` should be a matrix with dimensions n x 2,

@@ -135,10 +135,11 @@ $(document).ready(function () {
 <h3>The <code>scale_type</code> parameter</h3>
 <p>By default, no scaling is applied to the input data. By providing an argument to <code>scale_type</code> you can scale the data in the following way:</p>
 <ul>
-<li><code>&quot;a&quot;</code> Autoscales the data: each column is centered so that is has a mean of zero and then scaled so that its variance is 1.</li>
-<li><code>&quot;r&quot;</code> Range scales each column of data: each column is scaled so that the values in each column have a range from 0 to 1.</li>
-<li><code>&quot;m&quot;</code> Range scales the entire matrix: like range scaling, except the entire matrix is treated like one big column.</li>
+<li><code>&quot;auto&quot;</code> Autoscales the data: each column is centered so that is has a mean of zero and then scaled so that its variance is 1.</li>
+<li><code>&quot;range&quot;</code> Range scales each column of data: each column is scaled so that the values in each column have a range from 0 to 1.</li>
+<li><code>&quot;matrix&quot;</code> Range scales the entire matrix: like range scaling, except the entire matrix is treated like one big column.</li>
 </ul>
+<p>All these arguments can be abbreviated (e.g. to <code>&quot;m&quot;</code> instead of <code>&quot;matrix&quot;</code>).</p>
 <p>Image data is often treated by range scaling the entire matrix, e.g. using the mnist data set as an example:</p>
 <p><code>res_mnist &lt;- sneer(mnist, range_scale = &quot;m&quot;)</code></p>
 </div>

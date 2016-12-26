@@ -33,12 +33,14 @@ it filters in this way.
 By default, no scaling is applied to the input data. By providing an argument
 to `scale_type` you can scale the data in the following way:
 
-* `"a"` Autoscales the data: each column is centered so that is has a mean of 
+* `"auto"` Autoscales the data: each column is centered so that is has a mean of 
 zero and then scaled so that its variance is 1.
-* `"r"` Range scales each column of data: each column is scaled so that the 
+* `"range"` Range scales each column of data: each column is scaled so that the 
 values in each column have a range from 0 to 1.
-* `"m"` Range scales the entire matrix: like range scaling, except the 
+* `"matrix"` Range scales the entire matrix: like range scaling, except the 
 entire matrix is treated like one big column.
+
+All these arguments can be abbreviated (e.g. to `"m"` instead of `"matrix"`).
 
 Image data is often treated by range scaling the entire matrix, e.g. using the 
 mnist data set as an example:

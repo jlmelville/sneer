@@ -159,7 +159,7 @@ Some approaches take a different view. The
 transferring the precisions from the input kernel to the output kernel.
 
 This can be accomodated by using the `prec_scale` argument with the argument
-`"t"` (for "transfer"):
+`"transfer"` (which can be abbreviated to `"t"`):
 
 ```R
 s1k_ssne <- sneer(s1k, prec_scale = "t", method = "ssne")
@@ -182,7 +182,7 @@ to scale the output kernel precision for each perplexity. See the "Console
 Output" section below for a bit more explanation of intrinsic dimensionality,
 but the full procedure is sufficiently complex that you should read the 
 multscale JSE paper if you want the gory details. To just turn it on and
-try it out, set the `prec_scale` parameter to `"s"` (for "scale").
+try it out, set the `prec_scale` parameter to `"scale"` (or just `"s"`).
 
 For this setting to do anything, you must be using an embedding method which 
 has a free parameter in the output kernel (i.e. not t-SNE). Additionally, you 
@@ -194,7 +194,8 @@ relative distances in the final configuration.
 An example of a valid combination is:
 
 ```R
-s1k_mssne <- sneer(s1k, perp_scale = "multi", prec_scale = "s", method = "ssne")
+s1k_mssne <- sneer(s1k, perp_scale = "multi", prec_scale = "scale", 
+                   method = "ssne")
 ```
 
 ### `perp_kernel_fun`

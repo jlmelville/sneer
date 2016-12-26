@@ -161,9 +161,9 @@ rnx_iris &lt;- rnx_auc_embed(iris_tsne$dx, iris_tsne$dy)</code></pre>
 </div>
 <div id="quality_measures" class="section level3">
 <h3><code>quality_measures</code></h3>
-<p>If you know for sure you definitely want to calculate all these values, then you can ask <code>sneer</code> to calculate them automatically after the embedding. Pass a character vector to the <code>quality_measures</code> parameter containing one or more of: <code>r</code> (ROC AUC), <code>p</code> (PR AUC) or <code>n</code> (RNX AUC):</p>
+<p>If you know for sure you definitely want to calculate all these values, then you can ask <code>sneer</code> to calculate them automatically after the embedding. Pass a character vector to the <code>quality_measures</code> parameter containing one or more of: <code>rocauc</code> (ROC AUC), <code>prauc</code> (PR AUC) or <code>rnxauc</code> (RNX AUC) (these can be abbreviated):</p>
 <pre class="r"><code># ROC AUC, PR AUC and RNX AUC
-s1k_tsne &lt;- sneer(s1k, quality_measures = c(&quot;r&quot;, &quot;p&quot;, &quot;n&quot;))
+s1k_tsne &lt;- sneer(s1k, quality_measures = c(&quot;rocauc&quot;, &quot;prauc&quot;, &quot;rnxauc&quot;))
 
 # Just the PR AUC
 s1k_tsne &lt;- sneer(s1k, quality_measures = c(&quot;p&quot;))</code></pre>
