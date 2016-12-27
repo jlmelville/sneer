@@ -71,7 +71,7 @@ and its variants ASNE and SSNE.
 * [Jensen-Shannon Embedding](http://www.sciencedirect.com/science/article/pii/S0925231213001471) (JSE).
 * [Multiscale SNE](http://www.sciencedirect.com/science/article/pii/S0925231215003641) (msSNE).
 * [Weighted SNE using degree centrality](http://www.jmlr.org/proceedings/papers/v32/yange14.html) (ws-SSNE).
-* A variety of optimizations using the [mizer](https://github.com/jlmelville/mizer) package.
+* A variety of optimizations using the [mize](https://github.com/jlmelville/mize) package.
 * The [Spectral Directions](https://arxiv.org/abs/1206.4646)
 optimization method of Vladymyrov and Carreira-Perpiñán, although in a 
 non-sparse form.
@@ -107,7 +107,7 @@ SNE-related research:
 * [Simulation, Olivetti and Frey Faces](https://github.com/jlmelville/snedata), 
 * [COIL-20](https://github.com/jlmelville/coil20) 
 * [MNIST Digit](https://github.com/jlmelville/mnist)
-* [mizer](https://github.com/jlmelville/mizer), the optimization package.
+* [mize](https://github.com/jlmelville/mize), the optimization package.
 
 ## Acknowledgements
 
@@ -122,7 +122,7 @@ or resulting destruction of your computer is a bug in sneer.
 ## License
 
 [GPLv2 or later](https://www.gnu.org/licenses/gpl-2.0.txt). The optimization
-part of sneer is provided by the [mizer](https://github.com/jlmelville/mizer)
+part of sneer is provided by the [mize](https://github.com/jlmelville/mize)
 package, which is available under the 
 [BSD 2-Clause](https://opensource.org/licenses/BSD-2-Clause) license.
 

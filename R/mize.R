@@ -1,4 +1,4 @@
-# Mizer is distributed under this License:
+# Mize is distributed under this License:
 #
 # Copyright (c) 2016, James Melville
 # All rights reserved.
@@ -24,7 +24,7 @@
 # CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
 # ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
 # POSSIBILITY OF SUCH DAMAGE.
-mizer <- function() {
+mize <- function() {
 # Adaptive Restart --------------------------------------------------------
 
 # Adds Adaptive Restart for optimizers which are using a momentum scheme.
@@ -2178,93 +2178,92 @@ list_hooks <- function(opt) {
 # rb0 <- c(-1.2, 1)
 #
 # # Minimize using L-BFGS
-# res <- mizer(rb0, rosenbrock_fg, method = "L-BFGS")
+# res <- mize(rb0, rosenbrock_fg, method = "L-BFGS")
 #
 # # Conjugate gradient with Fletcher-Reeves update, tight Wolfe line search
-# res <- mizer(rb0, rosenbrock_fg, method = "CG", cg_update = "FR", c2 = 0.1)
+# res <- mize(rb0, rosenbrock_fg, method = "CG", cg_update = "FR", c2 = 0.1)
 #
 # # Steepest decent with constant momentum = 0.9
-# res <- mizer(rb0, rosenbrock_fg, method = "SD", mom_type = "classical",
+# res <- mize(rb0, rosenbrock_fg, method = "SD", mom_type = "classical",
 #              mom_schedule = 0.9)
 #
 # # Steepest descent with constant momentum in the Nesterov style as described
 # # by Sutskever and co-workers
-# res <- mizer(rb0, rosenbrock_fg, method = "SD", mom_type = "nesterov",
+# res <- mize(rb0, rosenbrock_fg, method = "SD", mom_type = "nesterov",
 #              mom_schedule = 0.9)
 #
 # # Nesterov momentum with adaptive restart comparing function values
-# res <- mizer(rb0, rosenbrock_fg, method = "SD", mom_type = "nesterov",
+# res <- mize(rb0, rosenbrock_fg, method = "SD", mom_type = "nesterov",
 #              mom_schedule = 0.9, restart = "fn")
 # @export
-mizer <- function(par, fg,
-                  method = "L-BFGS",
-                  norm_direction = FALSE,
-                  # L-BFGS
-                  memory = 10,
-                  scale_hess = TRUE,
-                  # CG
-                  cg_update = "PR+",
-                  # NAG
-                  nest_q = 0, # 1 - SD,
-                  nest_convex_approx = FALSE,
-                  nest_burn_in = 0, use_nest_mu_zero = FALSE,
-                  # DBD
-                  step_up = 1.1,
-                  step_up_fun = "*",
-                  step_down = 0.5,
-                  dbd_weight = 0.1,
-                  # Line Search configuration
-                  line_search = "More-Thuente",
-                  c1 = 1e-4,
-                  c2 = NULL,
-                  step0 = NULL,
-                  step_next_init = NULL,
-                  try_newton_step = NULL,
-                  # Momentum
-                  mom_type = NULL,
-                  mom_schedule = NULL,
-                  mom_init = NULL,
-                  mom_final = NULL,
-                  mom_switch_iter = NULL,
-                  mom_linear_weight = FALSE,
-                  # Adaptive Restart
-                  restart = NULL,
-                  # Termination criterion
-                  max_iter = 100,
-                  max_fn = Inf,
-                  max_gr = Inf,
-                  max_fg = Inf,
-                  abs_tol = sqrt(.Machine$double.eps),
-                  rel_tol = abs_tol,
-                  grad_tol = NULL,
-                  check_conv_every = 1,
-                  verbose = FALSE,
-                  store_progress = FALSE) {
+mize <- function(par, fg,
+                 method = "L-BFGS",
+                 norm_direction = FALSE,
+                 # L-BFGS
+                 memory = 10,
+                 scale_hess = TRUE,
+                 # CG
+                 cg_update = "PR+",
+                 # NAG
+                 nest_q = 0, # 1 - SD,
+                 nest_convex_approx = FALSE,
+                 nest_burn_in = 0, use_nest_mu_zero = FALSE,
+                 # DBD
+                 step_up = 1.1,
+                 step_up_fun = "*",
+                 step_down = 0.5,
+                 dbd_weight = 0.1,
+                 # Line Search configuration
+                 line_search = "More-Thuente",
+                 c1 = 1e-4,
+                 c2 = NULL,
+                 step0 = NULL,
+                 step_next_init = NULL,
+                 try_newton_step = NULL,
+                 # Momentum
+                 mom_type = NULL,
+                 mom_schedule = NULL,
+                 mom_init = NULL,
+                 mom_final = NULL,
+                 mom_switch_iter = NULL,
+                 mom_linear_weight = FALSE,
+                 # Adaptive Restart
+                 restart = NULL,
+                 # Termination criterion
+                 max_iter = 100,
+                 max_fn = Inf,
+                 max_gr = Inf,
+                 max_fg = Inf,
+                 abs_tol = sqrt(.Machine$double.eps),
+                 rel_tol = abs_tol,
+                 grad_tol = NULL,
+                 check_conv_every = 1,
+                 verbose = FALSE,
+                 store_progress = FALSE) {
 
-  opt <- make_mizer(method = method,
-                    norm_direction = norm_direction,
-                    scale_hess = scale_hess,
-                    memory = memory,
-                    cg_update = cg_update,
-                    nest_q = nest_q, nest_convex_approx = nest_convex_approx,
-                    nest_burn_in = nest_burn_in,
-                    use_nest_mu_zero = use_nest_mu_zero,
-                    step_up = step_up,
-                    step_up_fun = step_up_fun,
-                    step_down = step_down,
-                    dbd_weight = dbd_weight,
-                    line_search = line_search, step0 = step0, c1 = c1, c2 = c2,
-                    step_next_init = step_next_init,
-                    try_newton_step = try_newton_step,
-                    mom_type = mom_type,
-                    mom_schedule = mom_schedule,
-                    mom_init = mom_init,
-                    mom_final = mom_final,
-                    mom_switch_iter = mom_switch_iter,
-                    mom_linear_weight = mom_linear_weight,
-                    max_iter = max_iter,
-                    restart = restart)
-
+  opt <- make_mize(method = method,
+                   norm_direction = norm_direction,
+                   scale_hess = scale_hess,
+                   memory = memory,
+                   cg_update = cg_update,
+                   nest_q = nest_q, nest_convex_approx = nest_convex_approx,
+                   nest_burn_in = nest_burn_in,
+                   use_nest_mu_zero = use_nest_mu_zero,
+                   step_up = step_up,
+                   step_up_fun = step_up_fun,
+                   step_down = step_down,
+                   dbd_weight = dbd_weight,
+                   line_search = line_search, step0 = step0, c1 = c1, c2 = c2,
+                   step_next_init = step_next_init,
+                   try_newton_step = try_newton_step,
+                   mom_type = mom_type,
+                   mom_schedule = mom_schedule,
+                   mom_init = mom_init,
+                   mom_final = mom_final,
+                   mom_switch_iter = mom_switch_iter,
+                   mom_linear_weight = mom_linear_weight,
+                   max_iter = max_iter,
+                   restart = restart)
   res <- opt_loop(opt, par, fg,
           max_iter = max_iter,
           max_fn = max_fn, max_gr = max_gr, max_fg = max_fg,
@@ -2283,19 +2282,19 @@ mizer <- function(par, fg,
 #
 # If the function to be optimized and starting point are not present at
 # creation time, then the optimizer should be initialized using
-# \code{\link{mizer_init}} before being used with \code{\link{mizer_step}}.
+# \code{\link{mize_init}} before being used with \code{\link{mize_step}}.
 #
-# See the documentation to \code{\link{mizer}} for an explanation of all
+# See the documentation to \code{\link{mize}} for an explanation of all
 # the parameters.
 #
 # Details of the \code{fg} list containing the function to be optimized and
-# its gradient can be found in the 'Details' section of \code{\link{mizer}}.
+# its gradient can be found in the 'Details' section of \code{\link{mize}}.
 # It is optional for this function, but if it is passed to this function,
 # along with the vector of initial values, \code{par}, the optimizer will be
 # returned already initialized for this function. Otherwise,
-# \code{\link{mizer_init}} must be called before optimization begins.
+# \code{\link{mize_init}} must be called before optimization begins.
 #
-# @param method Optimization method. See 'Details' of \code{\link{mizer}}.
+# @param method Optimization method. See 'Details' of \code{\link{mize}}.
 # @param norm_direction If \code{TRUE}, then the steepest descent direction
 # is normalized to unit length. Useful for adaptive step size methods where
 # the previous step size is used to initialize the next iteration.
@@ -2335,23 +2334,23 @@ mizer <- function(par, fg,
 # @param dbd_weight Weighting parameter used by the \code{"DBD"} method only, and
 # only if no momentum scheme is provided. Must be an integer between 0 and 1.
 # @param line_search Type of line search to use. See 'Details' of
-# \code{\link{mizer}}.
+# \code{\link{mize}}.
 # @param c1 Sufficient decrease parameter for Wolfe-type line searches. Should
 # be a value between 0 and 1.
 # @param c2 Sufficient curvature parameter for line search for Wolfe-type line
 # searches. Should be a value between \code{c1} and 1.
 # @param step0 Initial value for the line search on the first step. See
-# 'Details' of \code{\link{mizer}}.
+# 'Details' of \code{\link{mize}}.
 # @param step_next_init For Wolfe-type line searches only, how to initialize
 # the line search on iterations after the first. See 'Details' of
-# \code{\link{mizer}}.
+# \code{\link{mize}}.
 # @param try_newton_step For Wolfe-type line searches only, try the
 # line step value of 1 as the initial step size whenever \code{step_next_init}
 # suggests a step size > 1. Defaults to \code{TRUE} for quasi-Newton methods
 # such as BFGS and L-BFGS, \code{FALSE} otherwise.
 # @param mom_type Momentum type, either \code{"classical"} or
 # \code{"nesterov"}.
-# @param mom_schedule Momentum schedule. See 'Details' of \code{\link{mizer}}.
+# @param mom_schedule Momentum schedule. See 'Details' of \code{\link{mize}}.
 # @param mom_init Initial momentum value.
 # @param mom_final Final momentum value.
 # @param mom_switch_iter For \code{mom_schedule} \code{"switch"} only, the
@@ -2361,9 +2360,9 @@ mizer <- function(par, fg,
 # @param max_iter Maximum number of iterations the optimization will be carried
 # out over. Used only if \code{mom_schedule} is set to \code{"ramp"}.
 # @param restart Momentum restart type. Can be one of "fn" or "gr". See
-# 'Details' of \code{\link{mizer}}.
+# 'Details' of \code{\link{mize}}.
 # @param par Initial values for the function to be optimized over. Optional.
-# @param fg Function and gradient list. See 'Details' of \code{\link{mizer}}.
+# @param fg Function and gradient list. See 'Details' of \code{\link{mize}}.
 # Optional.
 # @export
 # @examples
@@ -2375,46 +2374,46 @@ mizer <- function(par, fg,
 # rb0 <- c(-1.2, 1)
 #
 # # Create an optimizer and initialize it for use with the Rosenbrock function
-# opt <- make_mizer(method = "L-BFGS", par = rb0, fg = rosenbrock_fg)
+# opt <- make_mize(method = "L-BFGS", par = rb0, fg = rosenbrock_fg)
 #
 # # Create optimizer without initialization
-# opt <- make_mizer(method = "L-BFGS")
+# opt <- make_mize(method = "L-BFGS")
 #
 # # Need to call mizer_init separately:
-# opt <- mizer_init(opt, rb0, rosenbrock_fg)
-make_mizer <- function(method = "L-BFGS",
-                       norm_direction = FALSE,
-                       # BFGS
-                       scale_hess = TRUE,
-                       memory = 10,
-                       # CG
-                       cg_update = "PR+",
-                       # NAG
-                       nest_q = 0,
-                       nest_convex_approx = FALSE,
-                       nest_burn_in = 0, use_nest_mu_zero = FALSE,
-                       # DBD
-                       step_up = 1.1,
-                       step_up_fun = c("*", "+"),
-                       step_down = 0.5,
-                       dbd_weight = 0.1,
-                       # Line Search
-                       line_search = "More-Thuente",
-                       c1 = 1e-4, c2 = NULL,
-                       step0 = NULL,
-                       step_next_init = NULL,
-                       try_newton_step = NULL,
-                       # Momentum
-                       mom_type = NULL,
-                       mom_schedule = NULL,
-                       mom_init = NULL,
-                       mom_final = NULL,
-                       mom_switch_iter = NULL,
-                       mom_linear_weight = FALSE,
-                       max_iter = NULL,
-                       restart = NULL,
-                       par = NULL,
-                       fg = NULL) {
+# opt <- mize_init(opt, rb0, rosenbrock_fg)
+make_mize <- function(method = "L-BFGS",
+                      norm_direction = FALSE,
+                      # BFGS
+                      scale_hess = TRUE,
+                      memory = 10,
+                      # CG
+                      cg_update = "PR+",
+                      # NAG
+                      nest_q = 0,
+                      nest_convex_approx = FALSE,
+                      nest_burn_in = 0, use_nest_mu_zero = FALSE,
+                      # DBD
+                      step_up = 1.1,
+                      step_up_fun = c("*", "+"),
+                      step_down = 0.5,
+                      dbd_weight = 0.1,
+                      # Line Search
+                      line_search = "More-Thuente",
+                      c1 = 1e-4, c2 = NULL,
+                      step0 = NULL,
+                      step_next_init = NULL,
+                      try_newton_step = NULL,
+                      # Momentum
+                      mom_type = NULL,
+                      mom_schedule = NULL,
+                      mom_init = NULL,
+                      mom_final = NULL,
+                      mom_switch_iter = NULL,
+                      mom_linear_weight = FALSE,
+                      max_iter = NULL,
+                      restart = NULL,
+                      par = NULL,
+                      fg = NULL) {
 
   if (memory < 1) {
     stop("memory must be > 0")
@@ -2657,7 +2656,7 @@ make_mizer <- function(method = "L-BFGS",
 
   # Initialize for specific dataset if par and fg are provided
   if (!is.null(par) && !is.null(fg)) {
-    opt <- mizer_init(opt, par, fg)
+    opt <- mize_init(opt, par, fg)
   }
 
   opt
@@ -2670,7 +2669,7 @@ make_mizer <- function(method = "L-BFGS",
 # This function returns both the (hopefully) optimized vector of parameters,
 # and an updated version of the optimizer itself. This is intended to be used
 # when you want more control over the optimization process compared to the more
-# black box approach of the \code{\link{mizer}} function. In return for having
+# black box approach of the \code{\link{mize}} function. In return for having
 # to manually call this function every time you want the next iteration of
 # optimization, you gain the ability to do your own checks for convergence,
 # logging and so on, as well as take other action between iterations, e.g.
@@ -2679,18 +2678,18 @@ make_mizer <- function(method = "L-BFGS",
 # Normally callng this function should return a more optimized vector of
 # parameters than the input, or at  least leave the parameters unchanged if no
 # improvement was found, although this is determined by how the optimizer was
-# configured by \code{\link{make_mizer}}. It is very possible to create an
+# configured by \code{\link{make_mize}}. It is very possible to create an
 # optimizer that can cause a solution to diverge. It is the responsibility of
 # the caller to check that the result of the optimization step has actually
 # reduced the value returned from function being optimized.
 #
 # Details of the \code{fg} list can be found in the 'Details' section of
-# \code{\link{mizer}}.
+# \code{\link{mize}}.
 #
-# @param opt Optimizer, created by \code{\link{make_mizer}}.
+# @param opt Optimizer, created by \code{\link{make_mize}}.
 # @param par Vector of initial values for the function to be optimized over.
 # @param fg Function and gradient list. See the documentaion of
-# \code{\link{mizer}}.
+# \code{\link{mize}}.
 # @param iter Current iteration number. Should increase by one each time this
 #   function is invoked.
 # @return Result of the current optimization step, a list with components:
@@ -2713,9 +2712,9 @@ make_mizer <- function(method = "L-BFGS",
 #    calculated as part of the optimization step (e.g. during a line search
 #    calculation.)
 #}
-# @seealso \code{\link{make_mizer}} to create a value to pass to \code{opt},
-# \code{\link{mizer_init}} to initialize \code{opt} before passing it to this
-# function for the first time. \code{\link{mizer}} creates an optimizer and
+# @seealso \code{\link{make_mize}} to create a value to pass to \code{opt},
+# \code{\link{mize_init}} to initialize \code{opt} before passing it to this
+# function for the first time. \code{\link{mize}} creates an optimizer and
 # carries out a full optimization with it.
 # @examples
 # rosenbrock_fg <- list(
@@ -2729,23 +2728,23 @@ make_mizer <- function(method = "L-BFGS",
 #  })
 #  rb0 <- c(-1.2, 1)
 #
-#  opt <- make_mizer(method = "SD", line_search = "const", step0 = 0.0001,
-#                    par = rb0, fg = rosenbrock_fg)
+#  opt <- make_mize(method = "SD", line_search = "const", step0 = 0.0001,
+#                   par = rb0, fg = rosenbrock_fg)
 #  par <- rb0
 #  for (iter in 1:3) {
-#    res <- mizer_step(opt, par, rosenbrock_fg, iter)
+#    res <- mize_step(opt, par, rosenbrock_fg, iter)
 #    par <- res$par
 #    opt <- res$opt
 #  }
 # @export
-mizer_step <- function(opt, par, fg, iter) {
+mize_step <- function(opt, par, fg, iter) {
   opt <- life_cycle_hook("step", "before", opt, par, fg, iter)
 
   par0 <- par
   step_result <- NULL
 
   # In the main part of the step, opt$error is used to indicate
-  # something catastrostep_downc has occurred (most likely non-finite gradient value)
+  # something catastrophic has occurred (most likely non-finite gradient value)
   # not to be confused with opt$ok which is used to indicate whether the
   # solution is valid
   opt$error <- NULL
@@ -2822,26 +2821,26 @@ mizer_step <- function(opt, par, fg, iter) {
 #
 # Prepares the optimizer for use with a specific function and starting point.
 #
-# Should be called after creating an optimizer with \code{\link{make_mizer}}
-# and before beginning any optimization with \code{\link{mizer_step}}. Note
+# Should be called after creating an optimizer with \code{\link{make_mize}}
+# and before beginning any optimization with \code{\link{mize_step}}. Note
 # that if \code{fg} and \code{par} are available at the time
-# \code{\link{mizer_step}} is called, they can be passed to that function
+# \code{\link{mize_step}} is called, they can be passed to that function
 # and initialization will be carried out automatically, avoiding the need to
-# call \code{mizer_init}.
+# call \code{mize_init}.
 #
 # Details of the \code{fg} list can be found in the 'Details' section of
-# \code{\link{mizer}}.
+# \code{\link{mize}}.
 #
-# @param opt Optimizer, created by \code{\link{make_mizer}}.
+# @param opt Optimizer, created by \code{\link{make_mize}}.
 # @param par Vector of initial values for the function to be optimized over.
 # @param fg Function and gradient list. See the documentaion of
-# \code{\link{mizer}}.
+# \code{\link{mize}}.
 # @return Initialized optimizer.
 # @export
 # @examples
 #
 # # Create an optimizer
-# opt <- make_mizer(method = "L-BFGS")
+# opt <- make_mize(method = "L-BFGS")
 #
 # # Function to optimize and starting point defined after creating optimizer
 # rosenbrock_fg <- list(
@@ -2851,17 +2850,17 @@ mizer_step <- function(opt, par, fg, iter) {
 # rb0 <- c(-1.2, 1)
 #
 # # Initialize with function and starting point before commencing optimization
-# opt <- mizer_init(opt, rb0, rosebrock_fg)
+# opt <- mize_init(opt, rb0, rosebrock_fg)
 #
 # # Finally, can commence the optimization loop
 # par <- rb0
 # for (iter in 1:3) {
-#   res <- mizer_step(opt, par, rosenbrock_fg, iter)
+#   res <- mize_step(opt, par, rosenbrock_fg, iter)
 #   par <- res$par
 #   opt <- res$opt
 # }
 #
-mizer_init <- function(opt, par, fg) {
+mize_init <- function(opt, par, fg) {
   opt <- register_hooks(opt)
   opt <- life_cycle_hook("opt", "init", opt, par, fg, 0)
   opt
@@ -3267,7 +3266,7 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
                     check_conv_every = 1,
                     ret_opt = FALSE, count_res_fg = TRUE) {
 
-  opt <- mizer_init(opt, par, fg)
+  opt <- mize_init(opt, par, fg)
 
   progress <- data.frame()
   terminate <- list()
@@ -3304,7 +3303,7 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
 
       par0 <- par
 
-      step_res <- mizer_step(opt, par, fg, iter)
+      step_res <- mize_step(opt, par, fg, iter)
       opt <- step_res$opt
       par <- step_res$par
       if (!is.null(opt$error)) {
@@ -4718,88 +4717,6 @@ f4 <- list(fn = fn4, gr = gr4)
 f5 <- list(fn = fn5, gr = gr5)
 f6 <- list(fn = fn6, gr = gr6)
 
-
-# Euro Cities -------------------------------------------------------------
-
-make_mmds_fg <- function(dist_mat) {
-  dxm <- as.matrix(dist_mat)
-
-  par_to_ym <- function(par) {
-    matrix(par, ncol = 2, byrow = TRUE)
-  }
-
-  par_to_dym <- function(par) {
-    as.matrix(stats::dist(par_to_ym(par)))
-  }
-
-  f <- function(par) {
-    dym <- par_to_dym(par)
-    diff2 <- (dxm - dym) ^ 2
-    sum(diff2)
-  }
-
-  g <- function(par) {
-    dym <- par_to_dym(par)
-    km <- (dxm - dym) / (dym + 1.e-10)
-
-    ym <- par_to_ym(par)
-    gm <- matrix(nrow = nrow(ym), ncol = ncol(ym))
-    for (i in 1:nrow(ym)) {
-      dyij <- sweep(-ym, 2, -ym[i, ])
-      gm[i, ] <- apply(dyij * km[, i], 2, sum)
-    }
-
-    - 4 * as.vector(t(gm))
-  }
-
-  h <- make_hfd(f)
-
-  list(fn = f,
-       gr = g,
-       hs = h)
-}
-
-eurodist_fg <- function() { make_mmds_fg(datasets::eurodist) }
-ed0 <- as.vector(t(-stats::cmdscale(datasets::eurodist, add = TRUE)$points))
-
-us_fg <- function() { make_mmds_fg(datasets::UScitiesD)}
-us0 <- as.vector(t(-stats::cmdscale(datasets::UScitiesD, add = TRUE)$points))
-
-
-# Rotates qm onto pm
-kabsch <- function(pm, qm) {
-  # center the points
-  pm <- scale(qm, center = TRUE, scale = FALSE)
-  qm <- scale(qm, center = TRUE, scale = FALSE)
-
-  am <- t(pm) %*% qm
-
-  svd_res <- svd(am)
-  # use the sign of the determinant to ensure a right-hand coordinate system
-  d <- determinant(svd_res$v %*% t(svd_res$u))$sign
-  dm <- diag(c(1, d))
-
-  # rotation matrix
-  um <- svd_res$u %*% dm %*% t(svd_res$v)
-
-  t(um %*% t(qm)) + attr(pm, "scaled:center")
-}
-
-plot_mmds <- function(coords, dist, ...) {
-  if (class(coords) == "numeric") {
-    coords <- matrix(coords, ncol = 2, byrow = TRUE)
-  }
-  graphics::plot(coords, type = 'n')
-  graphics::text(coords[, 1], coords[, 2], labels = labels(dist), ...)
-}
-
-rotate_mmds_results <- function(par, dist) {
-  pm <- -stats::cmdscale(dist, add = TRUE)$points
-  qm <- matrix(par, ncol = 2, byrow = TRUE)
-
-  kabsch(pm, qm)
-}
-
 # Finite Difference -------------------------------------------------------
 
 gfd <- function(par, fn, eps =  1.e-3) {
@@ -5525,13 +5442,12 @@ strong_wolfe_ok_step <- function(step0, step, c1, c2) {
 
 
 list(
-  mizer = mizer,
-  opt_step = mizer_step,
-  opt_init = mizer_init,
-  make_mizer = make_mizer,
+  mize = mize,
+  opt_step = mize_step,
+  opt_init = mize_init,
+  make_mize = make_mize,
   opt_report = opt_report,
   opt_results = opt_results,
-  make_hfd = make_hfd,
   opt_clear_cache = opt_clear_cache
 )
 }

@@ -250,7 +250,7 @@ iembed <- function(method,
                                    verbose = FALSE),
                    init_inp = inp_from_perp(perplexity = 20, verbose = FALSE),
                    init_out = out_from_PCA(verbose = FALSE),
-                   opt = mizer_grad_descent()
+                   opt = mize_grad_descent()
 ) {
 
   init_embed(xm, method, preprocess = preprocess,

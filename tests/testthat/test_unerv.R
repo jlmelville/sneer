@@ -11,7 +11,7 @@ asne_iris <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 unerv_iris_lambda1 <-
   embed_prob(iris[, 1:4], method = unerv(lambda = 1, beta = 1, verbose = FALSE),
@@ -22,7 +22,7 @@ unerv_iris_lambda1 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, asne_iris$report$costs),
              mapply(formatC, unerv_iris_lambda1$report$costs))
@@ -36,7 +36,7 @@ rasne_iris <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 unerv_iris_lambda0 <-
   embed_prob(iris[, 1:4], method = unerv(lambda = 0, beta = 1, verbose = FALSE),
@@ -47,7 +47,7 @@ unerv_iris_lambda0 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, rasne_iris$report$costs),
              mapply(formatC, unerv_iris_lambda0$report$costs))
@@ -61,7 +61,7 @@ tsne_iris <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 tnerv_iris_lambda1 <-
   embed_prob(iris[, 1:4], method = tnerv(lambda = 1, verbose = FALSE),
@@ -72,7 +72,7 @@ tnerv_iris_lambda1 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, tsne_iris$report$costs),
              mapply(formatC, tnerv_iris_lambda1$report$costs))
@@ -87,7 +87,7 @@ rtsne_iris <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 tnerv_iris_lambda0 <-
   embed_prob(iris[, 1:4], method = tnerv(lambda = 0, verbose = FALSE),
@@ -98,7 +98,7 @@ tnerv_iris_lambda0 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, rtsne_iris$report$costs),
              mapply(formatC, tnerv_iris_lambda0$report$costs))
@@ -112,7 +112,7 @@ ssne_iris <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 usnerv_iris_lambda1 <-
   embed_prob(iris[, 1:4], method = usnerv(lambda = 1, beta = 1, verbose = FALSE),
@@ -123,7 +123,7 @@ usnerv_iris_lambda1 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, ssne_iris$report$costs),
              mapply(formatC, usnerv_iris_lambda1$report$costs))
@@ -137,7 +137,7 @@ rssne_iris <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 usnerv_iris_lambda0 <-
   embed_prob(iris[, 1:4],
@@ -149,7 +149,7 @@ usnerv_iris_lambda0 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, rssne_iris$report$costs),
              mapply(formatC, usnerv_iris_lambda0$report$costs))
@@ -164,7 +164,7 @@ uhsnerv_iris_lambda1alpha0 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, ssne_iris$report$costs),
              mapply(formatC, uhsnerv_iris_lambda1alpha0$report$costs))
@@ -179,7 +179,7 @@ uhsnerv_iris_lambda1alpha1 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, tsne_iris$report$costs),
              mapply(formatC, uhsnerv_iris_lambda1alpha1$report$costs))
@@ -194,7 +194,7 @@ uhsnerv_iris_lambda0alpha0 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, rssne_iris$report$costs),
              mapply(formatC, uhsnerv_iris_lambda0alpha0$report$costs))
@@ -209,7 +209,7 @@ uhsnerv_iris_lambda0alpha1 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, rtsne_iris$report$costs),
              mapply(formatC, uhsnerv_iris_lambda0alpha1$report$costs))
@@ -225,7 +225,7 @@ tnerv_iris_lambda0_5 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 uhsnerv_iris_lambda0_5alpha1 <-
   embed_prob(iris[, 1:4], max_iter = 50,
@@ -236,7 +236,7 @@ uhsnerv_iris_lambda0_5alpha1 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, tnerv_iris_lambda0_5$report$costs),
              mapply(formatC, uhsnerv_iris_lambda0_5alpha1$report$costs))
@@ -254,7 +254,7 @@ usnerv_iris_lambda0_5 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 uhsnerv_iris_lambda0_5alpha0_5 <-
   embed_prob(iris[, 1:4], max_iter = 50,
@@ -266,7 +266,7 @@ uhsnerv_iris_lambda0_5alpha0_5 <-
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
              export = c("report"), verbose = FALSE,
-             opt = mizer_bold_nag())
+             opt = mize_bold_nag())
 
 expect_equal(mapply(formatC, usnerv_iris_lambda0_5$report$costs),
              mapply(formatC, uhsnerv_iris_lambda0_5alpha0_5$report$costs))

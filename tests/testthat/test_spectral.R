@@ -6,7 +6,7 @@ test_that("characterizes spectral direction performance", {
 # external data
 tsne_iris <- embed_prob(iris[, 1:4],
                         method = tsne(verbose = FALSE),
-                        opt = mizer_opt("PHESS", c2 = 0.9),
+                        opt = mize_opt("PHESS", c2 = 0.9),
                         init_inp = inp_from_perp(
                           perplexity = 50,
                           input_weight_fn = sqrt_exp_weight,

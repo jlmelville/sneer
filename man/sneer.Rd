@@ -9,9 +9,9 @@
 sneer(df, indexes = NULL, ndim = 2, method = "tsne", alpha = 0.5,
   lambda = 0.5, kappa = 0.5, scale_type = "", perplexity = 32,
   perp_scale = "single", perp_scale_iter = NULL, perp_kernel_fun = "exp",
-  prec_scale = "", init = "p", init_config = NULL, opt = "L-BFGS",
+  prec_scale = "", init = "pca", init_config = NULL, opt = "L-BFGS",
   epsilon = 1, max_iter = 1000, report_every = 50, tol = 1e-04,
-  exaggerate = NULL, exaggerate_off_iter = 50, plot_type = "p",
+  exaggerate = NULL, exaggerate_off_iter = 50, plot_type = "plot",
   colors = NULL, color_name = NULL, labels = NULL, label_name = NULL,
   label_chars = NULL, point_size = 1, plot_labels = FALSE,
   color_scheme = grDevices::rainbow, equal_axes = FALSE, legend = TRUE,
@@ -194,15 +194,15 @@ The embedding methods available are:
 The following scaling options can be applied via the \code{scale_type}
 parameter:
 \itemize{
- \item \code{"m"} Range scale the entire data so that the maximum value is
+ \item \code{"matrix"} Range scale the entire data so that the maximum value is
   1 and the minimum 0.
- \item \code{"r"} Range scale each column that the maximum value in each
+ \item \code{"range"} Range scale each column that the maximum value in each
   column is 1 and the minimum 0.
- \item \code{"a"} Scale each column so that its mean is 0 and variance is
+ \item \code{"auto"} Scale each column so that its mean is 0 and variance is
   1.
 }
-Default is to do no scaling. Zero variance columns will be removed even if no
-preprocessing is carried out.
+These arguments can be abbreviated. Default is to do no scaling. Zero
+variance columns will be removed even if no preprocessing is carried out.
 
 The \code{perplexity} parameter is used in combination with the
 \code{perp_scale} parameter, which can take the following values:
@@ -221,6 +221,7 @@ The \code{perplexity} parameter is used in combination with the
     matrices from earlier perplexities are retained and combined by
     averaging.
 }
+These arguments can be abbreviated.
 
 For \code{perp_scale} values that aren't \code{"single"}, if a non-vector
 argument is suppied to the \code{perplexity} argument, it will be ignored,
@@ -236,14 +237,15 @@ precision parameters should be used to modify the output kernel parameter
 after the input probability calculation for a given perplexity value
 completes values are:
 \itemize{
- \item \code{"n"} Do nothing. Most embedding methods follow this strategy,
+ \item \code{"none"} Do nothing. Most embedding methods follow this strategy,
    leaving the output similarity kernels to all have unit precision.
- \item \code{"t"} Transfer the input similarity kernel parameters to the
+ \item \code{"transfer"} Transfer the input similarity kernel parameters to the
    output similarity kernel. This method was suggesed by Venna et al (2010).
- \item \code{"s"} Scale the output kernel precisions based on the target
+ \item \code{"scale"} Scale the output kernel precisions based on the target
    \code{perplexity} and the intrinsic dimensionality of the input data. This
    method is part of the multiscaling technique proposed by Lee et al (2015).
 }
+These arguments can be abbreviated.
 
 The \code{prec_scale} parameter will be ignored if the \code{method} used
 does not use an output similarity kernel with a free parameter, e.g.
@@ -254,17 +256,18 @@ setting \code{perp_kernel_fun} to "step".
 For initializing the output coordinates, the options for the
 \code{init} parameter are:
 \itemize{
- \item \code{"p"} Initialize using the first two scores of the PCA (using
+ \item \code{"pca"} Initialize using the first two scores of the PCA (using
  classical MDS if \code{df} is a distance matrix). Data will be centered,
  but not scaled unless the \code{scale_type} parameter is used.
- \item \code{"r"} Initialize each coordinate value from a normal random
+ \item \code{"ranodm"} Initialize each coordinate value from a normal random
  distribution with a standard deviation of 1e-4, as suggested by van der
  Maaten and Hinton (2008).
- \item \code{"u"} Initialize each coordinate value from a uniform random
+ \item \code{"uniform"} Initialize each coordinate value from a uniform random
  distribution between 0 and 1 as suggested by Venna et al (2010).
- \item \code{"m"} Initialize the coordinates from a user-supplied matrix.
+ \item \code{"matrix"} Initialize the coordinates from a user-supplied matrix.
   Supply the coordinates as the \code{init_config} parameter.
 }
+These arguments can be abbreviated.
 
 For configuring the optimization method, the options for the \code{opt}
 parameter are:
@@ -297,17 +300,18 @@ parameter are:
 For the \code{quality_measures} argument, a vector with one or more of the
 following options can be supplied:
 \itemize{
- \item \code{"r"} Calculate the area under the ROC curve, averaged over
+ \item \code{"rocauc"} Calculate the area under the ROC curve, averaged over
   each observation, using the output distance matrix to rank each
   observation. Observations are partitioned into the positive and negative
   class depending upon the value of the label determined by the
   \code{label_name} argument. Only calculated if the \code{label_name}
   parameter is supplied.
- \item \code{"p"} Calculate the area under the Precision-Recall curve.
+ \item \code{"prauc"} Calculate the area under the Precision-Recall curve.
   Only calculated if the \code{label_name} parameter is supplied.
- \item \code{"n"} Calculate the area under the RNX curve, using the
+ \item \code{"rnxauc"} Calculate the area under the RNX curve, using the
   method of Lee et al (2015).
 }
+Options may be abbreviated.
 
 Progress of the embedding is logged to the standard output every 50
 iterations. The raw cost of the embedding will be provided along with some
@@ -323,11 +327,11 @@ information from the input space).
 
 Also, the embedding will be plotted. Plotting can be done
 with either the standard \code{\link[graphics]{plot}} function (the default
-or by explicitly providing \code{plot_type = "p"}) or with the \code{ggplot2}
-library (which you need to install and load yourself), by using
-\code{plot_type = "g"}. The goal has been to provide enough customization to
-give intelligible results for most datasets. The following are things to
-consider:
+or by explicitly providing \code{plot_type = "plot"}) or with the
+\code{ggplot2} library (which you need to install and load yourself), by
+using \code{plot_type = "ggplot2"} (you may abbreviate these arguments). The
+goal has been to provide enough customization to give intelligible results
+for most datasets. The following are things to consider:
 
 \itemize{
  \item The plot symbols are normally filled circles. However, if you
@@ -424,8 +428,8 @@ including:
 See the documentation for the function for the exact list of methods
 and variations.
 
-Optimization is carried out with the mizer package
-(\url{https://github.com/jlmelville/mizer}) with the limited memory BFGS.
+Optimization is carried out with the mize package
+(\url{https://github.com/jlmelville/mize}) with the limited memory BFGS.
 Other optimization methods include the Nesterov Accelerated Gradient method
 (Sutskever et al 2013) with an adaptive restart (O'Donoghue and Candes 2013),
 which is a bit more robust compared to the usual t-SNE optimization method
@@ -602,7 +606,7 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
   # The area under the RNX curve measures whether neighbors in the input
   # are still neighors in the output space
   res <- sneer(iris, scale_type = "a", method = "wtsne",
-               quality_measures =  c("n"))
+               quality_measures =  c("rnxauc"))
 
   # Create a 5D gaussian with its own column specifying colors to use
   # for each point (in this case, random)
@@ -620,7 +624,7 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
   # observations).
   library(PRROC)
   res <- sneer(iris, scale_type = "a", method = "wtsne",
-               quality_measures =  c("n", "r", "p"))
+               quality_measures =  c("rnx", "roc", "pr"))
 
   # export the distance matrices and do whatever quality measures we
   # want at our leisure

@@ -8,7 +8,7 @@ test_that("see three spikes due to perplexity change", {
   ssne_iris <- embed_prob(
     iris[, 1:4],
     method = ssne(),
-    opt = mizer_bold_nag(),
+    opt = mize_bold_nag(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_step_perp(perplexities = seq(75, 25, length.out = 3),
                                      num_scale_iters = 10, verbose = FALSE,
@@ -33,7 +33,7 @@ test_that("use default kernel adjustment, results should be different", {
   ssne_iris <- embed_prob(
     iris[, 1:4],
     method = ssne(),
-    opt = mizer_bold_nag(),
+    opt = mize_bold_nag(),
     preprocess = make_preprocess(auto_scale = TRUE),
     init_inp = inp_from_step_perp(perplexities = seq(75, 25, length.out = 3),
                                      num_scale_iters = 10, verbose = FALSE),
@@ -55,7 +55,7 @@ test_that("first five costs with single perplexity and custom beta", {
   ssne_iris <- embed_prob(
     iris[, 1:4],
     method = ssne(beta = 0.006667),
-    opt = mizer_back_nag(),
+    opt = mize_back_nag(),
     preprocess = make_preprocess(auto_scale = TRUE),
     init_inp = inp_from_perp(perplexity = 75, verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),

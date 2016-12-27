@@ -1,4 +1,4 @@
-# Bridges Sneer and Mizer
+# Bridges Sneer and Mize
 make_optim_fg <- function(opt, inp, out, method, iter) {
   if (!is.null(inp$xm)) {
     nr <- nrow(inp$xm)
@@ -32,7 +32,7 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
 # \code{\link[stats]{optim}} into the matrix format used by sneer.
 #
 # @param par Vector of embedded coordinates.
-# @param opt Optimizer
+# @param opt Optimize
 # @param inp Input data.
 # @param method Embedding method.
 # @param nrow Number of rows in the sneer output matrix.
@@ -57,7 +57,7 @@ mat_to_par <- function(mat) {
   mat
 }
 
-mizer_opt_step <- function(opt, method, inp, out, iter) {
+mize_opt_step <- function(opt, method, inp, out, iter) {
 
   fg <- make_optim_fg(opt, inp, out, method, iter)
   if ((iter == 0 && toupper(opt$name) == "PHESS") || toupper(opt$name) == "NEWTON") {
@@ -75,19 +75,19 @@ mizer_opt_step <- function(opt, method, inp, out, iter) {
 
   par <- mat_to_par(out$ym)
   # par0 <- par
-  mizer <- opt$mizer
+  mize <- opt$mize
 
   if (iter == 0) {
-    mizer <- opt$mizer_module$opt_init(mizer, par, fg)
-    opt$mizer <- mizer
+    mize <- opt$mize_module$opt_init(mize, par, fg)
+    opt$mize <- mize
   }
 
   if (!is.null(opt$old_cost_dirty) && opt$old_cost_dirty) {
-    mizer <- opt$mizer_module$opt_clear_cache(mizer)
+    mize <- opt$mize_module$opt_clear_cache(mize)
   }
-  step_res <- opt$mizer_module$opt_step(mizer, par, fg, iter)
-  mizer <- step_res$opt
-  opt$mizer <- mizer
+  step_res <- opt$mize_module$opt_step(mize, par, fg, iter)
+  mize <- step_res$opt
+  opt$mize <- mize
 
   par <- step_res$par
 
@@ -99,63 +99,63 @@ mizer_opt_step <- function(opt, method, inp, out, iter) {
   }
   out <- par_to_out(par, opt, inp, out, method, nr)
 
-  if (!is.null(opt$mizer$cache$gr_curr) &&
-      length_vec(opt$mizer$cache$gr_curr) < sqrt(.Machine$double.eps)) {
+  if (!is.null(opt$mize$cache$gr_curr) &&
+      length_vec(opt$mize$cache$gr_curr) < sqrt(.Machine$double.eps)) {
     opt$stop_early <- TRUE
   }
 
   list(opt = opt, inp = inp, out = out, iter = iter)
 }
 
-mizer_opt <- function(opt_name, ...) {
-  mizer_module <- mizer()
+mize_opt <- function(opt_name, ...) {
+  mize_module <- mize()
 
   if (class(opt_name) == "list") {
     opt <- opt_name
   }
   else {
-    opt <- mizer_module$make_mizer(method = opt_name, ...)
+    opt <- mize_module$make_mize(method = opt_name, ...)
   }
 
   list(
     name = opt_name,
     mat_name = "ym",
-    optimize_step = mizer_opt_step,
-    mizer_module = mizer_module,
-    mizer = opt
+    optimize_step = mize_opt_step,
+    mize_module = mize_module,
+    mize = opt
   )
 }
 
-mizer_bold_nag_adapt <- function() {
-  mizer_opt("SD", line_search = "bold", norm_direction = TRUE,
+mize_bold_nag_adapt <- function() {
+  mize_opt("SD", line_search = "bold", norm_direction = TRUE,
             mom_schedule = "nesterov", mom_type = "nesterov",
             mom_linear_weight = TRUE, nest_convex_approx = TRUE,
             nest_burn_in = 1, use_nest_mu_zero = TRUE, restart = "fn")
 }
 
-mizer_bold_nag <- function() {
-  mizer_opt("SD", line_search = "bold", norm_direction = TRUE,
+mize_bold_nag <- function() {
+  mize_opt("SD", line_search = "bold", norm_direction = TRUE,
             mom_schedule = "nesterov", mom_type = "nesterov",
             mom_linear_weight = TRUE, nest_convex_approx = TRUE,
             nest_burn_in = 1, use_nest_mu_zero = TRUE)
 }
 
-mizer_back_nag <- function() {
-  mizer_opt("SD", line_search = "back", norm_direction = TRUE,
+mize_back_nag <- function() {
+  mize_opt("SD", line_search = "back", norm_direction = TRUE,
             mom_schedule = "nesterov", mom_type = "nesterov",
             mom_linear_weight = TRUE, nest_convex_approx = TRUE,
             nest_burn_in = 1, use_nest_mu_zero = TRUE,
             c1 = 0.1, step_down = 0.8)
 }
 
-mizer_back_nag_adapt <- function() {
-  mizer_opt("SD", line_search = "back", norm_direction = TRUE,
+mize_back_nag_adapt <- function() {
+  mize_opt("SD", line_search = "back", norm_direction = TRUE,
             mom_schedule = "nesterov", mom_type = "nesterov",
             mom_linear_weight = TRUE, nest_convex_approx = TRUE,
             nest_burn_in = 1, use_nest_mu_zero = TRUE, restart = "fn",
             c1 = 0.1, step_down = 0.8)
 }
 
-mizer_grad_descent <- function() {
-  mizer_opt("SD", line_search = "bold", norm_direction = TRUE)
+mize_grad_descent <- function() {
+  mize_opt("SD", line_search = "bold", norm_direction = TRUE)
 }

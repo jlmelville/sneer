@@ -13,7 +13,7 @@ expect_norm_costs <- function(method, expected_norm, info = "",
                                                  keep_costs = TRUE,
                                                  verbose = FALSE),
                         export = c("report"), verbose = FALSE,
-                       opt = mizer_back_nag())
+                       opt = mize_back_nag())
   expect_equal(result$report$costs[, "norm"], expected_norm, info = info,
                tolerance = tolerance, scale = scale)
 }

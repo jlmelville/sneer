@@ -23,8 +23,8 @@
 #' See the documentation for the function for the exact list of methods
 #' and variations.
 #'
-#' Optimization is carried out with the mizer package
-#' (\url{https://github.com/jlmelville/mizer}) with the limited memory BFGS.
+#' Optimization is carried out with the mize package
+#' (\url{https://github.com/jlmelville/mize}) with the limited memory BFGS.
 #' Other optimization methods include the Nesterov Accelerated Gradient method
 #' (Sutskever et al 2013) with an adaptive restart (O'Donoghue and Candes 2013),
 #' which is a bit more robust compared to the usual t-SNE optimization method
@@ -1161,12 +1161,12 @@ sneer <- function(df,
 
 opt_sneer <- function(opt, epsilon = 500) {
   if (class(opt) == "list") {
-    return(mizer_opt(opt))
+    return(mize_opt(opt))
   }
 
   opt <- tolower(opt)
   if (opt == "tsne") {
-    optimizer <- mizer_opt(
+    optimizer <- mize_opt(
       "DBD",
       step_up_fun = "+", step_up = 0.2, step_down = 0.8, step0 = epsilon,
       mom_type = "classical", mom_schedule = "switch",
@@ -1174,7 +1174,7 @@ opt_sneer <- function(opt, epsilon = 500) {
     )
   }
   else if (opt == "nest") {
-    optimizer <- mizer_opt(
+    optimizer <- mize_opt(
       "SD", norm_direction = TRUE,
       line_search = "bold", step0 = epsilon,
       mom_schedule = "nesterov", mom_type = "nesterov",
@@ -1182,22 +1182,22 @@ opt_sneer <- function(opt, epsilon = 500) {
       use_nest_mu_zero = FALSE, restart = "fn")
   }
   else if (opt == "l-bfgs") {
-    optimizer <- mizer_opt(
+    optimizer <- mize_opt(
       "L-BFGS", c1 = 1e-4, c2 = 0.9,
       step0 = "scipy", step_next_init = "quad")
   }
   else if (opt == "bfgs") {
-    optimizer <- mizer_opt(
+    optimizer <- mize_opt(
       "BFGS", c1 = 1e-4, c2 = 0.9,
        step0 = "scipy", step_next_init = "quad")
   }
   else if (opt == "spec") {
-    optimizer <- mizer_opt(
+    optimizer <- mize_opt(
       "PHESS", c1 = 1e-4, c2 = 0.9,
        step0 = "scipy", step_next_init = "quad", try_newton_step = TRUE)
   }
   else if (opt == "cg") {
-    optimizer <- mizer_opt(
+    optimizer <- mize_opt(
       "CG", c1 = 1e-4, c2 = 0.1,
       step0 = "rasmussen", step_next_init = "slope ratio")
   }

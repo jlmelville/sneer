@@ -9,7 +9,7 @@ test_embed <- function(method) {
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 5, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"), verbose = FALSE, opt = mizer_grad_descent())
+             export = c("report"), verbose = FALSE, opt = mize_grad_descent())
 }
 
 all_costs <- function(result) {

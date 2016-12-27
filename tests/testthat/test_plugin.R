@@ -14,7 +14,7 @@ embed_with <- function(method) {
              reporter = make_reporter(verbose = FALSE),
              export = c("report"),
              verbose = FALSE,
-             opt = mizer_bold_nag_adapt())
+             opt = mize_bold_nag_adapt())
 }
 
 expect_plugin_equal <- function(method_name, tolerance = .Machine$double.eps) {

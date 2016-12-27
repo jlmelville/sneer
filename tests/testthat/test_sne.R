@@ -11,7 +11,7 @@ tsne_iris <- embed_prob(iris[, 1:4],
                        preprocess = make_preprocess(range_scale_matrix = TRUE,
                                                     verbose = FALSE),
                        max_iter = 160,
-                       opt = mizer_bold_nag_adapt(),
+                       opt = mize_bold_nag_adapt(),
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
                        verbose = FALSE)
@@ -32,7 +32,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
                                                 report_every = 2),
                        export = c("report"),
                        verbose = FALSE,
-                       opt = mizer_bold_nag_adapt())
+                       opt = mize_bold_nag_adapt())
 expect_equal(ssne_iris$report$norm, 0.0727, tolerance = 1e-4, label = "ssne")
 # Used below to compare when ssne has beta = 5
 expect_equal(ssne_iris$report$iter, 66,
@@ -52,7 +52,7 @@ asne_iris <- embed_prob(iris[, 1:4],
                        reporter = make_reporter(verbose = FALSE),
                        export = c("report"),
                        verbose = FALSE,
-                       opt = mizer_bold_nag_adapt())
+                       opt = mize_bold_nag_adapt())
 expect_equal(asne_iris$report$norm, 0.0848, tolerance = 1e-4, label = "asne")
 })
 
@@ -119,7 +119,7 @@ test_that("tsne with Jacobs opt", {
                                    range_scale_matrix = TRUE,
                                    verbose = FALSE),
                                  max_iter = 10,
-                                 opt = mizer_opt("DBD", step_up = 0.2,
+                                 opt = mize_opt("DBD", step_up = 0.2,
                                                  step_up_fun = "+",
                                                  step_down = 0.8),
                                  verbose = FALSE,
@@ -149,7 +149,7 @@ test_that("different beta gives same converged results", {
                                                    report_every = 2),
                           export = c("report"),
                           verbose = FALSE,
-                          opt = mizer_bold_nag_adapt())
+                          opt = mize_bold_nag_adapt())
   # should be the same as the SSNE test above
   expect_equal(ssne_iris$report$norm, 0.0727, tolerance = 1e-4,
                label = "ssne with non-default beta")
