@@ -35,7 +35,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
                        opt = mize_bold_nag_adapt())
 expect_equal(ssne_iris$report$norm, 0.0727, tolerance = 1e-4, label = "ssne")
 # Used below to compare when ssne has beta = 5
-expect_equal(ssne_iris$report$iter, 66,
+expect_equal(ssne_iris$report$iter, 64,
              label = "ssne with non-default beta num iterations")
 })
 
@@ -155,6 +155,6 @@ test_that("different beta gives same converged results", {
                label = "ssne with non-default beta")
   # should be different from the SSNE test above (or else we can't detect
   # changes to beta are ignored...)
-  expect_equal(ssne_iris$report$iter, 56,
+  expect_equal(ssne_iris$report$iter, 60,
                label = "ssne with non-default beta num iterations")
 })

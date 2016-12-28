@@ -47,7 +47,7 @@ test_that("plugin method results match non-plugin methods", {
   expect_plugin_equal("rasne", tolerance = 1e-5)
   expect_plugin_equal("rssne", tolerance = 1e-5)
   expect_plugin_equal("rtsne", tolerance = 1e-5)
-  expect_plugin_equal("unerv", tolerance = 1e-5)
+  expect_plugin_equal("unerv", tolerance = 1e-4)
   expect_plugin_equal("usnerv", tolerance = 1e-5)
   expect_plugin_equal("uhsnerv", tolerance = 1e-5)
   expect_plugin_equal("tnerv", tolerance = 1e-5)

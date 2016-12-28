@@ -443,8 +443,14 @@ cstep <-  function(stepx, stepy, step, brackt, stpmin, stpmax) {
 #  for Matlab by
 #  \href{https://www.cs.umd.edu/users/oleary/software/}{Dianne O'Leary}.
 more_thuente <- function(c1 = 1e-4, c2 = 0.1, max_fn = Inf) {
-  function(phi, step0, alpha) {
-    res <- cvsrch(phi, step0, alpha = alpha, c1 = c1, c2 = c2, maxfev = max_fn)
+  function(phi, step0, alpha,
+           total_max_fn = Inf, total_max_gr = Inf, total_max_fg = Inf) {
+    maxfev <- min(max_fn, total_max_fn, total_max_gr, floor(total_max_fg / 2))
+    if (maxfev <= 0) {
+      return(list(step = step0, nfn = 0, ngr = 0))
+    }
+    res <- cvsrch(phi, step0, alpha = alpha, c1 = c1, c2 = c2,
+                  maxfev = maxfev)
     list(step = res$step, nfn = res$nfn, ngr = res$nfn)
   }
 }
@@ -1961,8 +1967,14 @@ list_hooks <- function(opt) {
 #   \item{\code{grad_tol}} Absolute tolerance of the l2 (Euclidean) norm of
 #   the gradient. Indicated by \code{terminate$what} being \code{"grad_tol"}.
 #   Note that the gradient norm is not a very reliable stopping criterion
-#   (see Nocedal and co-workers 2002), but is quite  commonly used, so this
+#   (see Nocedal and co-workers 2002), but is quite commonly used, so this
 #   might be useful for comparison with results from other optimizers.
+#   \item{\code{step_tol}} Absolute tolerance of the step size, i.e. the
+#   Euclidean distance between values of \code{par} fell below the specified
+#   value. Indicated by \code{terminate$what} being \code{"step_tol"}.
+#   For those optimization methods which allow for abandoning the result of an
+#   iteration and restarting using the previous iteration's value of
+#   \code{par} an iteration, \code{step_tol} will not be triggered.
 # }
 #
 # Convergence is checked between specific interations. How often is determined
@@ -2073,6 +2085,12 @@ list_hooks <- function(opt) {
 # line step value of 1 as the initial step size whenever \code{step_next_init}
 # suggests a step size > 1. Defaults to \code{TRUE} for quasi-Newton methods
 # such as BFGS and L-BFGS, \code{FALSE} otherwise.
+# @param ls_max_fn Maximum number of function evaluations allowed during a
+# line search.
+# @param ls_max_gr Maximum number of gradient evaluations allowed during a
+# line search.
+# @param ls_max_fg Maximum number of function or gradient evaluations allowed
+# during a line search.
 # @param mom_type Momentum type, either \code{"classical"} or
 # \code{"nesterov"}. See 'Details'.
 # @param mom_schedule Momentum schedule. See 'Details'.
@@ -2098,9 +2116,15 @@ list_hooks <- function(opt) {
 # See the 'Convergence' section for details.
 # @param grad_tol Absolute tolerance for the length (l2-norm) of the gradient
 # vector. See the 'Convergence' section for details.
+# @param step_tol Absolute tolerance for the size of the parameter update.
+# See the 'Convergence' section for details.
 # @param check_conv_every Positive integer indicating how often to check
 # convergence. Default is 1, i.e. every iteration. See the 'Convergence'
 # section for details.
+# @param log_every Positive integer indicating how often to log convergence
+# results to the console. Ignored if \code{verbose} is \code{FALSE}.
+# If not an integer multiple of \code{check_conv_every}, it will be set to
+# \code{check_conv_every}.
 # @param verbose If \code{TRUE}, log information about the progress of the
 # optimization to the console.
 # @param store_progress If \code{TRUE} store information about the progress
@@ -2220,6 +2244,9 @@ mize <- function(par, fg,
                  step0 = NULL,
                  step_next_init = NULL,
                  try_newton_step = NULL,
+                 ls_max_fn = 20,
+                 ls_max_gr = Inf,
+                 ls_max_fg = Inf,
                  # Momentum
                  mom_type = NULL,
                  mom_schedule = NULL,
@@ -2237,7 +2264,9 @@ mize <- function(par, fg,
                  abs_tol = sqrt(.Machine$double.eps),
                  rel_tol = abs_tol,
                  grad_tol = NULL,
+                 step_tol = sqrt(.Machine$double.eps),
                  check_conv_every = 1,
+                 log_every = check_conv_every,
                  verbose = FALSE,
                  store_progress = FALSE) {
 
@@ -2256,6 +2285,8 @@ mize <- function(par, fg,
                    line_search = line_search, step0 = step0, c1 = c1, c2 = c2,
                    step_next_init = step_next_init,
                    try_newton_step = try_newton_step,
+                   ls_max_fn = ls_max_fn, ls_max_gr = ls_max_gr,
+                   ls_max_fg = ls_max_fg,
                    mom_type = mom_type,
                    mom_schedule = mom_schedule,
                    mom_init = mom_init,
@@ -2264,11 +2295,26 @@ mize <- function(par, fg,
                    mom_linear_weight = mom_linear_weight,
                    max_iter = max_iter,
                    restart = restart)
+  if (max_iter < 0) {
+    stop("max_iter must be non-negative")
+  }
+  if (max_fn < 0) {
+    stop("max_fn must be non-negative")
+  }
+  if (max_gr < 0) {
+    stop("max_gr must be non-negative")
+  }
+  if (max_fg < 0) {
+    stop("max_fg must be non-negative")
+  }
+
   res <- opt_loop(opt, par, fg,
           max_iter = max_iter,
           max_fn = max_fn, max_gr = max_gr, max_fg = max_fg,
           abs_tol = abs_tol, rel_tol = rel_tol, grad_tol = grad_tol,
+          step_tol = step_tol,
           check_conv_every = check_conv_every,
+          log_every = log_every,
           store_progress = store_progress,
           verbose = verbose)
 
@@ -2348,6 +2394,12 @@ mize <- function(par, fg,
 # line step value of 1 as the initial step size whenever \code{step_next_init}
 # suggests a step size > 1. Defaults to \code{TRUE} for quasi-Newton methods
 # such as BFGS and L-BFGS, \code{FALSE} otherwise.
+# @param ls_max_fn Maximum number of function evaluations allowed during a
+# line search.
+# @param ls_max_gr Maximum number of gradient evaluations allowed during a
+# line search.
+# @param ls_max_fg Maximum number of function or gradient evaluations allowed
+# during a line search.
 # @param mom_type Momentum type, either \code{"classical"} or
 # \code{"nesterov"}.
 # @param mom_schedule Momentum schedule. See 'Details' of \code{\link{mize}}.
@@ -2403,6 +2455,9 @@ make_mize <- function(method = "L-BFGS",
                       step0 = NULL,
                       step_next_init = NULL,
                       try_newton_step = NULL,
+                      ls_max_fn = Inf,
+                      ls_max_gr = Inf,
+                      ls_max_fg = Inf,
                       # Momentum
                       mom_type = NULL,
                       mom_schedule = NULL,
@@ -2439,6 +2494,15 @@ make_mize <- function(method = "L-BFGS",
   }
   if (!is.null(c2) && !is_in_range(c2, c1, 1, lopen = FALSE, ropen = FALSE)) {
     stop("c2 must be between c1 and 1")
+  }
+  if (ls_max_fn < 0) {
+    stop("ls_max_fn must be non-negative")
+  }
+  if (ls_max_gr < 0) {
+    stop("ls_max_gr must be non-negative")
+  }
+  if (ls_max_fg < 0) {
+    stop("ls_max_fg must be non-negative")
   }
 
   # Gradient Descent Direction configuration
@@ -2486,7 +2550,7 @@ make_mize <- function(method = "L-BFGS",
       }
     },
     nag = {
-      dir_type <- sd_direction()
+      dir_type <- sd_direction(normalize = norm_direction)
     },
     momentum = {
       dir_type <- sd_direction(normalize = norm_direction)
@@ -2563,13 +2627,20 @@ make_mize <- function(method = "L-BFGS",
       "more-thuente" = more_thuente_ls(c1 = c1, c2 = c2,
                                        initializer = tolower(step_next_init),
                                        initial_step_length = step0,
-                                       try_newton_step = try_newton_step),
+                                       try_newton_step = try_newton_step,
+                                       max_fn = ls_max_fn,
+                                       max_gr = ls_max_gr,
+                                       max_fg = ls_max_fg),
       rasmussen = rasmussen_ls(c1 = c1, c2 = c2,
                               initializer = tolower(step_next_init),
                               initial_step_length = step0,
-                              try_newton_step = try_newton_step),
-      "bold driver" = bold_driver(inc_mult = step_up, dec_mult = step_down),
-      backtracking = backtracking(rho = step_down, c1 = c1),
+                              try_newton_step = try_newton_step,
+                              max_fn = ls_max_fn,
+                              max_gr = ls_max_gr,
+                              max_fg = ls_max_fg),
+      "bold driver" = bold_driver(inc_mult = step_up, dec_mult = step_down,
+                                  max_fn = ls_max_fn),
+      backtracking = backtracking(rho = step_down, c1 = c1, max_fn = ls_max_fn),
       constant = constant_step_size(value = step0)
     )
   }
@@ -3263,10 +3334,19 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
                     max_fn = Inf, max_gr = Inf, max_fg = Inf,
                     abs_tol = sqrt(.Machine$double.eps),
                     rel_tol = abs_tol, grad_tol = NULL,
-                    check_conv_every = 1,
+                    step_tol = .Machine$double.eps,
+                    check_conv_every = 1, log_every = check_conv_every,
                     ret_opt = FALSE, count_res_fg = TRUE) {
 
+  # log_every must be an integer multiple of check_conv_every
+  if (!is.null(check_conv_every) && log_every %% check_conv_every != 0) {
+    log_every <- check_conv_every
+  }
+
   opt <- mize_init(opt, par, fg)
+  opt$counts$max_fn <- max_fn
+  opt$counts$max_gr <- max_gr
+  opt$counts$max_fg <- max_fg
 
   progress <- data.frame()
   terminate <- list()
@@ -3303,6 +3383,12 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
 
       par0 <- par
 
+      # We're going to use this below to guess whether our optimization
+      # requires function evaluations (this is only useful if max_fn or max_fg
+      # is specified, but not really time consuming)
+      if (iter == 1) {
+        fn_count_before <- opt$counts$fn
+      }
       step_res <- mize_step(opt, par, fg, iter)
       opt <- step_res$opt
       par <- step_res$par
@@ -3312,24 +3398,41 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
         break
       }
 
+      # After the first iteration, if we don't have the function available for
+      # the current value of par, we probably won't have it at future iterations
+      # So if we are limiting the number of function evaluations, we need to keep
+      # one spare to evaluate fn after the loop finishes for when we return par
+      if (iter == 1) {
+        # message("has fn curr? ", has_fn_curr(opt, iter + 1))
+        # message("counts before = ", fn_count_before, " counts after = ", opt$counts$fn)
+        if (!has_fn_curr(opt, iter + 1)) {
+          if (fn_count_before != opt$counts$fn) {
+            opt$counts$max_fn <- opt$counts$max_fn - 1
+          }
+          opt$counts$max_fg <- opt$counts$max_fg - 1
+        }
+      }
+
       # Check termination conditions
       if (!is.null(check_conv_every) && iter %% check_conv_every == 0) {
         res <- opt_results(opt, par, fg, iter, par0, count_fg = count_res_fg,
                            calc_gr = calc_gr)
         opt <- res$opt
 
-        if (store_progress) {
+        if (store_progress && iter %% log_every == 0) {
           progress <- update_progress(opt_res = res, progress = progress)
         }
-        if (verbose) {
+        if (verbose && iter %% log_every == 0) {
           opt_report(res, print_time = TRUE, print_par = FALSE)
         }
 
         terminate <- check_termination(terminate, opt, iter = iter,
-                                       max_fn = max_fn, max_gr = max_gr,
-                                       max_fg = max_fg,
+                                       step = res$step,
+                                       max_fn = opt$counts$max_fn,
+                                       max_gr = opt$counts$max_gr,
+                                       max_fg = opt$counts$max_fg,
                                        abs_tol = abs_tol, rel_tol = rel_tol,
-                                       grad_tol = grad_tol)
+                                       grad_tol = grad_tol, step_tol = step_tol)
       }
 
       if (has_fn_curr(opt, iter + 1)) {
@@ -3350,25 +3453,25 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
     # Force recalculation of f (and optionally g) by clearing the cache
     par <- best_par
     opt <- opt_clear_cache(opt)
+    opt <- set_fn_curr(opt, best_fn, iter + 1)
     # recalculate result for this iteration
     res <- opt_results(opt, par, fg, iter, par0, count_fg = count_res_fg,
                        calc_gr = calc_gr)
     if (verbose) {
       message("Returning best result found")
-      opt_report(res, print_time = TRUE, print_par = FALSE)
     }
   }
 
   if (is.null(res) || res$iter != iter) {
     res <- opt_results(opt, par, fg, iter, par0, count_fg = count_res_fg,
                        calc_gr = calc_gr)
-    if (store_progress) {
-      progress <- update_progress(opt_res = res, progress = progress)
-    }
     opt <- res$opt
-    if (verbose) {
-      opt_report(res, print_time = TRUE, print_par = FALSE)
-    }
+  }
+  if (verbose && iter %% log_every != 0) {
+    opt_report(res, print_time = TRUE, print_par = FALSE)
+  }
+  if (store_progress && iter %% log_every != 0) {
+    progress <- update_progress(opt_res = res, progress = progress)
   }
 
   if (store_progress) {
@@ -3391,8 +3494,9 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
 # Gradient and Function-based termination (abs_tol, rel_tol and grad_tol)
 # are checked only if the function and gradient values were calculated
 # in the optimization step.
-check_termination <- function(terminate, opt, iter, max_fn, max_gr, max_fg,
-                              abs_tol, rel_tol, grad_tol) {
+check_termination <- function(terminate, opt, iter, step = NULL,
+                              max_fn, max_gr, max_fg,
+                              abs_tol, rel_tol, grad_tol, step_tol) {
   if (opt$counts$fn >= max_fn) {
     terminate <- list(
       what = "max_fn",
@@ -3409,6 +3513,13 @@ check_termination <- function(terminate, opt, iter, max_fn, max_gr, max_fg,
     terminate <- list(
       what = "max_fg",
       val = opt$counts$fn + opt$counts$gr
+    )
+  }
+  else if (!is.null(step) && step < step_tol
+            && (is.null(opt$restart_at) || opt$restart_at != iter)) {
+    terminate <- list(
+      what = "step_tol",
+      val = step
     )
   }
   if (!is.null(grad_tol) && !is.null(opt$cache$gr_curr)) {
@@ -3466,7 +3577,7 @@ opt_clear_cache <- function(opt) {
 
 # Creates a result object.
 # If the function and gradient were not calculated as part of the optimization
-# step, they WILL be calculated here, but do not contribute to the total
+# step, they WILL be calculated here, and do contribute to the total
 # fn or gr count reported.
 # Other reported results: alpha is the step size portion of the gradient
 # descent stage (i.e. the result of the line search). Step is the total step
@@ -4084,20 +4195,25 @@ tweak_interpolation <- function(xnew, x1, x2, int) {
 # @param ext Extrapolation constant. Prevents step size extrapolation being
 #   too large.
 # @param int Interpolation constant. Prevents step size being too small.
-# @param max_fn Maximum number of function evaluations allowed.
+# @param max_fn Maximum number of function evaluations allowed per line search.
 # @return Line search function.
 # @seealso Line search based on Matlab code by
 #  \href{http://learning.eng.cam.ac.uk/carl/code/minimize/}{Carl Edward Rasmussen}
 #  and also part of the Matlab
 #  \href{(http://www.gaussianprocess.org/gpml/code/matlab/doc/)}{GPML} package.
 rasmussen <- function(c1 = c2 / 2, c2 = 0.1, int = 0.1, ext = 3.0,
-                      max_fn = 20) {
+                      max_fn = Inf) {
   if (c2 < c1) {
     stop("rasmussen line search: c2 < c1")
   }
-  function(phi, step0, alpha) {
+  function(phi, step0, alpha,
+           total_max_fn = Inf, total_max_gr = Inf, total_max_fg = Inf) {
+    maxfev <- min(max_fn, total_max_fn, total_max_gr, floor(total_max_fg / 2))
+    if (maxfev <= 0) {
+      return(list(step = step0, nfn = 0, ngr = 0))
+    }
     res <- ras_ls(phi, alpha, step0, c1 = c1, c2 = c2, ext = ext, int = int,
-                  max_fn = max_fn)
+                  max_fn = maxfev)
     list(step = res$step, nfn = res$nfn, ngr = res$nfn)
   }
 }
@@ -4330,7 +4446,8 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
                 dec_fn = partial(`*`, dec_mult),
                 init_step_size = 1,
                 min_step_size = sqrt(.Machine$double.eps),
-                max_step_size = NULL) {
+                max_step_size = NULL,
+                max_fn = Inf) {
   make_step_size(list(
     name = "bold_driver",
     init = function(opt, stage, sub_stage, par, fg, iter) {
@@ -4363,24 +4480,27 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
           f0 <- opt$fn
         }
 
-        alpha <- sub_stage$value
+        max_fn <- max_fn_per_ls(opt, max_fn)
+      alpha <- sub_stage$value
         para <- par + pm * alpha
         opt <- calc_fn(opt, para, fg$fn)
+        num_steps <- 0
         while ((!is.finite(opt$fn) || opt$fn > f0)
-               && alpha > sub_stage$min_value) {
+               && alpha > sub_stage$min_value
+               && num_steps < max_fn) {
           alpha <- sclamp(sub_stage$dec_fn(alpha),
                           min = sub_stage$min_value,
                           max = sub_stage$max_value)
-
           para <- par + pm * alpha
           opt <- calc_fn(opt, para, fg$fn)
+          num_steps <- num_steps + 1
         }
         sub_stage$value <- alpha
         if (!is.finite(opt$fn)) {
           message(stage$type, " ", sub_stage$name,
                   " non finite cost found at iter ", iter)
           sub_stage$value <- sub_stage$min_value
-          return(opt = opt, sub_stage = sub_stage)
+          return(list(opt = opt, sub_stage = sub_stage))
         }
 
         if (is_last_stage(opt, stage)) {
@@ -4393,10 +4513,17 @@ bold_driver <- function(inc_mult = 1.1, dec_mult = 0.5,
                           update) {
       alpha_old <- sub_stage$value
       # increase the step size for the next step
-      alpha_new <- sub_stage$inc_fn(alpha_old)
+      if (opt$ok) {
+        alpha_new <- sub_stage$inc_fn(alpha_old)
+      }
+      else {
+        alpha_new <- alpha_old
+      }
+
       sub_stage$value <- sclamp(alpha_new,
                                 min = sub_stage$min_value,
                                 max = sub_stage$max_value)
+
 
       if (opt$ok && is_last_stage(opt, stage) && has_fn_new(opt, iter)) {
         opt <- set_fn_curr(opt, opt$cache$fn_new, iter + 1)
@@ -4422,7 +4549,8 @@ backtracking <- function(rho = 0.5,
                         init_step_size = 1,
                         min_step_size = sqrt(.Machine$double.eps),
                         max_step_size = NULL,
-                        c1 = 1e-4) {
+                        c1 = 1e-4,
+                        max_fn = Inf) {
   make_step_size(list(
     name = "backtracking",
     init = function(opt, stage, sub_stage, par, fg, iter) {
@@ -4463,8 +4591,11 @@ backtracking <- function(rho = 0.5,
         para <- par + pm * alpha
         opt <- calc_fn(opt, para, fg$fn)
 
+        max_fn <- max_fn_per_ls(opt, max_fn)
+
         while ((!is.finite(opt$fn) || !armijo_ok(f0, d0, alpha, opt$fn, c1))
-               && alpha > sub_stage$min_value) {
+               && alpha > sub_stage$min_value
+               && opt$count$fn < max_fn) {
           alpha <- sclamp(alpha * rho,
                           min = sub_stage$min_value,
                           max = sub_stage$max_value)
@@ -4477,7 +4608,7 @@ backtracking <- function(rho = 0.5,
           message(stage$type, " ", sub_stage$name,
                   " non finite cost found at iter ", iter)
           sub_stage$value <- sub_stage$min_value
-          return(opt = opt, sub_stage = sub_stage)
+          return(list(opt = opt, sub_stage = sub_stage))
         }
 
         if (is_last_stage(opt, stage)) {
@@ -4499,6 +4630,18 @@ backtracking <- function(rho = 0.5,
     min_value = min_step_size,
     max_value = max_step_size
   ))
+}
+
+max_fn_per_ls <- function(opt, max_ls_fn = Inf) {
+  max_fn <- max_ls_fn
+  if (!is.null(opt$counts$max_fn)) {
+    max_fn <- min(max_fn, opt$counts$max_fn - opt$counts$fn)
+  }
+  if (!is.null(opt$counts$max_fg)) {
+    max_fn <- min(max_fn,
+                  opt$counts$max_fg - (opt$counts$fn + opt$counts$gr))
+  }
+  max_fn
 }
 # Functions used only for testing
 
@@ -5001,9 +5144,10 @@ more_thuente_ls <- function(c1 = c2 / 2, c2 = 0.1,
   if (!is.null(c2) && !is_in_range(c2, c1, 1, lopen = FALSE, ropen = FALSE)) {
     stop("c2 must be between c1 and 1")
   }
+  max_ls_fn <- min(max_fn, max_gr, floor(max_fg / 2))
 
   line_search(more_thuente(c1 = c1, c2 = c2,
-                           max_fn = min(max_fn, max_gr, max_fg)),
+                           max_fn = max_ls_fn),
               name = "more-thuente",
               max_alpha_mult = max_alpha_mult,
               min_step_size = min_step_size, stop_at_min = stop_at_min,
@@ -5034,8 +5178,10 @@ rasmussen_ls <- function(c1 = c2 / 2, c2 = 0.1, int = 0.1, ext = 3.0,
     stop("c2 must be between c1 and 1")
   }
 
+  max_ls_fn <- min(max_fn, max_gr, floor(max_fg / 2))
+
   line_search(rasmussen(c1 = c1, c2 = c2, int = int, ext = ext,
-                        max_fn = min(max_fn, max_gr, max_fg)),
+                        max_fn = max_ls_fn),
               name = "rasmussen",
               max_alpha_mult = max_alpha_mult,
               min_step_size = min_step_size, stop_at_min = stop_at_min,
@@ -5129,21 +5275,45 @@ line_search <- function(ls_fn,
       }
 
       sub_stage$alpha0 <- sub_stage$value
-      ls_result <- ls_fn(phi_alpha, step0, sub_stage$value)
       sub_stage$d0 <- step0$d
       sub_stage$f0 <- step0$f
-      sub_stage$value <- ls_result$step$alpha
 
-      opt$counts$fn <- opt$counts$fn + ls_result$nfn
-      opt$counts$gr <- opt$counts$gr + ls_result$ngr
-
-      if (is_last_stage(opt, stage)) {
-         opt <- set_fn_new(opt, ls_result$step$f, iter)
-        if (is.null(ls_result$step$df)) {
-          sub_stage$df <- rep(sub_stage$eps, length(par))
+      max_fn <- Inf
+      max_gr <- Inf
+      max_fg <- Inf
+      if (!is.null(opt$counts$max_fn) && is.finite(opt$counts$max_fn)) {
+        max_fn <- opt$counts$max_fn - opt$counts$fn
+      }
+      if (!is.null(opt$counts$max_gr) && is.finite(opt$counts$max_gr)) {
+        max_gr <- opt$counts$max_gr - opt$counts$gr
+      }
+      if (!is.null(opt$counts$max_fg) && is.finite(opt$counts$max_fg)) {
+        max_fg <- opt$counts$max_fg - (opt$counts$fn + opt$counts$gr)
+      }
+      if (max_fn <= 0 || max_gr <= 0 || max_fg <= 0) {
+        sub_stage$value <- 0
+        if (is_last_stage(opt, stage)) {
+          opt <- set_fn_new(opt, step0$f, iter)
+          sub_stage$df <- step0$df
         }
-        else {
-          sub_stage$df <- ls_result$step$df
+      }
+      else {
+        ls_result <- ls_fn(phi_alpha, step0, sub_stage$value,
+                           total_max_fn = max_fn, total_max_gr = max_gr,
+                           total_max_fg = max_fg)
+        sub_stage$value <- ls_result$step$alpha
+
+        opt$counts$fn <- opt$counts$fn + ls_result$nfn
+        opt$counts$gr <- opt$counts$gr + ls_result$ngr
+
+        if (is_last_stage(opt, stage)) {
+          opt <- set_fn_new(opt, ls_result$step$f, iter)
+          if (is.null(ls_result$step$df)) {
+            sub_stage$df <- rep(sub_stage$eps, length(par))
+          }
+          else {
+            sub_stage$df <- ls_result$step$df
+          }
         }
       }
 

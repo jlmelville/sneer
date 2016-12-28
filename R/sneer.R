@@ -162,6 +162,7 @@ NULL
 #' The following scaling options can be applied via the \code{scale_type}
 #' parameter:
 #' \itemize{
+#'  \item \code{"none"} Do nothing. The default.
 #'  \item \code{"matrix"} Range scale the entire data so that the maximum value is
 #'   1 and the minimum 0.
 #'  \item \code{"range"} Range scale each column that the maximum value in each
@@ -691,7 +692,7 @@ sneer <- function(df,
                   alpha = 0.5,
                   lambda = 0.5,
                   kappa = 0.5,
-                  scale_type = "",
+                  scale_type = "none",
                   perplexity = 32, perp_scale = "single",
                   perp_scale_iter = NULL,
                   perp_kernel_fun = "exp",
@@ -803,8 +804,10 @@ sneer <- function(df,
   }
   preprocess <- make_preprocess()
   if (!is.null(scale_type)) {
-    scale_type <- match.arg(tolower(scale_type), c("matrix", "range", "auto"))
+    scale_type <- match.arg(tolower(scale_type),
+                            c("none", "matrix", "range", "auto"))
     preprocess <- switch(scale_type,
+     none = make_preprocess(),
      matrix = make_preprocess(range_scale_matrix = TRUE),
      range = make_preprocess(range_scale = TRUE),
      auto = make_preprocess(auto_scale = TRUE)
