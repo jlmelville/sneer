@@ -965,9 +965,19 @@ cg_direction <- function(ortho_check = FALSE, nu = 0.1,
   ))
 }
 
+# The Hestenes-Stiefel update.
+hs_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
+  -(dot(gm, gm_old) - dot(gm, gm_old)) / (dot(pm_old, (gm - gm_old)) + eps)
+}
+
+# The Fletcher-Reeves update.
+fr_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
+  dot(gm, gm) / (dot(gm_old, gm_old) + eps)
+}
+
 # The Polak-Ribiere method for updating the CG direction
 pr_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
-  (dot(gm, gm) - dot(gm, gm_old)) / (dot(gm_old, gm_old) + eps)
+  dot(gm, gm - gm_old) / (dot(gm_old, gm_old) + eps)
 }
 
 # The "PR+" update - Polak-Ribiere, but if negative, restarts the CG from
@@ -977,19 +987,26 @@ pr_plus_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
   max(0, beta)
 }
 
-# The Fletcher-Reeves update.
-fr_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
-  dot(gm, gm) / (dot(gm_old, gm_old) + eps)
-}
-
-# The Hestenes-Stiefel update.
-hs_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
-  -(dot(gm, gm_old) - dot(gm, gm_old)) / (dot(pm_old, (gm - gm_old)) + eps)
+# Conjugate Descent update due to Fletcher
+cd_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
+  dot(gm, gm) / (dot(pm_old, (gm - gm_old)) + eps)
 }
 
 # The Dai-Yuan update.
 dy_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
-  -dot(gm, gm) / (dot(pm_old, (gm - gm_old)) + eps)
+  -cd_update(gm, gm_old, pm_old, eps)
+}
+
+# Liu-Storey update
+ls_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
+  -hs_update(gm, gm_old, pm_old, eps)
+}
+
+# Hager-Zhang update
+hz_update <- function(gm, gm_old, pm_old, eps = .Machine$double.eps) {
+  ym <- gm - gm_old
+  py <- dot(pm_old, ym)
+  dot(ym - 2 * pm_old * (dot(ym, ym) / (py + eps)), (gm / (py + eps)))
 }
 
 # Checks that successive gradient vectors are sufficiently orthogonal
@@ -1070,7 +1087,7 @@ bfgs_direction <- function(eps =  .Machine$double.eps,
 #
 # memory - The number of previous updates to store.
 # scale_inverse - if TRUE, scale the inverse Hessian approximation at each step.
-lbfgs_direction <- function(memory = 10, scale_inverse = FALSE,
+lbfgs_direction <- function(memory = 5, scale_inverse = FALSE,
                             eps = .Machine$double.eps) {
   if (memory < 1) {
     stop("memory must be > 0")
@@ -2224,7 +2241,7 @@ mize <- function(par, fg,
                  method = "L-BFGS",
                  norm_direction = FALSE,
                  # L-BFGS
-                 memory = 10,
+                 memory = 5,
                  scale_hess = TRUE,
                  # CG
                  cg_update = "PR+",
@@ -2437,7 +2454,7 @@ make_mize <- function(method = "L-BFGS",
                       norm_direction = FALSE,
                       # BFGS
                       scale_hess = TRUE,
-                      memory = 10,
+                      memory = 5,
                       # CG
                       cg_update = "PR+",
                       # NAG
@@ -2527,13 +2544,16 @@ make_mize <- function(method = "L-BFGS",
     },
     cg = {
       cg_update <- match.arg(tolower(cg_update),
-                             c("fr", "pr", "pr+", "hs", "dy"))
+                             c("hs", "fr", "pr", "pr+", "cd", "ls", "dy", "hz"))
       cg_update_fn <- switch(cg_update,
+        hs = hs_update,
+        fr = fr_update,
         pr = pr_update,
         "pr+" = pr_plus_update,
-        fr = fr_update,
+        cd = cd_update,
+        ls = ls_update,
         dy = dy_update,
-        hs = hs_update
+        hz = hz_update
       )
       dir_type <- cg_direction(cg_update = cg_update_fn)
     },
