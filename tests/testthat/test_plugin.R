@@ -39,7 +39,7 @@ expect_same_method <- function(method1, method2,
 }
 
 test_that("plugin method results match non-plugin methods", {
-  expect_plugin_equal("asne", tolerance = 1e-5)
+  expect_plugin_equal("asne", tolerance = 1e-4)
   expect_plugin_equal("ssne", tolerance = 1e-5)
   expect_plugin_equal("tsne", tolerance = 1e-5)
   expect_plugin_equal("tasne", tolerance = 1e-5)

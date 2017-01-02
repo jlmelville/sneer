@@ -198,7 +198,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
       }
       result$stop_early <- TRUE
     }
-    else if (!is.null(rtol) && rtol < reltol) {
+    else if (!is.null(reltol) && !is.null(rtol) && rtol < reltol) {
       if (verbose) {
         message("relative tolerance ", formatC(reltol), " convergence reached")
       }

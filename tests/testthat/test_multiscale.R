@@ -120,7 +120,7 @@ test_that("ms SSNE with unit scaling", {
                                     verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
-                             verbose = FALSE),
+                             verbose = FALSE, reltol = NULL),
     max_iter = 20,
     export = c("report", "method")
   )
@@ -129,10 +129,10 @@ test_that("ms SSNE with unit scaling", {
                c(1, 1, 1), info = "uniform kernels")
 
   expect_equal(ssne_iris_ums3$report$costs[,"norm"],
-               c(0.9360,  0.8311,  0.7047,  0.5821,  0.4716, # perp 75
-                 0.1659,  0.1291,  0.1019,  0.0824,  0.0687, # perp 50
-                 0.1153,  0.1152,  0.1123,  0.1093,  0.1049, # perp 25
-                 0.1005,  0.0965,  0.0933,  0.0910,  0.0900,  0.0898),
+               c(0.9359,  0.8310,  0.7048,  0.5828,  0.4737, # perp 75
+                 0.1662,  0.1311,  0.1060,  0.0882,  0.0752, # perp 50
+                 0.1216,  0.1216,  0.1106,  0.0992,  0.0926, # perp 25
+                 0.0913,  0.0920,  0.0917,  0.0906,  0.0900,  0.0900),
                tolerance = 5e-4, scale = 1, label = "ms-SSNE unit prec")
 })
 
@@ -157,10 +157,10 @@ test_that("Can apply multiple scales in one iteration", {
                c(1, 1, 1), info = "uniform kernels")
 
    expect_equal(ssne_iris_ums3_s0$report$costs[,"norm"],
-               c(0.2961,  0.2527,  0.2066,  0.1703,  0.1456,
-                 0.1286,  0.1157,  0.1056,  0.0982,  0.0935,
-                 0.0910,  0.0900,  0.0899,  0.0899,  0.0898,
-                 0.0895,  0.0893,  0.0892,  0.0892,  0.0891,  0.0891),
+               c(0.2961,  0.2527,  0.2067,  0.1713,  0.1487,
+                 0.1343,  0.1229,  0.1128,  0.1047,  0.0990,
+                 0.0953,  0.0934,  0.0927,  0.0926,  0.0924,
+                 0.0921,  0.0916,  0.0912,  0.0909,  0.0908,  0.0907),
                tolerance = 5e-4, scale = 1,
                label = "ms-SSNE unit prec scale all at once")
 

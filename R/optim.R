@@ -84,6 +84,7 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
 
   if (!is.null(opt$old_cost_dirty) && opt$old_cost_dirty) {
     mize <- opt$mize_module$opt_clear_cache(mize)
+    opt$old_cost_dirty <- FALSE
   }
   step_res <- opt$mize_module$opt_step(mize, par, fg, iter)
   mize <- step_res$opt
@@ -99,8 +100,10 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
   }
   out <- par_to_out(par, opt, inp, out, method, nr)
 
-  if (!is.null(opt$mize$cache$gr_curr) &&
-      length_vec(opt$mize$cache$gr_curr) < sqrt(.Machine$double.eps)) {
+  if (!is.null(opt$terminate)) {
+    if (opt$verbose) {
+      message("Optimizer reports termination due to: ", opt$terminate$what)
+    }
     opt$stop_early <- TRUE
   }
 
@@ -128,31 +131,31 @@ mize_opt <- function(opt_name, ...) {
 
 mize_bold_nag_adapt <- function() {
   mize_opt("SD", line_search = "bold", norm_direction = TRUE,
-            mom_schedule = "nesterov", mom_type = "nesterov",
+            mom_schedule = "nsconvex", mom_type = "nesterov",
             mom_linear_weight = TRUE, nest_convex_approx = TRUE,
-            nest_burn_in = 1, use_nest_mu_zero = TRUE, restart = "fn")
+            nest_burn_in = 1, use_init_mom = TRUE, restart = "fn")
 }
 
 mize_bold_nag <- function() {
   mize_opt("SD", line_search = "bold", norm_direction = TRUE,
-            mom_schedule = "nesterov", mom_type = "nesterov",
+            mom_schedule = "nsconvex", mom_type = "nesterov",
             mom_linear_weight = TRUE, nest_convex_approx = TRUE,
-            nest_burn_in = 1, use_nest_mu_zero = TRUE)
+            nest_burn_in = 1, use_init_mom = TRUE)
 }
 
 mize_back_nag <- function() {
   mize_opt("SD", line_search = "back", norm_direction = TRUE,
-            mom_schedule = "nesterov", mom_type = "nesterov",
+            mom_schedule = "nsconvex", mom_type = "nesterov",
             mom_linear_weight = TRUE, nest_convex_approx = TRUE,
-            nest_burn_in = 1, use_nest_mu_zero = TRUE,
+            nest_burn_in = 1, use_init_mom = TRUE,
             c1 = 0.1, step_down = 0.8)
 }
 
 mize_back_nag_adapt <- function() {
   mize_opt("SD", line_search = "back", norm_direction = TRUE,
-            mom_schedule = "nesterov", mom_type = "nesterov",
+            mom_schedule = "nsconvex", mom_type = "nesterov",
             mom_linear_weight = TRUE, nest_convex_approx = TRUE,
-            nest_burn_in = 1, use_nest_mu_zero = TRUE, restart = "fn",
+            nest_burn_in = 1, use_init_mom = TRUE, restart = "fn",
             c1 = 0.1, step_down = 0.8)
 }
 

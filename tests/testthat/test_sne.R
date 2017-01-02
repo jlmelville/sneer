@@ -35,7 +35,7 @@ ssne_iris <- embed_prob(iris[, 1:4],
                        opt = mize_bold_nag_adapt())
 expect_equal(ssne_iris$report$norm, 0.0727, tolerance = 1e-4, label = "ssne")
 # Used below to compare when ssne has beta = 5
-expect_equal(ssne_iris$report$iter, 64,
+expect_equal(ssne_iris$report$iter, 66,
              label = "ssne with non-default beta num iterations")
 })
 
