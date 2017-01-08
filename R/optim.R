@@ -1,4 +1,6 @@
 # Bridges Sneer and Mize
+
+# Called at every iteration to convert sneer data structures into mize form
 make_optim_fg <- function(opt, inp, out, method, iter) {
   if (!is.null(inp$xm)) {
     nr <- nrow(inp$xm)
@@ -6,24 +8,55 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
   else {
     nr <- nrow(inp$dm)
   }
+  dout <- out$dim
 
-  list(
+  res <- list(
     fn = function(par) {
+      if (!is.null(method$set_extra_par)) {
+        extra_par <- par[(dout * nr + 1):length(par)]
+        par <- par[1:(dout * nr)]
+        method <- method$set_extra_par(method, extra_par)
+      }
       out <- par_to_out(par, opt, inp, out, method, nr)
       calculate_cost(method, inp, out)
     },
     gr = function(par) {
+      if (!is.null(method$extra_gr)) {
+        extra_par <- par[(dout * nr + 1):length(par)]
+        par <- par[1:(dout * nr)]
+      }
       out <- par_to_out(par, opt, inp, out, method, nr)
-      mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+      grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+      if (!is.null(method$extra_gr)) {
+        extra_grvec <- method$extra_gr(opt, inp, out, method, extra_par)
+        grvec <- c(grvec, extra_grvec)
+      }
+
+      grvec
     },
     fg = function(par) {
+
+      if (!is.null(method$set_extra_par)) {
+        extra_par <- par[(dout * nr + 1):length(par)]
+        par <- par[1:(dout * nr)]
+        method <- method$set_extra_par(method, extra_par)
+      }
       out <- par_to_out(par, opt, inp, out, method, nr)
+
+      grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+      if (!is.null(method$extra_gr)) {
+        extra_grvec <- method$extra_gr(opt, inp, out, method, extra_par)
+        grvec <- c(grvec, extra_grvec)
+      }
+
       list(
         fn = calculate_cost(method, inp, out),
-        gr = mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+        gr = grvec
       )
     }
   )
+
+  res
 }
 
 # Convert 1D Parameter to Sneer Output
@@ -74,11 +107,17 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
   }
 
   par <- mat_to_par(out$ym)
-  # par0 <- par
+  # Add extra parameters
+  if (!is.null(method$get_extra_par)) {
+    par <- c(par, method$get_extra_par(method))
+  }
+
   mize <- opt$mize
 
   if (iter == 0) {
-    mize <- opt$mize_module$opt_init(mize, par, fg)
+    mize <- opt$mize_module$opt_init(mize, par, fg,
+                                     step_tol = .Machine$double.eps,
+                                     max_iter = Inf)
     opt$mize <- mize
   }
 
@@ -86,10 +125,16 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
     mize <- opt$mize_module$opt_clear_cache(mize)
     opt$old_cost_dirty <- FALSE
   }
-  step_res <- opt$mize_module$opt_step(mize, par, fg, iter)
+  step_res <- opt$mize_module$opt_step(mize, par, fg)
   mize <- step_res$opt
-  opt$mize <- mize
+  step_info <- opt$mize_module$mize_step_summary(mize, step_res$par, fg,
+                                                 par_old = par)
+  # message("nf = ", step_info$nf, " ng = ", step_info$ng
+  #         , " f = ", formatC(step_info$f)
+  #         , " step = ", step_info$step)
+  mize <- opt$mize_module$check_mize_convergence(step_info)
 
+  opt$mize <- mize
   par <- step_res$par
 
   if (!is.null(inp$xm)) {
@@ -98,19 +143,28 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
   else {
     nr <- nrow(inp$dm)
   }
+  dout <- out$dim
+
+  # remove extra parameters that were pushed (and update method)
+  if (!is.null(method$set_extra_par)) {
+    extra_par <- par[(dout * nr + 1):length(par)]
+    par <- par[1:(dout * nr)]
+    method <- method$set_extra_par(method, extra_par)
+  }
+  # convert y coord par into sneer form
   out <- par_to_out(par, opt, inp, out, method, nr)
 
-  if (!is.null(opt$terminate)) {
-    if (opt$verbose) {
-      message("Optimizer reports termination due to: ", opt$terminate$what)
-    }
+  if (opt$mize$is_terminated) {
+    # if (opt$verbose) {
+      message("Optimizer reports termination due to: ", opt$mize$terminate$what)
+    # }
     opt$stop_early <- TRUE
   }
 
-  list(opt = opt, inp = inp, out = out, iter = iter)
+  list(opt = opt, inp = inp, out = out, method = method, iter = iter)
 }
 
-mize_opt <- function(opt_name, ...) {
+mize_opt <- function(opt_name, verbose = FALSE, ...) {
   mize_module <- mize()
 
   if (class(opt_name) == "list") {
@@ -125,7 +179,8 @@ mize_opt <- function(opt_name, ...) {
     mat_name = "ym",
     optimize_step = mize_opt_step,
     mize_module = mize_module,
-    mize = opt
+    mize = opt,
+    verbose = verbose
   )
 }
 

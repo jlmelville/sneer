@@ -136,6 +136,108 @@ can_restart <- function(opt, iter) {
   is.null(opt$restart_at) || iter - opt$restart_at > opt$restart_wait
 }
 
+# Returns a termination list if step falls below step_tol
+# A zero step is allowed if this is a restart step
+check_step_conv <- function(opt, iter, step = NULL, step_tol = NULL) {
+  if (is.null(step) || is.null(step_tol) || is_restart_iter(opt, iter) ||
+      step >= step_tol) {
+    return()
+  }
+  list(what = "step_tol", val = step)
+}
+
+# Return a termination list if maximum number of function and/or gradient
+# calls has been exceeded
+check_counts <- function(opt, max_fn, max_gr, max_fg) {
+  terminate <- NULL
+  if (opt$counts$fn >= max_fn) {
+    terminate <- list(
+      what = "max_fn",
+      val = opt$counts$fn
+    )
+  }
+  else if (opt$counts$gr >= max_gr) {
+    terminate <- list(
+      what = "max_gr",
+      val = opt$counts$gr
+    )
+  }
+  else if (opt$counts$fn + opt$counts$gr >= max_fg) {
+    terminate <- list(
+      what = "max_fg",
+      val = opt$counts$fn + opt$counts$gr
+    )
+  }
+  terminate
+}
+
+# Return a termination list if the gradient 2 norm tolerance (grad_tol) or
+# infinity norm tolerance is reached. Termination is also indicated if
+# any element of the gradient vector is not finite. Requires the gradient
+# have already been calculated - this routine does NOT calculate it if it's
+# not present
+check_gr_conv <- function(opt, grad_tol, ginf_tol) {
+  if (is.null(opt$cache$gr_curr)) {
+    return()
+  }
+
+  if (any(!is.finite(opt$cache$gr_curr))) {
+    return(list(what = "gr_inf", val = Inf))
+  }
+
+  if (!is.null(grad_tol)) {
+    gtol <- norm2(opt$cache$gr_curr)
+    if (gtol <= grad_tol) {
+      return(list(what = "grad_tol", val = gtol))
+    }
+  }
+
+  if (!is.null(ginf_tol)) {
+    gitol <- norm_inf(opt$cache$gr_curr)
+    if (gitol <= ginf_tol) {
+      return(list(what = "ginf_tol", val = gitol))
+    }
+  }
+}
+
+# Return a termination list if the absolute or relative tolerance is reached
+# for the difference between fn_old and fn_new. Termination is also indicated
+# if fn_new is non-finite. Tolerance is not checked if this is a restart
+# iteration.
+check_fn_conv <- function(opt, iter, fn_old, fn_new, abs_tol, rel_tol) {
+  if (!is.finite(fn_new)) {
+    return(list(what = "fn_inf", val = fn_new))
+  }
+
+  if (is.null(fn_old)) {
+    return()
+  }
+
+  if (is_restart_iter(opt, iter)) {
+    return()
+  }
+
+  if (!is.null(abs_tol)) {
+    atol <- abs(fn_old - fn_new)
+    if (atol < abs_tol) {
+      return(list(what = "abs_tol", val = atol))
+    }
+  }
+
+  if (!is.null(rel_tol)) {
+    rtol <- abs(fn_old - fn_new) / min(abs(fn_new), abs(fn_old))
+    if (rtol < rel_tol) {
+      return(list(what = "rel_tol", val = rtol))
+    }
+  }
+}
+
+# True if this iteration was marked as a restart
+# Zero step size and function difference is allowed under these circumstances.
+is_restart_iter <- function(opt, iter) {
+  !is.null(opt$restart_at) && opt$restart_at == iter
+}
+
 # Part of the More'-Thuente line search.
 #
 # Updates the interval of uncertainty of the current step size and updates the
@@ -712,7 +814,6 @@ cvsrch <- function(phi, step0, alpha = 1,
     # and compute the directional derivative.
     step <- phi(step$alpha)
     nfev <- nfev + 1
-
     # Test for convergence.
     info <- check_convergence(step0, step, brackt, infoc, stmin, stmax,
                               alpha_min, alpha_max, c1, c2, dgtest, nfev,
@@ -851,6 +952,9 @@ check_convergence <- function(step0, step, brackt, infoc, stmin, stmax,
                               alpha_min, alpha_max, c1, c2, dgtest, nfev,
                               maxfev, xtol) {
   info <- 0
+  if (!is.finite(step$f) || any(is.nan(step$df))) {
+    return(6)
+  }
   if ((brackt && (step$alpha <= stmin || step$alpha >= stmax)) || infoc == 0) {
     # rounding errors prevent further progress
     info <- 6
@@ -1324,7 +1428,11 @@ require_gradient <- function(opt, stage, par, fg, iter) {
     opt <- calc_gr_curr(opt, par, fg$gr, iter)
 
     if (any(!is.finite(opt$cache$gr_curr))) {
-      opt$error <- "gr_inf"
+      opt$terminate <- list(
+        what = "gr_inf",
+        val = Inf
+      )
+      opt$is_terminated <- TRUE
     }
   }
 
@@ -1365,6 +1473,12 @@ attr(require_gradient_old, 'name') <- 'gradient_old'
 # are multiplied, but for the authentic DBD experience (and also as used in
 # t-SNE), you can specify kappa_fun to be `+` to add kappa to the learning rate
 # when increasing the learning rate.
+#
+# Idea behind combining momentum with adaptive step size: slide 25 of
+# http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf
+# notes that
+# "Use the agreement in sign between the current gradient for a weight and the
+# velocity for that weight (Jacobs, 1989)."
 #
 # kappa amount to increase the learning rate by.
 # kappa_fun - operator to apply to kappa and the current learning rate when
@@ -1445,6 +1559,196 @@ delta_bar_delta <- function(kappa = 1.1, kappa_fun = `*`,
       }
       sub_stage$gamma_old <- gamma
       list(opt = opt, sub_stage = sub_stage)
+    },
+    depends = c("gradient")
+  ))
+}
+
+
+# Adagrad -----------------------------------------------------------------
+# http://jmlr.org/papers/v12/duchi11a.html
+adagrad <- function(eta = 0.01, eps = sqrt(.Machine$double.eps)) {
+  make_step_size(list(
+    name = "adagrad",
+    eta = eta,
+    eps = eps,
+    init = function(opt, stage, sub_stage, par, fg, iter) {
+      sub_stage$grad2_hist <- rep(0, length(par))
+      sub_stage$value <- sub_stage$grad2_hist
+      list(sub_stage = sub_stage)
+    },
+    calculate = function(opt, stage, sub_stage, par, fg, iter) {
+      grad <- opt$cache$gr_curr
+
+      if (!is.numeric(sub_stage$eta)) {
+        d0 <- dot(grad, stage$direction$value)
+        sub_stage$eta <- make_step_zero(sub_stage$eta, d0,
+                                        try_newton_step = FALSE)
+      }
+
+      grad2_hist <- sub_stage$grad2_hist
+      grad2_hist <- grad2_hist + grad * grad
+
+      sub_stage$value <- sub_stage$eta / sqrt(grad2_hist + sub_stage$eps)
+
+      sub_stage$grad2_hist <- grad2_hist
+      list(sub_stage = sub_stage)
+    },
+    depends = c("gradient")
+  ))
+}
+
+
+# Adadelta ----------------------------------------------------------------
+
+# https://arxiv.org/abs/1212.5701
+adadelta <- function(rho = 0.95, eps = sqrt(.Machine$double.eps)) {
+  make_step_size(list(
+    name = "adadelta",
+    rho = rho,
+    eps = eps,
+    init = function(opt, stage, sub_stage, par, fg, iter) {
+      sub_stage$grad2_hist <- rep(0, length(par))
+      sub_stage$dx2_hist <- rep(0, length(par))
+      sub_stage$value <- rep(0, length(par))
+      list(sub_stage = sub_stage)
+    },
+    calculate = function(opt, stage, sub_stage, par, fg, iter) {
+      grad <- opt$cache$gr_curr
+      rho <- sub_stage$rho
+      grad2_hist <- sub_stage$grad2_hist
+      dx2_hist <- sub_stage$dx2_hist
+      eps <- sub_stage$eps
+
+      # accumulate gradient
+      grad2_hist <- rho * grad2_hist + (1 - rho) * grad * grad
+
+      # compute update
+      rms_grad <- sqrt(grad2_hist + eps)
+      rms_dx <- sqrt(dx2_hist + eps)
+      dx <- rms_dx / rms_grad
+      sub_stage$value <- dx
+
+      # accumulate update
+      # TODO: fix this to work for total update when using momentum?
+      dx <- dx * stage$direction$value
+      dx2_hist <- rho * dx2_hist + (1 - rho) * dx * dx
+
+      sub_stage$grad2_hist <- grad2_hist
+      sub_stage$dx2_hist <- dx2_hist
+
+      list(sub_stage = sub_stage)
+    },
+    depends = c("gradient")
+  ))
+}
+
+
+# RMSProp -----------------------------------------------------------------
+
+# http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf
+# Initial eta suggested Ruder in https://arxiv.org/abs/1609.04747
+rmsprop <- function(eta = 0.001, rho = 0.9, eps = sqrt(.Machine$double.eps)) {
+  make_step_size(list(
+    name = "rmsprop",
+    eta = eta,
+    rho = rho,
+    eps = eps,
+    init = function(opt, stage, sub_stage, par, fg, iter) {
+      sub_stage$grad2_hist <- rep(0, length(par))
+      sub_stage$value <- rep(0, length(par))
+      list(sub_stage = sub_stage)
+    },
+    calculate = function(opt, stage, sub_stage, par, fg, iter) {
+      grad <- opt$cache$gr_curr
+      if (!is.numeric(sub_stage$eta)) {
+        d0 <- dot(grad, stage$direction$value)
+        sub_stage$eta <- make_step_zero(sub_stage$eta, d0,
+                                        try_newton_step = FALSE)
+      }
+      eta <- sub_stage$eta
+      rho <- sub_stage$rho
+      grad2_hist <- sub_stage$grad2_hist
+      eps <- sub_stage$eps
+
+      # accumulate gradient
+      grad2_hist <- rho * grad2_hist + (1 - rho) * grad * grad
+
+      # compute update
+      rms_grad <- sqrt(grad2_hist + eps)
+      dx <- eta / rms_grad
+
+      sub_stage$value <- dx
+      sub_stage$grad2_hist <- grad2_hist
+
+      list(sub_stage = sub_stage)
+    },
+    depends = c("gradient")
+  ))
+}
+
+# Adam --------------------------------------------------------------------
+# https://arxiv.org/abs/1412.6980
+# Unlike the other adaptive learning rate methods, uses a non-steepest
+# descent direction
+adam_direction <- function(beta1 = 0.9, normalize = FALSE) {
+
+  make_direction(list(
+    beta1 = beta1,
+    normalize = normalize,
+    init = function(opt, stage, sub_stage, par, fg, iter) {
+      sub_stage$value <- rep(0, length(par))
+      sub_stage$m <- rep(0, length(par))
+      list(sub_stage = sub_stage)
+    },
+    calculate = function(opt, stage, sub_stage, par, fg, iter) {
+      grad <- opt$cache$gr_curr
+      m <- sub_stage$m
+      beta1 <- sub_stage$beta1
+      m <- beta1 * m + (1 - beta1) * grad
+      m_hat <- m / (1 - beta1)
+      sub_stage$value <- -m_hat
+      sub_stage$m <- m
+
+      if (sub_stage$normalize) {
+        sub_stage$value <- normalize(sub_stage$value)
+      }
+
+      list(sub_stage = sub_stage)
+    }
+  ))
+}
+
+adam <- function(eta = 0.001, beta2 = 0.999,
+                 eps = sqrt(.Machine$double.eps)) {
+  make_step_size(list(
+    name = "adam",
+    eta = eta,
+    beta2 = beta2,
+    eps = eps,
+    init = function(opt, stage, sub_stage, par, fg, iter) {
+      sub_stage$v <- rep(0, length(par))
+      list(sub_stage = sub_stage)
+    },
+    calculate = function(opt, stage, sub_stage, par, fg, iter) {
+      grad <- opt$cache$gr_curr
+      if (!is.numeric(sub_stage$eta)) {
+        d0 <- dot(grad, stage$direction$value)
+        sub_stage$eta <- make_step_zero(sub_stage$eta, d0,
+                                        try_newton_step = FALSE)
+      }
+      eta <- sub_stage$eta
+      eps <- sub_stage$eps
+      v <- sub_stage$v
+      beta2 <- sub_stage$beta2
+
+      v <- beta2 * v + (1 - beta2) * grad * grad
+      v_hat <- v / (1 - beta2)
+
+      sub_stage$value <- eta / (sqrt(v_hat) + eps)
+      sub_stage$v <- v
+
+      list(sub_stage = sub_stage)
     },
     depends = c("gradient")
   ))
@@ -1970,8 +2274,7 @@ list_hooks <- function(opt) {
 #   \code{mom_init}) to another (\code{mom_final}) at a
 #   a specified iteration (\code{mom_switch_iter}).
 #   \item{\code{"ramp"}} Linearly increase from one momentum value
-#   (\code{mom_init}) to another (\code{mom_final}) over the specified
-#   period (\code{max_iter}).
+#   (\code{mom_init}) to another (\code{mom_final}).
 #   \item{If a function is provided, this will be invoked to provide a momentum
 #   value. It must take one argument (the current iteration number) and return
 #   a scalar.}
@@ -1980,13 +2283,16 @@ list_hooks <- function(opt) {
 # }
 #
 # The \code{restart} parameter provides a way to restart the momentum if the
-# optimization appears to be not be making progress, using the method of
-# O'Donoghue and Candes. There are two strategies:
+# optimization appears to be not be making progress, inspired by the method
+# of O'Donoghue and Candes (2013) and Su and co-workers (2014). There are three
+# strategies:
 # \itemize{
 #   \item{\code{"fn"}} A restart is applied if the function does not decrease
 #   on consecutive iterations.
 #   \item{\code{"gr"}} A restart is applied if the direction of the
 #   optimization is not a descent direction.
+#   \item{\code{"speed"}} A restart is applied if the update vector is not
+#   longer (as measured by Euclidean 2-norm) in consecutive iterations.
 # }
 #
 # The effect of the restart is to "forget" any previous momentum update vector,
@@ -1996,7 +2302,8 @@ list_hooks <- function(opt) {
 # \code{restart_wait} parameter controls how many iterations to wait after a
 # restart, before allowing another restart. Must be a positive integer. Default
 # is 10, as used by Su and co-workers (2014). Setting this too low could
-# cause premature convergence.
+# cause premature convergence. These methods were developed specifically
+# for the NAG method, but can be employed with any momentum type and schedule.
 #
 # If \code{method} type \code{"momentum"} is specified with no other values,
 # the momentum scheme will default to a constant value of \code{0.9}.
@@ -2007,7 +2314,7 @@ list_hooks <- function(opt) {
 # termination is communicated by a two-item list \code{terminate} in the return
 # value, consisting of \code{what}, a short string describing what caused the
 # termination, and \code{val}, the value of the termination criterion that
-# causes termination.
+# caused termination.
 #
 # The following parameters control various stopping criteria:
 #
@@ -2166,8 +2473,8 @@ list_hooks <- function(opt) {
 # using a momentum schedule.
 # @param mom_linear_weight If \code{TRUE}, the gradient contribution to the
 # update is weighted using momentum contribution.
-# @param restart Momentum restart type. Can be one of "fn" or "gr". See
-# 'Details'. Ignored if no momentum scheme is being used.
+# @param restart Momentum restart type. Can be one of "fn", "gr" or "speed".
+# See Details'. Ignored if no momentum scheme is being used.
 # @param restart_wait Number of iterations to wait between restarts. Ignored
 # if \code{restart} is \code{NULL}.
 # @param max_iter Maximum number of iterations to optimize for. Defaults to
@@ -2275,6 +2582,10 @@ list_hooks <- function(opt) {
 # Adaptive restart for accelerated gradient schemes.
 # \emph{Foundations of computational mathematics}, \emph{15}(3), 715-732.
 #
+# Schmidt, M. (2005).
+# minFunc: unconstrained differentiable multivariate optimization in Matlab.
+# \url{http://www.cs.ubc.ca/~schmidtm/Software/minFunc.html}
+#
 # Su, W., Boyd, S., & Candes, E. (2014).
 # A differential equation for modeling Nesterov's accelerated gradient method: theory and insights.
 # In \emph{Advances in Neural Information Processing Systems} (pp. 2510-2518).
@@ -2305,7 +2616,7 @@ list_hooks <- function(opt) {
 # res <- mize(rb0, rosenbrock_fg, method = "MOM", mom_schedule = 0.9)
 #
 # # Steepest descent with constant momentum in the Nesterov style as described
-# # by Sutskever and co-workers
+# # in papers by Sutskever and Bengio
 # res <- mize(rb0, rosenbrock_fg, method = "MOM", mom_type = "nesterov",
 #              mom_schedule = 0.9)
 #
@@ -2432,94 +2743,120 @@ mize <- function(par, fg,
 # creation time, then the optimizer should be initialized using
 # \code{\link{mize_init}} before being used with \code{\link{mize_step}}.
 #
-# See the documentation to \code{\link{mize}} for an explanation of all
-# the parameters.
+# See the documentation to \code{\link{mize}} for an explanation of all the
+# parameters.
 #
-# Details of the \code{fg} list containing the function to be optimized and
-# its gradient can be found in the 'Details' section of \code{\link{mize}}.
-# It is optional for this function, but if it is passed to this function,
-# along with the vector of initial values, \code{par}, the optimizer will be
-# returned already initialized for this function. Otherwise,
-# \code{\link{mize_init}} must be called before optimization begins.
+# Details of the \code{fg} list containing the function to be optimized and its
+# gradient can be found in the 'Details' section of \code{\link{mize}}. It is
+# optional for this function, but if it is passed to this function, along with
+# the vector of initial values, \code{par}, the optimizer will be returned
+# already initialized for this function. Otherwise, \code{\link{mize_init}}
+# must be called before optimization begins.
+#
+# Additionally, optional convergence parameters may also be passed here, for
+# use with \code{\link{check_mize_convergence}}. They are optional here if you
+# plan to call \code{\link{mize_init}} later, or if you want to do your own
+# convergence checking.
 #
 # @param method Optimization method. See 'Details' of \code{\link{mize}}.
-# @param norm_direction If \code{TRUE}, then the steepest descent direction
-# is normalized to unit length. Useful for adaptive step size methods where
-# the previous step size is used to initialize the next iteration.
-# @param scale_hess if \code{TRUE}, the approximation to the inverse Hessian
-# is scaled according to the method described by Nocedal and Wright
-# (approximating an eigenvalue). Applies only to the methods \code{BFGS}
-# (where the scaling is applied only during the first step) and \code{L-BFGS}
-# (where the scaling is applied during every iteration). Ignored otherwise.
+# @param norm_direction If \code{TRUE}, then the steepest descent direction is
+#   normalized to unit length. Useful for adaptive step size methods where the
+#   previous step size is used to initialize the next iteration.
+# @param scale_hess if \code{TRUE}, the approximation to the inverse Hessian is
+#   scaled according to the method described by Nocedal and Wright
+#   (approximating an eigenvalue). Applies only to the methods \code{BFGS}
+#   (where the scaling is applied only during the first step) and \code{L-BFGS}
+#   (where the scaling is applied during every iteration). Ignored otherwise.
 # @param memory The number of updates to store if using the \code{L-BFGS}
-# method. Ignored otherwise. Must be a positive integer.
-# @param cg_update Type of update to use for the \code{CG} method. Can be
-# one of \code{"FR"} (Fletcher-Reeves), \code{"PR"} (Polak-Ribiere),
-# \code{"PR+"} (Polak-Ribiere with a reset to steepest descent), \code{"HS"}
-# (Hestenes-Stiefel), or \code{"DY"} (Dai-Yuan). Ignored if \code{method} is
-# not \code{"CG"}.
+#   method. Ignored otherwise. Must be a positive integer.
+# @param cg_update Type of update to use for the \code{CG} method. Can be one
+#   of \code{"FR"} (Fletcher-Reeves), \code{"PR"} (Polak-Ribiere), \code{"PR+"}
+#   (Polak-Ribiere with a reset to steepest descent), \code{"HS"}
+#   (Hestenes-Stiefel), or \code{"DY"} (Dai-Yuan). Ignored if \code{method} is
+#   not \code{"CG"}.
 # @param nest_q Strong convexity parameter for the \code{"NAG"} method's
-# momentum term. Must take a value between 0 (strongly convex) and 1 (results
-# in steepest descent).Ignored unless the \code{method} is \code{"NAG"} and
-# \code{nest_convex_approx} is \code{FALSE}.
+#   momentum term. Must take a value between 0 (strongly convex) and 1 (results
+#   in steepest descent).Ignored unless the \code{method} is \code{"NAG"} and
+#   \code{nest_convex_approx} is \code{FALSE}.
 # @param nest_convex_approx If \code{TRUE}, then use an approximation due to
-# Sutskever for calculating the momentum parameter in the NAG method. Only
-# applies if \code{method} is \code{"NAG"}.
+#   Sutskever for calculating the momentum parameter in the NAG method. Only
+#   applies if \code{method} is \code{"NAG"}.
 # @param nest_burn_in Number of iterations to wait before using a non-zero
-# momentum. Only applies if using the \code{"NAG"} method or setting the
-# \code{momentum_type} to "Nesterov".
+#   momentum. Only applies if using the \code{"NAG"} method or setting the
+#   \code{momentum_type} to "Nesterov".
 # @param step_up Value by which to increase the step size for the \code{"bold"}
-# step size method or the \code{"DBD"} method.
+#   step size method or the \code{"DBD"} method.
 # @param step_up_fun Operator to use when combining the current step size with
-# \code{step_up}. Can be one of \code{"*"} (to multiply the current step size
-# with \code{step_up}) or \code{"+"} (to add).
-# @param step_down Multiplier to reduce the step size by if using the \code{"DBD"}
-# method or the \code{"bold"} or \code{"back"} line search method. Should be
-# a positive value less than 1.
-# @param dbd_weight Weighting parameter used by the \code{"DBD"} method only, and
-# only if no momentum scheme is provided. Must be an integer between 0 and 1.
+#   \code{step_up}. Can be one of \code{"*"} (to multiply the current step size
+#   with \code{step_up}) or \code{"+"} (to add).
+# @param step_down Multiplier to reduce the step size by if using the
+#   \code{"DBD"} method or the \code{"bold"} or \code{"back"} line search
+#   method. Should be a positive value less than 1.
+# @param dbd_weight Weighting parameter used by the \code{"DBD"} method only,
+#   and only if no momentum scheme is provided. Must be an integer between 0
+#   and 1.
 # @param line_search Type of line search to use. See 'Details' of
-# \code{\link{mize}}.
+#   \code{\link{mize}}.
 # @param c1 Sufficient decrease parameter for Wolfe-type line searches. Should
-# be a value between 0 and 1.
+#   be a value between 0 and 1.
 # @param c2 Sufficient curvature parameter for line search for Wolfe-type line
-# searches. Should be a value between \code{c1} and 1.
+#   searches. Should be a value between \code{c1} and 1.
 # @param step0 Initial value for the line search on the first step. See
-# 'Details' of \code{\link{mize}}.
+#   'Details' of \code{\link{mize}}.
 # @param step_next_init For Wolfe-type line searches only, how to initialize
-# the line search on iterations after the first. See 'Details' of
-# \code{\link{mize}}.
-# @param try_newton_step For Wolfe-type line searches only, try the
-# line step value of 1 as the initial step size whenever \code{step_next_init}
-# suggests a step size > 1. Defaults to \code{TRUE} for quasi-Newton methods
-# such as BFGS and L-BFGS, \code{FALSE} otherwise.
-# @param ls_max_fn Maximum number of function evaluations allowed during a
-# line search.
-# @param ls_max_gr Maximum number of gradient evaluations allowed during a
-# line search.
+#   the line search on iterations after the first. See 'Details' of
+#   \code{\link{mize}}.
+# @param try_newton_step For Wolfe-type line searches only, try the line step
+#   value of 1 as the initial step size whenever \code{step_next_init} suggests
+#   a step size > 1. Defaults to \code{TRUE} for quasi-Newton methods such as
+#   BFGS and L-BFGS, \code{FALSE} otherwise.
+# @param ls_max_fn Maximum number of function evaluations allowed during a line
+#   search.
+# @param ls_max_gr Maximum number of gradient evaluations allowed during a line
+#   search.
 # @param ls_max_fg Maximum number of function or gradient evaluations allowed
-# during a line search.
+#   during a line search.
 # @param mom_type Momentum type, either \code{"classical"} or
-# \code{"nesterov"}.
+#   \code{"nesterov"}.
 # @param mom_schedule Momentum schedule. See 'Details' of \code{\link{mize}}.
 # @param mom_init Initial momentum value.
 # @param mom_final Final momentum value.
 # @param mom_switch_iter For \code{mom_schedule} \code{"switch"} only, the
-# iteration when \code{mom_init} is changed to \code{mom_final}.
+#   iteration when \code{mom_init} is changed to \code{mom_final}.
 # @param mom_linear_weight If \code{TRUE}, the gradient contribution to the
-# update is weighted using momentum contribution.
-# @param use_init_mom If \code{TRUE}, then the momentum coefficient on
-# the first iteration is non-zero. Otherwise, it's zero. Only applies if
-# using a momentum schedule.
-# @param max_iter Maximum number of iterations the optimization will be carried
-# out over. Used only if \code{mom_schedule} is set to \code{"ramp"}.
+#   update is weighted using momentum contribution.
+# @param use_init_mom If \code{TRUE}, then the momentum coefficient on the
+#   first iteration is non-zero. Otherwise, it's zero. Only applies if using a
+#   momentum schedule.
 # @param restart Momentum restart type. Can be one of "fn" or "gr". See
-# 'Details' of \code{\link{mize}}.
-# @param restart_wait Number of iterations to wait between restarts. Ignored
-# if \code{restart} is \code{NULL}.
-# @param par Initial values for the function to be optimized over. Optional.
-# @param fg Function and gradient list. See 'Details' of \code{\link{mize}}.
-# Optional.
+#   'Details' of \code{\link{mize}}.
+# @param restart_wait Number of iterations to wait between restarts. Ignored if
+#   \code{restart} is \code{NULL}.
+# @param par (Optional) Initial values for the function to be optimized over.
+# @param fg (Optional). Function and gradient list. See 'Details' of
+#   \code{\link{mize}}.
+# @param max_iter (Optional). Maximum number of iterations. See the
+#   'Convergence' section of \code{\link{mize}} for details.
+# @param max_fn (Optional). Maximum number of function evaluations. See the
+#   'Convergence' section of \code{\link{mize}} for details.
+# @param max_gr (Optional). Maximum number of gradient evaluations. See the
+#   'Convergence' section of \code{\link{mize}} for details.
+# @param max_fg (Optional). Maximum number of function or gradient evaluations.
+#   See the 'Convergence' section of \code{\link{mize}} for details.
+# @param abs_tol (Optional). Absolute tolerance for comparing two function
+#   evaluations. See the 'Convergence' section of \code{\link{mize}} for
+#   details.
+# @param rel_tol (Optional). Relative tolerance for comparing two function
+#   evaluations. See the 'Convergence' section of \code{\link{mize}} for
+#   details.
+# @param grad_tol (Optional). Absolute tolerance for the length (l2-norm) of
+#   the gradient vector. See the 'Convergence' section of \code{\link{mize}}
+#   for details.
+# @param ginf_tol (Optional). Absolute tolerance for the infinity norm (maximum
+#   absolute component) of the gradient vector. See the 'Convergence' section
+#   of \code{\link{mize}} for details.
+# @param step_tol (Optional). Absolute tolerance for the size of the parameter
+#   update. See the 'Convergence' section of \code{\link{mize}} for details.
 # @export
 # @examples
 # # Function to optimize and starting point
@@ -2559,7 +2896,7 @@ make_mize <- function(method = "L-BFGS",
                       step0 = NULL,
                       step_next_init = NULL,
                       try_newton_step = NULL,
-                      ls_max_fn = Inf,
+                      ls_max_fn = 20,
                       ls_max_gr = Inf,
                       ls_max_fg = Inf,
                       # Momentum
@@ -2570,11 +2907,15 @@ make_mize <- function(method = "L-BFGS",
                       mom_switch_iter = NULL,
                       mom_linear_weight = FALSE,
                       use_init_mom = FALSE,
-                      max_iter = NULL,
                       restart = NULL,
                       restart_wait = 10,
                       par = NULL,
-                      fg = NULL) {
+                      fg = NULL,
+                      max_iter = 100,
+                      max_fn = Inf, max_gr = Inf, max_fg = Inf,
+                      abs_tol = NULL,
+                      rel_tol = abs_tol, grad_tol = NULL, ginf_tol = NULL,
+                      step_tol = NULL) {
 
   if (memory < 1) {
     stop("memory must be > 0")
@@ -2617,7 +2958,9 @@ make_mize <- function(method = "L-BFGS",
   # Gradient Descent Direction configuration
   dir_type <- NULL
   method <- match.arg(tolower(method), c("sd", "newton", "phess", "cg", "bfgs",
-                                "l-bfgs", "nag", "momentum", "dbd"))
+                                "l-bfgs", "nag", "momentum",
+                                "dbd", "adagrad", "adadelta", "rmsprop",
+                                "adam"))
   switch(method,
     sd = {
       dir_type <- sd_direction(normalize = norm_direction)
@@ -2672,7 +3015,20 @@ make_mize <- function(method = "L-BFGS",
     },
     dbd = {
       dir_type <- sd_direction(normalize = norm_direction)
-    }
+    },
+    adagrad = {
+      dir_type <- sd_direction(normalize = norm_direction)
+    },
+    adadelta = {
+      dir_type <- sd_direction(normalize = norm_direction)
+    },
+    rmsprop = {
+      dir_type <- sd_direction(normalize = norm_direction)
+    },
+    adam = {
+      dir_type <- adam_direction(normalize = norm_direction)
+    },
+    stop("Unknown method: '", method, "'")
   )
 
   # If it's not already been turned on, turn off the Newton step option
@@ -2703,6 +3059,27 @@ make_mize <- function(method = "L-BFGS",
                                  kappa = step_up, kappa_fun = step_up_fun,
                                  phi = step_down, theta = dbd_weight,
                                  use_momentum = is.null(mom_schedule))
+  }
+  else if (method == "adagrad") {
+    if (is.null(step0)) {
+      step0 <- "rasmussen"
+    }
+    step_type <- adagrad(eta = step0)
+  }
+  else if (method == "adadelta") {
+    step_type <- adadelta(rho = dbd_weight)
+  }
+  else if (method == "rmsprop") {
+    if (is.null(step0)) {
+      step0 <- "rasmussen"
+    }
+    step_type <- rmsprop(rho = dbd_weight, eta = step0)
+  }
+  else if (method == "adam") {
+    if (is.null(step0)) {
+      step0 <- "rasmussen"
+    }
+    step_type <- adam(beta2 = dbd_weight, eta = step0)
   }
   else {
     if (method %in% c("newton", "phess", "bfgs", "l-bfgs")) {
@@ -2818,8 +3195,7 @@ make_mize <- function(method = "L-BFGS",
 
       mom_step <- switch(mom_schedule,
         ramp = make_momentum_step(
-          make_ramp(max_iter = max_iter,
-                    init_value = mom_init,
+          make_ramp(init_value = mom_init,
                     final_value = mom_final,
                     wait = ifelse(use_init_mom, 0, 1)),
           use_init_mom = use_init_mom),
@@ -2841,16 +3217,6 @@ make_mize <- function(method = "L-BFGS",
 
     opt <- append_stage(opt, mom_stage)
 
-    # switch(mom_type,
-    #   classical = {
-    #     opt <- append_stage(opt, mom_stage)
-    #   },
-    #   nesterov = {
-    #     opt <- prepend_stage(opt, mom_stage)
-    #     opt$eager_update <- TRUE
-    #   }
-    # )
-
     if (mom_linear_weight) {
       opt <- append_stage(opt, momentum_correction_stage())
     }
@@ -2858,7 +3224,7 @@ make_mize <- function(method = "L-BFGS",
 
   # Adaptive Restart
   if (!is.null(restart)) {
-    restart <- match.arg(tolower(restart), c("none", "fn", "gr"))
+    restart <- match.arg(tolower(restart), c("none", "fn", "gr", "speed"))
     if (restart != "none") {
       opt <- adaptive_restart(opt, restart, wait = restart_wait)
     }
@@ -2866,65 +3232,72 @@ make_mize <- function(method = "L-BFGS",
 
   # Initialize for specific dataset if par and fg are provided
   if (!is.null(par) && !is.null(fg)) {
-    opt <- mize_init(opt, par, fg)
+    opt <- mize_init(opt, par, fg, max_iter = max_iter,
+                     max_fn = max_fn, max_gr = max_gr, max_fg = max_fg,
+                     abs_tol = abs_tol, rel_tol = rel_tol,
+                     grad_tol = grad_tol, ginf_tol = ginf_tol,
+                     step_tol = step_tol)
   }
 
   opt
 }
 
-# One Step of Optimization
+#One Step of Optimization
 #
-# Performs one iteration of optimization using a specified optimizer.
+#Performs one iteration of optimization using a specified optimizer.
 #
-# This function returns both the (hopefully) optimized vector of parameters,
-# and an updated version of the optimizer itself. This is intended to be used
-# when you want more control over the optimization process compared to the more
-# black box approach of the \code{\link{mize}} function. In return for having
-# to manually call this function every time you want the next iteration of
-# optimization, you gain the ability to do your own checks for convergence,
-# logging and so on, as well as take other action between iterations, e.g.
-# visualization.
+#This function returns both the (hopefully) optimized vector of parameters, and
+#an updated version of the optimizer itself. This is intended to be used when
+#you want more control over the optimization process compared to the more black
+#box approach of the \code{\link{mize}} function. In return for having to
+#manually call this function every time you want the next iteration of
+#optimization, you gain the ability to do your own checks for convergence,
+#logging and so on, as well as take other action between iterations, e.g.
+#visualization.
 #
-# Normally callng this function should return a more optimized vector of
-# parameters than the input, or at  least leave the parameters unchanged if no
-# improvement was found, although this is determined by how the optimizer was
-# configured by \code{\link{make_mize}}. It is very possible to create an
-# optimizer that can cause a solution to diverge. It is the responsibility of
-# the caller to check that the result of the optimization step has actually
-# reduced the value returned from function being optimized.
+#Normally calling this function should return a more optimized vector of
+#parameters than the input, or at  least leave the parameters unchanged if no
+#improvement was found, although this is determined by how the optimizer was
+#configured by \code{\link{make_mize}}. It is very possible to create an
+#optimizer that can cause a solution to diverge. It is the responsibility of
+#the caller to check that the result of the optimization step has actually
+#reduced the value returned from function being optimized.
 #
-# Details of the \code{fg} list can be found in the 'Details' section of
-# \code{\link{mize}}.
+#Details of the \code{fg} list can be found in the 'Details' section of
+#\code{\link{mize}}.
 #
-# @param opt Optimizer, created by \code{\link{make_mize}}.
-# @param par Vector of initial values for the function to be optimized over.
-# @param fg Function and gradient list. See the documentaion of
-# \code{\link{mize}}.
-# @param iter Current iteration number. Should increase by one each time this
-#   function is invoked.
-# @return Result of the current optimization step, a list with components:
-#\itemize{
+#@param opt Optimizer, created by \code{\link{make_mize}}.
+#@param par Vector of initial values for the function to be optimized over.
+#@param fg Function and gradient list. See the documentaion of
+#  \code{\link{mize}}.
+#@return Result of the current optimization step, a list with components:
+#  \itemize{
+#
 #  \item{\code{opt}}. Updated version of the optimizer passed to the \code{opt}
-#    argument Should be passed as the \code{opt} argument in the next
-#    iteration.
-#  \item{\code{par}}. Updated version of the parameters passed to the \code{par}
-#    argument. Should be passed as the \code{par} argument in the next
-#    iteration.
-#  \item{\code{nf}}. Running total number of function evaluations carried out since
-#    iteration 1.
-#  \item{\code{ng}}. Running total number of gradient evaluations carried out since
-#    iteration 1.
-#  \item{\code{f}}. Optional. The new value of the function, evaluated at the returned
-#    value of \code{par}. Only present if calculated as part of the
-#    optimization step (e.g. during a line search calculation).
+#  argument Should be passed as the \code{opt} argument in the next iteration.
+#
+#  \item{\code{par}}. Updated version of the parameters passed to the
+#  \code{par} argument. Should be passed as the \code{par} argument in the next
+#  iteration.
+#
+#  \item{\code{nf}}. Running total number of function evaluations carried out
+#  since iteration 1.
+#
+#  \item{\code{ng}}. Running total number of gradient evaluations carried out
+#  since iteration 1.
+#
+#  \item{\code{f}}. Optional. The new value of the function, evaluated at the
+#  returned value of \code{par}. Only present if calculated as part of the
+#  optimization step (e.g. during a line search calculation).
+#
 #  \item{\code{g}}. Optional. The gradient vector, evaluated at the returned
-#    value of \code{par}. Only present if the gradient was calculated as part
-#    of the optimization step (e.g. during a line search calculation.)
-#}
-# @seealso \code{\link{make_mize}} to create a value to pass to \code{opt},
-# \code{\link{mize_init}} to initialize \code{opt} before passing it to this
-# function for the first time. \code{\link{mize}} creates an optimizer and
-# carries out a full optimization with it.
+#  value of \code{par}. Only present if the gradient was calculated as part of
+#  the optimization step (e.g. during a line search calculation.)}
+#
+#@seealso \code{\link{make_mize}} to create a value to pass to \code{opt},
+#  \code{\link{mize_init}} to initialize \code{opt} before passing it to this
+#  function for the first time. \code{\link{mize}} creates an optimizer and
+#  carries out a full optimization with it.
 # @examples
 # rosenbrock_fg <- list(
 #   fn = function(x) {
@@ -2941,35 +3314,32 @@ make_mize <- function(method = "L-BFGS",
 #                   par = rb0, fg = rosenbrock_fg)
 #  par <- rb0
 #  for (iter in 1:3) {
-#    res <- mize_step(opt, par, rosenbrock_fg, iter)
+#    res <- mize_step(opt, par, rosenbrock_fg)
 #    par <- res$par
 #    opt <- res$opt
 #  }
-# @export
-mize_step <- function(opt, par, fg, iter) {
+#@export
+mize_step <- function(opt, par, fg) {
+  opt$iter <- opt$iter + 1
+  iter <- opt$iter
   opt <- life_cycle_hook("step", "before", opt, par, fg, iter)
 
   par0 <- par
   step_result <- NULL
 
-  # In the main part of the step, opt$error is used to indicate
-  # something catastrophic has occurred (most likely non-finite gradient value)
-  # not to be confused with opt$ok which is used to indicate whether the
-  # solution is valid
-  opt$error <- NULL
   for (i in 1:length(opt$stages)) {
     opt$stage_i <- i
     stage <- opt$stages[[i]]
     opt <- life_cycle_hook(stage$type, "before", opt, par, fg, iter)
-    if (!is.null(opt$error)) {
+    if (!is.null(opt$terminate)) {
       break
     }
     opt <- life_cycle_hook(stage$type, "during", opt, par, fg, iter)
-    if (!is.null(opt$error)) {
+    if (!is.null(opt$terminate)) {
       break
     }
     opt <- life_cycle_hook(stage$type, "after", opt, par, fg, iter)
-    if (!is.null(opt$error)) {
+    if (!is.null(opt$terminate)) {
       break
     }
 
@@ -2987,12 +3357,12 @@ mize_step <- function(opt, par, fg, iter) {
     }
 
     opt <- life_cycle_hook("stage", "after", opt, par, fg, iter)
-    if (!is.null(opt$error)) {
+    if (!is.null(opt$terminate)) {
       break
     }
   }
 
-  if (is.null(opt$error)) {
+  if (is.null(opt$terminate)) {
     opt$ok <- TRUE
     if (!opt$eager_update) {
       par <- par + step_result
@@ -3004,13 +3374,13 @@ mize_step <- function(opt, par, fg, iter) {
     opt <- life_cycle_hook("validation", "during", opt, par, fg, iter,
                            par0, step_result)
   }
-  # If the this solution was vetoed or something catastrostep_downc happened,
+  # If the this solution was vetoed or the catastrophe happened,
   # roll back to the previous one.
-  if (!is.null(opt$error) || !opt$ok) {
+  if (!is.null(opt$terminate) || !opt$ok) {
     par <- par0
   }
 
-  if (is.null(opt$error)) {
+  if (is.null(opt$terminate)) {
     opt <- life_cycle_hook("step", "after", opt, par, fg, iter, par0,
                          step_result)
   }
@@ -3022,7 +3392,6 @@ mize_step <- function(opt, par, fg, iter) {
   if (has_gr_curr(opt, iter + 1)) {
     res$g <- opt$cache$gr_curr
   }
-
   res
 }
 
@@ -3030,12 +3399,15 @@ mize_step <- function(opt, par, fg, iter) {
 #
 # Prepares the optimizer for use with a specific function and starting point.
 #
-# Should be called after creating an optimizer with \code{\link{make_mize}}
-# and before beginning any optimization with \code{\link{mize_step}}. Note
-# that if \code{fg} and \code{par} are available at the time
-# \code{\link{mize_step}} is called, they can be passed to that function
-# and initialization will be carried out automatically, avoiding the need to
-# call \code{mize_init}.
+# Should be called after creating an optimizer with \code{\link{make_mize}} and
+# before beginning any optimization with \code{\link{mize_step}}. Note that if
+# \code{fg} and \code{par} are available at the time \code{\link{mize_step}} is
+# called, they can be passed to that function and initialization will be
+# carried out automatically, avoiding the need to call \code{mize_init}.
+#
+# Optional convergence parameters may also be passed here, for use with
+# \code{\link{check_mize_convergence}}. They are optional if you do your own
+# convergence checking.
 #
 # Details of the \code{fg} list can be found in the 'Details' section of
 # \code{\link{mize}}.
@@ -3043,7 +3415,29 @@ mize_step <- function(opt, par, fg, iter) {
 # @param opt Optimizer, created by \code{\link{make_mize}}.
 # @param par Vector of initial values for the function to be optimized over.
 # @param fg Function and gradient list. See the documentaion of
-# \code{\link{mize}}.
+#   \code{\link{mize}}.
+# @param max_iter (Optional). Maximum number of iterations. See the
+#   'Convergence' section of \code{\link{mize}} for details.
+# @param max_fn (Optional). Maximum number of function evaluations. See the
+#   'Convergence' section of \code{\link{mize}} for details.
+# @param max_gr (Optional). Maximum number of gradient evaluations. See the
+#   'Convergence' section of \code{\link{mize}} for details.
+# @param max_fg (Optional). Maximum number of function or gradient evaluations.
+#   See the 'Convergence' section of \code{\link{mize}} for details.
+# @param abs_tol (Optional). Absolute tolerance for comparing two function
+#   evaluations. See the 'Convergence' section of \code{\link{mize}} for
+#   details.
+# @param rel_tol (Optional). Relative tolerance for comparing two function
+#   evaluations. See the 'Convergence' section of \code{\link{mize}} for
+#   details.
+# @param grad_tol (Optional). Absolute tolerance for the length (l2-norm) of
+#   the gradient vector. See the 'Convergence' section of \code{\link{mize}}
+#   for details.
+# @param ginf_tol (Optional). Absolute tolerance for the infinity norm (maximum
+#   absolute component) of the gradient vector. See the 'Convergence' section
+#   of \code{\link{mize}} for details.
+# @param step_tol (Optional). Absolute tolerance for the size of the parameter
+#   update. See the 'Convergence' section of \code{\link{mize}} for details.
 # @return Initialized optimizer.
 # @export
 # @examples
@@ -3064,14 +3458,289 @@ mize_step <- function(opt, par, fg, iter) {
 # # Finally, can commence the optimization loop
 # par <- rb0
 # for (iter in 1:3) {
-#   res <- mize_step(opt, par, rosenbrock_fg, iter)
+#   res <- mize_step(opt, par, rosenbrock_fg)
 #   par <- res$par
 #   opt <- res$opt
 # }
 #
-mize_init <- function(opt, par, fg) {
+mize_init <- function(opt, par, fg,
+                      max_iter = Inf,
+                      max_fn = Inf, max_gr = Inf, max_fg = Inf,
+                      abs_tol = NULL,
+                      rel_tol = abs_tol, grad_tol = NULL, ginf_tol = NULL,
+                      step_tol = NULL) {
   opt <- register_hooks(opt)
-  opt <- life_cycle_hook("opt", "init", opt, par, fg, 0)
+  opt$iter <- 0
+  opt <- life_cycle_hook("opt", "init", opt, par, fg, opt$iter)
+  opt$convergence <- list(
+    max_iter = max_iter,
+    max_fn = max_fn,
+    max_gr = max_gr,
+    max_fg = max_fg,
+    abs_tol = abs_tol,
+    rel_tol = rel_tol,
+    grad_tol = grad_tol,
+    ginf_tol = ginf_tol,
+    step_tol = step_tol
+  )
+  opt$is_initialized <- TRUE
+  opt
+}
+
+#Mize Step Summary
+#
+#Produces a result summary for an optimization iteration. Information such as
+#function value, gradient norm and step size may be returned.
+#
+#By default, convergence tolerance parameters will be used to determine what
+#function and gradient data is returned. The function value will be returned if
+#it was already calculated and cached in the optimization iteration. Otherwise,
+#it will be calculated only if a non-null absolute or relative tolerance value
+#was asked for. A gradient norm will be returned only if a non-null gradient
+#tolerance was specified, even if the gradient is available.
+#
+#Note that if a function tolerance was specified, but was not calculated for
+#the relevant value of \code{par}, they will be calculated here and the
+#calculation does contribute to the total function count (and will be cached
+#for potential use in the next iteration). The same applies for gradient
+#tolerances and gradient calculation. Function and gradient calculation can
+#also be forced here by setting the \code{calc_fn} and \code{calc_gr}
+#(respectively) parameters to \code{TRUE}.
+#
+#@param opt Optimizer to generate summary for, from return value of
+#  \code{\link{mize_step}}.
+#@param par Vector of parameters at the end of the iteration, from return value
+#  of \code{\link{mize_step}}.
+#@param fg Function and gradient list. See the documentaion of
+#  \code{\link{mize}}.
+#@param par_old (Optional). Vector of parameters at the end of the previous
+#  iteration. Used to calculate step size.
+#@param calc_fn (Optional). If \code{TRUE}, force calculation of function if
+#  not already cached in \code{opt}, even if it wouldn't be needed for
+#  convergence checking.
+#@return A list with the following items: \itemize{
+#
+#  \item \code{opt} Optimizer with updated state (e.g. function and gradient
+#  counts).
+#
+#  \item \code{iter} Iteration number.
+#
+#  \item \code{f} Function value at \code{par}.
+#
+#  \item \code{g2n} 2-norm of the gradient at \code{par}.
+#
+#  \item \code{ginfn} Infinity-norm of the gradient at \code{par}.
+#
+#  \item \code{nf} Number of function evaluations so far.
+#
+#  \item \code{ng} Number of gradient evaluations so far.
+#
+#  \item \code{step} Size of the step between \code{par_old} and \code{par},
+#  if \code{par_old} is provided.
+#
+#  \item \code{alpha} Step length of the gradient descent part of the step.
+#
+#  \item \code{mu} Momentum coefficient for this iteration}
+#@export
+#@examples
+# rb_fg <- list(
+#   fn = function(x) { 100 * (x[2] - x[1] * x[1]) ^ 2 + (1 - x[1]) ^ 2  },
+#   gr = function(x) { c( -400 * x[1] * (x[2] - x[1] * x[1]) - 2 * (1 - x[1]),
+#                          200 *        (x[2] - x[1] * x[1])) })
+# rb0 <- c(-1.2, 1)
+#
+# opt <- make_mize(method = "BFGS", par = rb0, fg = rb_fg, max_iter = 30)
+# mize_res <- mize_step(opt = opt, par = rb0, fg = rb_fg)
+# # Get info about first step, use rb0 to compare new par with initial value
+# step_info <- mize_step_summary(mize_res$opt, mize_res$par, rb_fg, rb0)
+mize_step_summary <- function(opt, par, fg, par_old = NULL, calc_fn = NULL) {
+
+  iter <- opt$iter
+  # An internal flag useful for unit tests: if FALSE, doesn't count any
+  # fn/gr calculations towards their counts. Can still get back fn/gr values
+  # without confusing the issue of the expected number of fn/gr evaluations
+  if (!is.null(opt$count_res_fg)) {
+    count_fg <- opt$count_res_fg
+  }
+  else {
+    count_fg <- TRUE
+  }
+
+  # Whether and what convergence info to calculate if fn/gr calculation not
+  # explicitly asked for
+  if (is.null(calc_fn)) {
+    calc_fn <- is_finite_numeric(opt$convergence$abs_tol) ||
+      is_finite_numeric(opt$convergence$rel_tol)
+  }
+
+  gr_norms <- c()
+  if (is_finite_numeric(opt$convergence$grad_tol)) {
+    gr_norms <- c(gr_norms, 2)
+  }
+  if (is_finite_numeric(opt$convergence$ginf_tol)) {
+    gr_norms <- c(gr_norms, Inf)
+  }
+  calc_gr <- length(gr_norms) > 0
+
+  f <- NULL
+  if (calc_fn || has_fn_curr(opt, iter + 1)) {
+    if (!has_fn_curr(opt, iter + 1)) {
+      f <- fg$fn(par)
+      if (count_fg) {
+        opt <- set_fn_curr(opt, f, iter + 1)
+        opt$counts$fn <- opt$counts$fn + 1
+      }
+    }
+    else {
+      f <- opt$cache$fn_curr
+    }
+  }
+
+  g2n <- NULL
+  ginfn <- NULL
+  if (calc_gr || has_gr_curr(opt, iter + 1)) {
+    if (!has_gr_curr(opt, iter + 1)) {
+      g <- fg$gr(par)
+      if (grad_is_first_stage(opt) && count_fg) {
+        opt <- set_gr_curr(opt, g, iter + 1)
+        opt$counts$gr <- opt$counts$gr + 1
+      }
+    }
+    else {
+      g <- opt$cache$gr_curr
+    }
+    if (2 %in% gr_norms) {
+      g2n <- norm2(g)
+    }
+    if (Inf %in% gr_norms) {
+      ginfn <- norm_inf(g)
+    }
+  }
+
+  if (!is.null(par_old)) {
+    step_size <- norm2(par - par_old)
+  }
+  else {
+    step_size <- 0
+  }
+
+  alpha <- 0
+  if (!is.null(opt$stages[["gradient_descent"]]$step_size$value)) {
+    alpha <- norm2(opt$stages[["gradient_descent"]]$step_size$value)
+    if (is.null(alpha)) {
+      alpha <- 0
+    }
+  }
+
+  res <- list(
+    opt = opt,
+    f = f,
+    g2n = g2n,
+    ginfn = ginfn,
+    nf = opt$counts$fn,
+    ng = opt$counts$gr,
+    step = step_size,
+    alpha = alpha,
+    iter = iter
+  )
+
+  if ("momentum" %in% names(opt$stages)) {
+    res$mu <- opt$stages[["momentum"]]$step_size$value
+    if (is.null(res$mu)) {
+      res$mu <- 0
+    }
+  }
+
+  Filter(Negate(is.null), res)
+}
+
+
+# Check Optimization Convergence
+#
+# Updates the optimizer with information about convergence or termination,
+# signalling if the optimization process should stop.
+#
+# On returning from this function, the updated value of \code{opt} will
+# contain: \itemize{
+#
+# \item A boolean value \code{is_terminated} which is \code{TRUE} if
+# termination has been indicated, and \code{FALSE} otherwise.
+#
+# \item A list \code{terminate} if \code{is_terminated} is \code{TRUE}. This
+# contains two items: \code{what}, a short string describing what caused the
+# termination, and \code{val}, the value of the termination criterion that
+# caused termination. This list will not be present if \code{is_terminated} is
+# \code{FALSE}.}
+#
+# Convergence criteria are only checked here. To set these criteria, use
+# \code{\link{make_mize}} or \code{\link{mize_init}}.
+#
+# @param mize_step_info Step info for this iteration, created by
+#   \code{\link{mize_step_summary}}
+# @return \code{opt} updated with convergence and termination data. See
+#   'Details'.
+# @export
+#@examples
+# rb_fg <- list(
+#   fn = function(x) { 100 * (x[2] - x[1] * x[1]) ^ 2 + (1 - x[1]) ^ 2  },
+#   gr = function(x) { c( -400 * x[1] * (x[2] - x[1] * x[1]) - 2 * (1 - x[1]),
+#                          200 *        (x[2] - x[1] * x[1])) })
+# rb0 <- c(-1.2, 1)
+#
+# opt <- make_mize(method = "BFGS", par = rb0, fg = rb_fg, max_iter = 30)
+# mize_res <- mize_step(opt = opt, par = rb0, fg = rb_fg)
+# step_info <- mize_step_summary(mize_res$opt, mize_res$par, rb_fg, rb0)
+# # check convergence by looking at opt$is_terminated
+# opt <- check_mize_convergence(step_info)
+check_mize_convergence <- function(mize_step_info) {
+
+  opt <- mize_step_info$opt
+
+  convergence <- opt$convergence
+
+  terminate <- check_counts(opt, convergence$max_fn, convergence$max_gr,
+                            convergence$max_fg)
+  if (!is.null(terminate)) {
+    opt$terminate <- terminate
+    opt$is_terminated <- TRUE
+    return(opt)
+  }
+
+  terminate <- check_step_conv(opt, opt$iter, mize_step_info$step,
+                               convergence$step_tol)
+  if (!is.null(terminate)) {
+    opt$terminate <- terminate
+    opt$is_terminated <- TRUE
+    return(opt)
+  }
+
+  terminate <- check_gr_conv(opt, convergence$grad_tol, convergence$ginf_tol)
+  if (!is.null(terminate)) {
+    opt$terminate <- terminate
+    opt$is_terminated <- TRUE
+    return(opt)
+  }
+
+  if (!is.null(opt$cache$fn_curr)) {
+    fn_new <- opt$cache$fn_curr
+    fn_old <- convergence$fn_new
+    convergence$fn_new <- fn_new
+    opt$convergence <- convergence
+
+    terminate <- check_fn_conv(opt, opt$iter, fn_old, fn_new,
+                               convergence$abs_tol, convergence$rel_tol)
+    if (!is.null(terminate)) {
+      opt$is_terminated <- TRUE
+      opt$terminate <- terminate
+      return(opt)
+    }
+  }
+
+  if (opt$iter == convergence$max_iter) {
+    opt$is_terminated <- TRUE
+    opt$terminate <- list(what = "max_iter", val = convergence$max_iter)
+  }
+
   opt
 }
 # Momentum ----------------------------------------------------------------
@@ -3113,10 +3782,6 @@ make_momentum_step <- function(mu_fn,
   make_step_size(list(
     name = "momentum_step",
     init = function(opt, stage, sub_stage, par, fg, iter) {
-
-      if (use_init_mom) {
-        sub_stage$value <- sub_stage$mu_fn(0)
-      }
       sub_stage$value <- 0
       sub_stage$t <- 1
       list(sub_stage = sub_stage)
@@ -3127,7 +3792,7 @@ make_momentum_step <- function(mu_fn,
       }
       else {
         sub_stage$value <-
-          sclamp(sub_stage$mu_fn(sub_stage$t),
+          sclamp(sub_stage$mu_fn(sub_stage$t, opt$convergence$max_iter),
                  min = sub_stage$min_value,
                  max = sub_stage$max_value)
       }
@@ -3153,7 +3818,7 @@ make_momentum_step <- function(mu_fn,
 # specified iteration.
 make_switch <- function(init_value = 0.5, final_value = 0.8,
                         switch_iter = 250) {
-  function(iter) {
+  function(iter, max_iter) {
     if (iter >= switch_iter) {
       return(final_value)
     }
@@ -3167,24 +3832,22 @@ make_switch <- function(init_value = 0.5, final_value = 0.8,
 # max_iter iterations. Iter 0 will always return a value of zero, iter 1
 # begins with init_value.
 #
-# shift - if set to a non-zero value, recalculates the values so that
-# the init_value is used for 'shift' extra iterations, but with final_value
+# wait - if set to a non-zero value, recalculates the values so that
+# the init_value is used for 'wait' extra iterations, but with final_value
 # still reached after max_iter iterations. Set to 1 for momentum calculations
 # where in most cases the momentum on the first iteration would be either
 # ignored or the value overridden and set to zero anyway. Stops a larger than
 # expected jump on iteration 2.
-make_ramp <- function(max_iter,
-                      init_value = 0,
+make_ramp <- function(init_value = 0,
                       final_value = 0.9,
                       wait = 0) {
 
-  # actual number of iterations
-  iters <- max_iter - 1 - wait
-  # denominator of linear scaling
-  n <- max(iters, 1)
-  m <- (final_value - init_value) / n
-
-  function(iter) {
+  function(iter, max_iter) {
+    # actual number of iterations
+    iters <- max_iter - 1 - wait
+    # denominator of linear scaling
+    n <- max(iters, 1)
+    m <- (final_value - init_value) / n
     t <- iter - 1 - wait
     if (t < 0) {
       return(init_value)
@@ -3196,7 +3859,7 @@ make_ramp <- function(max_iter,
 
 # A function that returns a constant momentum value
 make_constant <- function(value) {
-  function(iter) {
+  function(iter, max_iter) {
     value
   }
 }
@@ -3310,7 +3973,7 @@ nesterov_momentum_direction <- function() {
 #   be zero. Ignored if use_approx is TRUE.
 # use_approx Use the approximation to the momentum schedule given by
 #   Sutskever and co-workers.
-# use_init_mu If TRUE, then the momentum calculated on iteration zero uses
+# use_init_mu If TRUE, then the momentum calculated on the first iteration uses
 #   the calculated non-zero value, otherwise use zero. Because velocity is
 #   normally zero initially, this rarely has an effect, unless linear weighting
 #   of the momentum is being used. Ignored if use_approx is FALSE.
@@ -3348,7 +4011,7 @@ nesterov_step <- function(burn_in = 0, q = 0, use_approx = FALSE,
 #  NAG or linearly weighted classical momentum), this can have an effect.
 #  Set this to TRUE to always get steepest decent.
 make_nesterov_convex_approx <- function(burn_in = 0, use_init_mu = FALSE) {
-  function(iter) {
+  function(iter, max_iter) {
     # if we haven't waited long enough or we always use zero on the first
     # iteration, return 0
     if (iter < burn_in || (iter == burn_in && !use_init_mu)) {
@@ -3509,53 +4172,38 @@ solve_theta <- function(theta_old, q = 0) {
 # Repeatedly minimizes par using opt until one of the termination conditions
 # is met
 opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
-                    store_progress = FALSE, invalidate_cache = FALSE,
-                    max_fn = Inf, max_gr = Inf, max_fg = Inf,
-                    abs_tol = sqrt(.Machine$double.eps),
-                    rel_tol = abs_tol, grad_tol = NULL, ginf_tol = NULL,
-                    step_tol = .Machine$double.eps,
-                    check_conv_every = 1, log_every = check_conv_every,
-                    ret_opt = FALSE, count_res_fg = TRUE) {
+                     store_progress = FALSE, invalidate_cache = FALSE,
+                     max_fn = Inf, max_gr = Inf, max_fg = Inf,
+                     abs_tol = sqrt(.Machine$double.eps),
+                     rel_tol = abs_tol, grad_tol = NULL, ginf_tol = NULL,
+                     step_tol = .Machine$double.eps,
+                     check_conv_every = 1, log_every = check_conv_every,
+                     ret_opt = FALSE) {
 
   # log_every must be an integer multiple of check_conv_every
   if (!is.null(check_conv_every) && log_every %% check_conv_every != 0) {
     log_every <- check_conv_every
   }
 
-  opt <- mize_init(opt, par, fg)
-  opt$counts$max_fn <- max_fn
-  opt$counts$max_gr <- max_gr
-  opt$counts$max_fg <- max_fg
+  if (!opt$is_initialized) {
+    opt <- mize_init(opt, par, fg, max_iter = max_iter,
+                     max_fn = max_fn, max_gr = max_gr, max_fg = max_fg,
+                     abs_tol = abs_tol, rel_tol = rel_tol,
+                     grad_tol = grad_tol, ginf_tol = ginf_tol,
+                     step_tol = step_tol)
+  }
 
   progress <- data.frame()
-  terminate <- list()
-
-  # Whether and what function convergence info to calculate
-  calc_fn <- (is.numeric(abs_tol) && is.finite(abs_tol)) ||
-             (is.numeric(rel_tol) && is.finite(rel_tol))
-  # Whether and what gradient convergence info to calculate
-  calc_gr <- (is.numeric(grad_tol) && is.finite(grad_tol)) ||
-             (is.numeric(ginf_tol) && is.finite(ginf_tol))
-  gr_norms <- c()
-  if (is.numeric(grad_tol) && is.finite(grad_tol)) {
-    gr_norms <- c(gr_norms, 2)
-  }
-  if (is.numeric(ginf_tol) && is.finite(ginf_tol)) {
-    gr_norms <- c(gr_norms, Inf)
-  }
-
-  res <- NULL
+  step_info <- NULL
 
   if (verbose || store_progress) {
-    res <- opt_results(opt, par, fg, 0, count_fg = count_res_fg,
-                       calc_fn = calc_fn,
-                       calc_gr = calc_gr, gr_norms = gr_norms)
-    opt <- res$opt
+    step_info <- mize_step_summary(opt, par, fg)
+    opt <- step_info$opt
     if (store_progress) {
-      progress <- update_progress(opt_res = res, progress = progress)
+      progress <- update_progress(step_info, progress)
     }
     if (verbose) {
-      opt_report(res, print_time = TRUE, print_par = FALSE)
+      opt_report(step_info, print_time = TRUE, print_par = FALSE)
     }
   }
 
@@ -3591,12 +4239,11 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
       if (iter == 1) {
         fn_count_before <- opt$counts$fn
       }
-      step_res <- mize_step(opt, par, fg, iter)
+      step_res <- mize_step(opt, par, fg)
       opt <- step_res$opt
       par <- step_res$par
-      if (!is.null(opt$error)) {
-        terminate$what <- opt$error
-        terminate$val <- "Error"
+
+      if (!is.null(opt$terminate)) {
         break
       }
 
@@ -3605,38 +4252,26 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
       # So if we are limiting the number of function evaluations, we need to keep
       # one spare to evaluate fn after the loop finishes for when we return par
       if (iter == 1) {
-        # message("has fn curr? ", has_fn_curr(opt, iter + 1))
-        # message("counts before = ", fn_count_before, " counts after = ", opt$counts$fn)
         if (!has_fn_curr(opt, iter + 1)) {
           if (fn_count_before != opt$counts$fn) {
-            opt$counts$max_fn <- opt$counts$max_fn - 1
+            opt$convergence$max_fn <- opt$convergence$max_fn - 1
           }
-          opt$counts$max_fg <- opt$counts$max_fg - 1
+          opt$convergence$max_fg <- opt$convergence$max_fg - 1
         }
       }
 
       # Check termination conditions
       if (!is.null(check_conv_every) && iter %% check_conv_every == 0) {
-        res <- opt_results(opt, par, fg, iter, par0, count_fg = count_res_fg,
-                           calc_fn = calc_fn,
-                           calc_gr = calc_gr, gr_norms = gr_norms)
-        opt <- res$opt
+        step_info <- mize_step_summary(opt, par, fg, par0)
+        opt <- check_mize_convergence(step_info)
 
         if (store_progress && iter %% log_every == 0) {
-          progress <- update_progress(opt_res = res, progress = progress)
+          progress <- update_progress(step_info, progress)
         }
         if (verbose && iter %% log_every == 0) {
-          opt_report(res, print_time = TRUE, print_par = FALSE)
+          opt_report(step_info, print_time = TRUE, print_par = FALSE)
         }
 
-        terminate <- check_termination(terminate, opt, iter = iter,
-                                       step = res$step,
-                                       max_fn = opt$counts$max_fn,
-                                       max_gr = opt$counts$max_gr,
-                                       max_fg = opt$counts$max_fg,
-                                       abs_tol = abs_tol, rel_tol = rel_tol,
-                                       grad_tol = grad_tol, ginf_tol = ginf_tol,
-                                       step_tol = step_tol)
       }
 
       # might not have worked out which criterion to use on iteration 0
@@ -3659,7 +4294,7 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
         }
       }
 
-      if (!is.null(terminate$what)) {
+      if (!is.null(opt$terminate)) {
         break
       }
     }
@@ -3673,135 +4308,37 @@ opt_loop <- function(opt, par, fg, max_iter = 10, verbose = FALSE,
     opt <- opt_clear_cache(opt)
     opt <- set_fn_curr(opt, best_fn, iter + 1)
     # recalculate result for this iteration
-    res <- opt_results(opt, par, fg, iter, par0, count_fg = count_res_fg,
-                       calc_fn = calc_fn,
-                       calc_gr = calc_gr, gr_norms = gr_norms)
+    step_info <- mize_step_summary(opt, par, fg, par0)
     if (verbose) {
       message("Returning best result found")
     }
   }
 
-  if (is.null(res) || res$iter != iter || is.null(res$f)) {
+  if (is.null(step_info) || step_info$iter != iter || is.null(step_info$f)) {
     # Always calculate function value before return
-    res <- opt_results(opt, par, fg, iter, par0, count_fg = count_res_fg,
-                       calc_fn = TRUE,
-                       calc_gr = calc_gr, gr_norms = gr_norms)
-    opt <- res$opt
+    step_info <- mize_step_summary(opt, par, fg, par0, calc_fn = TRUE)
+    opt <- step_info$opt
   }
   if (verbose && iter %% log_every != 0) {
-    opt_report(res, print_time = TRUE, print_par = FALSE)
+    opt_report(step_info, print_time = TRUE, print_par = FALSE)
   }
   if (store_progress && iter %% log_every != 0) {
-    progress <- update_progress(opt_res = res, progress = progress)
+    progress <- update_progress(step_info, progress)
   }
 
   if (store_progress) {
-    res$progress <- progress
+    step_info$progress <- progress
   }
   if (!ret_opt) {
-    res["opt"] <- NULL
+    step_info["opt"] <- NULL
   }
-  if (is.null(terminate$what)) {
-    terminate <- list(what = "max_iter", val = max_iter)
-  }
-  res$terminate <- terminate[c("what", "val")]
-  Filter(Negate(is.null), res)
-}
 
-
-# if any of the termination criteria are fulfilled, a list is returned
-# saying which one and what the value was that triggered the termination.
-# Otherwise, an empty list is returned
-# Gradient and Function-based termination (abs_tol, rel_tol and grad_tol)
-# are checked only if the function and gradient values were calculated
-# in the optimization step.
-check_termination <- function(terminate, opt, iter, step = NULL,
-                              max_fn, max_gr, max_fg,
-                              abs_tol, rel_tol, grad_tol, ginf_tol, step_tol) {
-  if (opt$counts$fn >= max_fn) {
-    terminate <- list(
-      what = "max_fn",
-      val = opt$counts$fn
-    )
+  if (is.null(opt$terminate)) {
+    opt$terminate <- list(what = "max_iter", val = opt$convergence$max_iter)
   }
-  else if (opt$counts$gr >= max_gr) {
-    terminate <- list(
-      what = "max_gr",
-      val = opt$counts$gr
-    )
-  }
-  else if (opt$counts$fn + opt$counts$gr >= max_fg) {
-    terminate <- list(
-      what = "max_fg",
-      val = opt$counts$fn + opt$counts$gr
-    )
-  }
-  else if (!is.null(step) && !is.null(step_tol) && step < step_tol
-            && (is.null(opt$restart_at) || opt$restart_at != iter)) {
-    terminate <- list(
-      what = "step_tol",
-      val = step
-    )
-  }
-  if (!is.null(grad_tol) && !is.null(opt$cache$gr_curr)) {
-    if (any(!is.finite(opt$cache$gr_curr))) {
-      terminate$what <- "gr_inf"
-      terminate$val <- Inf
-      return(terminate)
-    }
-    gtol <- norm2(opt$cache$gr_curr)
-    if (gtol <= grad_tol) {
-      terminate <- list(
-        what = "grad_tol",
-        val = gtol
-      )
-    }
-  }
-  if (!is.null(ginf_tol) && !is.null(opt$cache$gr_curr)) {
-    if (any(!is.finite(opt$cache$gr_curr))) {
-      terminate$what <- "gr_inf"
-      terminate$val <- Inf
-      return(terminate)
-    }
-    gitol <- norm_inf(opt$cache$gr_curr)
-    if (gitol <= ginf_tol) {
-      terminate <- list(
-        what = "ginf_tol",
-        val = gitol
-      )
-    }
-  }
-  if (!is.null(rel_tol) || !is.null(abs_tol)) {
-    if (!is.null(opt$cache$fn_curr)) {
-      fn_new <- opt$cache$fn_curr
-      if (!is.finite(fn_new)) {
-        terminate$what <- "fn_inf"
-        terminate$val <- fn_new
-        return(terminate)
-      }
-
-      if (!is.null(terminate$fn_new)) {
-        fn_old <- terminate$fn_new
-        atol <- abs(fn_old - fn_new)
-        if (is.null(opt$restart_at) || (opt$restart_at != iter)) {
-          if (!is.null(abs_tol) && atol < abs_tol) {
-            terminate$what <- "abs_tol"
-            terminate$val <- atol
-          }
-          else {
-            rtol <- abs(fn_old - fn_new) / min(abs(fn_new), abs(fn_old))
-            if (rtol < rel_tol) {
-              terminate$what <- "rel_tol"
-              terminate$val <- rtol
-            }
-          }
-        }
-      }
-
-      terminate$fn_new <- fn_new
-    }
-  }
-  terminate
+  step_info$terminate <- opt$terminate
+  step_info$par <- par
+  Filter(Negate(is.null), step_info)
 }
 
 # Clears the cache. Results should be identical whether a cache is used or not.
@@ -3815,114 +4352,26 @@ opt_clear_cache <- function(opt) {
   opt
 }
 
-# Creates a result object.
-# If the function and gradient were not calculated as part of the optimization
-# step, they WILL be calculated here, and do contribute to the total
-# fn or gr count reported.
-# if calc_gr is TRUE then the gradient will be calculated if it isn't
-# available.
-# gr_norms is a vector containing zero or more of the norms to be calculated:
-#   2 for the l2 (Euclidean) norm
-#   Inf for the infinity norm (max absolute component)
-# Other reported results: alpha is the step size portion of the gradient
-# descent stage (i.e. the result of the line search). Step is the total step
-# size taken during the optimization step, including momentum.
-# If a momentum stage is present, the value of the momentum is stored as 'mu'.
-opt_results <- function(opt, par, fg, iter, par0 = NULL, count_fg = TRUE,
-                        calc_fn = FALSE, calc_gr = FALSE, gr_norms = c()) {
-
-  f <- NULL
-  if (calc_fn || has_fn_curr(opt, iter + 1)) {
-    if (!has_fn_curr(opt, iter + 1)) {
-      f <- fg$fn(par)
-      if (count_fg) {
-        opt <- set_fn_curr(opt, f, iter + 1)
-        opt$counts$fn <- opt$counts$fn + 1
-      }
-    }
-    else {
-      f <- opt$cache$fn_curr
-    }
-  }
-
-  g2n <- NULL
-  ginfn <- NULL
-  if (calc_gr || has_gr_curr(opt, iter + 1)) {
-    if (!has_gr_curr(opt, iter + 1)) {
-      g <- fg$gr(par)
-      if (grad_is_first_stage(opt) && count_fg) {
-        opt <- set_gr_curr(opt, g, iter + 1)
-        opt$counts$gr <- opt$counts$gr + 1
-      }
-    }
-    else {
-      g <- opt$cache$gr_curr
-    }
-    if (2 %in% gr_norms) {
-     g2n <- norm2(g)
-    }
-    if (Inf %in% gr_norms) {
-      ginfn <- norm_inf(g)
-    }
-  }
-
-  if (!is.null(par0)) {
-    step_size <- norm2(par - par0)
-  }
-  else {
-    step_size <- 0
-  }
-
-  alpha <- NULL
-  if (length(opt$stages) == 1 && opt$stages[[1]]$type == "gradient_descent") {
-    alpha <- norm2(opt$stages[[1]]$step_size$value)
-    if (is.null(alpha)) {
-      alpha <- 0
-    }
-  }
-
-  res <- list(
-    opt = opt,
-    f = f,
-    g2n = g2n,
-    ginfn = ginfn,
-    nf = opt$counts$fn,
-    ng = opt$counts$gr,
-    par = par,
-    step = step_size,
-    alpha = alpha,
-    iter = iter
-  )
-
-  if ("momentum" %in% names(opt$stages)) {
-    res$mu <- opt$stages[["momentum"]]$step_size$value
-    if (is.null(res$mu)) {
-      res$mu <- 0
-    }
-  }
-
-  res
-}
-
 # Prints information about the current optimization result
-opt_report <- function(opt_result, print_time = FALSE, print_par = FALSE) {
+opt_report <- function(step_info, print_time = FALSE, print_par = FALSE,
+                       par = NULL) {
 
   fmsg <- ""
-  if (!is.null(opt_result$f)) {
-    fmsg <- paste0(fmsg, " f = ", formatC(opt_result$f))
+  if (!is.null(step_info$f)) {
+    fmsg <- paste0(fmsg, " f = ", formatC(step_info$f))
   }
-  if (!is.null(opt_result$g2n)) {
-    fmsg <- paste0(fmsg, " g2 = ", formatC(opt_result$g2n))
+  if (!is.null(step_info$g2n)) {
+    fmsg <- paste0(fmsg, " g2 = ", formatC(step_info$g2n))
   }
-  if (!is.null(opt_result$ginfn)) {
-    fmsg <- paste0(fmsg, " ginf = ", formatC(opt_result$ginfn))
+  if (!is.null(step_info$ginfn)) {
+    fmsg <- paste0(fmsg, " ginf = ", formatC(step_info$ginfn))
   }
 
-  msg <- paste0("iter ", opt_result$iter
+  msg <- paste0("iter ", step_info$iter
                 , fmsg
-                , " nf = ", opt_result$nf
-                , " ng = ", opt_result$ng
-                , " step = ", formatC(opt_result$step)
+                , " nf = ", step_info$nf
+                , " ng = ", step_info$ng
+                , " step = ", formatC(step_info$step)
   )
 
   if (print_time) {
@@ -3930,22 +4379,22 @@ opt_report <- function(opt_result, print_time = FALSE, print_par = FALSE) {
   }
 
   if (print_par) {
-    msg <- paste0(msg, " par = ", vec_formatC(opt_result$par))
+    msg <- paste0(msg, " par = ", vec_formatC(par))
   }
 
   message(msg)
 }
 
 # Transfers data from the result object to the progress data frame
-update_progress <- function(opt_res, progress) {
+update_progress <- function(step_info, progress) {
   res_names <- c("f", "g2n", "ginf", "nf", "ng", "step", "alpha", "mu")
-  res_names <- Filter(function(x) { !is.null(opt_res[[x]]) }, res_names)
+  res_names <- Filter(function(x) { !is.null(step_info[[x]]) }, res_names)
 
-  progress <- rbind(progress, opt_res[res_names])
+  progress <- rbind(progress, step_info[res_names])
 
   # Probably not a major performance issue to regenerate column names each time
   colnames(progress) <- res_names
-  rownames(progress)[nrow(progress)] <- opt_res$iter
+  rownames(progress)[nrow(progress)] <- step_info$iter
   progress
 }
 
@@ -3969,6 +4418,8 @@ make_opt <- function(stages,
     hooks = list(),
     handlers = list(),
     eager_update = FALSE,
+    is_terminated = FALSE,
+    is_initialized = FALSE,
     verbose = verbose
   )
 
@@ -4845,7 +5296,7 @@ backtracking <- function(rho = 0.5,
 
         while ((!is.finite(opt$fn) || !armijo_ok(f0, d0, alpha, opt$fn, c1))
                && alpha > sub_stage$min_value
-               && opt$count$fn < max_fn) {
+               && opt$counts$fn < max_fn) {
           alpha <- sclamp(alpha * rho,
                           min = sub_stage$min_value,
                           max = sub_stage$max_value)
@@ -4884,316 +5335,14 @@ backtracking <- function(rho = 0.5,
 
 max_fn_per_ls <- function(opt, max_ls_fn = Inf) {
   max_fn <- max_ls_fn
-  if (!is.null(opt$counts$max_fn)) {
-    max_fn <- min(max_fn, opt$counts$max_fn - opt$counts$fn)
+  if (!is.null(opt$convergence$max_fn)) {
+    max_fn <- min(max_fn, opt$convergence$max_fn - opt$counts$fn)
   }
-  if (!is.null(opt$counts$max_fg)) {
+  if (!is.null(opt$convergence$max_fg)) {
     max_fn <- min(max_fn,
-                  opt$counts$max_fg - (opt$counts$fn + opt$counts$gr))
+                  opt$convergence$max_fg - (opt$counts$fn + opt$counts$gr))
   }
   max_fn
-}
-# Functions used only for testing
-
-
-# Rosenbrock ---------------------------------------------------------------
-
-rb0 <- c(-1.2, 1)
-# taken from the optim man page
-rosenbrock_fg <- list(
-  fn = function(x) {
-    x1 <- x[1]
-    x2 <- x[2]
-    100 * (x2 - x1 * x1) ^ 2 + (1 - x1) ^ 2
-  },
-  gr = function(x) {
-    x1 <- x[1]
-    x2 <- x[2]
-    c(
-      -400 * x1 * (x2 - x1 * x1) - 2 * (1 - x1),
-      200 *      (x2 - x1 * x1))
-  },
-  hs = function(x) {
-    xx <- 1200 * x[1] * x[1] - 400 * x[2] + 2
-    xy <- x[1] * -400
-    yy <- 200
-    matrix(c(xx, xy, xy, yy), nrow = 2)
-  },
-  fg = function(x) {
-    x1 <- x[1]
-    x2 <- x[2]
-    a <- (x2 - x1 * x1)
-    b <- 1 - x1
-    list(
-      fn = 100 * a * a + b * b,
-      gr = c(
-        -400 * x1 * a - 2 * b,
-        200 * a
-      )
-    )
-  },
-  n = 2
-)
-
-tricky_fg <- function() {
-  res <- list(
-    fn = function(par) {
-      x1 <- par[1]
-      x2 <- par[2]
-      (1.5 - x1 + x1 * x2)^2 +
-        (2.25 - x1 + x1 * x2 * x2)^2 +
-        (2.625 - x1 + x1 * x2 * x2 * x2)^2
-    }
-  )
-  res$gr <- make_gfd(res$fn)
-  res$hs <- make_hfd(res$fn)
-
-  res
-}
-
-# Create Initial Step Value
-#
-# Given a set of start parameters and a search direction, initializes the
-# step data. Utility function for testing.
-make_step0 <- function(fg, x, pv, f = fg$fn(x), df = fg$gr(x)) {
-  list(
-    x = x,
-    alpha = 0,
-    f = f,
-    df = df,
-    d = dot(pv, df)
-  )
-}
-
-# More'-Thuente test functions --------------------------------------------
-
-
-# Test Function 1 ---------------------------------------------------------
-
-# 1 phi(a) = -(a) / (a^2 + b) phi'(a) = (a^2 - b) / (a^2 + b)^2 b = 2
-fn1 <- function(alpha, beta = 2) {
-  -alpha / (alpha ^ 2 + beta)
-}
-gr1 <- function(alpha, beta = 2) {
-  (alpha ^ 2 - beta) / ((alpha ^ 2 + beta) ^ 2)
-}
-fcn1 <- function(x) {
-  list(f = fn1(x), g = gr1(x))
-}
-
-
-# Test Function 2 ---------------------------------------------------------
-
-# 2 phi(a) = (a + b)^5 - 2(a + b)^4  phi'(a) = (a+b)^3*(5a+5b-8)  b = 0.004
-fn2 <- function(alpha, beta = 0.004) {
-  (alpha + beta) ^ 5 - 2 * (alpha + beta) ^ 4
-}
-gr2 <- function(alpha, beta = 0.004) {
-  (alpha + beta) ^ 3 * (5 * alpha + 5 * beta - 8)
-}
-fcn2 <- function(x) {
-  list(f = fn2(x), g = gr2(x))
-}
-
-
-# Test Function 3 ---------------------------------------------------------
-
-# 3 phi(a) = phi_0(a) + [2(1-b)/(l*pi)]sin(l*pi*alpha*0.5)
-#   phi'(a) =  phi_0'(a) + (1-b)cos(l*pi*alpha*0.5)
-#   phi_0(a) = 1 - a if a <= 1 - b  phi_0'(a) = -1
-#            = a - 1 if a >= 1 + b  phi_0'(a) = 1
-#            = (a-1)^2/2b + b/2 if a in [1-b,1+b] phi_0'(a) =  a - 1 /b
-#     b = 0.01 l = 39
-fn3 <- function(alpha, beta = 0.01, l = 39) {
-  if (alpha <= 1 - beta) {
-    phi_0 <- 1 - alpha
-  } else if (alpha >= 1 + beta) {
-    phi_0 <- alpha - 1
-  } else {
-    phi_0 <- (alpha - 1) ^ 2 / (2 * beta) + (beta / 2)
-  }
-  phi_0 + (2 * (1 - beta) * sin(l * pi * alpha * 0.5)) / (l * pi)
-}
-#   phi'(a) =  phi_0'(a) + (1-b)cos(l*pi*alpha*0.5)
-
-gr3 <- function(alpha, beta = 0.01, l = 39) {
-  if (alpha <= 1 - beta) {
-    dphi_0 <- -1
-  } else if (alpha >= 1 + beta) {
-    dphi_0 <- 1
-  } else {
-    dphi_0 <- (alpha - 1) / beta
-  }
-
-  dphi_0 + (1 - beta) * cos(l * pi * alpha * 0.5)
-}
-fcn3 <- function(x) {
-  list(f = fn3(x), g = gr3(x))
-}
-
-
-# Utils for Test Functions 4-6 --------------------------------------------
-
-# gamma(b) = (1+b^2)^1/2 - b
-yanaig <- function(beta) {
-  sqrt(1 + beta ^ 2) - beta
-}
-
-yanai1 <- function(alpha, beta) {
-  sqrt((1 - alpha) ^ 2 + beta ^ 2)
-}
-gryanai1 <- function(alpha, beta) {
-  (alpha - 1) / yanai1(alpha, beta)
-}
-
-yanai2 <- function(alpha, beta) {
-  sqrt(alpha ^ 2 + beta ^ 2)
-}
-gryanai2 <- function(alpha, beta) {
-  alpha / yanai2(alpha, beta)
-}
-
-# phi(a) = gamma(b_1)[(1-a)^2 + b_2^2]^1/2 + gamma(b_2)[a^2 + b_1^2]^1/2
-yanai <- function(alpha, beta1, beta2) {
-  yanaig(beta1) * yanai1(alpha, beta2) +
-    yanaig(beta2) * yanai2(alpha, beta1)
-}
-
-#   phi'(a) = -[gamma(b_1)(1-a)]/sqrt[(1-a)^2 + b_2^2] + gamma(b_2)a/sqrt([a^2 + b_1^2])
-gryanai <- function(alpha, beta1, beta2) {
-  (yanaig(beta1) * gryanai1(alpha, beta2)) + (yanaig(beta2) * gryanai2(alpha, beta1))
-}
-
-# Test Function 4 ---------------------------------------------------------
-
-fn4 <- function(alpha) {
-  yanai(alpha, beta1 = 0.001, beta2 = 0.001)
-}
-gr4 <- function(alpha) {
-  gryanai(alpha, beta1 = 0.001, beta2 = 0.001)
-}
-fcn4 <- function(x) {
-  list(f = fn4(x), g = gr4(x))
-}
-
-
-# Test Function 5 ---------------------------------------------------------
-
-fn5 <- function(alpha) {
-  yanai(alpha, beta1 = 0.01, beta2 = 0.001)
-}
-gr5 <- function(alpha) {
-  gryanai(alpha, beta1 = 0.01, beta2 = 0.001)
-}
-fcn5 <- function(x) {
-  list(f = fn5(x), g = gr5(x))
-}
-
-
-# Test Function 6 ---------------------------------------------------------
-
-
-fn6 <- function(alpha) {
-  yanai(alpha, beta1 = 0.001, beta2 = 0.01)
-}
-gr6 <- function(alpha) {
-  gryanai(alpha, beta1 = 0.001, beta2 = 0.01)
-}
-fcn6 <- function(x) {
-  list(f = fn6(x), g = gr6(x))
-}
-
-f1 <- list(fn = fn1, gr = gr1)
-f2 <- list(fn = fn2, gr = gr2)
-f3 <- list(fn = fn3, gr = gr3)
-f4 <- list(fn = fn4, gr = gr4)
-f5 <- list(fn = fn5, gr = gr5)
-f6 <- list(fn = fn6, gr = gr6)
-
-# Finite Difference -------------------------------------------------------
-
-gfd <- function(par, fn, eps =  1.e-3) {
-  g <- rep(0, length(par))
-  for (i in 1:length(par)) {
-    oldx <- par[i]
-
-    par[i] <- oldx + eps
-    fplus <- fn(par)
-
-    par[i] <- oldx - eps
-    fminus <- fn(par)
-    par[i] <- oldx
-
-    g[i] <- (fplus - fminus) / (2 * eps)
-  }
-  g
-}
-
-make_gfd <- function(fn, eps = 1.e-3) {
-  function(par) {
-    gfd(par, fn, eps)
-  }
-}
-
-hfd <- function(par, fn, eps =  1.e-3) {
-  hs <- matrix(0, nrow = length(par), ncol = length(par))
-  for (i in 1:length(par)) {
-    for (j in i:length(par)) {
-      if (i != j) {
-        oldxi <- par[i]
-        oldxj <- par[j]
-
-        par[i] <- par[i] + eps
-        par[j] <- par[j] + eps
-        fpp <- fn(par)
-
-        par[j] <- oldxj - eps
-        fpm <- fn(par)
-
-        par[i] <- oldxi - eps
-        par[j] <- oldxj + eps
-        fmp <- fn(par)
-
-        par[j] <- oldxj - eps
-        fmm <- fn(par)
-
-        par[i] <- oldxi
-        par[j] <- oldxj
-
-        val <- (fpp - fpm - fmp + fmm) / (4 * eps * eps)
-
-        hs[i, j] <- val
-        hs[j, i] <- val
-      }
-      else {
-        f <- fn(par)
-        oldxi <- par[i]
-
-        par[i] <- oldxi + 2 * eps
-        fpp <- fn(par)
-
-        par[i] <- oldxi + eps
-        fp <- fn(par)
-
-        par[i] <- oldxi - 2 * eps
-        fmm <- fn(par)
-
-        par[i] <- oldxi - eps
-        fm <- fn(par)
-
-        par[i] <- oldxi
-
-        hs[i, i] <- (-fpp + 16 * fp - 30 * f + 16 * fm - fmm) / (12 * eps * eps)
-      }
-    }
-  }
-  hs
-}
-
-make_hfd <- function(fn, eps = 1.e-3) {
-  function(par) {
-    hfd(par, fn, eps)
-  }
 }
 # partial function application
 partial <- function(f, ...) {
@@ -5274,6 +5423,10 @@ is_in_range <- function(x, left, right, lopen = TRUE, ropen = TRUE) {
   left %lop% x && x %rop% right
 }
 
+# Checks if nullable x is finite
+is_finite_numeric <- function(x) {
+  is.numeric(x) && is.finite(x)
+}
 
 # Logging Hooks -----------------------------------------------------------
 
@@ -5325,7 +5478,7 @@ attr(require_validate_gr, 'name') <- 'validate_gr'
 attr(require_validate_gr, 'event') <- 'during validation'
 attr(require_validate_gr, 'depends') <- 'gradient save_cache_on_failure'
 
-# Checks that the update (aka velocity) vector is getting larger
+# Checks that the update vector is getting larger
 require_validate_speed <- function(opt, par, fg, iter, par0, update) {
   if (can_restart(opt, iter)) {
     opt$ok <- sqnorm2(update) > sqnorm2(opt$cache$update_old)
@@ -5505,7 +5658,10 @@ line_search <- function(ls_fn,
       pm <- stage$direction$value
       if (norm2(pm) < sqrt(sub_stage$eps)) {
         sub_stage$value <- 0
-        return(list(sub_stage = sub_stage))
+        if (is_last_stage(opt, stage)) {
+          opt <- set_fn_new(opt, opt$cache$fn_curr, iter)
+        }
+        return(list(opt = opt, sub_stage = sub_stage))
       }
 
       if (is_first_stage(opt, stage) && has_fn_curr(opt, iter)) {
@@ -5554,14 +5710,14 @@ line_search <- function(ls_fn,
       max_fn <- Inf
       max_gr <- Inf
       max_fg <- Inf
-      if (!is.null(opt$counts$max_fn) && is.finite(opt$counts$max_fn)) {
-        max_fn <- opt$counts$max_fn - opt$counts$fn
+      if (!is.null(opt$convergence$max_fn) && is.finite(opt$convergence$max_fn)) {
+        max_fn <- opt$convergence$max_fn - opt$counts$fn
       }
-      if (!is.null(opt$counts$max_gr) && is.finite(opt$counts$max_gr)) {
-        max_gr <- opt$counts$max_gr - opt$counts$gr
+      if (!is.null(opt$convergence$max_gr) && is.finite(opt$convergence$max_gr)) {
+        max_gr <- opt$convergence$max_gr - opt$counts$gr
       }
-      if (!is.null(opt$counts$max_fg) && is.finite(opt$counts$max_fg)) {
-        max_fg <- opt$counts$max_fg - (opt$counts$fn + opt$counts$gr)
+      if (!is.null(opt$convergence$max_fg) && is.finite(opt$convergence$max_fg)) {
+        max_fg <- opt$convergence$max_fg - (opt$counts$fn + opt$counts$gr)
       }
       if (max_fn <= 0 || max_gr <= 0 || max_fg <= 0) {
         sub_stage$value <- 0
@@ -5890,7 +6046,8 @@ list(
   opt_init = mize_init,
   make_mize = make_mize,
   opt_report = opt_report,
-  opt_results = opt_results,
-  opt_clear_cache = opt_clear_cache
+  mize_step_summary = mize_step_summary,
+  opt_clear_cache = opt_clear_cache,
+  check_mize_convergence = check_mize_convergence
 )
 }

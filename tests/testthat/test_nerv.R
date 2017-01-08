@@ -21,9 +21,8 @@ expect_norm_costs <- function(method, expected_norm, info = "",
 test_that("NeRV gives different results as lambda is varied", {
   expect_norm_costs(nerv(lambda = 0),
                     c(0.00922, 0.00771, 0.00742, 0.00741, 0.00732,
-                      0.00723, 0.00717, 0.00714, 0.00711, 0.00708
-                      ),
-                    info = "nerv lambda = 0")
+                      0.00722, 0.00717, 0.00710, 0.00703, 0.00701),
+                    info = "nerv lambda = 0", tolerance = 1e-4)
 
   expect_norm_costs(nerv(lambda = 0.5),
                     c(0.0144, 0.0123, 0.0120, 0.0119, 0.0118,
@@ -31,16 +30,16 @@ test_that("NeRV gives different results as lambda is varied", {
                     info = "nerv lambda = 0.5", tolerance = 1e-4)
 
   expect_norm_costs(nerv(lambda = 1),
-                    c(0.0623, 0.0550, 0.0542, 0.0529, 0.0522,
-                      0.0518, 0.0514, 0.0511, 0.0508, 0.0506),
+                    c(0.0623, 0.0550, 0.0542, 0.0529, 0.0520,
+                      0.0519, 0.0511, 0.0507, 0.0502, 0.0498),
                     info = "nerv lambda = 1", tolerance = 1e-4)
 })
 
 test_that("SNeRV gives different results as lambda is varied", {
   expect_norm_costs(snerv(lambda = 0),
-                    c(0.01165, 0.00933, 0.00865, 0.00866, 0.00852,
-                      0.00834, 0.00823, 0.00817, 0.00811, 0.00804),
-                    info = "snerv lambda = 0")
+                    c(0.0117, 0.0093, 0.0086, 0.0087, 0.0085,
+                      0.0083, 0.0082, 0.0081, 0.0080, 0.0079),
+                    info = "snerv lambda = 0", tolerance = 1e-4)
 
   expect_norm_costs(snerv(lambda = 0.5),
                     c(0.0181, 0.0148, 0.0142, 0.0142, 0.0139,
@@ -48,16 +47,17 @@ test_that("SNeRV gives different results as lambda is varied", {
                     info = "snerv lambda = 0.5", tolerance = 1e-4)
 
   expect_norm_costs(snerv(lambda = 1),
-                    c(0.0673, 0.0569, 0.0552, 0.0539, 0.0531,
-                      0.0528, 0.0524, 0.0516, 0.0516, 0.0514),
+                    c(0.0673, 0.0568, 0.0552, 0.0539, 0.0531,
+                      0.0527, 0.0520, 0.0514, 0.0514, 0.0511),
                     info = "snerv lambda = 1", tolerance = 1e-4)
 })
 
 test_that("HSNeRV gives different results as lambda and alpha is varied", {
+  # alpha = 0 should be like snerv
   expect_norm_costs(hsnerv(lambda = 0, alpha = 0),
-                    c(0.01165, 0.00933, 0.00865, 0.00866, 0.00852,
-                      0.00834, 0.00823, 0.00817, 0.00811, 0.00804),
-                    info = "hsnerv lambda = 0 alpha = 0")
+                    c(0.0117, 0.0093, 0.0086, 0.0087, 0.0085,
+                      0.0083, 0.0082, 0.0081, 0.0080, 0.0079),
+                    info = "hsnerv lambda = 0 alpha = 0", tolerance = 1e-4)
 
   expect_norm_costs(hsnerv(lambda = 0.5, alpha = 0),
                     c(0.01808, 0.01485, 0.01416, 0.01416, 0.01393,
@@ -65,8 +65,8 @@ test_that("HSNeRV gives different results as lambda and alpha is varied", {
                     info = "hsnerv lambda = 0.5 alpha = 0", tolerance = 1e-4)
 
   expect_norm_costs(hsnerv(lambda = 1, alpha = 0),
-                    c(0.06728, 0.05685, 0.05516, 0.05393, 0.05312,
-                      0.05279, 0.05235, 0.05194, 0.05164, 0.05135),
+                    c(0.0673, 0.0568, 0.0552, 0.0539, 0.0531,
+                      0.0527, 0.0520, 0.0514, 0.0514, 0.0511),
                     info = "hsnerv lambda = 1 alpha = 0", tolerance = 1e-4)
 
   expect_norm_costs(hsnerv(lambda = 0, alpha = 1),
