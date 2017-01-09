@@ -321,7 +321,7 @@ $$k_{ij} =
 \frac{\partial C}{\partial q_{kl}}
 \frac{\partial q_{kl}}{\partial w_{ij}}
 \right]
-\frac{\partial w_{ij}}{f_{ij}}
+\frac{\partial w_{ij}}{\partial f_{ij}}
 $$
 
 Without getting into any specifics of the functional form of the cost function
@@ -362,7 +362,7 @@ k_{ij} =
 \frac{\partial C}{\partial q_{kl}}
 \frac{\partial q_{kl}}{\partial w_{ij}}
 \right]
-\frac{\partial w_{ij}}{f_{ij}}
+\frac{\partial w_{ij}}{\partial f_{ij}}
 =
 \frac{1}{S}
 \left[
@@ -371,7 +371,7 @@ k_{ij} =
 \sum_{kl} \frac{\partial C}{\partial q_{kl}} 
 q_{kl}
 \right]
-\frac{\partial w_{ij}}{f_{ij}}
+\frac{\partial w_{ij}}{\partial f_{ij}}
 $$
 
 This is far as we can get with $k_{ij}$ without choosing a cost and weighting
@@ -416,7 +416,7 @@ $$k_{ij} =
 \sum_{kl} \frac{\partial C}{\partial q_{kl}} 
 q_{kl}
 \right]
-\frac{\partial w_{ij}}{f_{ij}}
+\frac{\partial w_{ij}}{\partial f_{ij}}
 $$
 
 If you want to get a tiny bit more specific, I am also unaware of any 
