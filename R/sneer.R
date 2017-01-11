@@ -1010,7 +1010,8 @@ sneer <- function(df,
     }
   }
 
-  ok_rets <- c("x", "dx", "dy", "p", "q", "w", "prec", "dim", "deg", "degs", "v")
+  ok_rets <- c("x", "dx", "dy", "p", "q", "w", "prec", "dim", "deg", "degs",
+               "v", "dyn")
   ret <- unique(ret)
   for (r in (ret)) {
 
@@ -1155,6 +1156,14 @@ sneer <- function(df,
       },
       v = {
         result$v <- dist2_to_weights(inp$dm ^ 2, exp_kernel(inp$beta))
+      },
+      dyn = {
+        if (!is.null(embed_result$method$export_extra_par)) {
+          result$dyn <- embed_result$method$export_extra_par(embed_result$method)
+        }
+        else if (!is.null(embed_result$method$get_extra_par)) {
+          result$dyn <- embed_result$method$get_extra_par(embed_result$method)
+        }
       }
     )
   }
