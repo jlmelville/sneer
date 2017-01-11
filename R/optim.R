@@ -151,13 +151,14 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
     par <- par[1:(dout * nr)]
     method <- method$set_extra_par(method, extra_par)
   }
+
   # convert y coord par into sneer form
   out <- par_to_out(par, opt, inp, out, method, nr)
 
   if (opt$mize$is_terminated) {
-    # if (opt$verbose) {
+    if (opt$verbose) {
       message("Optimizer reports termination due to: ", opt$mize$terminate$what)
-    # }
+    }
     opt$stop_early <- TRUE
   }
 
