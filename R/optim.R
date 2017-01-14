@@ -28,7 +28,7 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
       out <- par_to_out(par, opt, inp, out, method, nr)
       grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
       if (!is.null(method$extra_gr)) {
-        extra_grvec <- method$extra_gr(opt, inp, out, method, extra_par)
+        extra_grvec <- method$extra_gr(opt, inp, out, method, iter, extra_par)
         grvec <- c(grvec, extra_grvec)
       }
 
@@ -45,7 +45,7 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
 
       grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
       if (!is.null(method$extra_gr)) {
-        extra_grvec <- method$extra_gr(opt, inp, out, method, extra_par)
+        extra_grvec <- method$extra_gr(opt, inp, out, method, iter, extra_par)
         grvec <- c(grvec, extra_grvec)
       }
 
