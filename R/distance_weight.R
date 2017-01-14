@@ -326,3 +326,37 @@ step_weight <- function(d2m, beta = 1) {
   # matrix
   (d2m <= max(beta, min(d2m))) * 1
 }
+
+itsne_weight <- function(d2m, dof = 1) {
+  (1 + d2m / dof) ^ (-0.5 * (dof + 1))
+}
+attr(itsne_weight, "type") <- "asymm"
+
+itsne_gr <- function(d2m, dof = 1) {
+  -(0.5 * (dof + 1) / (d2m + dof)) * itsne_weight(d2m, dof)
+}
+
+itsne_kernel <- function(dof = 1) {
+  fn <- function(kernel, d2m) {
+    itsne_weight(d2m, dof = kernel$dof)
+  }
+
+  kernel <- list(
+    fn = fn,
+    gr = function(kernel, d2m) {
+      itsne_gr(d2m, dof = kernel$dof)
+    },
+    dof = dof,
+    check_symmetry = function(kernel) {
+      if (length(kernel$dof) > 1) {
+        attr(kernel$fn, "type") <- "asymm"
+      }
+      else {
+        attr(kernel$fn, "type") <- "symm"
+      }
+      kernel
+    }
+  )
+  kernel <- check_symmetry(kernel)
+  kernel
+}

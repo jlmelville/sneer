@@ -4,6 +4,7 @@ context("Gradients")
 # This tests that the analytical gradients match those from a finite difference
 # calculation.
 
+inp_df <- iris[1:50, 1:4]
 preprocess <- make_preprocess(range_scale_matrix = TRUE,  verbose = FALSE)
 out_init <- out_from_PCA(verbose = FALSE)
 inp_init <- inp_from_perp(perplexity = 20, verbose = FALSE)
@@ -38,12 +39,13 @@ gan <- function(embedder) {
 # hgfd
 hgan <- function(method, inp_init = inp_from_perp(perplexity = 20,
                                                   verbose = FALSE),
+                 inp_df = iris[1:50, 1:4],
                  diff = 1e-5) {
 
-  embedder <- init_embed(iris[1:50, 1:4], method,
-                         preprocess = preprocess,
+  embedder <- init_embed(inp_df, method,
+                         preprocess = make_preprocess(verbose = FALSE),
                          init_inp = inp_init,
-                         init_out = out_init,
+                         init_out = out_from_PCA(verbose = FALSE),
                          opt = mize_grad_descent())
   head(gan(embedder))
 }
@@ -52,11 +54,12 @@ hgan <- function(method, inp_init = inp_from_perp(perplexity = 20,
 hgfd <- function(method,
                  inp_init = inp_from_perp(perplexity = 20,
                                           verbose = FALSE),
+                 inp_df = iris[1:50, 1:4],
                  diff = 1e-5) {
-  embedder <- init_embed(iris[1:50, 1:4], method,
-                         preprocess = preprocess,
+  embedder <- init_embed(inp_df, method,
+                         preprocess = make_preprocess(verbose = FALSE),
                          init_inp = inp_init,
-                         init_out = out_init,
+                         init_out = out_from_PCA(verbose = FALSE),
                          opt = mize_grad_descent())
   head(gfd(embedder, diff = diff))
 }
@@ -68,9 +71,10 @@ expect_grad <- function(method,
                                                  verbose = FALSE),
                         diff = 1e-5,
                         tolerance = 1e-6,
-                        scale = 1) {
+                        scale = 1,
+                        inp_df = iris[1:50, 1:4]) {
 
-  embedder <- init_embed(iris[1:50, 1:4], method,
+  embedder <- init_embed(inp_df, method,
                          preprocess = preprocess,
                          init_inp = inp_init,
                          init_out = out_init,
@@ -219,4 +223,28 @@ test_that("Multiscale gradients", {
 test_that("importance weighting", {
   expect_grad(importance_weight(ssne()), label = "wssne")
   expect_grad(importance_weight(ssne_plugin()), label = "plugin wssne")
+})
+
+test_that("Dynamic parameter gradients", {
+  expect_grad(dhssne(alpha = 0.001), label = "dhssne alpha 0.001")
+  expect_grad(dhssne(alpha = 0.5), label = "dhssne alpha 0.5")
+  expect_grad(dhssne(alpha = 1), label = "dhssne alpha 1")
+
+  expect_grad(ihssne(alpha = seq(0.001, 0.5, length.out = nrow(inp_df))),
+                     label = "ihssne alpha 0.001:0.5")
+  expect_grad(ihssne(alpha = seq(0.5, 1, length.out = nrow(inp_df))),
+              label = "ihssne alpha 0.5:1")
+  expect_grad(ihssne(alpha = seq(1, 5, length.out = nrow(inp_df))),
+              label = "ihssne alpha 1:5")
+
+  expect_grad(htsne(dof = 0.001), label = "htsne dof 0.001")
+  expect_grad(htsne(dof = 1), label = "htsne dof 1")
+  expect_grad(htsne(dof = 1000), label = "htsne dof 1000")
+
+  expect_grad(itsne(dof = seq(0.001, 1, length.out = nrow(inp_df))),
+              label = "itsne dof 0.001:1")
+  expect_grad(itsne(dof = seq(1, 10, length.out = nrow(inp_df))),
+              label = "itsne dof 1:10")
+  expect_grad(itsne(dof = seq(10, 1000, length.out = nrow(inp_df))),
+              label = "itsne dof 10:1000")
 })
