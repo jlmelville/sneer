@@ -475,8 +475,8 @@ over the form of the point-wise normalization:
 $$q_{ij} = \frac{w_{ij}}{\sum_k w_{ik}}$$
 
 i.e. it's only over weights associated with point $i$. In terms of cancelling
-cross terms in the derivative, we can see that unless $i \eq k$, then
-the $\partial q_{ij}/\partial w_{kl} = 0$, so we can now replace $k$ with $i$:
+cross terms in the derivative, we can see that unless $i = k$, then
+$\partial q_{ij}/\partial w_{kl} = 0$, so we can now replace $k$ with $i$:
 
 $$
 \frac{\partial C}{\partial \mathbf{y_h}} = 

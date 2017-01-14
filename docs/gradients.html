@@ -408,7 +408,7 @@ q_{kl}
 \]</span></p>
 <p>There is now one extra simplification we can make. Let’s refresh our memories over the form of the point-wise normalization:</p>
 <p><span class="math display">\[q_{ij} = \frac{w_{ij}}{\sum_k w_{ik}}\]</span></p>
-<p>i.e. it’s only over weights associated with point <span class="math inline">\(i\)</span>. In terms of cancelling cross terms in the derivative, we can see that unless <span class="math inline">\(i \eq k\)</span>, then the <span class="math inline">\(\partial q_{ij}/\partial w_{kl} = 0\)</span>, so we can now replace <span class="math inline">\(k\)</span> with <span class="math inline">\(i\)</span>:</p>
+<p>i.e. it’s only over weights associated with point <span class="math inline">\(i\)</span>. In terms of cancelling cross terms in the derivative, we can see that unless <span class="math inline">\(i = k\)</span>, then <span class="math inline">\(\partial q_{ij}/\partial w_{kl} = 0\)</span>, so we can now replace <span class="math inline">\(k\)</span> with <span class="math inline">\(i\)</span>:</p>
 <p><span class="math display">\[
 \frac{\partial C}{\partial \mathbf{y_h}} = 
   \sum_{ij} 
