@@ -17,7 +17,6 @@ Suggests:
     RColorBrewer,
     plotly,
     PRROC,
-    rconjgrad,
     knitr,
     rmarkdown
 URL: http://github.com/jlmelville/sneer
