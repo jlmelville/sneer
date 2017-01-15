@@ -18,6 +18,7 @@
 #'  \item{Heavy-tailed Symmetric Stochastic Neighbor Embedding (HSSNE)}
 #'  \item{Neigbor Retrieval Visualizer (NeRV)}
 #'  \item{Jensen-Shannon Embedding (JSE)}
+#'  \item{Inhomogeneous t-SNE}
 #' }
 #'
 #' See the documentation for the function for the exact list of methods
@@ -113,6 +114,14 @@
 #' dimensionality reduction based on similarity preservation.
 #' \emph{Neurocomputing}, \emph{112}, 92-108.
 #'
+#' Inhomogeneous t-SNE
+#' Kitazono, J., Grozavu, N., Rogovschi, N., Omori, T., & Ozawa, S.
+#' (2016, October).
+#' t-Distributed Stochastic Neighbor Embedding with Inhomogeneous Degrees of
+#' Freedom.
+#' In \emph{International Conference on Neural Information Processing} (pp. 119-128).
+#' Springer International Publishing.
+#'
 #' Nesterov Accelerated Gradient:
 #' Sutskever, I., Martens, J., Dahl, G., & Hinton, G. (2013).
 #' On the importance of initialization and momentum in deep learning.
@@ -157,6 +166,9 @@ NULL
 #'   Yang et al (2009).
 #'  \item \code{"nerv"} Neighbor Retrieval Visualizer of Venna et al (2010).
 #'  \item \code{"jse"} Jensen-Shannon Embedding of Lee at al (2013).
+#'  \item \code{"itsne"} Inhomogeneous t-SNE method of Kitazono et al (2016).
+#'  \item \code{"dhssne"} A "dynamic" version of HSSNE, inspired by the
+#'  inhomogeneous t-SNE Method of Kitazono et al.
 #' }
 #'
 #' The following scaling options can be applied via the \code{scale_type}
@@ -228,7 +240,7 @@ NULL
 #'  \item \code{"pca"} Initialize using the first two scores of the PCA (using
 #'  classical MDS if \code{df} is a distance matrix). Data will be centered,
 #'  but not scaled unless the \code{scale_type} parameter is used.
-#'  \item \code{"ranodm"} Initialize each coordinate value from a normal random
+#'  \item \code{"random"} Initialize each coordinate value from a normal random
 #'  distribution with a standard deviation of 1e-4, as suggested by van der
 #'  Maaten and Hinton (2008).
 #'  \item \code{"uniform"} Initialize each coordinate value from a uniform random
@@ -367,6 +379,12 @@ NULL
 #'  meaningless if not using the default exponential \code{perp_kernel_fun}.
 #'  \item \code{"deg"} Degree centrality of the input probability. Calculated
 #'  if not present.
+#'  \item \code{"dyn"} "Dynamic" parameters, i.e. any non-coordinate parameters
+#'  which were optimized. Only used if the method was \code{"itsne"}, in which
+#'  case the result is a list labelled \code{"dof"} which provides the degree
+#'  of freedom parameters for each point, and \code{"dhssne"}, in which case
+#'  the result is a scalar \code{"alpha"}, representing the global heavy
+#'  tailedness parameter.
 #' }
 #'
 #' The \code{color_scheme} parameter is used to set the color scheme for the
@@ -386,7 +404,14 @@ NULL
 #' @param ndim Number of output dimensions (normally 2).
 #' @param method Embedding method. See 'Details'.
 #' @param alpha Heavy tailedness parameter. Used only if the method is
-#'  \code{"hssne"}.
+#'  \code{"hssne"} or \code{"dhssne"}. For the latter, it specifies the initial
+#'  value of the parameter.
+#' @param dof Initial number of degrees of freedom. Used only if the method is
+#' \code{"itsne"}. A value of 1 gives initial behavior like t-ASNE, and values
+#' approaching infinity behave like ASNE.
+#' @param kernel_opt_iter Wait this number of iterations before beginning to
+#' optimize non-coordinate parameters. Used by the \code{method}s \code{"itsne"}
+#' and \code{"dhssne"} only.
 #' @param lambda NeRV parameter. Used only if the method is \code{"nerv"}.
 #' @param kappa JSE parameter. Used only if the method is \code{"jse"}.
 #' @param scale_type Type of scaling to carry out on the input data. See
@@ -490,6 +515,13 @@ NULL
 #' Hinton, G. E., & Roweis, S. T. (2002).
 #' Stochastic neighbor embedding.
 #' In \emph{Advances in neural information processing systems} (pp. 833-840).
+#'
+#' Kitazono, J., Grozavu, N., Rogovschi, N., Omori, T., & Ozawa, S.
+#' (2016, October).
+#' t-Distributed Stochastic Neighbor Embedding with Inhomogeneous Degrees of
+#' Freedom.
+#' In \emph{International Conference on Neural Information Processing} (pp. 119-128).
+#' Springer International Publishing.
 #'
 #' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
 #' Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
@@ -611,6 +643,21 @@ NULL
 #'   # Setting it to 1 is equivalent to TSNE, so 1.1 is a bit of an extra push:
 #'   res <- sneer(iris, scale_type = "a", method = "hssne", alpha = 1.1)
 #'
+#'   # it-SNE has a similar degree of freedom parameter to HSSNE's alpha, but
+#'   # applies independently to each point and is optimized as part of the
+#'   # embedding.
+#'   # Setting dof chooses the initial value (1 is like t-SNE, large values
+#'   # approach ASNE)
+#'   # kernel_opt_iter sets how many iterations with just coordinate
+#'   # optimization before including dof optimization too.
+#'   res <- sneer(iris, method = "itsne", dof = 10, kernel_opt_iter = 50)
+#'
+#'   # DHSSNE is a "dynamic" extension to HSSNE which will modify alpha from
+#'   # its starting point, similar to how it-SNE works (except there's
+#'   # only one global value being optimized)
+#'   # Setting alpha simply chooses the initial value
+#'   res <- sneer(iris, method = "dhssne", alpha = 0.5)
+#'
 #'   # wTSNE treats the input probability like a graph where the probabilities
 #'   # are weighted edges and adds extra repulsion to nodes with higher degrees
 #'   res <- sneer(iris, scale_type = "a", method = "wtsne")
@@ -690,6 +737,7 @@ sneer <- function(df,
                   ndim = 2,
                   method = "tsne",
                   alpha = 0.5,
+                  dof = 10, kernel_opt_iter = 50,
                   lambda = 0.5,
                   kappa = 0.5,
                   scale_type = "none",
@@ -728,6 +776,16 @@ sneer <- function(df,
     message("Found ", length(indexes), " numeric columns")
   }
 
+  if (alpha < 0) {
+    stop("alpha must be non-negative")
+  }
+  if (dof < 0) {
+    stop("dof must be non-negative")
+  }
+  if (kernel_opt_iter < 0) {
+    stop("kernel_opt_iter must be non-negative")
+  }
+
   normalize_cost <- TRUE
 
   embed_methods <- list(
@@ -748,7 +806,11 @@ sneer <- function(df,
     asne_plugin = function() { asne_plugin() },
     hssne_plugin = function() { hssne_plugin(alpha = alpha) },
     nerv_plugin = function() { unerv_plugin(lambda = lambda) },
-    jse_plugin = function() { jse_plugin(kappa = kappa) }
+    jse_plugin = function() { jse_plugin(kappa = kappa) },
+    itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter) },
+    dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter) },
+    dhssne_plugin = function() { dhssne(alpha = alpha,
+                                        opt_iter = kernel_opt_iter) }
   )
 
   extra_costs <- NULL

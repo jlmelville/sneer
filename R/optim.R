@@ -131,7 +131,8 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
                                                  par_old = par)
   # message("nf = ", step_info$nf, " ng = ", step_info$ng
   #         , " f = ", formatC(step_info$f)
-  #         , " step = ", step_info$step)
+  #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
+
   mize <- opt$mize_module$check_mize_convergence(step_info)
 
   opt$mize <- mize
