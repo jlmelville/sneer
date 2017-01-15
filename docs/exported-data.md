@@ -59,6 +59,12 @@ The names you can ask for are:
   Calculated if not present. A summary of this vector appears in the console 
   log after input initialization if carrying out ws-SNE (by setting 
   `method = "wssne"`).
+* `dyn` Dynamically optimized non-coordinate parameters. A list containing 
+  sublists, with names corresponding to the names of the parameters optimized. 
+  This is only avaiable if using 
+  [Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14)
+  (`method = "itsne"`), where `dyn` will contain a list `dof`, which contains
+  the optimized degrees of freedom parameter for each output coordinate.
 
 For every name you provide, the list returned by `sneer` will contain an extra
 item in the list with the same name. If you ask for an item that doesn't make

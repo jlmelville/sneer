@@ -180,6 +180,15 @@ res <- sneer(iris, scale_type = "a", method = "jse", perp_scale = "multi",
 res <- sneer(iris, scale_type = "a", method = "hssne", alpha = 1.1)
 ```
 
+#### Inhomogenenous t-SNE
+```R
+# Similar to HSSNE, but directly optimizes a per-point degree of freedom
+# You don't need to specify the values, but you may want to wait a few 
+# iterations (e.g. 25) to let the configuration settle down before starting the
+# degree of freedom optimization:
+res <- sneer(iris, method = "itsne", kernel_opt_iter = 25)
+```
+
 #### Importance-weighted SNE
 ```R
 # ws-SNE treats the input probability like a graph where the probabilities
@@ -248,7 +257,6 @@ roc_auc <- roc_auc_embed(res$dy, iris$Species)
 ```
 
 
-
 #### Visualizing the Results
 
 ```R
@@ -299,6 +307,23 @@ embed_plot(res$coords, res$prec, color_scheme = "Spectral")
 # 0 means no neighbors preserved, 1 means all of them
 pres32 <- nbr_pres(res$dx, res$dy, 32)
 embed_plot(res$coords, pres32, cex = 1.5)
+```
+
+An inhomogeneous t-SNE example:
+
+```R
+# dof = 50, initial degrees of freedom for each point more Gaussian-like than
+# t-distributed
+# kernel_opt_iter = 0, don't wait any interations to start optimizing the d.o.f.
+# ret = c("dyn"), export the optimized d.o.f.
+iris_itsne <- sneer(iris, method = "itsne",  kernel_opt_iter = 0, dof = 50, 
+                    ret = c("dyn"))
+library(RColorBrewer)
+# View the d.o.f on the output coordinates
+# Dark blue means that point didn't need to stretch its output distances much
+# compared to the input distances. Lighter colors indicate those that used
+# a t-SNE-like stretching
+embed_plot(iris_itsne$coords, iris_itsne$dyn$dof, color_scheme = "Blues")
 ```
 
 #### View Embeddings with Plotly

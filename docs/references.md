@@ -60,14 +60,6 @@ In *Proceedings of the 23rd International Conference on Neural Information Proce
 (pp. 119-128).
 http://dx.doi.org/10.1007/978-3-319-46675-0_14
 
-Not implemented in `sneer`, but advocates a similar approach to HSSNE, although
-unfortunately the authors seem unaware of that publication. Also, they are too 
-modest to give their method a snappy name, so I have dubbed it Inhomogeneous 
-t-SNE or "it-SNE" (unless you really prefer "t-SNE-wIDoF'). One of the main
-differences is that the degree of tail-heaviness is allowed to vary per-point
-in the output kernel, and these values are optimized simultaneously with the
-output coordinates, rather than being fixed by the user.
-
 #### Weighted Symmetric Stochastic Neighbor Embedding (ws-SNE)
 Yang, Z., Peltonen, J., & Kaski, S. (2014).
 Optimization equivalence of divergences improves neighbor embedding.

@@ -97,6 +97,18 @@ iris_tsne <- sneer(iris, method = "tsne")
 Compared to SSNE, the heavier tail of the output kernel in t-SNE allows close
 neighbors to take up larger distances in the output configuration.
 
+#### t-Distributed ASNE (t-ASNE)
+
+This is not a literature method. But if t-SNE is a modified version of SSNE,
+does an equivalent version exist for ASNE? In `sneer`, the answer is yes, 
+although I'm not aware of any literature that explicitly defines and studies
+it, although parts of the literature on NerV and inhomogeneous t-SNE 
+(see below) touch on it. 
+
+```R
+iris_tasne <- sneer(iris, method = "tasne")
+```
+
 #### Weighted Symmetric SNE (ws-SNE)
 
 This method scales each weight by its "importance", which is related to the
@@ -201,6 +213,69 @@ letter names, that do nearly the same thing, but apply to two different
 embedding methods, you're not alone, but I decided to try and stick with
 the nomenclature used in the original publications wherever possible, to make
 comparison with literature results easier.
+
+#### Inhomogeneous t-SNE (it-SNE)
+
+[Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) is 
+reminiscent of HSSNE, in that it defines a parameter that controls the 
+amount of "stretching" that's allowed of the output space compared to
+the input space. To editorialize for a moment, it's so similar that I am
+surprised that a reference to HSSNE does not appear in this paper.
+
+Anyway, two big differences to HSSNE are that the stretching parameter is
+now defined per point, and that each of these values are optimized independently
+along with the coordinates.
+
+The initial value of the stretching parameters, which are associated with the
+degrees of freedom of the t-distribution, can be controlled by setting 
+`dof`. `dof = 1` is the t-distribution as used in t-SNE, and making `dof` 
+infinite gives a gaussian distribution.
+
+```R
+iris_itsne <- sneer(iris, method = "itsne", dof = 1) # initial t-distribution
+iris_itsne <- sneer(iris, method = "itsne", dof = 1e3) # initial Gaussian
+```
+
+It's probably better to initialize the `dof` parameters to a larger value,
+(the authors suggest `dof = 10`, which is the default) to ensure that the 
+gradients are initially large for all points. Otherwise you run the risk of
+outlying points losing their gradients and not moving.
+
+The authors also suggest not starting the optimization of `dof` immediately.
+Their procedure is the usual t-SNE optimization process of starting from
+a small random, normal distribution, using early exaggeration, continuing to
+optimize just the coordinates, and then adding optimization of `dof`. When
+to start optimizing `dof` is controlled by the `kernel_opt_iter` parameter,
+which by default is `50` iterations (if you were using early exaggeration, is 
+the default iteration number at which that stops). You may not have to wait
+as long (or at all) if you are initializing from a non-random configuration.
+
+```R
+# Start optimizing dof straight away
+iris_itsne <- sneer(iris, method = "itsne", kernel_opt_iter = 0)
+```
+
+If you are curious about what the values of `dof` end up as, you can ask for
+the extra parameters to be exported:
+
+```R
+iris_itsne <- sneer(iris, method = "itsne", ret = c("dyn"))
+# Results are in a vector called dof, itself part of the dyn list
+summary(iris_itsne$dyn$dof)
+```
+
+See the [Exported Data](exported-data.html) for more on exporting.
+
+Because you are mixing both coordinates and the `dof` parameter for optimizing,
+I strongly suggest you stick with a standard optimizer (like the default L-BFGS)
+when using inhomogeneous t-SNE. Adding these extra parameters does also slow
+down convergence.
+
+Finally, a minor point on nomenclature: like JSE and NerV, it-SNE uses a
+point-wise, rather than a pair-wise normalization approach. The embedding is 
+therefore more closely related to ASNE and t-ASNE than t-SNE, despite the name.
+If you don't like the results you see with it-SNE compared with t-SNE, you
+may want to compare with `method = "asne"` and `method = "tasne"`.
 
 #### Console log
 
