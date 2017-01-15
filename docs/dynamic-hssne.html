@@ -193,6 +193,7 @@ w_{ij}
 \]</span></p>
 <p>We’ve already seen when deriving the t-SNE gradient that there’s a pleasant bit of cancelling when you’re using the KL divergence and a kernel gradient that is proportional to <span class="math inline">\(-w_{ij}\)</span>. And mercifully, this is still the case:</p>
 <p><span class="math display">\[
+\frac{\partial C}{\partial \alpha} = 
   \sum_{ij}
   \left[
     \left(
@@ -221,7 +222,35 @@ w_{ij}
 <p>This looks just like the SSNE or t-SNE gradient, except with an admittedly uglier multiplier of <span class="math inline">\(p_{ij} - q_{ij}\)</span>.</p>
 <p>In principle, this is all you need to optimize <span class="math inline">\(\alpha\)</span> as one extra parameter. However, there’s the slight problem that <span class="math inline">\(\alpha\)</span> is constrained to be larger than zero, and the gradient explicitly contains a log term which will blow up if you have the temerity to allow <span class="math inline">\(\alpha\)</span> to go non-positive.</p>
 <p>This problem also affects the free parameters in inhomogeneous t-SNE, which must also be positive. The simple solution they use is to define a new variable, which in terms of HSSNE, would be:</p>
-<p><span class="math display">\[\alpha = \xi^2 + \eta\]</span></p>
+<p><span class="math display">\[\alpha = \xi^2 + \epsilon\]</span></p>
+<p>where <span class="math inline">\(\epsilon\)</span> is a small constant to enforce positivity (0.001 in the inhomogeneous t-SNE paper). The optimization is now done in terms of <span class="math inline">\(\xi\)</span>, rather than <span class="math inline">\(\alpha\)</span>.</p>
+<p>Fortunately, we didn’t just waste our time coming up with the gradient in terms of <span class="math inline">\(\alpha\)</span>, as the substitution of <span class="math inline">\(\xi\)</span> for <span class="math inline">\(\alpha\)</span> in the heavy tail expression doesn’t change the gradient too much:</p>
+<p><span class="math display">\[
+\frac{\partial w_{ij}}{\partial \xi} 
+=-
+2\xi\left[
+\frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
+-
+\frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+\right]
+w_{ij}
+\]</span></p>
+<p><span class="math display">\[
+\frac{\partial C}{\partial \xi} = 
+  2\xi
+  \sum_{ij}
+  \left[
+    \left(
+      \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
+      -
+      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+    \right)
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+\right]
+\]</span></p>
+<p>Now, as long as you remember to convert back and forth between <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\xi\)</span> where needed, we can now optimize <span class="math inline">\(\alpha\)</span> at the same time as the coordinates.</p>
 
 
 
