@@ -128,7 +128,7 @@ test_that("it-SNE analytical gradient is correct for range of dof", {
 })
 
 hssne_res <- quick_embed(method = hssne(alpha = 0.5))
-uhssne_res <- quick_embed(method = lreplace(hssne_plugin(alpha = 0.5), prob_type = "cond"))
+hcsne_res <- quick_embed(method = lreplace(hssne_plugin(alpha = 0.5), prob_type = "cond"))
 asne_res <- quick_embed(method = asne(beta = 0.5))
 tasne_res <- quick_embed(method = tasne())
 
@@ -157,7 +157,12 @@ test_that("during fixed alpha iterations DHSSNE behaves like HSSNE", {
   expect_equal(res$report$costs, hssne_res$report$costs)
 })
 
-test_that("during fixed alpha iterations iHSSNE behaves like an un-symmetric HSSNE", {
+test_that("during fixed alpha iterations iHCSNE behaves like HCSNE", {
+  res <- quick_embed(method = ihcsne(alpha = 0.5, opt_iter = Inf))
+  expect_equal(res$report$costs, hcsne_res$report$costs)
+})
+
+test_that("during fixed alpha iterations iHSSNE behaves like HSSNE", {
   res <- quick_embed(method = ihssne(alpha = 0.5, opt_iter = Inf))
-  expect_equal(res$report$costs, uhssne_res$report$costs)
+  expect_equal(res$report$costs, hssne_res$report$costs)
 })
