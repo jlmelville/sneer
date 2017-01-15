@@ -143,7 +143,24 @@ $$
 $$
 
 This looks just like the SSNE or t-SNE gradient, except with an admittedly
-uglier multiplier of $p_{ij} - q_{ij}$.
+uglier multiplier of $p_{ij} - q_{ij}$. You may want to pull a $1/\alpha$ term
+out to give:
+
+$$
+\frac{\partial C}{\partial \alpha} = 
+  \frac{1}{\alpha}
+  \sum_{ij}
+  \left[
+    \left(
+      \frac{f_{ij}}{\alpha f_{ij} +1}
+      -
+      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha}
+    \right)
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+\right]
+$$
 
 In principle, this is all you need to optimize $\alpha$ as one extra parameter.
 However, there's the slight problem that $\alpha$ is constrained to be larger
@@ -167,23 +184,23 @@ expression doesn't change the gradient too much:
 $$
 \frac{\partial w_{ij}}{\partial \xi} 
 =-
-2\xi\left[
-\frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
+\frac{2\xi}{\alpha}\left[
+\frac{f_{ij}}{\alpha f_{ij} +1}
 -
-\frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+\frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha}
 \right]
 w_{ij}
 $$
 
 $$
 \frac{\partial C}{\partial \xi} = 
-  2\xi
+  \frac{2\xi}{\alpha}
   \sum_{ij}
   \left[
     \left(
-      \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
+      \frac{f_{ij}}{\alpha f_{ij} +1}
       -
-      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -194,4 +211,33 @@ $$
 Now, as long as you remember to convert back and forth between $\alpha$ and
 $\xi$ where needed, we can now optimize $\alpha$ at the same time as the 
 coordinates.
+
+## Including Precisions
+
+As mentioned in the [gradients](gradient.html) page, although the original
+HSSNE paper doesn't include an exponential decay factor in its expression, it's
+easy to add it:
+
+$$w_{ij} = \frac{1}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{1}{\alpha}}}$$
+
+Because $\beta_i$ is constant, the effect on the gradient is minimal:
+
+$$
+\frac{\partial C}{\partial \xi} = 
+  \frac{2\xi}{\alpha}
+  \sum_{ij}
+  \left[
+    \left(
+      \frac{\beta_i f_{ij}}{\alpha \beta_i f_{ij} +1}
+      -
+      \frac{\ln\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha}
+    \right)
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+\right]
+$$
+
+Using this version of the gradient makes DHSSNE compatible with techniques where
+$\beta_i \neq 1$ (e.g. multiscaling and some versions of NeRV).
 

@@ -219,7 +219,22 @@ w_{ij}
       \right)
 \right]
 \]</span></p>
-<p>This looks just like the SSNE or t-SNE gradient, except with an admittedly uglier multiplier of <span class="math inline">\(p_{ij} - q_{ij}\)</span>.</p>
+<p>This looks just like the SSNE or t-SNE gradient, except with an admittedly uglier multiplier of <span class="math inline">\(p_{ij} - q_{ij}\)</span>. You may want to pull a <span class="math inline">\(1/\alpha\)</span> term out to give:</p>
+<p><span class="math display">\[
+\frac{\partial C}{\partial \alpha} = 
+  \frac{1}{\alpha}
+  \sum_{ij}
+  \left[
+    \left(
+      \frac{f_{ij}}{\alpha f_{ij} +1}
+      -
+      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha}
+    \right)
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+\right]
+\]</span></p>
 <p>In principle, this is all you need to optimize <span class="math inline">\(\alpha\)</span> as one extra parameter. However, there’s the slight problem that <span class="math inline">\(\alpha\)</span> is constrained to be larger than zero, and the gradient explicitly contains a log term which will blow up if you have the temerity to allow <span class="math inline">\(\alpha\)</span> to go non-positive.</p>
 <p>This problem also affects the free parameters in inhomogeneous t-SNE, which must also be positive. The simple solution they use is to define a new variable, which in terms of HSSNE, would be:</p>
 <p><span class="math display">\[\alpha = \xi^2 + \epsilon\]</span></p>
@@ -228,22 +243,22 @@ w_{ij}
 <p><span class="math display">\[
 \frac{\partial w_{ij}}{\partial \xi} 
 =-
-2\xi\left[
-\frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
+\frac{2\xi}{\alpha}\left[
+\frac{f_{ij}}{\alpha f_{ij} +1}
 -
-\frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+\frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha}
 \right]
 w_{ij}
 \]</span></p>
 <p><span class="math display">\[
 \frac{\partial C}{\partial \xi} = 
-  2\xi
+  \frac{2\xi}{\alpha}
   \sum_{ij}
   \left[
     \left(
-      \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
+      \frac{f_{ij}}{\alpha f_{ij} +1}
       -
-      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -251,6 +266,28 @@ w_{ij}
 \right]
 \]</span></p>
 <p>Now, as long as you remember to convert back and forth between <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\xi\)</span> where needed, we can now optimize <span class="math inline">\(\alpha\)</span> at the same time as the coordinates.</p>
+<div id="including-precisions" class="section level2">
+<h2>Including Precisions</h2>
+<p>As mentioned in the <a href="gradient.html">gradients</a> page, although the original HSSNE paper doesn’t include an exponential decay factor in its expression, it’s easy to add it:</p>
+<p><span class="math display">\[w_{ij} = \frac{1}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{1}{\alpha}}}\]</span></p>
+<p>Because <span class="math inline">\(\beta_i\)</span> is constant, the effect on the gradient is minimal:</p>
+<p><span class="math display">\[
+\frac{\partial C}{\partial \xi} = 
+  \frac{2\xi}{\alpha}
+  \sum_{ij}
+  \left[
+    \left(
+      \frac{\beta_i f_{ij}}{\alpha \beta_i f_{ij} +1}
+      -
+      \frac{\ln\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha}
+    \right)
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+\right]
+\]</span></p>
+<p>Using this version of the gradient makes DHSSNE compatible with techniques where <span class="math inline">\(\beta_i \neq 1\)</span> (e.g. multiscaling and some versions of NeRV).</p>
+</div>
 
 
 
