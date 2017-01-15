@@ -216,8 +216,21 @@ iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, kernel_opt_iter = 0)</c
 # Results are in a vector called dof, itself part of the dyn list
 summary(iris_itsne$dyn$dof)</code></pre>
 <p>See the <a href="exported-data.html">Exported Data</a> for more on exporting.</p>
-<p>Because you are mixing both coordinates and the <code>dof</code> parameter for optimizing, I strongly suggest you stick with a standard optimizer (like the default L-BFGS) when using inhomogeneous t-SNE.</p>
+<p>Because you are mixing both coordinates and the <code>dof</code> parameter for optimizing, I strongly suggest you stick with a standard optimizer (like the default L-BFGS) when using inhomogeneous t-SNE. Adding these extra parameters does also slow down convergence.</p>
 <p>Finally, a minor point on nomenclature: like JSE and NerV, it-SNE uses a point-wise, rather than a pair-wise normalization approach. The embedding is therefore more closely related to ASNE and t-ASNE than t-SNE, despite the name. If you don’t like the results you see with it-SNE compared with t-SNE, you may want to compare with <code>method = &quot;asne&quot;</code> and <code>method = &quot;tasne&quot;</code>.</p>
+</div>
+<div id="dynamic-hssne-dhssne" class="section level4">
+<h4>Dynamic HSSNE (DHSSNE)</h4>
+<p>The similarities between HSSNE and it-SNE inspired me to create the obvious extension to HSSNE: instead of having to choose a fixed version of HSSNE’s <code>alpha</code> parameter, optimize it directly. Because the value of <code>alpha</code> fluctuates throughout the optimization, I call this “dynamic” HSSNE.</p>
+<p>Two reasons to choose between DHSSNE and it-SNE are that DHSSNE provides a dynamic generalization between SSNE and t-SNE, whereas it-SNE generalizes ASNE and t-ASNE; and DHSSNE only optimizes a single global parameter. This makes it less flexible, but it might make convergence a bit easier.</p>
+<p>You can continue to specify <code>alpha</code> to provide an initial value. Like it-SNE, it makes sense to initialize it to give gaussian-like behavior (so <code>alpha = 0</code>, which makes it like SSNE initially), although maybe because it’s using a single global parameter, DHSSNE seems less sensitive to initialization issues than it-SNE, which needs to optimize multiple parameters.</p>
+<p>The <code>ret</code> and <code>kernel_opt_iter</code> parameters also apply to <code>dhssne</code>.</p>
+<pre class="r"><code># Initialize alpha to 0, don't wait to start optimizing, store optimized alpha
+iris_dhssne &lt;- sneer(iris, method = &quot;dhssne&quot;, alpha = 0,
+                     kernel_opt_iter = 0, ret = c(&quot;dyn&quot;))
+# Optimized alpha:
+iris_dhssne$dyn$alpha</code></pre>
+<p>I made this method up, so you’re not going to find it in any literature anywhere. But I think it’s useful. There is some extra background material on <a href="dynamic-hssne.html">computing the gradient for DHSSNE</a>, if you’re interested in more details.</p>
 </div>
 <div id="console-log" class="section level4">
 <h4>Console log</h4>

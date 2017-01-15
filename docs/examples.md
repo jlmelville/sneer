@@ -180,13 +180,20 @@ res <- sneer(iris, scale_type = "a", method = "jse", perp_scale = "multi",
 res <- sneer(iris, scale_type = "a", method = "hssne", alpha = 1.1)
 ```
 
+#### Dynamic HSSNE
+```R
+# Similar to HSSNE, but directly optimizes alpha along with the coordinates.
+# We wait 25 iterations here before starting to modify alpha from its initial 
+# value of 0, to allow the configuration to settle a little bit:
+res <- sneer(iris, method = "dhssne", kernel_opt_iter = 25, alpha = 0)
+```
+
 #### Inhomogenenous t-SNE
 ```R
-# Similar to HSSNE, but directly optimizes a per-point degree of freedom
-# You don't need to specify the values, but you may want to wait a few 
-# iterations (e.g. 25) to let the configuration settle down before starting the
-# degree of freedom optimization:
-res <- sneer(iris, method = "itsne", kernel_opt_iter = 25)
+# Similar to DHSSNE, but directly optimizes a per-point degree of freedom
+# Also recommended to wait a few iterations before starting optimization of
+# each dof value from initial value of 10:
+res <- sneer(iris, method = "itsne", kernel_opt_iter = 25, dof = 10)
 ```
 
 #### Importance-weighted SNE

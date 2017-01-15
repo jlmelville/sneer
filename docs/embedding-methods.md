@@ -277,6 +277,39 @@ therefore more closely related to ASNE and t-ASNE than t-SNE, despite the name.
 If you don't like the results you see with it-SNE compared with t-SNE, you
 may want to compare with `method = "asne"` and `method = "tasne"`.
 
+#### Dynamic HSSNE (DHSSNE)
+
+The similarities between HSSNE and it-SNE inspired me to create the obvious
+extension to HSSNE: instead of having to choose a fixed version of HSSNE's
+`alpha` parameter, optimize it directly. Because the value of `alpha` fluctuates
+throughout the optimization, I call this "dynamic" HSSNE.
+
+Two reasons to choose between DHSSNE and it-SNE are that DHSSNE provides a 
+dynamic generalization between SSNE and t-SNE, whereas it-SNE generalizes ASNE
+and t-ASNE; and DHSSNE only optimizes a single global parameter. This makes it
+less flexible, but it might make convergence a bit easier.
+
+You can continue to specify `alpha` to provide an initial value. Like it-SNE,
+it makes sense to initialize it to give gaussian-like behavior (so `alpha = 0`,
+which makes it like SSNE initially), although maybe because it's using a single 
+global parameter, DHSSNE seems less sensitive to initialization issues than 
+it-SNE, which needs to optimize multiple parameters.
+
+The `ret` and `kernel_opt_iter` parameters also apply to `dhssne`. 
+
+```R
+# Initialize alpha to 0, don't wait to start optimizing, store optimized alpha
+iris_dhssne <- sneer(iris, method = "dhssne", alpha = 0,
+                     kernel_opt_iter = 0, ret = c("dyn"))
+# Optimized alpha:
+iris_dhssne$dyn$alpha
+```
+
+I made this method up, so you're not going to find it in any literature 
+anywhere. But I think it's useful. There is some extra background material on 
+[computing the gradient for DHSSNE](dynamic-hssne.html), if you're interested in
+more details.
+
 #### Console log
 
 The details of what appears during optimization is covered in the 

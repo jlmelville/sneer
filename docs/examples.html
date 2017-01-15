@@ -271,13 +271,19 @@ res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;jse&quot;, perp
 # Setting it to 1 is equivalent to TSNE, so 1.1 is a bit of an extra push:
 res &lt;- sneer(iris, scale_type = &quot;a&quot;, method = &quot;hssne&quot;, alpha = 1.1)</code></pre>
 </div>
+<div id="dynamic-hssne" class="section level4">
+<h4>Dynamic HSSNE</h4>
+<pre class="r"><code># Similar to HSSNE, but directly optimizes alpha along with the coordinates.
+# We wait 25 iterations here before starting to modify alpha from its initial 
+# value of 0, to allow the configuration to settle a little bit:
+res &lt;- sneer(iris, method = &quot;dhssne&quot;, kernel_opt_iter = 25, alpha = 0)</code></pre>
+</div>
 <div id="inhomogenenous-t-sne" class="section level4">
 <h4>Inhomogenenous t-SNE</h4>
-<pre class="r"><code># Similar to HSSNE, but directly optimizes a per-point degree of freedom
-# You don't need to specify the values, but you may want to wait a few 
-# iterations (e.g. 25) to let the configuration settle down before starting the
-# degree of freedom optimization:
-res &lt;- sneer(iris, method = &quot;itsne&quot;, kernel_opt_iter = 25)</code></pre>
+<pre class="r"><code># Similar to DHSSNE, but directly optimizes a per-point degree of freedom
+# Also recommended to wait a few iterations before starting optimization of
+# each dof value from initial value of 10:
+res &lt;- sneer(iris, method = &quot;itsne&quot;, kernel_opt_iter = 25, dof = 10)</code></pre>
 </div>
 <div id="importance-weighted-sne" class="section level4">
 <h4>Importance-weighted SNE</h4>
