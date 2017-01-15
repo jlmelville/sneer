@@ -242,7 +242,7 @@ tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     prob_type = "row")
 }
 
-# t-Distribute "Pairwise" Stochastic Neighbor Embedding (t-PSNE)
+# t-Distributed "Pairwise" Stochastic Neighbor Embedding (t-PSNE)
 #
 # A probability-based embedding method.
 #
