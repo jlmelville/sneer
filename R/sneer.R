@@ -119,7 +119,7 @@
 #' (2016, October).
 #' t-Distributed Stochastic Neighbor Embedding with Inhomogeneous Degrees of
 #' Freedom.
-#' In \emph{International Conference on Neural Information Processing} (pp. 119-128).
+#' In \emph{International Conference on Neural Information Processing (ICONIP 2016)} (pp. 119-128).
 #' Springer International Publishing.
 #'
 #' Nesterov Accelerated Gradient:
@@ -520,7 +520,7 @@ NULL
 #' (2016, October).
 #' t-Distributed Stochastic Neighbor Embedding with Inhomogeneous Degrees of
 #' Freedom.
-#' In \emph{International Conference on Neural Information Processing} (pp. 119-128).
+#' In \emph{International Conference on Neural Information Processing (ICONIP 2016)} (pp. 119-128).
 #' Springer International Publishing.
 #'
 #' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
