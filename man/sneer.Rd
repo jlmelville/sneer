@@ -255,6 +255,8 @@ completes values are:
    leaving the output similarity kernels to all have unit precision.
  \item \code{"transfer"} Transfer the input similarity kernel parameters to the
    output similarity kernel. This method was suggesed by Venna et al (2010).
+   This is only compatible with methods \code{"asne"}, \code{"jse"} and
+   \code{"nerv"}.
  \item \code{"scale"} Scale the output kernel precisions based on the target
    \code{perplexity} and the intrinsic dimensionality of the input data. This
    method is part of the multiscaling technique proposed by Lee et al (2015).

@@ -222,6 +222,8 @@ NULL
 #'    leaving the output similarity kernels to all have unit precision.
 #'  \item \code{"transfer"} Transfer the input similarity kernel parameters to the
 #'    output similarity kernel. This method was suggesed by Venna et al (2010).
+#'    This is only compatible with methods \code{"asne"}, \code{"jse"} and
+#'    \code{"nerv"}.
 #'  \item \code{"scale"} Scale the output kernel precisions based on the target
 #'    \code{perplexity} and the intrinsic dimensionality of the input data. This
 #'    method is part of the multiscaling technique proposed by Lee et al (2015).
@@ -802,15 +804,10 @@ sneer <- function(df,
     tasne = function() { tasne() },
     tpsne = function() { tpsne() },
     tpsne_plugin = function() { tpsne_plugin() },
-    ssne_plugin = function() { ssne_plugin() },
-    asne_plugin = function() { asne_plugin() },
-    hssne_plugin = function() { hssne_plugin(alpha = alpha) },
     nerv_plugin = function() { unerv_plugin(lambda = lambda) },
     jse_plugin = function() { jse_plugin(kappa = kappa) },
     itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter) },
-    dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter) },
-    dhssne_plugin = function() { dhssne(alpha = alpha,
-                                        opt_iter = kernel_opt_iter) }
+    dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter) }
   )
 
   extra_costs <- NULL
@@ -825,6 +822,7 @@ sneer <- function(df,
     }
 
     # Need to use plugin method if precisions can be non-uniform
+    # NB only applicable for 'cond' and 'row' probability types
     if (prec_scale == "t") {
       new_method <- paste0(method, "_plugin")
       if (!new_method %in% names(embed_methods)) {
