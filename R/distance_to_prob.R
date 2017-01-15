@@ -219,7 +219,18 @@ dist2_to_weights <- function(d2m, kernel) {
 #  probability matrix.}
 weights_to_probs <- function(wm, method) {
 
-  prob_type <- method$prob_type
+  # Allows for P to be joint and Q to be conditional
+  # (only matters for methods with asymmetric kernels, where joint-izing
+  # the output probabilities requires an extra step and hence change to
+  # the gradient)
+  # ASSUMPTION: assumes that weights_to_probs is only used by output distances
+  # and not input probability calibration
+  if (!is.null(method$out_prob_type)) {
+    prob_type <- method$out_prob_type
+  }
+  else {
+    prob_type <- method$prob_type
+  }
 
   if (prob_type == "joint") {
     weight_type <- attr(wm, "type")
