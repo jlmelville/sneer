@@ -230,12 +230,26 @@ test_that("Dynamic parameter gradients", {
   expect_grad(dhssne(alpha = 0.5), label = "dhssne alpha 0.5")
   expect_grad(dhssne(alpha = 1), label = "dhssne alpha 1")
 
+  # Conditional version of the above
+  expect_grad(dhcsne(alpha = 0.001), label = "dhcsne alpha 0.001")
+  expect_grad(dhcsne(alpha = 0.5), label = "dhcsne alpha 0.5")
+  expect_grad(dhcsne(alpha = 1), label = "dhcsne alpha 1")
+
+  # iHSSNE sets input probs as joint and output probs as cond
   expect_grad(ihssne(alpha = seq(0.001, 0.5, length.out = nrow(inp_df))),
                      label = "ihssne alpha 0.001:0.5")
   expect_grad(ihssne(alpha = seq(0.5, 1, length.out = nrow(inp_df))),
               label = "ihssne alpha 0.5:1")
   expect_grad(ihssne(alpha = seq(1, 5, length.out = nrow(inp_df))),
               label = "ihssne alpha 1:5")
+
+  # Conditional version of iHSSNE, uses prob_type = "cond" for inp and out
+  expect_grad(ihcsne(alpha = seq(0.001, 0.5, length.out = nrow(inp_df))),
+              label = "ihcsne alpha 0.001:0.5")
+  expect_grad(ihcsne(alpha = seq(0.5, 1, length.out = nrow(inp_df))),
+              label = "ihcsne alpha 0.5:1")
+  expect_grad(ihcsne(alpha = seq(1, 5, length.out = nrow(inp_df))),
+              label = "ihcsne alpha 1:5")
 
   expect_grad(htsne(dof = 0.001), label = "htsne dof 0.001")
   expect_grad(htsne(dof = 1), label = "htsne dof 1")
