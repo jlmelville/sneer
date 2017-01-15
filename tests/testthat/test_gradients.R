@@ -225,31 +225,42 @@ test_that("importance weighting", {
   expect_grad(importance_weight(ssne_plugin()), label = "plugin wssne")
 })
 
-test_that("Dynamic parameter gradients", {
+test_that("Dynamic HSSNE gradients", {
   expect_grad(dhssne(alpha = 0.001), label = "dhssne alpha 0.001")
   expect_grad(dhssne(alpha = 0.5), label = "dhssne alpha 0.5")
   expect_grad(dhssne(alpha = 1), label = "dhssne alpha 1")
 
-  # Conditional version of the above
-  expect_grad(dhcsne(alpha = 0.001), label = "dhcsne alpha 0.001")
-  expect_grad(dhcsne(alpha = 0.5), label = "dhcsne alpha 0.5")
-  expect_grad(dhcsne(alpha = 1), label = "dhcsne alpha 1")
+  # Pair-wise version of the above
+  expect_grad(dh3sne(alpha = 0.001), label = "dh3sne alpha 0.001")
+  expect_grad(dh3sne(alpha = 0.5), label = "dh3sne alpha 0.5")
+  expect_grad(dh3sne(alpha = 1), label = "dh3sne alpha 1")
 
-  # iHSSNE sets input probs as joint and output probs as cond
-  expect_grad(ihssne(alpha = seq(0.001, 0.5, length.out = nrow(inp_df))),
-                     label = "ihssne alpha 0.001:0.5")
-  expect_grad(ihssne(alpha = seq(0.5, 1, length.out = nrow(inp_df))),
-              label = "ihssne alpha 0.5:1")
-  expect_grad(ihssne(alpha = seq(1, 5, length.out = nrow(inp_df))),
-              label = "ihssne alpha 1:5")
+  # Pair-wise version of the above
+  expect_grad(dhpsne(alpha = 0.001), label = "dhpsne alpha 0.001")
+  expect_grad(dhpsne(alpha = 0.5), label = "dhpsne alpha 0.5")
+  expect_grad(dhpsne(alpha = 1), label = "dhpsne alpha 1")
+})
+
+test_that("Dynamic inhomogeneous HSSNE gradients", {
+
+  # iH3SNE sets input probs as joint and output probs as cond
+  expect_grad(ih3sne(alpha = seq(0.001, 0.5, length.out = nrow(inp_df))),
+              label = "ih3sne alpha 0.001:0.5")
+  expect_grad(ih3sne(alpha = seq(0.5, 1, length.out = nrow(inp_df))),
+              label = "ih3sne alpha 0.5:1")
+  expect_grad(ih3sne(alpha = seq(1, 5, length.out = nrow(inp_df))),
+              label = "ih3sne alpha 1:5")
 
   # Conditional version of iHSSNE, uses prob_type = "cond" for inp and out
-  expect_grad(ihcsne(alpha = seq(0.001, 0.5, length.out = nrow(inp_df))),
-              label = "ihcsne alpha 0.001:0.5")
-  expect_grad(ihcsne(alpha = seq(0.5, 1, length.out = nrow(inp_df))),
-              label = "ihcsne alpha 0.5:1")
-  expect_grad(ihcsne(alpha = seq(1, 5, length.out = nrow(inp_df))),
-              label = "ihcsne alpha 1:5")
+  expect_grad(ihpsne(alpha = seq(0.001, 0.5, length.out = nrow(inp_df))),
+              label = "ihpsne alpha 0.001:0.5")
+  expect_grad(ihpsne(alpha = seq(0.5, 1, length.out = nrow(inp_df))),
+              label = "ihpsne alpha 0.5:1")
+  expect_grad(ihpsne(alpha = seq(1, 5, length.out = nrow(inp_df))),
+              label = "ihpsne alpha 1:5")
+})
+
+test_that("inhomogeneous t-SNE gradients", {
 
   expect_grad(htsne(dof = 0.001), label = "htsne dof 0.001")
   expect_grad(htsne(dof = 1), label = "htsne dof 1")

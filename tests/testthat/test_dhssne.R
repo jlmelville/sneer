@@ -2,6 +2,7 @@ context("Dynamic SNE")
 
 inp_df <- iris[1:50, 1:4]
 nr <- nrow(inp_df)
+betas <- seq(1e-3, 1, length.out = nr)
 
 gradient_fd_xi <- function(res, param_name = "alpha", diff = 1e-5,
                            eps = .Machine$double.eps) {
@@ -87,9 +88,29 @@ quick_embed <- function(method, df = iris[, 1:4],
              export = c("report"),opt = opt)
 }
 
-test_that("DHSSNE analytical gradient is correct for range of alpha", {
+# Test Global Alpha ------------------------------------------------------------
+
+# Symmetric
+test_that("DHSSNE analytical gradient is correct for range of single alpha and single beta", {
+  # multi beta not implemented yet
   for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
-    res <- embedder(dhssne(alpha = alpha))
+    for (beta in c(1, 0.5)) {
+      res <- embedder(dhssne(alpha = alpha, beta = beta))
+      fd_grad <- gradient_fd_xi(res)
+      an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                     a2x(res$method$kernel$alpha))
+      expect_equal(an_grad, fd_grad, tol = 1e-6,
+                   info = paste0(formatC(alpha), " ", formatC(beta)))
+    }
+  }
+})
+
+# Pair-wise
+test_that("DHPSNE analytical gradient is correct for range of single alpha and multi beta", {
+  # multi beta ok for conditional P/Q
+  for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
+    res <- embedder(dhpsne(alpha = alpha, beta = betas))
+
     fd_grad <- gradient_fd_xi(res)
     an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
                                    a2x(res$method$kernel$alpha))
@@ -97,9 +118,26 @@ test_that("DHSSNE analytical gradient is correct for range of alpha", {
   }
 })
 
-test_that("iHSSNE analytical gradient is correct for range of alpha", {
+# Semi Symmetric
+test_that("DH3SNE analytical gradient is correct for range of single alpha and multi beta", {
+  # multi beta ok for joint P/conditional Q
   for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
-    res <- embedder(ihssne(alpha = seq(alpha, alpha * 2, length.out = nr)))
+    res <- embedder(dh3sne(alpha = alpha, beta = betas))
+
+    fd_grad <- gradient_fd_xi(res)
+    an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                   a2x(res$method$kernel$alpha))
+    expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(alpha))
+  }
+})
+
+# Test Point-wise Alphas -------------------------------------------------------
+
+# Semi-symmetric
+test_that("iH3SNE analytical gradient is correct for range of multi alpha and multi beta", {
+  for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
+    res <- embedder(ih3sne(alpha = seq(alpha, alpha * 2, length.out = nr),
+                           beta = betas))
     fd_grad <- gradient_fd_xi_point(res)
     an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
                                    a2x(res$method$kernel$alpha))
@@ -107,6 +145,22 @@ test_that("iHSSNE analytical gradient is correct for range of alpha", {
   }
 })
 
+# Pair-wise
+test_that("iHPSNE analytical gradient is correct for range of multi alpha and multi beta", {
+  for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
+    res <- embedder(ihpsne(alpha = seq(alpha, alpha * 2, length.out = nr),
+                           beta = betas))
+    fd_grad <- gradient_fd_xi_point(res)
+    an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                   a2x(res$method$kernel$alpha))
+    expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(alpha))
+  }
+})
+
+
+# Test inhomogeneous t-SNE ------------------------------------------------
+
+# {h,i}t-SNE has no beta parameter so spared some complications
 test_that("ht-SNE analytical gradient is correct for range of dof", {
   for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
     res <- embedder(htsne(dof = dof))
@@ -128,7 +182,10 @@ test_that("it-SNE analytical gradient is correct for range of dof", {
 })
 
 hssne_res <- quick_embed(method = hssne(alpha = 0.5))
-hcsne_res <- quick_embed(method = lreplace(hssne_plugin(alpha = 0.5), prob_type = "cond"))
+# HPSNE is HSSNE with cond P
+# Q is joint by construction
+hpsne_res <- quick_embed(method = lreplace(hssne_plugin(alpha = 0.5),
+                                           prob_type = "cond"))
 asne_res <- quick_embed(method = asne(beta = 0.5))
 tasne_res <- quick_embed(method = tasne())
 
@@ -157,12 +214,7 @@ test_that("during fixed alpha iterations DHSSNE behaves like HSSNE", {
   expect_equal(res$report$costs, hssne_res$report$costs)
 })
 
-test_that("during fixed alpha iterations iHCSNE behaves like HCSNE", {
-  res <- quick_embed(method = ihcsne(alpha = 0.5, opt_iter = Inf))
-  expect_equal(res$report$costs, hcsne_res$report$costs)
-})
-
-test_that("during fixed alpha iterations iHSSNE behaves like HSSNE", {
-  res <- quick_embed(method = ihssne(alpha = 0.5, opt_iter = Inf))
-  expect_equal(res$report$costs, hssne_res$report$costs)
+test_that("during fixed alpha iterations iHPSNE behaves like HPSNE", {
+  res <- quick_embed(method = ihpsne(alpha = 0.5, opt_iter = Inf))
+  expect_equal(res$report$costs, hpsne_res$report$costs)
 })
