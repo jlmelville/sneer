@@ -320,7 +320,7 @@ $(document).ready(function () {
 \]</span></p>
 <p>Without getting into any specifics of the functional form of the cost function or weighting function, there’s a further simplification we can make. The probabilities are always created by a straightforward normalization of the weights. We’re considering just the pair-wise normalization for now, and as we’ve seen, the relationship between <span class="math inline">\(w\)</span> and <span class="math inline">\(q\)</span> is:</p>
 <p><span class="math display">\[q_{ij} = \frac{w_{ij}}{\sum_{kl} w_{kl}} = \frac{w_{ij}}{S}\]</span></p>
-<p>but now we’ve introduced, <span class="math inline">\(S\)</span>, the sum of all the weights involving all pairs.</p>
+<p>but now we’ve introduced <span class="math inline">\(S\)</span>, the sum of all the weights involving all pairs.</p>
 <p>It’s important to realize that any particular weight, <span class="math inline">\(w_{ij}\)</span>, appears in both the expression for its equivalent probability, <span class="math inline">\(q_{ij}\)</span> (where it appears in the numerator and denonimator) <em>and</em> in the expression for all the other probabilities, <span class="math inline">\(q_{kl}\)</span>, where <span class="math inline">\(i \neq k\)</span> and <span class="math inline">\(j \neq l\)</span>. In the latter case, it appears only in the denominator, but it still leads to non-zero derivatives.</p>
 <p>Thus, we have two forms of the derivative to consider: <span class="math display">\[\frac{\partial q_{ij}}{\partial w_{ij}} = \frac{S - w_{ij}}{S^2} = 
   \frac{1}{S} - \frac{q_{ij}}{S}

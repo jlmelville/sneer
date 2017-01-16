@@ -332,7 +332,7 @@ we've seen, the relationship between $w$ and $q$ is:
 
 $$q_{ij} = \frac{w_{ij}}{\sum_{kl} w_{kl}} = \frac{w_{ij}}{S}$$
 
-but now we've introduced, $S$, the sum of all the weights involving all pairs.
+but now we've introduced $S$, the sum of all the weights involving all pairs.
 
 It's important to realize that any particular weight, $w_{ij}$, appears in both 
 the expression for its equivalent probability, $q_{ij}$ (where it appears in 
