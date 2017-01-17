@@ -5,6 +5,7 @@ context("Gradients")
 # calculation.
 
 inp_df <- iris[1:50, 1:4]
+nr <- nrow(inp_df)
 preprocess <- make_preprocess(range_scale_matrix = TRUE,  verbose = FALSE)
 out_init <- out_from_PCA(verbose = FALSE)
 inp_init <- inp_from_perp(perplexity = 20, verbose = FALSE)
@@ -229,8 +230,10 @@ test_that("Dynamic HSSNE gradients", {
   expect_grad(dhssne(alpha = 0.001), label = "dhssne alpha 0.001")
   expect_grad(dhssne(alpha = 0.5), label = "dhssne alpha 0.5")
   expect_grad(dhssne(alpha = 1), label = "dhssne alpha 1")
+  expect_grad(dhssne(alpha = 1, beta = seq(1e-3, 1, length.out = nr)),
+              label = "dhssne alpha 1 beta 0.001:1")
 
-  # Pair-wise version of the above
+  # Semi-symmetric version of the above
   expect_grad(dh3sne(alpha = 0.001), label = "dh3sne alpha 0.001")
   expect_grad(dh3sne(alpha = 0.5), label = "dh3sne alpha 0.5")
   expect_grad(dh3sne(alpha = 1), label = "dh3sne alpha 1")
@@ -242,22 +245,38 @@ test_that("Dynamic HSSNE gradients", {
 })
 
 test_that("Dynamic inhomogeneous HSSNE gradients", {
+  # iHSSNE fully symmetric
+  expect_grad(ihssne(alpha = seq(0.001, 0.5, length.out = nr)),
+              label = "ihssne alpha 0.001:0.5")
+  expect_grad(ihssne(alpha = seq(0.5, 1, length.out = nr)),
+              label = "ihssne alpha 0.5:1")
+  expect_grad(ihssne(alpha = seq(1, 5, length.out = nr)),
+              label = "ihssne alpha 1:5")
+  expect_grad(ihssne(alpha = seq(1, 5, length.out = nr),
+                     beta = seq(1e-3, 1, length.out = nr)),
+              label = "ihssne alpha 1:5 beta 0.001:1")
 
   # iH3SNE sets input probs as joint and output probs as cond
-  expect_grad(ih3sne(alpha = seq(0.001, 0.5, length.out = nrow(inp_df))),
+  expect_grad(ih3sne(alpha = seq(0.001, 0.5, length.out = nr)),
               label = "ih3sne alpha 0.001:0.5")
-  expect_grad(ih3sne(alpha = seq(0.5, 1, length.out = nrow(inp_df))),
+  expect_grad(ih3sne(alpha = seq(0.5, 1, length.out = nr)),
               label = "ih3sne alpha 0.5:1")
-  expect_grad(ih3sne(alpha = seq(1, 5, length.out = nrow(inp_df))),
+  expect_grad(ih3sne(alpha = seq(1, 5, length.out = nr)),
               label = "ih3sne alpha 1:5")
+  expect_grad(ih3sne(alpha = seq(1, 5, length.out = nr),
+                     beta = seq(1e-3, 1, length.out = nr)),
+              label = "ih3sne alpha 1:5 beta 0.001:1")
 
   # Conditional version of iHSSNE, uses prob_type = "cond" for inp and out
-  expect_grad(ihpsne(alpha = seq(0.001, 0.5, length.out = nrow(inp_df))),
+  expect_grad(ihpsne(alpha = seq(0.001, 0.5, length.out = nr)),
               label = "ihpsne alpha 0.001:0.5")
-  expect_grad(ihpsne(alpha = seq(0.5, 1, length.out = nrow(inp_df))),
+  expect_grad(ihpsne(alpha = seq(0.5, 1, length.out = nr)),
               label = "ihpsne alpha 0.5:1")
-  expect_grad(ihpsne(alpha = seq(1, 5, length.out = nrow(inp_df))),
+  expect_grad(ihpsne(alpha = seq(1, 5, length.out = nr)),
               label = "ihpsne alpha 1:5")
+  expect_grad(ihpsne(alpha = seq(1, 5, length.out = nr),
+                     beta = seq(1e-3, 1, length.out = nr)),
+              label = "ihpsne alpha 1:5 beta 0.001:1")
 })
 
 test_that("inhomogeneous t-SNE gradients", {
@@ -266,10 +285,10 @@ test_that("inhomogeneous t-SNE gradients", {
   expect_grad(htsne(dof = 1), label = "htsne dof 1")
   expect_grad(htsne(dof = 1000), label = "htsne dof 1000")
 
-  expect_grad(itsne(dof = seq(0.001, 1, length.out = nrow(inp_df))),
+  expect_grad(itsne(dof = seq(0.001, 1, length.out = nr)),
               label = "itsne dof 0.001:1")
-  expect_grad(itsne(dof = seq(1, 10, length.out = nrow(inp_df))),
+  expect_grad(itsne(dof = seq(1, 10, length.out = nr)),
               label = "itsne dof 1:10")
-  expect_grad(itsne(dof = seq(10, 1000, length.out = nrow(inp_df))),
+  expect_grad(itsne(dof = seq(10, 1000, length.out = nr)),
               label = "itsne dof 10:1000")
 })

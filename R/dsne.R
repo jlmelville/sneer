@@ -4,13 +4,40 @@
 
 # Dynamic HSSNE -----------------------------------------------------------
 
+# dw/da can be written as -h*w, which allows for simplification of dC/da
+# This function returns the "-h" portion
+gr_mult <- function(alpha, beta, fm) {
+  c1 <- alpha * beta * fm + 1
+  (beta * fm) / c1 - log(c1) / alpha
+}
+
+# Gradient matrix, used by both inhomogeneous HSSNE and dynamic HSSNE
+dhssne_gr_mat <- function(inp, out, method, alpha) {
+  beta <- method$kernel$beta
+  fm <- out$d2m
+  hm <- gr_mult(alpha, beta, fm)
+
+  pm <- inp$pm
+  qm <- out$qm
+  if (!is.null(out$qcm)) {
+    # Presence of qcm indicates an asymmetric kernel with a joint
+    # probability: can't simplify expression as much
+    gr <- hm * out$qcm * (pm / qm - 1)
+  }
+  else {
+    # pairwise and semi-symmetric versions can use simpler version
+    gr <- hm * (pm - qm)
+  }
+  gr
+}
+
 # "Dynamic" HSSNE, alpha is optimized with coordinates
 # Fully symmetric
 dhssne <- function(beta = 1, alpha = 0, opt_iter = 0, eps = .Machine$double.eps,
                    verbose = FALSE) {
   lreplace(
     hssne_plugin(beta = beta, alpha = alpha, eps = eps, verbose = verbose),
-    update_out_fn = make_update_out(keep = c("qm", "wm", "d2m")),
+    update_out_fn = make_update_out(keep = c("qm", "wm", "d2m", "qcm")),
     get_extra_par = function(method) {
       alpha <- method$kernel$alpha
       sqrt(alpha - method$eps)
@@ -21,18 +48,16 @@ dhssne <- function(beta = 1, alpha = 0, opt_iter = 0, eps = .Machine$double.eps,
       method
     },
     extra_gr = function(opt, inp, out, method, iter, extra_par) {
+      # gradient of C with respect to xi, a transformed version of alpha
+      # that can take negative values
       if (iter < method$opt_iter) {
         return(rep(0, length(extra_par)))
       }
+
       xi <- extra_par
       alpha <- xi * xi + method$eps
-      fm <- out$d2m
-      beta <- method$kernel$beta
-      c1 <- alpha * beta * fm + 1
 
-      hm <- ((beta * fm) / c1) - (log(c1) / alpha)
-      gr <- hm * (inp$pm - out$qm)
-
+      gr <- dhssne_gr_mat(inp, out, method, alpha)
       2 * (xi / alpha) * sum(gr)
     },
     export_extra_par = function(method) {
@@ -99,14 +124,11 @@ ihpsne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
       if (iter < method$opt_iter) {
         return(rep(0, length(extra_par)))
       }
+
       xi <- extra_par
       alpha <- xi * xi + method$eps
-      fm <- out$d2m
-      beta <- method$kernel$beta
-      c1 <- alpha * beta * fm + 1
 
-      hm <- ((beta * fm) / c1) - (log(c1) / alpha)
-      gr <- hm * (inp$pm - out$qm)
+      gr <- dhssne_gr_mat(inp, out, method, alpha)
 
       res <- rowSums(gr)
       if (iter < switch_iter) {
@@ -129,6 +151,16 @@ ih3sne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
            eps = eps, verbose = verbose),
     prob_type = "joint",
     out_prob_type = "cond"
+  )
+}
+
+ihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
+                   eps = .Machine$double.eps, verbose = FALSE) {
+  lreplace(
+    ihpsne(beta = beta, alpha = alpha, opt_iter = opt_iter,
+           switch_iter = switch_iter,
+           eps = eps, verbose = verbose),
+    prob_type = "joint"
   )
 }
 
