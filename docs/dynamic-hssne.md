@@ -223,6 +223,17 @@ $$w_{ij} = \frac{1}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{1}{\alpha}}}
 Because $\beta_i$ is constant, the effect on the gradient is minimal:
 
 $$
+\frac{\partial w_{ij}}{\partial \alpha} 
+=-
+\left[
+\frac{\beta_i f_{ij}}{\alpha \beta_i \left(\alpha f_{ij} +1\right)}
+-
+\frac{\ln\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha ^ 2}
+\right]
+w_{ij}
+$$
+And so, skipping to the actual derivative we care about:
+$$
 \frac{\partial C}{\partial \xi} = 
   \frac{2\xi}{\alpha}
   \sum_{ij}
