@@ -150,14 +150,13 @@ q_{ij} = \frac{q_{i|j} + q_{j|i}}{2} = \frac{w_{ij} + w_{ji}}{2S}
 -\frac{q_{k|l} + q_{l|k}}{2S} =
 -\frac{q_{kl}}{S}
 \]</span></p>
-<p>So after all that, the gradient doesn’t look all that different from the old normalization. The only other thing to remember is that:</p>
-<p>We can now find a new expression for</p>
+<p>So after all that, the gradient doesn’t look all that different from the old normalization. We can now find a new expression for</p>
 <p><span class="math display">\[
 \sum_{kl}
 \frac{\partial C}{\partial q_{kl}}
 \frac{\partial q_{kl}}{\partial w_{ij}}
 \]</span></p>
-<p>needed for calculating <span class="math inline">\(k_{ij}\)</span>. Using our new equations we have:</p>
+<p>needed for calculating <span class="math inline">\(k_{ij}\)</span> in the “plug-in” form of the gradient. Using our new equations we have:</p>
 <p><span class="math display">\[
 \sum_{kl}
 \frac{\partial C}{\partial q_{kl}}

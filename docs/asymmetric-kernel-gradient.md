@@ -78,9 +78,7 @@ $$
 $$
 
 So after all that, the gradient doesn't look all that different from the old
-normalization. The only other thing to remember is that:
-
-We can now find a new expression for
+normalization. We can now find a new expression for
 
 $$
 \sum_{kl}
@@ -88,7 +86,8 @@ $$
 \frac{\partial q_{kl}}{\partial w_{ij}}
 $$
 
-needed for calculating $k_{ij}$. Using our new equations we have:
+needed for calculating $k_{ij}$ in the "plug-in" form of the gradient. Using 
+our new equations we have:
 
 $$
 \sum_{kl}
