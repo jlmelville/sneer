@@ -216,11 +216,13 @@ coordinates.
 
 As mentioned in the [gradients](gradient.html) page, although the original
 HSSNE paper doesn't include an exponential decay factor in its expression, it's
-easy to add it:
+easy to add it. For completeness, instead of fixing $\beta$ to a global value,
+we'll allow it to be different for each point, as is done for the input
+probabilities, so we'll label it $\beta_i$:
 
 $$w_{ij} = \frac{1}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{1}{\alpha}}}$$
 
-Because $\beta_i$ is constant, the effect on the gradient is minimal:
+The effect on the gradient is minimal:
 
 $$
 \frac{\partial w_{ij}}{\partial \alpha} 
@@ -250,5 +252,59 @@ $$
 $$
 
 Using this version of the gradient makes DHSSNE compatible with techniques where
-$\beta_i \neq 1$ (e.g. multiscaling and some versions of NeRV).
+$\beta_i \neq 1$ (e.g. multiscaling and some versions of NeRV). Where $\beta_i$
+values are allowed to differ from each other, there are some things to be
+aware of, which I discuss [here](symmetric-embedding-asymmetric-kernel.md).
+The short version: you can no longer assume that $Q$ is a joint probability 
+matrix by construction, and if you decided to treat $Q$ in the same way as $P$
+(i.e. averaging $q_{i|j}$ and $q_{j|i}$), the gradient can't be simplified as 
+much as has been shown here.
 
+## Inhomogeneous HSSNE
+
+What about making $\alpha$ point-wise, i.e. having one $\alpha_i$ per point?
+This can also be done, and the good news is that the gradient is pretty much
+the same, except we only need to sum over $j$:
+
+$$
+\frac{\partial C}{\partial \xi_i} = 
+  \frac{2\xi_i}{\alpha_i}
+  \sum_{j}
+  \left[
+    \left(
+      \frac{\beta_i f_{ij}}{\alpha_i \beta_i f_{ij} +1}
+      -
+      \frac{\ln\left(\alpha_i \beta_i f_{ij} + 1\right)}{\alpha_i}
+    \right)
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+\right]
+$$
+We may as well call this inhomogeneous HSSNE, in analogy with inhomogeneous 
+t-SNE. 
+
+## The it-SNE gradient
+
+To demonstrate the connection between HSSNE and it-SNE, here's the gradient
+with respect to $\nu_i$, which is analogous to $\alpha_i$ in inhomogeneous
+HSSNE:
+
+$$
+\frac{\partial C}{\partial \nu_i} = 
+  \frac{1}{2}
+  \sum_{j}
+  \left\{
+    \ln\left(\frac{f_{ij}}{\nu_i} + 1\right)
+    -
+    \left[
+      \frac{f_{ij}\nu_i + 1}{\nu^2 \left(\frac{f_{ij}}{\nu_i} + 1\right)}
+    \right]
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+\right\}
+$$
+This has a very similar structure to the HSSNE version. The extension to the 
+gradient with respect to $\xi$ is obvious (i.e. multiply the RHS in the above 
+equation by $2\xi$).

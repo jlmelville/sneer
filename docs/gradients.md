@@ -704,6 +704,17 @@ The derivative is:
 $$\frac{\partial w_{ij}}{\partial f_{ij}} 
 = - \frac{\nu_{i} + 1}{2\left(f_{ij} + \nu_{i}\right)}w_{ij}
 $$
+Adding inhomogeneity to the kernel opens up a lot of potential, but there is
+a potential complexity to think about when using this with a pair-wise 
+normalization method. I have provided details 
+[here](symmetric-embedding-asymmetric-kernel.html) if you are really interested,
+but we'll not worry about it right now, because first of all, you can keep on
+using the same plug-in gradient we already derived (but not the simplified 
+versions we'll derive in the next section), and second, I am unaware of any 
+literature method that combines these two ideas: inhomogeneous t-SNE, despite 
+its name, actually uses a point-wise normalization, making it more like a 
+t-Distributed version of ASNE, rather than SSNE. For point-wise normalization
+schemes the complications don't arise.
 
 ### Deriving the ASNE, SSNE and t-SNE Gradient
 
