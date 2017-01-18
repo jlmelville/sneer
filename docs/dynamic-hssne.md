@@ -254,7 +254,8 @@ $$
 Using this version of the gradient makes DHSSNE compatible with techniques where
 $\beta_i \neq 1$ (e.g. multiscaling and some versions of NeRV). Where $\beta_i$
 values are allowed to differ from each other, there are some things to be
-aware of, which I discuss [here](symmetric-embedding-asymmetric-kernel.md).
+aware of when considering creating a symmetric embedding using an 
+[asymmetric kernel](asymmetric-kernel-gradient.html).
 The short version: you can no longer assume that $Q$ is a joint probability 
 matrix by construction, and if you decided to treat $Q$ in the same way as $P$
 (i.e. averaging $q_{i|j}$ and $q_{j|i}$), the gradient can't be simplified as 
