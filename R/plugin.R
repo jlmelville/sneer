@@ -519,12 +519,12 @@ plugin_stiffness <- function(method, inp, out) {
 # @return Stiffness matrix.
 plugin_stiffness_row <- function(method, inp, out) {
   dc_dq <- method$cost$gr(inp, out, method)
-  dw_du <- method$kernel$gr(method$kernel, out$d2m)
+  dw_df <- method$kernel$gr(method$kernel, out$d2m)
 
   wm_sum <-  rowSums(out$wm)
   km <- rowSums(dc_dq * out$qm)
   km <- sweep(dc_dq, 1, km) # subtract row sum from each row element
-  km <- km * (dw_du / wm_sum)
+  km <- km * (dw_df / wm_sum)
   2 * (km + t(km))
 }
 
