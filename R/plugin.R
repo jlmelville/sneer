@@ -538,10 +538,7 @@ plugin_stiffness_row <- function(method, inp, out) {
 # @param method Embedding method.
 # @return Stiffness matrix.
 plugin_stiffness_cond <- function(method, inp, out) {
-  dc_dq <- method$cost$gr(inp, out, method)
-  dw_du <- method$kernel$gr(method$kernel, out$d2m)
-  wm_sum <- sum(out$wm)
-  km <- (dc_dq - sum(dc_dq * out$qm)) * (dw_du / wm_sum)
+  km <- plugin_stiffness_pair(method, inp, out)
   2 * (km + t(km))
 }
 
@@ -550,8 +547,32 @@ plugin_stiffness_cond <- function(method, inp, out) {
 # The stiffness matrix is identical for joint and conditional P matrices, because
 # they both sum over all pairs, rather than all points.
 #
-# Further simplification for joint probability embedding is possible only if Q
-# is joint as well as P (by either enforcing jointness as done with P, or
-# because the similarity kernel is naturally symmetric). In that case, we
-# could replace 2 * (km * t(km)) with 4 * km (but we don't support that yet).
-plugin_stiffness_joint <- plugin_stiffness_cond
+# if dw/df is symmetric (i.e. kernel is symmetric) kij = kji
+# and we could replace 2(K + K') with 4K
+# NB: not enough enforce symmetry of Q. We would have to symmetrize W.
+# Not going to do that right now
+plugin_stiffness_joint <- function(method, inp, out) {
+  km <- plugin_stiffness_pair(method, inp, out)
+  if (attr(method$kernel$fn, 'type') == "symm") {
+    4 * km
+  }
+  else {
+    2 * (km + t(km))
+  }
+}
+
+# Plugin Stiffness Matrix K
+#
+# Calculates the stiffness matrix used by conditional and joint probability based
+# embedding methods.
+#
+# @param inp Input data.
+# @param out Output data.
+# @param method Embedding method.
+# @return Stiffness matrix.
+plugin_stiffness_pair <- function(method, inp, out) {
+  dc_dq <- method$cost$gr(inp, out, method)
+  dw_df <- method$kernel$gr(method$kernel, out$d2m)
+  wm_sum <- sum(out$wm)
+  (dc_dq - sum(dc_dq * out$qm)) * (dw_df / wm_sum)
+}
