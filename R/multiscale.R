@@ -767,12 +767,13 @@ plugin_stiffness_ms <- function(method, inp, out) {
 plugin_stiffness_ms_row <- function(method, inp, out) {
   cm_grad <- method$cost$gr(inp, out, method)
   for (l in 1:method$num_scales) {
-    wm_sum <-  apply(out$wms[[l]], 1, sum)
+    wm_sum <- rowSums(out$wms[[l]])
     wm_grad <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
-    kml <- apply(cm_grad * out$qms[[l]], 1, sum) # row sums
-    kml <- sweep(-cm_grad, 1, -kml) # subtract row sum from each row element
-    kml <- kml * (-wm_grad / (wm_sum + method$eps))
+    kml <- rowSums(cm_grad * out$qms[[l]]) # row sums
+    kml <- sweep(cm_grad, 1, kml) # subtract row sum from each row element
+    kml <- kml * (wm_grad / (wm_sum + method$eps))
     kml <- 2 * (kml + t(kml))
+
     if (l == 1) {
       kml_sum <- kml
     }
@@ -798,8 +799,7 @@ plugin_stiffness_ms_joint <- function(method, inp, out) {
   for (l in 1:method$num_scales) {
     wm_sum <- sum(out$wms[[l]])
     dw_du <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
-    kml <- (sum(dc_dq * out$qms[[l]]) - dc_dq) *
-      (-dw_du / (wm_sum + method$eps))
+    kml <- (dc_dq - sum(dc_dq * out$qms[[l]])) * (dw_du / (wm_sum + method$eps))
     kml <- 2 * (kml + t(kml))
 
     if (l == 1) {
