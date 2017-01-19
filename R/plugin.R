@@ -563,13 +563,13 @@ plugin_stiffness_joint <- function(method, inp, out) {
 
 # Plugin Stiffness Matrix K
 #
-# Calculates the stiffness matrix used by conditional and joint probability based
-# embedding methods.
+# Calculates the stiffness matrix used by probability-based embedding methods
+# employing pair-wise normalization.
 #
 # @param inp Input data.
 # @param out Output data.
 # @param method Embedding method.
-# @return Stiffness matrix.
+# @return stiffness matrix.
 plugin_stiffness_pair <- function(method, inp, out) {
   dc_dq <- method$cost$gr(inp, out, method)
   dw_df <- method$kernel$gr(method$kernel, out$d2m)

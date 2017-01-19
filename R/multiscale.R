@@ -794,13 +794,15 @@ plugin_stiffness_ms_row <- function(method, inp, out) {
 # @param inp Input data.
 # @param out Output data.
 # @return Stiffness matrix.
-plugin_stiffness_ms_joint <- function(method, inp, out) {
+plugin_stiffness_ms_cond <- function(method, inp, out) {
   dc_dq <- method$cost$gr(inp, out, method)
 
   for (l in 1:method$num_scales) {
-    wm_sum <- sum(out$wms[[l]])
-    dw_df <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
-    kml <- (dc_dq - sum(dc_dq * out$qms[[l]])) * (dw_df / (wm_sum + method$eps))
+    # wm_sum <- sum(out$wms[[l]])
+    # dw_df <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
+    # kml <- (dc_dq - sum(dc_dq * out$qms[[l]])) * (dw_df / (wm_sum + method$eps))
+    kml <- plugin_stiffness_ms_pair(method, inp, out, dc_dq, l)
+
     kml <- 2 * (kml + t(kml))
 
     if (l == 1) {
@@ -813,6 +815,37 @@ plugin_stiffness_ms_joint <- function(method, inp, out) {
 
   kml_sum / method$num_scales
 }
+
+plugin_stiffness_ms_joint <- function(method, inp, out) {
+  dc_dq <- method$cost$gr(inp, out, method)
+
+  for (l in 1:method$num_scales) {
+    kml <- plugin_stiffness_ms_pair(method, inp, out, dc_dq, l)
+    if (attr(method$kernels[[l]]$fn, 'type') == "symm") {
+      kml <- 4 * kml
+    }
+    else {
+      kml <- 2 * (kml + t(kml))
+    }
+
+    if (l == 1) {
+      kml_sum <- kml
+    }
+    else {
+      kml_sum <- kml_sum + kml
+    }
+  }
+
+  kml_sum / method$num_scales
+}
+
+# Shared plugin stiffness code for pair-wise normalization
+plugin_stiffness_ms_pair <- function(method, inp, out, dc_dq, l) {
+  dw_df <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
+  wm_sum <- sum(out$wms[[l]])
+  (dc_dq - sum(dc_dq * out$qms[[l]])) * (dw_df / (wm_sum + method$eps))
+}
+
 
 # Output Update Factory Function for Multiscale Probability
 #

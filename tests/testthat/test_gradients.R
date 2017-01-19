@@ -219,6 +219,8 @@ test_that("Multiscale gradients", {
               inp_init = inp_tms())
   expect_grad(sjse_plugin(verbose = FALSE), label = "plugin tms sjse",
               inp_init = inp_tms())
+  expect_grad(tpsne_plugin(verbose = FALSE), label = "plugin tms tpsne",
+              inp_init = inp_tms())
 })
 
 test_that("importance weighting", {
