@@ -4,42 +4,51 @@ inp_df <- iris[1:50, 1:4]
 nr <- nrow(inp_df)
 betas <- seq(1e-3, 1, length.out = nr)
 
-gradient_fd_xi <- function(res, param_name = "alpha", diff = 1e-5,
+gradient_fd_xi <- function(res, param_names = c("alpha"), diff = 1e-5,
                            eps = .Machine$double.eps) {
   inp <- res$inp
   out <- res$out
   method <- res$method
 
-  xi_old <- a2x(method$kernel[[param_name]])
+  gr <- rep(0, length(param_names))
+  for (i in 1:length(param_names)) {
+    param_name <- param_names[i]
+    xi_old <- a2x(method$kernel[[param_name]])
 
-  xi_fwd <- xi_old + diff
-  cost_fwd <- update_and_calc(inp, out, method,param_name, x2a(xi_fwd))
+    xi_fwd <- xi_old + diff
+    cost_fwd <- update_and_calc(inp, out, method, param_name, x2a(xi_fwd))
 
-  xi_back <- xi_old - diff
-  cost_back <- update_and_calc(inp, out, method, param_name, x2a(xi_back))
+    xi_back <- xi_old - diff
+    cost_back <- update_and_calc(inp, out, method, param_name, x2a(xi_back))
 
-  (cost_fwd - cost_back) / (xi_fwd - xi_back)
+    gr[i] <- (cost_fwd - cost_back) / (xi_fwd - xi_back)
+  }
+  gr
 }
 
-gradient_fd_xi_point <- function(res, param_name = "alpha", diff = 1e-5,
+gradient_fd_xi_point <- function(res, param_names = c("alpha"), diff = 1e-5,
                                  eps = .Machine$double.eps) {
   inp <- res$inp
   out <- res$out
   method <- res$method
 
-  grad <- rep(0, nrow(out$ym))
+  grad <- rep(0, nrow(out$ym) * length(param_names))
 
-  for (i in 1:length(grad)) {
-    xi_old <- a2x(method$kernel[[param_name]][i])
+  gi <- 0
+  for (j in 1:length(param_names)) {
+    param_name <- param_names[j]
+    for (i in 1:length(method$kernel[[param_name]])) {
+      xi_old <- a2x(method$kernel[[param_name]][i])
 
-    xi_fwd <- xi_old + diff
-    cost_fwd <- update_and_calc_i(inp, out, method, i, param_name, x2a(xi_fwd))
+      xi_fwd <- xi_old + diff
+      cost_fwd <- update_and_calc_i(inp, out, method, i, param_name, x2a(xi_fwd))
 
-    xi_back <- xi_old - diff
-    cost_back <- update_and_calc_i(inp, out, method, i, param_name,
-                                   x2a(xi_back))
-
-    grad[i] <- (cost_fwd - cost_back) / (xi_fwd - xi_back)
+      xi_back <- xi_old - diff
+      cost_back <- update_and_calc_i(inp, out, method, i, param_name,
+                                     x2a(xi_back))
+      gi <- gi + 1
+      grad[gi] <- (cost_fwd - cost_back) / (xi_fwd - xi_back)
+    }
   }
 
   grad
@@ -204,13 +213,41 @@ test_that("iHPSNE analytical gradient is correct for range of multi alpha and mu
 })
 
 
+# Doubly Dynamic ----------------------------------------------------------
+
+test_that("DDHSSNE analytical gradient is correct for range of single alpha and single beta", {
+  for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
+    for (beta in c(1, 0.5)) {
+      res <- embedder(ddhssne(alpha = alpha, beta = beta))
+      fd_grad <- gradient_fd_xi(res, param_names = c("alpha", "beta"))
+      an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                     a2x(c(res$method$kernel$alpha, res$method$kernel$beta)))
+      expect_equal(an_grad, fd_grad, tol = 1e-6,
+                   info = paste0(formatC(alpha), " ", formatC(beta)))
+    }
+  }
+})
+
+# "doubly" inhomogeneous: alpha and beta
+test_that("DiHSSNE analytical gradient is correct for range of multi alpha and multi beta", {
+  for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
+    res <- embedder(dihssne(alpha = seq(alpha, alpha * 2, length.out = nr),
+                            beta = betas))
+    fd_grad <- gradient_fd_xi_point(res, param_names = c("alpha", "beta"))
+    an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                   a2x(c(res$method$kernel$alpha, res$method$kernel$beta)))
+
+    expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(alpha))
+  }
+})
+
 # Test inhomogeneous t-SNE ------------------------------------------------
 
 # {h,i}t-SNE has no beta parameter so spared some complications
 test_that("ht-SNE analytical gradient is correct for range of dof", {
   for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
     res <- embedder(htsne(dof = dof))
-    fd_grad <- gradient_fd_xi(res, param_name = "dof")
+    fd_grad <- gradient_fd_xi(res, param_names = c("dof"))
     an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
                                    a2x(res$method$kernel$dof))
     expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(dof))
@@ -220,12 +257,15 @@ test_that("ht-SNE analytical gradient is correct for range of dof", {
 test_that("it-SNE analytical gradient is correct for range of dof", {
   for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
     res <- embedder(itsne(dof = seq(dof, dof * 2, length.out = nr)))
-    fd_grad <- gradient_fd_xi_point(res, param_name = "dof")
+    fd_grad <- gradient_fd_xi_point(res, param_names = c("dof"))
     an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
                                    a2x(res$method$kernel$dof))
     expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(dof))
   }
 })
+
+
+# Test Fixed Iteration Behavior -------------------------------------------
 
 hssne_res <- quick_embed(method = hssne(alpha = 0.5))
 # HPSNE is HSSNE with cond P

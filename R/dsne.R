@@ -4,64 +4,12 @@
 
 # Dynamic HSSNE -----------------------------------------------------------
 
-# dw/da can be written as -h*w, which allows for simplification of dC/da
-# This function returns the "-h" portion
-gr_mult <- function(alpha, beta, fm) {
-  c1 <- alpha * beta * fm + 1
-  (beta * fm) / c1 - log(c1) / alpha
-}
-
-# Gradient matrix dc/dalpha, used by both inhomogeneous HSSNE and dynamic HSSNE
-dhssne_gr_mat <- function(pm, qm, fm, alpha, beta, qcm = NULL) {
-  hm <- gr_mult(alpha, beta, fm)
-
-  if (!is.null(qcm)) {
-    # Presence of qcm indicates an asymmetric kernel with a joint
-    # probability: can't simplify expression as much
-    gr <- hm * qcm * (pm / qm - 1)
-  }
-  else {
-    # pairwise and semi-symmetric versions can use simpler version
-    gr <- hm * (pm - qm)
-  }
-  gr
-}
-
 # "Dynamic" HSSNE, alpha is optimized with coordinates
 # Fully symmetric
 dhssne <- function(beta = 1, alpha = 0, opt_iter = 0, eps = .Machine$double.eps,
-                   verbose = FALSE, keep = c("qm", "wm", "d2m", "qcm")) {
-  lreplace(
-    hssne_plugin(beta = beta, alpha = alpha, eps = eps, verbose = verbose,
-                 keep = keep),
-    get_extra_par = function(method) {
-      alpha <- method$kernel$alpha
-      sqrt(alpha - method$eps)
-    },
-    set_extra_par = function(method, extra_par) {
-      xi <- extra_par
-      method$kernel$alpha <- xi * xi + method$eps
-      method
-    },
-    extra_gr = function(opt, inp, out, method, iter, extra_par) {
-      # gradient of C with respect to xi, a transformed version of alpha
-      # that can take negative values
-      if (iter < method$opt_iter) {
-        return(rep(0, length(extra_par)))
-      }
-
-      xi <- extra_par
-      alpha <- xi * xi + method$eps
-      betas <- method$kernel$beta
-      gr <- dhssne_gr_mat(inp$pm, out$qm, out$d2m, alpha,
-                          betas, out$qcm)
-      2 * (xi / alpha) * sum(gr)
-    },
-    export_extra_par = function(method) {
-      list(alpha = method$kernel$alpha)
-    },
-    opt_iter = opt_iter
-  )
+                   verbose = FALSE) {
+  ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
+         verbose = verbose, dyn_beta = "static", dyn_alpha = "global")
 }
 
 # Dynamic Heavy-Tailed "Pair-wise" SNE
@@ -96,45 +44,9 @@ dh3sne <- function(beta = 1, alpha = 0, opt_iter = 0, eps = .Machine$double.eps,
 # inhomogeneous Heavy-Tailed "Pair-wise" SNE, P and Q are cond
 ihpsne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    eps = .Machine$double.eps, verbose = FALSE) {
-  if (switch_iter < opt_iter) {
-    stop("switch_iter must be >= opt_iter")
-  }
   lreplace(
-    dhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
-           verbose = verbose),
-    after_init_fn = function(inp, out, method) {
-      nr <- nrow(out$ym)
-      alpha <- method$kernel$alpha
-      if (length(alpha) != nr) {
-        method$kernel$alpha <- rep(alpha, nr)
-      }
-      method$kernel <- check_symmetry(method$kernel)
-      list(method = method)
-    },
-    set_extra_par = function(method, extra_par) {
-      xi <- extra_par
-      method$kernel$alpha <- xi * xi + method$eps
-      method$kernel <- check_symmetry(method$kernel)
-      method
-    },
-    extra_gr = function(opt, inp, out, method, iter, extra_par) {
-      if (iter < method$opt_iter) {
-        return(rep(0, length(extra_par)))
-      }
-
-      xi <- extra_par
-      alpha <- xi * xi + method$eps
-
-      gr <- dhssne_gr_mat(inp$pm, out$qm, out$d2m, alpha, method$kernel$beta,
-                          out$qcm)
-      res <- rowSums(gr)
-      if (iter < switch_iter) {
-        res <- rep(mean(res), length(res))
-      }
-
-      2 * (xi / alpha) * res
-    },
-    switch_iter = switch_iter,
+    ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
+            verbose = verbose, dyn_beta = "static", dyn_alpha = "point"),
     prob_type = "cond"
   )
 }
@@ -161,87 +73,179 @@ ihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
   )
 }
 
-# Inhomogeneous t-SNE ----------------------------------------------------------
+# Doubly Dynamic HSSNE ----------------------------------------------------
 
-# homogeneous t-SNE, single global dof parameter
-# dof: 1 = tASNE, Inf = ASNE
-htsne <- function(dof = 1, eps = .Machine$double.eps, opt_iter = 0,
-                  verbose = FALSE) {
-  dof <- base::min(dof, 1e8)
+# dyn_ can be one of 'static', 'global', 'point'
+ddhssne <- function(beta = 1, alpha = 0,
+                    dyn_beta = "global", dyn_alpha = "global",
+                    opt_iter = 0, switch_iter = opt_iter,
+                    eps = .Machine$double.eps,
+                    verbose = FALSE) {
+
+  # If no inhomogeneity, then switch_iter is meaningless
+  if (dyn_alpha == "global" && dyn_beta == "global") {
+    switch_iter <- opt_iter
+  }
+
+  if (switch_iter < opt_iter) {
+    stop("switch_iter must be >= opt_iter")
+  }
+
+  ok_dyn <- c("static", "global", "point")
+  dyn_beta <- match.arg(dyn_beta, ok_dyn)
+  dyn_alpha <- match.arg(dyn_alpha, ok_dyn)
+
+  if (dyn_beta == "static" && dyn_alpha == "static") {
+    stop("One of alpha and beta must be non-static")
+  }
+
+  alpha_fn <- sum
+  if (dyn_alpha == "point") {
+    alpha_fn <- rowSums
+  }
+
+  beta_fn <- sum
+  if (dyn_beta == "point") {
+    beta_fn <- rowSums
+  }
+
   lreplace(
-    asne_plugin(eps = eps, keep = c("qm", "wm", "d2m")),
-    kernel = itsne_kernel(dof = dof),
+    hssne_plugin(beta = beta, alpha = alpha, eps = eps, verbose = verbose,
+                 keep = c("qm", "wm", "d2m", "qcm")),
+    after_init_fn = function(inp, out, method) {
+      nr <- nrow(out$ym)
+      if (dyn_alpha == "point" && length(alpha) != nr) {
+        method$kernel$alpha <- rep(method$kernel$alpha, nr)
+      }
+      if (dyn_beta == "point" && length(beta) != nr) {
+        method$kernel$beta <- rep(method$kernel$beta, nr)
+      }
+      method$kernel <- check_symmetry(method$kernel)
+      list(method = method)
+    },
     get_extra_par = function(method) {
-      sqrt(method$kernel$dof - method$eps)
+      params <- c()
+      if (dyn_alpha != "static") {
+        params <- c(params, method$kernel$alpha)
+      }
+      if (dyn_beta != "static") {
+        params <- c(params, method$kernel$beta)
+      }
+      sqrt(params - method$eps)
     },
     set_extra_par = function(method, extra_par) {
       xi <- extra_par
-      method$kernel$dof <- xi * xi + method$eps
+      params <- xi * xi + method$eps
+      if (dyn_alpha != "static") {
+        method$kernel$alpha <- params[1:length(method$kernel$alpha)]
+      }
+      if (dyn_beta != "static") {
+        if (dyn_alpha != "static") {
+          beta_start <- length(method$kernel$alpha) + 1
+        }
+        else {
+          beta_start <- 1
+        }
+        method$kernel$beta <- params[beta_start:length(params)]
+      }
       method
     },
     extra_gr = function(opt, inp, out, method, iter, extra_par) {
       if (iter < method$opt_iter) {
         return(rep(0, length(extra_par)))
       }
-      eps <- method$eps
+
       xi <- extra_par
-      dof <- xi * xi + method$eps
+      params <- xi * xi + method$eps
+
+      pm <- inp$pm
       fm <- out$d2m
-      c1 <- (fm / dof) + 1
+      wm <- out$wm
+      qm <- out$qm
 
-      hm <- log(c1) - ((fm * (dof + 1)) / (dof * dof * c1))
-      gr <- hm * (inp$pm - out$qm)
+      gr <- c()
 
-      xi * sum(gr)
+      if (dyn_alpha != "static") {
+        xi_alpha_range <- 1:(length(method$kernel$alpha))
+        alpha <- params[xi_alpha_range]
+        gr_alpha <- dhssne_gr_mat_alpha(pm, qm, fm, alpha, method$kernel$beta,
+                                        out$qcm)
+        gr_alpha <- 2 * (xi[xi_alpha_range] / alpha) * alpha_fn(gr_alpha)
+        gr <- c(gr, gr_alpha)
+      }
+
+      if (dyn_beta != "static") {
+        if (dyn_alpha != "static") {
+          beta_start <- length(method$kernel$alpha) + 1
+        }
+        else {
+          beta_start <- 1
+        }
+        xi_beta_range <- beta_start:length(xi)
+        # beta <- params[xi_beta_range]
+        gr_beta <- dhssne_gr_mat_beta(pm, qm, fm, wm, method$kernel$alpha, out$qcm)
+        gr_beta <- 2 * xi[xi_beta_range] * beta_fn(gr_beta)
+        gr <- c(gr, gr_beta)
+      }
+
+      gr
     },
     export_extra_par = function(method) {
-      list(dof = method$kernel$dof)
+      res <- list()
+      if (dyn_alpha != "static") {
+        res$alpha <- method$kernel$alpha
+      }
+      if (dyn_beta != "static") {
+        res$beta <- method$kernel$beta
+      }
     },
     opt_iter = opt_iter
   )
 }
 
-# inhomogeneous t-SNE
-# Kitazono, J., Grozavu, N., Rogovschi, N., Omori, T., & Ozawa, S.
-# (2016, October).
-# t-Distributed Stochastic Neighbor Embedding with Inhomogeneous Degrees of
-# Freedom.
-# In International Conference on Neural Information Processing (pp. 119-128).
-# Springer International Publishing.
-# dof: 1 = tASNE, Inf = ASNE
-itsne <- function(dof = 1, opt_iter = 0,
-                  eps = .Machine$double.eps, verbose = FALSE) {
-  lreplace(
-    htsne(dof = dof, opt_iter = opt_iter, eps = eps, verbose = verbose),
-    after_init_fn = function(inp, out, method) {
-      nr <- nrow(out$ym)
-      dof <- method$kernel$dof
-      if (length(dof) != nr) {
-        method$kernel$dof <- rep(dof, nr)
-      }
-      method$kernel <- check_symmetry(method$kernel)
-      list(method = method)
-    },
-    extra_gr = function(opt, inp, out, method, iter, extra_par) {
-      if (iter < method$opt_iter) {
-        return(rep(0, length(extra_par)))
-      }
-      eps <- method$eps
-      xi <- extra_par
-      dof <- xi * xi + method$eps
-      fm <- out$d2m
-      c1 <- (fm / dof) + 1
-
-      hm <- log(c1) - ((fm * (dof + 1)) / (dof * dof * c1))
-      gr <- hm * (inp$pm - out$qm)
-
-      xi * rowSums(gr)
-    }
-  )
+dihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
+                   eps = .Machine$double.eps, verbose = FALSE) {
+  ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
+          verbose = verbose, dyn_beta = "point", dyn_alpha = "point")
 }
 
 
+# Gradients ---------------------------------------------------------------
 
+# dw/da can be written as -h*w, which allows for simplification of dC/da
+# This function returns the "-h" portion
+gr_mult <- function(alpha, beta, fm) {
+  c1 <- alpha * beta * fm + 1
+  (beta * fm) / c1 - log(c1) / alpha
+}
 
+# Gradient matrix dc/dalpha, used by both inhomogeneous HSSNE and dynamic HSSNE
+dhssne_gr_mat_alpha <- function(pm, qm, fm, alpha, beta, qcm = NULL) {
+  hm <- gr_mult(alpha, beta, fm)
 
+  if (!is.null(qcm)) {
+    # Presence of qcm indicates an asymmetric kernel with a joint
+    # probability: can't simplify expression as much
+    gr <- hm * qcm * (pm / qm - 1)
+  }
+  else {
+    # pairwise and semi-symmetric versions can use simpler version
+    gr <- hm * (pm - qm)
+  }
+  gr
+}
 
+dhssne_gr_mat_beta <- function(pm, qm, fm, wm, alpha, qcm = NULL) {
+  hm <- fm * wm ^ alpha
+
+  if (!is.null(qcm)) {
+    # Presence of qcm indicates an asymmetric kernel with a joint
+    # probability: can't simplify expression as much
+    gr <- hm * qcm * (pm / qm - 1)
+  }
+  else {
+    # pairwise and semi-symmetric versions can use simpler version
+    gr <- hm * (pm - qm)
+  }
+  gr
+}
