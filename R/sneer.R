@@ -803,9 +803,11 @@ sneer <- function(df,
     jse = function() { jse(kappa = kappa) },
     tasne = function() { tasne() },
     tpsne = function() { tpsne() },
-    tpsne_plugin = function() { tpsne_plugin() },
     nerv_plugin = function() { unerv_plugin(lambda = lambda) },
     jse_plugin = function() { jse_plugin(kappa = kappa) },
+    asne_plugin = function() { asne_plugin() },
+    ssne_plugin = function() { ssne_plugin() },
+    hssne_plugin = function() { hssne_plugin(alpha = alpha) },
     itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter) },
     dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter) }
   )
@@ -824,7 +826,9 @@ sneer <- function(df,
     # Need to use plugin method if precisions can be non-uniform
     # NB only applicable for 'cond' and 'row' probability types
     if (prec_scale == "t") {
-      new_method <- paste0(method, "_plugin")
+      if (!endsWith(method, "_plugin")) {
+        new_method <- paste0(method, "_plugin")
+      }
       if (!new_method %in% names(embed_methods)) {
         stop("Method '", method, "' is not compatible with prec_scale option 't'")
       }
