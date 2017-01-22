@@ -50,7 +50,7 @@
 plugin <- function(cost = kl_fg(),
                    kernel = exp_kernel(),
                    stiffness_fn = plugin_stiffness,
-                   update_out_fn = make_update_out(keep = c("qm", "wm", "d2m")),
+                   keep = c("qm", "wm", "d2m"),
                    inp_updated_fn = NULL,
                    out_updated_fn = NULL,
                    after_init_fn = NULL,
@@ -63,12 +63,13 @@ plugin <- function(cost = kl_fg(),
       kernel = kernel,
       stiffness_fn = stiffness_fn,
       out_updated_fn = out_updated_fn,
-      update_out_fn = update_out_fn,
       prob_type = prob_type,
       eps = eps,
+      out_keep = keep,
       verbose = verbose
     )
   )
+  method$update_out_fn <- make_update_out(keep = method$out_keep)
   method <- on_inp_updated(method, inp_updated_fn)$method
   method
 }
@@ -88,13 +89,15 @@ plugin <- function(cost = kl_fg(),
 # a bit more efficient.
 # @family sneer embedding methods
 # @family sneer probability embedding methods
-asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
+asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
+                        keep = c("qm", "wm", "d2m")) {
   plugin(
     cost = kl_fg(),
     kernel = exp_kernel(beta = beta),
     eps = eps,
     prob_type = "row",
-    verbose = verbose
+    verbose = verbose,
+    keep = keep
   )
 }
 
@@ -113,9 +116,10 @@ asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 # a bit more efficient.
 # @family sneer embedding methods
 # @family sneer probability embedding methods
-ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
+ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
+                        keep = c("qm", "wm", "d2m")) {
   lreplace(
-    asne_plugin(eps = eps, beta = beta, verbose = verbose),
+    asne_plugin(eps = eps, beta = beta, verbose = verbose, keep = keep),
     prob_type = "joint"
   )
 }
@@ -161,9 +165,9 @@ tsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 # @family sneer embedding methods
 # @family sneer probability embedding methods
 hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
-                         verbose = TRUE) {
+                         verbose = TRUE, keep = c("qm", "wm", "d2m")) {
   lreplace(
-    ssne_plugin(eps = eps),
+    ssne_plugin(eps = eps, keep = keep),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     verbose = verbose
   )

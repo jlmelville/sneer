@@ -147,6 +147,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
         perplexities <- ms_perps(inp$dm)
       }
       max_scales <- length(perplexities)
+      method$max_scales <- max_scales
       method$perplexities <- perplexities
 
       if (is.null(num_scale_iters)) {
@@ -182,7 +183,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
         })$method
 
         method$orig_kernel <- method$kernel
-        method$update_out_fn <- make_update_out_ms()
+        method$update_out_fn <- make_update_out_ms(method$out_keep)
         method$stiffness_fn <- plugin_stiffness_ms
 
         inp$pms <- list()
@@ -368,6 +369,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
       }
 
       max_scales <- length(perplexities)
+      method$max_scales <- max_scales
       method$perplexities <- perplexities
 
       if (is.null(num_scale_iters)) {
@@ -394,7 +396,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
         })$method
 
         method$orig_kernel <- method$kernel
-        method$update_out_fn <- make_update_out_ms()
+        method$update_out_fn <- make_update_out_ms(method$out_keep)
         method$stiffness_fn <- plugin_stiffness_ms
       }
 
@@ -541,6 +543,7 @@ inp_from_step_perp <- function(perplexities = NULL,
       }
 
       max_scales <- length(perplexities)
+      method$max_scales <- max_scales
       method$perplexities <- perplexities
 
       num_steps <- max(max_scales - 1, 1)
@@ -691,6 +694,7 @@ inp_from_dint_max <- function(perplexities = NULL,
       }
 
       max_scales <- length(perplexities)
+      method$max_scales <- max_scales
       method$perplexities <- perplexities
 
       if (!is.null(modify_kernel_fn)) {
@@ -798,9 +802,6 @@ plugin_stiffness_ms_cond <- function(method, inp, out) {
   dc_dq <- method$cost$gr(inp, out, method)
 
   for (l in 1:method$num_scales) {
-    # wm_sum <- sum(out$wms[[l]])
-    # dw_df <- method$kernels[[l]]$gr(method$kernels[[l]], out$d2m)
-    # kml <- (dc_dq - sum(dc_dq * out$qms[[l]])) * (dw_df / (wm_sum + method$eps))
     kml <- plugin_stiffness_ms_pair(method, inp, out, dc_dq, l)
 
     kml <- 2 * (kml + t(kml))
@@ -861,7 +862,7 @@ plugin_stiffness_ms_pair <- function(method, inp, out, dc_dq, l) {
 #
 # @return The output update function which will be invoked as part of the
 # embedding.
-make_update_out_ms <- function() {
+make_update_out_ms <- function(keep = c("qm", "wm")) {
   function(inp, out, method) {
     out$d2m = coords_to_dist2(out$ym)
 
@@ -872,8 +873,10 @@ make_update_out_ms <- function() {
       method$kernel <- method$kernels[[l]]
       res <- update_probs(out, method, d2m = out$d2m)
 
-      out$wms[[l]] <- res$wm
-      out$qms[[l]] <- res$qm
+      for (i in 1:length(keep)) {
+        keep_name <- paste0(keep[i], 's')
+        out[[keep_name]][[l]] <- res[[keep[i]]]
+      }
     }
 
     # average the probability matrices
