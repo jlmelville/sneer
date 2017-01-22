@@ -233,7 +233,8 @@ The \code{perplexity} parameter is used in combination with the
     perplexity will be used in turn over the course of the embedding, in
     sequential order. Unlike with the \code{"step"} method, probability
     matrices from earlier perplexities are retained and combined by
-    averaging.
+    averaging. \strong{N.B.} Multiscaling is not compatible with
+    \code{method}s \code{"itsne"} or \code{"dhssne"}.
 }
 These arguments can be abbreviated.
 
