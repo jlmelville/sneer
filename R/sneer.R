@@ -906,6 +906,11 @@ sneer <- function(df,
       if (!is.null(perp_scale) && perp_scale != "single") {
         perp_scale <- match.arg(tolower(perp_scale),
                                 c("single", "max", "multi", "multil", "step"))
+        if (!is.null(embed_method$extra_gr) &&
+            perp_scale %in% c("multi", "multil")) {
+          stop("Multiscaling perplexities is incompatible with embedding ",
+               "method '", method, "'")
+        }
         if (is.null(perp_scale_iter)) {
           perp_scale_iter <- ceiling(max_iter / 5)
         }
