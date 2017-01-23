@@ -316,6 +316,26 @@ w_{ij}
 \right]
 \]</span> We may as well call this inhomogeneous HSSNE, in analogy with inhomogeneous t-SNE.</p>
 </div>
+<div id="optimizing-the-precisions" class="section level2">
+<h2>Optimizing the Precisions</h2>
+<p>If we want to optimize the <span class="math inline">\(\beta_i\)</span> values too, the gradient wrt to the weight is:</p>
+<p><span class="math display">\[
+\frac{\partial w_{ij}}{\partial \beta_i} 
+=-
+f_{ij}
+w_{ij}^{\alpha_i + 1}
+\]</span></p>
+<p>This can be inserted into the same expression we used before without any further complications, to eventually get to:</p>
+<p><span class="math display">\[
+\frac{\partial C}{\partial \beta_i} = 
+  \sum_{j}
+    f_{ij}w_{ij}^{\alpha_{i}}
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+\]</span></p>
+<p>Like <span class="math inline">\(\alpha\)</span>, <span class="math inline">\(\beta\)</span> cannot take non-positive values. So in practice you’d also transform <span class="math inline">\(\beta_i\)</span> into a variable like <span class="math inline">\(\xi_i\)</span>, which only requires multiplying the above gradient by <span class="math inline">\(2\xi_i\)</span>.</p>
+</div>
 <div id="the-it-sne-gradient" class="section level2">
 <h2>The it-SNE gradient</h2>
 <p>To demonstrate the connection between HSSNE and it-SNE, here’s the gradient with respect to <span class="math inline">\(\nu_i\)</span>, which is analogous to <span class="math inline">\(\alpha_i\)</span> in inhomogeneous HSSNE:</p>

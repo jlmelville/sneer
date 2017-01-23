@@ -285,6 +285,34 @@ $$
 We may as well call this inhomogeneous HSSNE, in analogy with inhomogeneous 
 t-SNE. 
 
+## Optimizing the Precisions
+
+If we want to optimize the $\beta_i$ values too, the gradient wrt to the weight
+is:
+
+$$
+\frac{\partial w_{ij}}{\partial \beta_i} 
+=-
+f_{ij}
+w_{ij}^{\alpha_i + 1}
+$$
+
+This can be inserted into the same expression we used before without any further
+complications, to eventually get to:
+
+$$
+\frac{\partial C}{\partial \beta_i} = 
+  \sum_{j}
+    f_{ij}w_{ij}^{\alpha_{i}}
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+$$
+
+Like $\alpha$, $\beta$ cannot take non-positive values. So in practice you'd 
+also transform $\beta_i$ into a variable like $\xi_i$, which only requires 
+multiplying the above gradient by $2\xi_i$.
+
 ## The it-SNE gradient
 
 To demonstrate the connection between HSSNE and it-SNE, here's the gradient
