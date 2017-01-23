@@ -182,7 +182,6 @@ ddhssne <- function(beta = 1, alpha = 0,
           beta_start <- 1
         }
         xi_beta_range <- beta_start:length(xi)
-        # beta <- params[xi_beta_range]
         gr_beta <- dhssne_gr_mat_beta(pm, qm, fm, wm, method$kernel$alpha, out$qcm)
         gr_beta <- 2 * xi[xi_beta_range] * beta_fn(gr_beta)
         gr <- c(gr, gr_beta)
