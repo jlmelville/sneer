@@ -190,13 +190,8 @@ ddhssne <- function(beta = 1, alpha = 0,
       gr
     },
     export_extra_par = function(method) {
-      res <- list()
-      if (dyn_alpha != "static") {
-        res$alpha <- method$kernel$alpha
-      }
-      if (dyn_beta != "static") {
-        res$beta <- method$kernel$beta
-      }
+      list(alpha = method$kernel$alpha,
+           beta =  method$kernel$beta)
     },
     opt_iter = opt_iter
   )
