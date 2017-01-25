@@ -342,7 +342,9 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
       opt <- tricks_result$opt
     }
 
-    out <- update_out_if_necessary(inp, out, method)
+    res <- update_out_if_necessary(inp, out, method)
+    inp <- res$inp
+    out <- res$out
 
     if (!is.null(reporter)) {
       report <- reporter(iter, inp, out, method, opt, report)
@@ -475,7 +477,9 @@ init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
   method <- after_init_result$method
 
   # initialize matrices needed for gradient calculation
-  out <- update_out(inp, out, method)
+  res <- update_out(inp, out, method)
+  inp <- res$inp
+  out <- res$out
 
   # reuse reports from old invocation of reporter, so we can use info
   # to determine whether to stop early (e.g. relative convergence tolerance)
@@ -509,7 +513,10 @@ set_solution <- function(inp, coords, method, mat_name = "ym",
     out <- list()
   }
   out[[mat_name]] <- coords
-  update_out(inp, out, method)
+  res <- update_out(inp, out, method)
+  inp <- res$inp
+  out <- res$out
+  list(out = out, inp = inp)
 }
 
 # Check if Output Data Needs Updating
@@ -553,9 +560,11 @@ undirty <- function(out) {
 # unchanged.
 update_out_if_necessary <- function(inp, out, method) {
   if (should_update(out)) {
-    out <- update_out(inp, out, method)
+    res <- update_out(inp, out, method)
+    inp <- res$inp
+    out <- res$out
   }
-  out
+  list(inp = inp, out = out)
 }
 
 # Update Output Data
@@ -569,9 +578,11 @@ update_out_if_necessary <- function(inp, out, method) {
 # @return Updated output data.
 update_out <- function(inp, out, method) {
   if (!is.null(method$update_out_fn)) {
-    out <- method$update_out_fn(inp, out, method)
+    res <- method$update_out_fn(inp, out, method)
+    inp <- res$inp
+    out <- res$out
     out <- undirty(out)
   }
-  out
+  list(inp = inp, out = out)
 }
 

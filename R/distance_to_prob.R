@@ -126,7 +126,7 @@ make_update_out <- function(keep = c("qm")) {
     if (!is.null(method$out_updated_fn)) {
       out <- method$out_updated_fn(inp, out, method)
     }
-    out
+    list(out = out, inp = inp)
   }
 }
 
@@ -157,9 +157,10 @@ make_update_out <- function(keep = c("qm")) {
 #  \item{\code{qcm}}{Conditional Probability Matrix. Non-null only if an
 #  asymmetric kernel is used and the embedding method uses a joint
 #  probability matrix.}
-update_probs <- function(out, method, d2m = coords_to_dist2(out$ym)) {
-  wm <- dist2_to_weights(d2m, method$kernel)
-  res <- weights_to_probs(wm, method)
+update_probs <- function(out, method, d2m = coords_to_dist2(out$ym),
+                         kernel = method$kernel, prob_type = NULL) {
+  wm <- dist2_to_weights(d2m, kernel)
+  res <- weights_to_probs(wm, method, prob_type)
   list(d2m = d2m, wm = wm, qm = res$pm, qcm = res$pcm)
 }
 
@@ -217,19 +218,21 @@ dist2_to_weights <- function(d2m, kernel) {
 #  \item{\code{pcm}}{Conditional Probability Matrix. Non-null only if an
 #  asymmetric kernel is used and the embedding method uses a joint
 #  probability matrix.}
-weights_to_probs <- function(wm, method) {
+weights_to_probs <- function(wm, method, prob_type = NULL) {
 
   # Allows for P to be joint and Q to be conditional
   # (only matters for methods with asymmetric kernels, where joint-izing
   # the output probabilities requires an extra step and hence change to
   # the gradient)
   # ASSUMPTION: assumes that weights_to_probs is only used by output distances
-  # and not input probability calibration
-  if (!is.null(method$out_prob_type)) {
-    prob_type <- method$out_prob_type
-  }
-  else {
-    prob_type <- method$prob_type
+  # and not input probability calibration, unless a non-null prob_type is passed
+  if (is.null(prob_type)) {
+    if (!is.null(method$out_prob_type)) {
+      prob_type <- method$out_prob_type
+    }
+    else {
+      prob_type <- method$prob_type
+    }
   }
 
   if (prob_type == "joint") {

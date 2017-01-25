@@ -17,7 +17,7 @@ NULL
 # Output update function that only updates distances
 update_dist = function(inp, out, method) {
   out$dm <- distance_matrix(out$ym)
-  out
+  list(out = out, inp = inp)
 }
 
 # Metric Multi-dimensional Scaling (MDS) Using STRESS Cost Function

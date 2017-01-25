@@ -452,8 +452,10 @@ jse_inp_update <- function(inp, out, method) {
   # The embedding routine always calls update_out_fn as part of initialization
   # so when the probabilities are created for the first time (which might be the
   # only time), this function gets called an extra time pointlessly. Oh well.
-  out <- update_out(inp, out, method)
-  list(out = out)
+  res <- update_out(inp, out, method)
+  inp <- res$inp
+  out <- res$out
+  list(out = out, inp = inp)
 }
 
 # Updates the Kullback Leibler Divergence Q||Z

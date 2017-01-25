@@ -17,15 +17,17 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
         par <- par[1:(dout * nr)]
         method <- method$set_extra_par(method, extra_par)
       }
-      out <- par_to_out(par, opt, inp, out, method, nr)
-      calculate_cost(method, inp, out)
+      res <- par_to_out(par, opt, inp, out, method, nr)
+      calculate_cost(method, res$inp, res$out)
     },
     gr = function(par) {
       if (!is.null(method$extra_gr)) {
         extra_par <- par[(dout * nr + 1):length(par)]
         par <- par[1:(dout * nr)]
       }
-      out <- par_to_out(par, opt, inp, out, method, nr)
+      res <- par_to_out(par, opt, inp, out, method, nr)
+      out <- res$out
+      inp <- res$inp
       grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
       if (!is.null(method$extra_gr)) {
         extra_grvec <- method$extra_gr(opt, inp, out, method, iter, extra_par)
@@ -41,8 +43,9 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
         par <- par[1:(dout * nr)]
         method <- method$set_extra_par(method, extra_par)
       }
-      out <- par_to_out(par, opt, inp, out, method, nr)
-
+      res <- par_to_out(par, opt, inp, out, method, nr)
+      out <- res$out
+      inp <- res$inp
       grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
       if (!is.null(method$extra_gr)) {
         extra_grvec <- method$extra_gr(opt, inp, out, method, iter, extra_par)
@@ -72,9 +75,10 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
 # @return Output data with coordinates converted from \code{par}.
 par_to_out <- function(par, opt, inp, out, method, nrow) {
   dim(par) <- c(nrow, length(par) / nrow)
-  out <- set_solution(inp, par, method, mat_name = opt$mat_name, out = out)
+  res <- set_solution(inp, par, method, mat_name = opt$mat_name, out = out)
+  out <- res$out
   out$dirty <- TRUE
-  out
+  list(inp = res$inp, out = out)
 }
 
 # Convert Matrix to 1D Parameter Vector
@@ -154,8 +158,9 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
   }
 
   # convert y coord par into sneer form
-  out <- par_to_out(par, opt, inp, out, method, nr)
-
+  res <- par_to_out(par, opt, inp, out, method, nr)
+  out <- res$out
+  inp <- res$inp
   if (opt$mize$is_terminated) {
     if (opt$verbose) {
       message("Optimizer reports termination due to: ", opt$mize$terminate$what)

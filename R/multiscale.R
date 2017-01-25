@@ -884,7 +884,7 @@ make_update_out_ms <- function(keep = c("qm", "wm")) {
     if (!is.null(method$out_updated_fn)) {
       out <- method$out_updated_fn(inp, out, method)
     }
-    out
+    list(out = out, inp = inp)
   }
 }
 
