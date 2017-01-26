@@ -266,6 +266,10 @@ w_{ij}
 \right]
 \]</span></p>
 <p>Now, as long as you remember to convert back and forth between <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\xi\)</span> where needed, we can now optimize <span class="math inline">\(\alpha\)</span> at the same time as the coordinates.</p>
+<div id="point-wise-normalization" class="section level2">
+<h2>Point-wise normalization</h2>
+<p>Good news: the asymmetric version (i.e. DHASNE) has exactly the same gradient, just replace <span class="math inline">\(p_{ij}\)</span> and <span class="math inline">\(q_{ij}\)</span> with <span class="math inline">\(p_{i|j}\)</span> and <span class="math inline">\(q_{i|j}\)</span>, respectively. The derivation differs only in exactly the same way that the plugin gradient derivation differs between asymmetric and symmetric versions, which was already covered on the <a href="gradient.html">gradients</a> page.</p>
+</div>
 <div id="including-precisions" class="section level2">
 <h2>Including Precisions</h2>
 <p>As mentioned in the <a href="gradient.html">gradients</a> page, although the original HSSNE paper doesn’t include an exponential decay factor in its expression, it’s easy to add it. For completeness, instead of fixing <span class="math inline">\(\beta\)</span> to a global value, we’ll allow it to be different for each point, as is done for the input probabilities, so we’ll label it <span class="math inline">\(\beta_i\)</span>:</p>
@@ -315,6 +319,10 @@ w_{ij}
       \right)
 \right]
 \]</span> We may as well call this inhomogeneous HSSNE, in analogy with inhomogeneous t-SNE.</p>
+</div>
+<div id="inhomogeneous-hasne" class="section level2">
+<h2>Inhomogeneous HASNE</h2>
+<p>Just as was the case with DHASNE, the gradient for inhomogeneous HASNE is the same as for HSSNE, replacing joint probabilities with conditional probabilities.</p>
 </div>
 <div id="optimizing-the-precisions" class="section level2">
 <h2>Optimizing the Precisions</h2>

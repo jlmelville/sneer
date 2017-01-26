@@ -212,6 +212,14 @@ Now, as long as you remember to convert back and forth between $\alpha$ and
 $\xi$ where needed, we can now optimize $\alpha$ at the same time as the 
 coordinates.
 
+## Point-wise normalization
+
+Good news: the asymmetric version (i.e. DHASNE) has exactly the same gradient,
+just replace $p_{ij}$ and $q_{ij}$ with $p_{i|j}$ and $q_{i|j}$, respectively.
+The derivation differs only in exactly the same way that the plugin gradient
+derivation differs between asymmetric and symmetric versions, which was already
+covered on the [gradients](gradient.html) page.
+
 ## Including Precisions
 
 As mentioned in the [gradients](gradient.html) page, although the original
@@ -283,7 +291,12 @@ $$
 \right]
 $$
 We may as well call this inhomogeneous HSSNE, in analogy with inhomogeneous 
-t-SNE. 
+t-SNE.
+
+## Inhomogeneous HASNE
+
+Just as was the case with DHASNE, the gradient for inhomogeneous HASNE is the
+same as for HSSNE, replacing joint probabilities with conditional probabilities.
 
 ## Optimizing the Precisions
 
