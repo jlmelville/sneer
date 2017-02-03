@@ -183,7 +183,8 @@ inp_from_perps_multi <- function(perplexities = NULL,
         })$method
 
         method$orig_kernel <- method$kernel
-        method$update_out_fn <- make_update_out_ms(method$out_keep)
+        method$update_out_fn <- make_update_out_ms(
+          unique(c(method$out_keep, "wm")))
         method$stiffness_fn <- plugin_stiffness_ms
 
         inp$pms <- list()
@@ -396,7 +397,8 @@ inp_from_perps_multil <- function(perplexities = NULL,
         })$method
 
         method$orig_kernel <- method$kernel
-        method$update_out_fn <- make_update_out_ms(method$out_keep)
+        method$update_out_fn <- make_update_out_ms(
+          unique(c(method$out_keep, "wm")))
         method$stiffness_fn <- plugin_stiffness_ms
       }
 
