@@ -107,4 +107,3 @@ embed_plot(tsne_iris$coords, x = nbr_pres_32, limits = c(0, 1))
 embed_plot(tsne_iris$coords, x = tsne_iris$deg, top = 10)
 }
 }
-

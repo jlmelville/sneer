@@ -96,4 +96,3 @@ nbr_pres_32 <- nbr_pres(tsne_iris$dx, tsne_iris$dy, 32)
 embed_plot(tsne_iris$coords, nbr_pres_32, color_scheme = "Blues")
 }
 }
-

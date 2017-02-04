@@ -34,4 +34,3 @@ of 0.5.
 Use of this function requires that the \code{PRROC} package be
 installed.
 }
-

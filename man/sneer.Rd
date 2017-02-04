@@ -496,6 +496,7 @@ probability-based embedding methods provided in this package (PCA does a
 horrible job of separated the 10 clusters in the data). See \code{s1k}
 for more details.
 }
+
 \examples{
 \dontrun{
 # Do t-SNE on the iris dataset, scaling columns to zero mean and
@@ -793,4 +794,3 @@ Optimization equivalence of divergences improves neighbor embedding.
 In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
 (pp. 460-468).
 }
-
