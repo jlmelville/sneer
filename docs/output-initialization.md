@@ -59,7 +59,7 @@ directly:
 
 ```R
 input_coords <- some_other_initialization_method(s1k)
-s1k_tsne <- sneer(s1k, init = "matrix", init_config = input_coords)
+s1k_tsne <- sneer(s1k, init = input_coords)
 ```
 
 In the example above, `input_coords` should be a matrix with dimensions n x 2,

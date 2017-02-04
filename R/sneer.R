@@ -248,10 +248,10 @@ NULL
 #'  Maaten and Hinton (2008).
 #'  \item \code{"uniform"} Initialize each coordinate value from a uniform random
 #'  distribution between 0 and 1 as suggested by Venna et al (2010).
-#'  \item \code{"matrix"} Initialize the coordinates from a user-supplied matrix.
-#'   Supply the coordinates as the \code{init_config} parameter.
+#'  \item Coordinates may also be passed directly as a \code{matrix}. The
+#'  dimensions must be correct for the input data.
 #'}
-#' These arguments can be abbreviated.
+#' Character arguments can be abbreviated.
 #'
 #' For configuring the optimization method, the options for the \code{opt}
 #' parameter are:
@@ -436,8 +436,6 @@ NULL
 #'  perplexity results. See 'Details'. Ignored by non-probability based methods.
 #'  Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.
 #' @param init Type of initialization of the output coordinates. See 'Details'.
-#' @param init_config Coordinates to use for initial configuration. Used only
-#'  if \code{init} is \code{"m"}.
 #' @param opt Type of optimizer. See 'Details'.
 #' @param epsilon Learning rate when \code{opt} is set to \code{"TSNE"} and
 #'  the initial step size for the bold driver and back tracking step search
@@ -748,7 +746,7 @@ sneer <- function(df,
                   perp_scale_iter = NULL,
                   perp_kernel_fun = "exp",
                   prec_scale = "",
-                  init = "pca", init_config = NULL,
+                  init = "pca",
                   opt = "L-BFGS",
                   epsilon = 1,
                   max_iter = 1000,
@@ -988,8 +986,13 @@ sneer <- function(df,
     }
   }
 
+  if (class(init) == "matrix") {
+    init_config <- init
+    init <- "matrix"
+  }
   init <- match.arg(tolower(init),
                     c("pca", "random", "uniform", "matrix"))
+
   init_out <- switch(init,
     pca = out_from_PCA(k = ndim),
     random = out_from_rnorm(k = ndim),

@@ -4,14 +4,15 @@
 \name{sneer}
 \alias{sneer}
 \alias{sneer-package}
+\alias{sneer}
 \title{sneer: Stochastic Neighbor Embedding Experiments in R.}
 \usage{
 sneer(df, indexes = NULL, ndim = 2, method = "tsne", alpha = 0.5,
   dof = 10, kernel_opt_iter = 50, lambda = 0.5, kappa = 0.5,
   scale_type = "none", perplexity = 32, perp_scale = "single",
   perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
-  init = "pca", init_config = NULL, opt = "L-BFGS", epsilon = 1,
-  max_iter = 1000, report_every = 50, tol = 1e-04, exaggerate = NULL,
+  init = "pca", opt = "L-BFGS", epsilon = 1, max_iter = 1000,
+  report_every = 50, tol = 1e-04, exaggerate = NULL,
   exaggerate_off_iter = 50, plot_type = "plot", colors = NULL,
   color_name = NULL, labels = NULL, label_name = NULL,
   label_chars = NULL, point_size = 1, plot_labels = FALSE,
@@ -70,9 +71,6 @@ perplexity results. See 'Details'. Ignored by non-probability based methods.
 Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.}
 
 \item{init}{Type of initialization of the output coordinates. See 'Details'.}
-
-\item{init_config}{Coordinates to use for initial configuration. Used only
-if \code{init} is \code{"m"}.}
 
 \item{opt}{Type of optimizer. See 'Details'.}
 
@@ -281,10 +279,10 @@ For initializing the output coordinates, the options for the
  Maaten and Hinton (2008).
  \item \code{"uniform"} Initialize each coordinate value from a uniform random
  distribution between 0 and 1 as suggested by Venna et al (2010).
- \item \code{"matrix"} Initialize the coordinates from a user-supplied matrix.
-  Supply the coordinates as the \code{init_config} parameter.
+ \item Coordinates may also be passed directly as a \code{matrix}. The
+ dimensions must be correct for the input data.
 }
-These arguments can be abbreviated.
+Character arguments can be abbreviated.
 
 For configuring the optimization method, the options for the \code{opt}
 parameter are:
