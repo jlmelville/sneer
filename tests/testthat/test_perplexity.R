@@ -19,3 +19,15 @@ test_that("distribution of P is ok", {
   expect_equal(mean(presult$pm), 0.006667, tolerance = 5e-7, scale = 1)
   expect_equal(max(presult$pm), 0.1286, tolerance = 5e-5, scale = 1)
 })
+
+presult_exp <- d_to_p_perp_bisect(distance_matrix(iris[, 1:4]),
+                              weight_fn = exp_weight,
+                              perplexity = 50,
+                              verbose = FALSE)
+
+test_that("distribution of intrinsic dimensionality is ok", {
+  expect_equal(min(presult_exp$dim), 0.2734, tolerance = 1e-3)
+  expect_equal(median(presult_exp$dim), 1.086, tolerance = 1e-3)
+  expect_equal(mean(presult_exp$dim), 0.9939, tolerance = 1e-3)
+  expect_equal(max(presult_exp$dim), 2.657, tolerance = 1e-3)
+})

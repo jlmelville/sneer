@@ -8,7 +8,6 @@
 #
 # @param betas Vector of half-precisions
 summarize_betas <- function(betas) {
-  #summarize(beta_to_bandwidth(betas), "sigma")
   summarize(2 * betas, "prec")
 }
 
@@ -162,7 +161,7 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-05,
 #  \item{\code{d_intr}}{The intrinsic dimensionality for this perplexity,
 #  estimated using the final two guesses in the bisection procedure.}
 find_beta <- function(d2mi, i, perplexity, beta_init = 1,
-                      weight_fn, tol = 1e-05, max_iters = 50) {
+                      weight_fn, tol = 1e-5, max_iters = 50) {
 
   h_base <- 2
   fn <- make_objective_fn(d2mi, i, weight_fn = weight_fn,
@@ -170,12 +169,11 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 
   result <- root_bisect(fn = fn, tol = tol, max_iters = max_iters,
                         x_lower = 0, x_upper = Inf, x_init = beta_init,
-                        keep_search = TRUE)
-
+                        keep_search = FALSE)
 
   ok <- result$iter != max_iters
 
-  d_intr <- initrinsic_dimensionality(result, fn)
+  d_intr <- initrinsic_dimensionality(result, d2mi, h_base = h_base)
 
   list(pr = result$best$pr, perplexity = h_base ^ result$best$h,
        beta = result$x, d_intr = d_intr, ok = ok)
@@ -338,8 +336,22 @@ perplexity_rows <- function(pm, eps = .Machine$double.eps) {
   exp(shannon_entropy_rows(pm, base = exp(1), eps = eps))
 }
 
-# Intrinsic Dimensionality
-initrinsic_dimensionality <- function(bisection_result, fn) {
+# Intrinsic Dimensionality using an analytical calculation. Only requires
+# one value of beta and Shannon Entropy
+initrinsic_dimensionality <- function(bisection_result, d2mi, h_base) {
+
+  eps <- .Machine$double.eps
+  # Ensure Shannon Entropy units is nats
+  h <- bisection_result$best$h / log(exp(1), h_base)
+  pr <- bisection_result$best$pr
+  beta <- bisection_result$x
+  -2 * beta * sum(d2mi * pr * (log(pr + eps) + h))
+}
+
+# Intrinsic dimensionality using the finite difference equation of Lee and
+# co-workers. Uses data already calculated by the bisection search for beta
+# and Shannon Entropy so keep_search parameter of find_beta must be set to TRUE
+intrinsic_dimensionality_fd <- function(bisection_result, fn) {
   hs <- bisection_result$ys
   betas <- bisection_result$xs
 
@@ -355,5 +367,7 @@ initrinsic_dimensionality <- function(bisection_result, fn) {
 
   dh <- hs[length(hs)] - hs[length(hs) - 1]
   dlog2b <- log2(betas[length(betas)]) - log2(betas[length(betas) - 1])
-  (-2 * dh) / dlog2b
+  dint <- (-2 * dh) / dlog2b
+
+  dint
 }
