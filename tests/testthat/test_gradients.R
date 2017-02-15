@@ -244,6 +244,10 @@ test_that("Dynamic HSSNE gradients", {
   expect_grad(dhpsne(alpha = 0.001), label = "dhpsne alpha 0.001")
   expect_grad(dhpsne(alpha = 0.5), label = "dhpsne alpha 0.5")
   expect_grad(dhpsne(alpha = 1), label = "dhpsne alpha 1")
+
+  # Point-wise version
+  expect_grad(dhasne(alpha = 1, beta = seq(1e-3, 1, length.out = nr)),
+                label = "dhasne alpha 1 beta 0.001:1")
 })
 
 test_that("Dynamic inhomogeneous HSSNE gradients", {

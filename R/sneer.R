@@ -745,9 +745,10 @@ sneer <- function(df,
                   perplexity = 32, perp_scale = "single",
                   perp_scale_iter = NULL,
                   perp_kernel_fun = "exp",
-                  prec_scale = "",
+                  prec_scale = "none",
                   init = "pca",
                   opt = "L-BFGS",
+                  alt_opt = FALSE,
                   epsilon = 1,
                   max_iter = 1000,
                   report_every = 50,
@@ -807,8 +808,10 @@ sneer <- function(df,
     asne_plugin = function() { asne_plugin() },
     ssne_plugin = function() { ssne_plugin() },
     hssne_plugin = function() { hssne_plugin(alpha = alpha) },
-    itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter) },
-    dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter) }
+    itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter,
+                               alt_opt = alt_opt) },
+    dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter,
+                                 alt_opt = alt_opt) }
   )
 
   extra_costs <- NULL
@@ -822,9 +825,11 @@ sneer <- function(df,
            paste(names(embed_methods), collapse = ", "))
     }
 
+    prec_scale <- match.arg(tolower(prec_scale), c("none", "scale", "transfer"))
+
     # Need to use plugin method if precisions can be non-uniform
     # NB only applicable for 'cond' and 'row' probability types
-    if (prec_scale == "t") {
+    if (prec_scale == "transfer") {
       if (!endsWith(method, "_plugin")) {
         new_method <- paste0(method, "_plugin")
       }
@@ -891,11 +896,10 @@ sneer <- function(df,
     }
 
     modify_kernel_fn <- NULL
-    if ((prec_scale) != "") {
+    if (prec_scale != "none") {
       if (perp_kernel_fun == "step") {
         stop("Can't use precision scaling with step input weight function")
       }
-      prec_scale <- match.arg(tolower(prec_scale), c("scale", "transfer"))
       modify_kernel_fn <- switch(prec_scale,
         scale = scale_prec_to_perp,
         transfer = transfer_kernel_precisions
@@ -1105,7 +1109,7 @@ sneer <- function(df,
          "probability-based embedding methods that use symmetric input ",
          "probabilities (e.g. t-SNE), not '", method, "'")
   }
-  optimizer <- opt_sneer(opt)
+  optimizer <- opt_sneer(opt, embed_method)
 
   if (class(df) == 'dist') {
     xm <- df
@@ -1244,14 +1248,21 @@ sneer <- function(df,
   result
 }
 
-opt_sneer <- function(opt, epsilon = 500) {
+opt_sneer <- function(opt, method, epsilon = 500) {
   if (class(opt) == "list") {
     return(mize_opt(opt))
   }
 
   opt <- tolower(opt)
+  if (!is.null(method$alt_opt) && method$alt_opt) {
+    ctor <- mize_opt_alt
+  }
+  else {
+    ctor <- mize_opt
+  }
+
   if (opt == "tsne") {
-    optimizer <- mize_opt(
+    optimizer <- ctor(
       "DBD",
       step_up_fun = "+", step_up = 0.2, step_down = 0.8, step0 = epsilon,
       mom_type = "classical", mom_schedule = "switch",
@@ -1259,7 +1270,7 @@ opt_sneer <- function(opt, epsilon = 500) {
     )
   }
   else if (opt == "nest") {
-    optimizer <- mize_opt(
+    optimizer <- ctor(
       "SD", norm_direction = TRUE,
       line_search = "bold", step0 = epsilon,
       mom_schedule = "nesterov", mom_type = "nesterov",
@@ -1267,22 +1278,22 @@ opt_sneer <- function(opt, epsilon = 500) {
       use_nest_mu_zero = FALSE, restart = "fn")
   }
   else if (opt == "l-bfgs") {
-    optimizer <- mize_opt(
+    optimizer <- ctor(
       "L-BFGS", c1 = 1e-4, c2 = 0.9,
       step0 = "scipy", step_next_init = "quad")
   }
   else if (opt == "bfgs") {
-    optimizer <- mize_opt(
+    optimizer <- ctor(
       "BFGS", c1 = 1e-4, c2 = 0.9,
        step0 = "scipy", step_next_init = "quad")
   }
   else if (opt == "spec") {
-    optimizer <- mize_opt(
+    optimizer <- ctor(
       "PHESS", c1 = 1e-4, c2 = 0.9,
        step0 = "scipy", step_next_init = "quad", try_newton_step = TRUE)
   }
   else if (opt == "cg") {
-    optimizer <- mize_opt(
+    optimizer <- ctor(
       "CG", c1 = 1e-4, c2 = 0.1,
       step0 = "rasmussen", step_next_init = "slope ratio")
   }

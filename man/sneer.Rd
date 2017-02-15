@@ -10,7 +10,7 @@
 sneer(df, indexes = NULL, ndim = 2, method = "tsne", alpha = 0.5,
   dof = 10, kernel_opt_iter = 50, lambda = 0.5, kappa = 0.5,
   scale_type = "none", perplexity = 32, perp_scale = "single",
-  perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "",
+  perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "none",
   init = "pca", opt = "L-BFGS", epsilon = 1, max_iter = 1000,
   report_every = 50, tol = 1e-04, exaggerate = NULL,
   exaggerate_off_iter = 50, plot_type = "plot", colors = NULL,
