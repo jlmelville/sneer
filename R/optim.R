@@ -275,17 +275,11 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
                                      step_tol = .Machine$double.eps,
                                      max_iter = Inf)
     opt$mize <- mize
-
-    mize_alt <- opt$mize_module$opt_init(mize_alt, par, fg_alt,
-                                         step_tol = .Machine$double.eps,
-                                         max_iter = Inf)
-    opt$mize_alt <- mize_alt
-
   }
 
   # Can't reuse any old gradients
   mize <- opt$mize_module$opt_clear_cache(mize)
-  mize_alt <- opt$mize_module$opt_clear_cache(mize_alt)
+
   opt$old_cost_dirty <- FALSE
 
 
@@ -320,29 +314,56 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
   }
 
   # Optimize parameters
-  if (!is.null(method$get_extra_par)) {
-    par <- method$get_extra_par(method)
+  do_init <- FALSE
+  if (!is.null(method$opt_iter) && method$opt_iter == iter) {
+    do_init <- TRUE
+  }
+  else if (iter == 0) {
+    do_init <- TRUE
+  }
+
+  if (do_init) {
+    mize_alt <- opt$mize_module$opt_init(mize_alt, par, fg_alt,
+                                         step_tol = .Machine$double.eps,
+                                         max_iter = Inf)
+    opt$mize_alt <- mize_alt
+  }
+
+  do_opt_alt <- FALSE
+  if (!is.null(method$opt_iter)) {
+    if (iter >= method$opt_iter) {
+      do_opt_alt <- TRUE
+    }
   }
   else {
-    stop("No extra parameters for alternating optimization")
+    do_opt_alt <- TRUE
   }
 
-  step_res <- opt$mize_module$opt_step(mize_alt, par, fg_alt)
-  mize_alt <- step_res$opt
-  step_info <- opt$mize_module$mize_step_summary(mize_alt, step_res$par, fg_alt,
-                                                 par_old = par)
-  # message("param nf = ", step_info$nf, " ng = ", step_info$ng
-  #         , " f = ", formatC(step_info$f)
-  #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
-  # message("gr = ", fg_alt$gr(step_res$par))
+  if (do_opt_alt) {
+    if (!is.null(method$get_extra_par)) {
+      par <- method$get_extra_par(method)
+    }
+    else {
+      stop("No extra parameters for alternating optimization")
+    }
+    mize_alt <- opt$mize_module$opt_clear_cache(mize_alt)
+    step_res <- opt$mize_module$opt_step(mize_alt, par, fg_alt)
+    mize_alt <- step_res$opt
+    step_info <- opt$mize_module$mize_step_summary(mize_alt, step_res$par,
+                                                   fg_alt,
+                                                   par_old = par)
+    # message("iter = ", iter,
+    #   " param nf = ", step_info$nf, " ng = ", step_info$ng
+    #         , " f = ", formatC(step_info$f)
+    #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
 
-  mize_alt <- opt$mize_module$check_mize_convergence(step_info)
+    mize_alt <- opt$mize_module$check_mize_convergence(step_info)
 
-  opt$mize_alt <- mize_alt
-  par <- step_res$par
+    opt$mize_alt <- mize_alt
+    par <- step_res$par
 
-  method <- method$set_extra_par(method, par)
-
+    method <- method$set_extra_par(method, par)
+  }
   list(opt = opt, inp = inp, out = out, method = method, iter = iter)
 }
 
