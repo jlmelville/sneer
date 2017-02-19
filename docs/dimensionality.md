@@ -32,9 +32,10 @@ exotic like the t-distribution or other heavy-tailed functions:
 $$
 w_{ij} = \exp(-\beta_i d_{ij}^{2})
 $$
-where $d_{ij}^{2}$ is the distance between point $i$ and $j$ in the input space
-and $\beta_i$ is the precision (inverse of the bandwidth) associated with point
-$i$. We use a point-wise normalization to define a probability, $p_{j|i}$:
+where $d_{ij}^{2}$ is the squared distance between point $i$ and $j$ in the 
+input space and $\beta_i$ is the precision (inverse of the bandwidth) 
+associated with point $i$. We use a point-wise normalization to define a 
+probability, $p_{j|i}$:
 
 $$
 p_{j|i} = \frac{w_{ij}}{\sum_{k} w_{ik}}
@@ -56,7 +57,7 @@ around point $i$, $D_i$, is:
 $$
 U \propto \beta_i^{-\left({D_i}/{2}\right)}
 $$
-This suggests that if you did a log-log plot plot of the perplexity against
+This suggests that if you did a log-log plot of the perplexity against
 the precision for multiple perplexities, the graph should be linear and the
 gradient would be $-D_{i}/2$.
 
@@ -241,4 +242,9 @@ D_i = -2 \beta_i \sum_j d^2_{ij} p_{j|i} \left[\log\left(p_{j|i}\right) + H\righ
 $$
 
 This could be useful for estimating the intrinsic dimensionality associated
-with a perplexity even when not using multiscaling.
+with a perplexity even when not using multiscaling. However, as noted by Lee 
+and co-workers, the use of the gaussian bandwidth compared to the "hard" cutoff 
+of a ball with a fixed radius means that the estimation is subject to edge
+effects. Therefore, in multiscaling, only the dimensionality averaged over all
+points in the dataset is used.
+
