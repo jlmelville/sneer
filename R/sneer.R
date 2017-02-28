@@ -824,7 +824,10 @@ sneer <- function(df,
       stop("Unknown embedding method '",
            method,
            "', should be one of: ",
-           paste(names(embed_methods), collapse = ", "))
+           paste(
+             Filter(function(x) { !endsWith(x, '_plugin') },
+                    names(embed_methods)),
+             collapse = ", "))
     }
 
     prec_scale <- match.arg(tolower(prec_scale), c("none", "scale", "transfer"))
