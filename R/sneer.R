@@ -778,10 +778,10 @@ sneer <- function(df,
     message("Found ", length(indexes), " numeric columns")
   }
 
-  if (alpha < 0) {
+  if (any(alpha < 0)) {
     stop("alpha must be non-negative")
   }
-  if (dof < 0) {
+  if (any(dof < 0)) {
     stop("dof must be non-negative")
   }
   if (kernel_opt_iter < 0) {
