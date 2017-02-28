@@ -811,6 +811,8 @@ sneer <- function(df,
     itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter,
                                alt_opt = alt_opt) },
     dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter,
+                                 alt_opt = alt_opt) },
+    dhssne_plugin = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter,
                                  alt_opt = alt_opt) }
   )
 
