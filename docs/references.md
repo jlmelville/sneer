@@ -13,6 +13,7 @@ bibliographic information.
 ### Embedding Methods
 
 #### Metric Multi Dimensional Scaling (MDS)
+
 Borg, I., & Groenen, P. J. (2005). 
 *Modern multidimensional scaling: Theory and applications.*
 Springer Science & Business Media.
@@ -24,36 +25,42 @@ In *Advances in Neural Information Processing Systems* (pp. 913-920).
 https://papers.nips.cc/paper/2239-artefactual-structure-from-least-squares-multidimensional-scaling
 
 #### Sammon Mapping
+
 Sammon, J. W. (1969). 
 A nonlinear mapping for data structure analysis. 
 *IEEE Transactions on computers*, *18*(5), 401-409.
 https://dx.doi.org/10.1109/T-C.1969.222678
 
 #### Stochastic Neighbor Embedding (SNE)
+
 Hinton, G. E., & Roweis, S. T. (2002).
 Stochastic neighbor embedding.
 In *Advances in neural information processing systems* (pp. 833-840).
 https://papers.nips.cc/paper/2276-stochastic-neighbor-embedding
 
 #### Symmetric Stochastic Neighbor Embedding (SSNE)
+
 Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
 Visualizing similarity data with a mixture of maps.
 In *International Conference on Artificial Intelligence and Statistics* (pp. 67-74).
 https://www.cs.toronto.edu/~amnih/papers/sne_am.pdf
 
 #### t-Distributed Stochastic Neighbor Embedding (t-SNE)
+
 Van der Maaten, L., & Hinton, G. (2008).
 Visualizing data using t-SNE.
 *Journal of Machine Learning Research*, *9* (2579-2605).
 http://www.jmlr.org/papers/v9/vandermaaten08a.html
 
 #### Heavy-Tailed Symmetric Stochastic Neighbor Embedding (HSSNE)
+
 Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
 Heavy-tailed symmetric stochastic neighbor embedding.
 In *Advances in neural information processing systems* (pp. 2169-2177).
 https://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding
 
 #### Inhomogeneous t-SNE
+
 Kitazono, J., Grozavu, N., Rogovschi, N., Omori, T., & Ozawa, S. (2016, October).
 t-Distributed Stochastic Neighbor Embedding with Inhomogeneous Degrees of Freedom. 
 In *Proceedings of the 23rd International Conference on Neural Information Processing (ICONIP 2016)* 
@@ -61,6 +68,7 @@ In *Proceedings of the 23rd International Conference on Neural Information Proce
 http://dx.doi.org/10.1007/978-3-319-46675-0_14
 
 #### Weighted Symmetric Stochastic Neighbor Embedding (ws-SNE)
+
 Yang, Z., Peltonen, J., & Kaski, S. (2014).
 Optimization equivalence of divergences improves neighbor embedding.
 In *Proceedings of the 31st International Conference on Machine Learning (ICML-14)*
@@ -68,6 +76,7 @@ In *Proceedings of the 31st International Conference on Machine Learning (ICML-1
 http://jmlr.org/proceedings/papers/v32/yange14.html
 
 #### Neighbor Retrieval Visualizer (NeRV)
+
 Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
 Information retrieval perspective to nonlinear dimensionality reduction for 
 data visualization.
@@ -75,11 +84,24 @@ data visualization.
 http://www.jmlr.org/papers/v11/venna10a.html
 
 #### Jensen-Shannon Embedding (JSE)
+
 Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013).
 Type 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
 dimensionality reduction based on similarity preservation.
 *Neurocomputing*, *112*, 92-108.
 https://dx.doi.org/10.1016/j.neucom.2012.12.036
+
+#### xSNE
+
+Strickert, M. (2012, August). 
+No Perplexity in Stochastic Neighbor Embedding. 
+In *Workshop New Challenges in Neural Computation 2012* (p. 68).
+http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.680.6041&rep=rep1&type=pdf#page=68
+
+Matlab code at: http://mloss.org/software/view/418/
+
+Not implemented in sneer. Suggests using rank-based data to avoid perplexity
+calculations.
 
 ### Perplexity and Input Initialization
 
@@ -95,6 +117,7 @@ to describe the process of calibrating probabilities via setting a perplexity
 value.
 
 #### Multiscale Embedding
+
 Lee, J. A., Peluffo-Ordónez, D. H., & Verleysen, M. (2014).
 Multiscale stochastic neighbor embedding: Towards parameter-free
 dimensionality reduction. In *Proceedings of 2014 European Symposium on Artificial Neural Networks, Computational Intelligence and Machine Learning (ESANN 2014)* (pp. 177-182), 
@@ -112,6 +135,7 @@ Fun fact: just noticed that this is the only paper on the list where
 ### Optimization
 
 #### Jacobs Method for Adaptive Step Size
+
 Jacobs, R. A. (1988).
 Increased rates of convergence through learning rate adaptation.
 *Neural networks*, *1*(4), 295-307.
@@ -125,6 +149,7 @@ In *1998 IEEE International Joint Conference on Neural Networks Proceedings.*
 https://dx.doi.org/10.1109/IJCNN.1998.687205
 
 #### Spectral Directions
+
 Vladymyrov, M., & Carreira-Perpiñán, M. A. (2012).
 Partial-Hessian Strategies for Fast Learning of Nonlinear Embeddings.
 In *Proceedings of the 29th International Conference on Machine Learning (ICML-12)*
@@ -132,12 +157,14 @@ In *Proceedings of the 29th International Conference on Machine Learning (ICML-1
 https://arxiv.org/abs/1206.4646
 
 #### Nesterov Accelerated Gradient
+
 On the importance of initialization and momentum in deep learning.
 In *Proceedings of the 30th international conference on machine learning (ICML-13)*
 (pp. 1139-1147).
 http://www.jmlr.org/proceedings/papers/v28/sutskever13.html
 
 #### Adaptive Restart
+
 O'Donoghue, B., & Candes, E. (2013).
 Adaptive restart for accelerated gradient schemes.
 *Foundations of computational mathematics*, *15*(3), 715-732.
@@ -151,6 +178,7 @@ http://jmlr.org/papers/v17/15-084.html
 ### Evaluation
 
 #### Precision-Recall AUC and Receiver Operating Characteristic Area Under the Curve
+
 Davis, J., & Goadrich, M. (2006, June).
 The relationship between Precision-Recall and ROC curves.
 In *Proceedings of the 23rd international conference on Machine learning*
@@ -163,6 +191,7 @@ Area under precision-recall curves for weighted and unweighted data.
 https://dx.doi.org/10.1371/journal.pone.0092209.
 
 #### Neighborhood Preservation
+
 Lee, J. A., & Verleysen, M. (2009).
 Quality assessment of dimensionality reduction: Rank-based criteria.
 *Neurocomputing*, *72*(7), 1431-1443.
