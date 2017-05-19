@@ -437,6 +437,8 @@ NULL
 #'  Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.
 #' @param init Type of initialization of the output coordinates. See 'Details'.
 #' @param opt Type of optimizer. See 'Details'.
+#' @param alt_opt If \code{TRUE}, then optimize non-coordinates separately from
+#'  coordinates. Applies only if \code{method} is \code{"itsne"} or \code{"dhssne"}.
 #' @param epsilon Learning rate when \code{opt} is set to \code{"TSNE"} and
 #'  the initial step size for the bold driver and back tracking step search
 #'  methods.

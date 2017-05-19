@@ -11,8 +11,8 @@ sneer(df, indexes = NULL, ndim = 2, method = "tsne", alpha = 0.5,
   dof = 10, kernel_opt_iter = 50, lambda = 0.5, kappa = 0.5,
   scale_type = "none", perplexity = 32, perp_scale = "single",
   perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "none",
-  init = "pca", opt = "L-BFGS", epsilon = 1, max_iter = 1000,
-  report_every = 50, tol = 1e-04, exaggerate = NULL,
+  init = "pca", opt = "L-BFGS", alt_opt = FALSE, epsilon = 1,
+  max_iter = 1000, report_every = 50, tol = 1e-04, exaggerate = NULL,
   exaggerate_off_iter = 50, plot_type = "plot", colors = NULL,
   color_name = NULL, labels = NULL, label_name = NULL,
   label_chars = NULL, point_size = 1, plot_labels = FALSE,
@@ -73,6 +73,9 @@ Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.}
 \item{init}{Type of initialization of the output coordinates. See 'Details'.}
 
 \item{opt}{Type of optimizer. See 'Details'.}
+
+\item{alt_opt}{If \code{TRUE}, then optimize non-coordinates separately from
+coordinates. Applies only if \code{method} is \code{"itsne"} or \code{"dhssne"}.}
 
 \item{epsilon}{Learning rate when \code{opt} is set to \code{"TSNE"} and
 the initial step size for the bold driver and back tracking step search
