@@ -1,6 +1,6 @@
 # Mize is distributed under this License:
 #
-# Copyright (c) 2016, James Melville
+# Copyright (c) 2017, James Melville
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -238,749 +238,6 @@ is_restart_iter <- function(opt, iter) {
   !is.null(opt$restart_at) && opt$restart_at == iter
 }
 
-# Part of the More'-Thuente line search.
-#
-# Updates the interval of uncertainty of the current step size and updates the
-# current best step size.
-#
-# This routine is a translation of Dianne O'Leary's Matlab code, which was
-# itself a translation of the MINPACK original. Original comments to the Matlab
-# code are at the end.
-#
-# @param stepx One side of the updated step interval, and the associated
-#     line search values.
-# @param stepy Other side of the updated step interval, and the
-#     associated line search values.
-# @param step Optimal step size and associated line search
-#     value.
-# @param brackt TRUE if the interval has been bracketed.
-# @param stpmin Minimum allowed interval length.
-# @param stpmax Maximum allowed interval length.
-# @return List containing:
-# \itemize{
-#   \item \code{stepx} One side of the updated step interval, and the associated
-#     line search values.
-#   \item \code{stepy} Other side of the updated step interval, and the
-#     associated line search values.
-#   \item \code{step} Updated optimal step size and associated line search
-#     value.
-#   \item \code{brackt} TRUE if the interval has been bracketed.
-#   \item \code{info} Integer return code.
-# }
-# The possible integer return codes refer to the cases 1-4 enumerated in the
-# original More'-Thuente paper that correspond to different line search values
-# at the ends of the interval and the current best step size (and therefore
-# the type of cubic or quadratic interpolation). An integer value of 0 indicates
-# that the input parameters are invalid.
-#
-#
-#   Translation of minpack subroutine cstep
-#   Dianne O'Leary   July 1991
-#     **********
-#
-#     Subroutine cstep
-#
-#     The purpose of cstep is to compute a safeguarded step for
-#     a linesearch and to update an interval of uncertainty for
-#     a minimizer of the function.
-#
-#     The parameter stx contains the step with the least function
-#     value. The parameter stp contains the current step. It is
-#     assumed that the derivative at stx is negative in the
-#     direction of the step. If brackt is set true then a
-#     minimizer has been bracketed in an interval of uncertainty
-#     with end points stx and sty.
-#
-#     The subroutine statement is
-#
-#       subroutine cstep(stx,fx,dx,sty,fy,dy,stp,fp,dp,brackt,
-#                        stpmin,stpmax,info)
-#
-#     where
-#
-#       stx, fx, and dx are variables which specify the step,
-#         the function, and the derivative at the best step obtained
-#         so far. The derivative must be negative in the direction
-#         of the step, that is, dx and stp-stx must have opposite
-#         signs. On output these parameters are updated appropriately.
-#
-#       sty, fy, and dy are variables which specify the step,
-#         the function, and the derivative at the other endpoint of
-#         the interval of uncertainty. On output these parameters are
-#         updated appropriately.
-#
-#       stp, fp, and dp are variables which specify the step,
-#         the function, and the derivative at the current step.
-#         If brackt is set true then on input stp must be
-#         between stx and sty. On output stp is set to the new step.
-#
-#       brackt is a logical variable which specifies if a minimizer
-#         has been bracketed. If the minimizer has not been bracketed
-#         then on input brackt must be set false. If the minimizer
-#         is bracketed then on output brackt is set true.
-#
-#       stpmin and stpmax are input variables which specify lower
-#         and upper bounds for the step.
-#
-#       info is an integer output variable set as follows:
-#         If info <- 1,2,3,4,5, then the step has been computed
-#         according to one of the five cases below. Otherwise
-#         info <- 0, and this indicates improper input parameters.
-#
-#     Subprograms called
-#
-#       FORTRAN-supplied ... abs,max,min,sqrt
-#                        ... dble
-#
-#     Argonne National Laboratory. MINPACK Project. June 1983
-#     Jorge J. More', David J. Thuente
-#
-#     **********
-cstep <-  function(stepx, stepy, step, brackt, stpmin, stpmax) {
-
-  stx <- stepx$alpha
-  fx <- stepx$f
-  dx <- stepx$d
-  dfx <- stepx$df
-
-  sty <- stepy$alpha
-  fy <- stepy$f
-  dy <- stepy$d
-  dfy <- stepy$df
-
-  stp <- step$alpha
-  fp <- step$f
-  dp <- step$d
-  dfp <- step$df
-
-  delta <- 0.66
-  info <- 0
-  # Check the input parameters for errors.
-  if ((brackt && (stp <= min(stx, sty) ||
-                  stp >= max(stx, sty))) ||
-      dx * (stp - stx) >= 0.0 || stpmax < stpmin) {
-    list(
-      stepx = stepx,
-      stepy = stepy,
-      step = step,
-      brackt = brackt, info = info)
-  }
-  # Determine if the derivatives have opposite sign.
-  sgnd <- dp * (dx / abs(dx))
-
-  # First case. Trial function value is larger, so choose a step which is
-  # closer to stx.
-  # The minimum is bracketed.
-  # If the cubic step is closer to stx than the quadratic step, the cubic step
-  # is taken else the average of the cubic and quadratic steps is taken.
-  if (fp > fx) {
-    info <- 1
-    bound <- TRUE
-
-    stpc <- cubic_interpolate(stx, fx, dx, stp, fp, dp, ignoreWarnings = TRUE)
-    stpq <- quadratic_interpolate(stx, fx, dx, stp, fp)
-
-    if (is.nan(stpc)) {
-      stpf <- stpq
-    }
-    else {
-      if (abs(stpc - stx) < abs(stpq - stx)) {
-        stpf <- stpc
-      } else {
-        stpf <- stpc + (stpq - stpc) / 2
-      }
-    }
-    brackt <- TRUE
-
-    # Second case. A lower function value and derivatives of
-    # opposite sign. The minimum is bracketed. If the cubic
-    # step is closer to stx than the quadratic (secant) step,
-    # the cubic step is taken, else the quadratic step is taken.
-  } else if (sgnd < 0.0) {
-    info <- 2
-    bound <- FALSE
-
-    stpc <- cubic_interpolate(stx, fx, dx, stp, fp, dp, ignoreWarnings = TRUE)
-    stpq <- quadratic_interpolateg(stp, dp, stx, dx)
-    if (is.nan(stpc)) {
-      stpf <- stpq
-    }
-    else {
-      if (abs(stpc - stp) > abs(stpq - stp)) {
-        stpf <- stpc
-      } else {
-        stpf <- stpq
-      }
-    }
-
-    brackt <- TRUE
-
-    # Third case. A lower function value, derivatives of the
-    # same sign, and the magnitude of the derivative decreases.
-    # The next trial step exists outside the interval so is an extrapolation.
-    # The cubic may not have a minimizer. If it does, it may be in the
-    # wrong direction, e.g. stc < stx < stp
-    # The cubic step is only used if the cubic tends to infinity
-    # in the direction of the step and if the minimum of the cubic
-    # is beyond stp. Otherwise the cubic step is defined to be
-    # either stpmin or stpmax. The quadratic (secant) step is also
-    # computed and if the minimum is bracketed then the the step
-    # closest to stx is taken, else the step farthest away is taken.
-  } else if (abs(dp) < abs(dx)) {
-    info <- 3
-    bound <- TRUE
-    theta <- 3 * (fx - fp) / (stp - stx) + dx + dp
-    s <- norm(rbind(theta, dx, dp), "i")
-    # The case gamma = 0 only arises if the cubic does not tend
-    # to infinity in the direction of the step.
-    gamma <- s * sqrt(max(0.,(theta / s) ^ 2 - (dx / s) * (dp / s)))
-    if (stp > stx) {
-      gamma <- -gamma
-    }
-    p <- (gamma - dp) + theta
-    q <- (gamma + (dx - dp)) + gamma
-    r <- p / q
-
-    if (r < 0.0 && gamma != 0.0) {
-      stpc <- stp + r * (stx - stp)
-    } else if (stp > stx) {
-      stpc <- stpmax
-    } else {
-      stpc <- stpmin
-    }
-
-    stpq <- quadratic_interpolateg(stp, dp, stx, dx)
-
-    if (brackt) {
-      if (abs(stp - stpc) < abs(stp - stpq)) {
-        stpf <- stpc
-      } else {
-        stpf <- stpq
-      }
-    } else {
-      if (abs(stp - stpc) > abs(stp - stpq)) {
-        stpf <- stpc
-      } else {
-        stpf <- stpq
-      }
-    }
-    # Fourth case. A lower function value, derivatives of the
-    # same sign, and the magnitude of the derivative does
-    # not decrease. If the minimum is not bracketed, the step
-    # is either stpmin or stpmax, else the cubic step is taken.
-  } else {
-    info <- 4
-    bound <- FALSE
-    if (brackt) {
-      stpc <- cubic_interpolate(sty, fy, dy, stp, fp, dp, ignoreWarnings = TRUE)
-      if (is.nan(stpc)) {
-        stpf <- (sty + stp) / 2
-      }
-      stpf <- stpc
-    } else if (stp > stx) {
-      stpf <- stpmax
-    } else {
-      stpf <- stpmin
-    }
-  }
-
-  # Update the interval of uncertainty. This update does not
-  # depend on the new step or the case analysis above.
-  if (fp > fx) {
-    sty <- stp
-    fy <- fp
-    dy <- dp
-    dfy <- dfp
-  } else {
-    if (sgnd < 0.0) {
-      sty <- stx
-      fy <- fx
-      dy <- dx
-      dfy <- dfx
-    }
-    stx <- stp
-    fx <- fp
-    dx <- dp
-    dfx <- dfp
-  }
-
-  # Compute the new step and safeguard it.
-  stpf <- min(stpmax, stpf)
-  stpf <- max(stpmin, stpf)
-  stp <- stpf
-  if (brackt && bound) {
-    # if the new step is too close to an end point
-    # replace with a (weighted) bisection (delta = 0.66 in the paper)
-    stb <- stx + delta * (sty - stx)
-    if (sty > stx) {
-      stp <- min(stb, stp)
-    } else {
-      stp <- max(stb, stp)
-    }
-  }
-  list(
-       stepx = list(alpha = stx, f = fx, d = dx, df = dfx),
-       stepy = list(alpha = sty, f = fy, d = dy, df = dfy),
-       step = list(alpha = stp, f = fp, d = dp, df = dfp),
-       brackt = brackt, info = info)
-}
-# More'-Thuente Line Search
-#
-# Line Search Factory Function
-#
-# Returns a line search function using a variant of the More-Thuente
-#  line search originally implemented in
-#  \href{http://www.netlib.org/minpack/}{MINPACK}.
-#
-# @param c1 Constant used in sufficient decrease condition. Should take a value
-#   between 0 and 1.
-# @param c2 Constant used in curvature condition. Should take a value between
-#   \code{c1} and 1.
-# @param max_fn Maximum number of function evaluations allowed.
-# @return Line search function.
-# @references
-# More, J. J., & Thuente, D. J. (1994).
-# Line search algorithms with guaranteed sufficient decrease.
-# \emph{ACM Transactions on Mathematical Software (TOMS)}, \emph{20}(3),
-# 286-307.
-# @seealso This code is based on a translation of the original MINPACK code
-#  for Matlab by
-#  \href{https://www.cs.umd.edu/users/oleary/software/}{Dianne O'Leary}.
-more_thuente <- function(c1 = 1e-4, c2 = 0.1, max_fn = Inf) {
-  function(phi, step0, alpha,
-           total_max_fn = Inf, total_max_gr = Inf, total_max_fg = Inf) {
-    maxfev <- min(max_fn, total_max_fn, total_max_gr, floor(total_max_fg / 2))
-    if (maxfev <= 0) {
-      return(list(step = step0, nfn = 0, ngr = 0))
-    }
-    res <- cvsrch(phi, step0, alpha = alpha, c1 = c1, c2 = c2,
-                  maxfev = maxfev)
-    list(step = res$step, nfn = res$nfn, ngr = res$nfn)
-  }
-}
-
-# More'-Thuente Line Search
-#
-# This routine is a translation of Dianne O'Leary's Matlab code, which was
-# itself a translation of the MINPACK original. Original comments to the Matlab
-# code are at the end.
-# @param phi Line function.
-# @param step0 Line search values at starting point of line search.
-# @param alpha Initial guess for step size.
-# @param c1 Constant used in sufficient decrease condition. Should take a value
-#   between 0 and 1.
-# @param c2 Constant used in curvature condition. Should take a value between
-#   c1 and 1.
-# @param xtol Relative width tolerance: convergence is reached if width falls
-#   below xtol * maximum step size.
-# @param alpha_min Smallest acceptable value of the step size.
-# @param alpha_max Largest acceptable value of the step size.
-# @param maxfev Maximum number of function evaluations allowed.
-# @param delta Value to force sufficient decrease of interval size on
-#   successive iterations. Should be a positive value less than 1.
-# @return List containing:
-# \itemize{
-#   \item \code{step} Best step found and associated line search info.
-#   \item \code{info} Return code from convergence check.
-#   \item \code{nfn}  Number of function evaluations.
-# }
-#   Translation of minpack subroutine cvsrch
-#   Dianne O'Leary   July 1991
-#     **********
-#
-#     Subroutine cvsrch
-#
-#     The purpose of cvsrch is to find a step which satisfies
-#     a sufficient decrease condition and a curvature condition.
-#     The user must provide a subroutine which calculates the
-#     function and the gradient.
-#
-#     At each stage the subroutine updates an interval of
-#     uncertainty with endpoints stx and sty. The interval of
-#     uncertainty is initially chosen so that it contains a
-#     minimizer of the modified function
-#
-#          f(x+alpha*pv) - f(x) - c1*alpha*(gradf(x)'pv).
-#
-#     If a step is obtained for which the modified function
-#     has a nonpositive function value and nonnegative derivative,
-#     then the interval of uncertainty is chosen so that it
-#     contains a minimizer of f(x+alpha*pv).
-#
-#     The algorithm is designed to find a step which satisfies
-#     the sufficient decrease condition
-#
-#           f(x+alpha*pv) <= f(x) + c1*alpha*(gradf(x)'pv),
-#
-#     and the curvature condition
-#
-#           abs(gradf(x+alpha*pv)'pv)) <= c2*abs(gradf(x)'pv).
-#
-#     If c1 is less than c2 and if, for example, the function
-#     is bounded below, then there is always a step which satisfies
-#     both conditions. If no step can be found which satisfies both
-#     conditions, then the algorithm usually stops when rounding
-#     errors prevent further progress. In this case alpha only
-#     satisfies the sufficient decrease condition.
-#
-#     The subroutine statement is
-#
-#        subroutine cvsrch(fcn,n,x,f,g,pv,alpha,c1,c2,xtol,
-#                          alpha_min,alpha_max,maxfev,info,nfev)
-#     where
-#
-#	fcn is the name of the user-supplied subroutine which
-#         calculates the function and the gradient.  fcn must
-#      	  be declared in an external statement in the user
-#         calling program, and should be written as follows.
-#
-#         function [f,g] = fcn(n,x) (Matlab)     (10/2010 change in documentation)
-#	  (derived from Fortran subroutine fcn(n,x,f,g) )
-#         integer n
-#         f
-#         x(n),g(n)
-#	  ----------
-#         Calculate the function at x and
-#         return this value in the variable f.
-#         Calculate the gradient at x and
-#         return this vector in g.
-#	  ----------
-#	  return
-#	  end
-#
-#       n is a positive integer input variable set to the number
-#	  of variables.
-#
-#	x is an array of length n. On input it must contain the
-#	  base point for the line search. On output it contains
-#         x + alpha*pv.
-#
-#	f is a variable. On input it must contain the value of f
-#         at x. On output it contains the value of f at x + alpha*pv.
-#
-#	g is an array of length n. On input it must contain the
-#         gradient of f at x. On output it contains the gradient
-#         of f at x + alpha*pv.
-#
-#	pv is an input array of length n which specifies the
-#         search direction.
-#
-#	alpha is a nonnegative variable. On input alpha contains an
-#         initial estimate of a satisfactory step. On output
-#         alpha contains the final estimate.
-#
-#       c1 and c2 are nonnegative input variables. Termination
-#         occurs when the sufficient decrease condition and the
-#         directional derivative condition are satisfied.
-#
-#	xtol is a nonnegative input variable. Termination occurs
-#         when the relative width of the interval of uncertainty
-#	  is at most xtol.
-#
-#	alpha_min and alpha_max are nonnegative input variables which
-#	  specify lower and upper bounds for the step.
-#
-#	maxfev is a positive integer input variable. Termination
-#         occurs when the number of calls to fcn is at least
-#         maxfev by the end of an iteration.
-#
-#	info is an integer output variable set as follows:
-#
-#	  info = 0  Improper input parameters.
-#
-#	  info = 1  The sufficient decrease condition and the
-#                   directional derivative condition hold.
-#
-#	  info = 2  Relative width of the interval of uncertainty
-#		    is at most xtol.
-#
-#	  info = 3  Number of calls to fcn has reached maxfev.
-#
-#	  info = 4  The step is at the lower bound alpha_min.
-#
-#	  info = 5  The step is at the upper bound alpha_max.
-#
-#	  info = 6  Rounding errors prevent further progress.
-#                   There may not be a step which satisfies the
-#                   sufficient decrease and curvature conditions.
-#                   Tolerances may be too small.
-#
-#       nfev is an integer output variable set to the number of
-#         calls to fcn.
-#
-#
-#     Subprograms called
-#
-#	user-supplied......fcn
-#
-#	MINPACK-supplied...cstep
-#
-#	FORTRAN-supplied...abs,max,min
-#
-#     Argonne National Laboratory. MINPACK Project. June 1983
-#     Jorge J. More', David J. Thuente
-#
-#     **********
-cvsrch <- function(phi, step0, alpha = 1,
-                    c1 = 1e-4, c2 = 0.1, xtol = .Machine$double.eps,
-                    alpha_min = 0, alpha_max = Inf,
-                    maxfev = Inf, delta = 0.66) {
-
-  xtrapf <- 4
-  infoc <- 1
-
-  # Check the input parameters for errors.
-  params_ok <- TRUE
-  problems <- c()
-  if (alpha <= 0.0) {
-    params_ok <- FALSE
-    problems <- c(problems, paste0("alpha <= 0.0: ", formatC(alpha)))
-  }
-  if (c1 < 0.0) {
-    params_ok <- FALSE
-    problems <- c(problems, paste0("c1 < 0.0: ", formatC(c1)))
-  }
-  if (c2 < 0.0) {
-    params_ok <- FALSE
-    problems <- c(problems, paste0("c2 < 0.0: ", formatC(c2)))
-  }
-  if (xtol < 0.0) {
-    params_ok <- FALSE
-    problems <- c(problems, paste0("xtol < 0.0: ", formatC(xtol)))
-  }
-  if (alpha_min < 0.0) {
-    params_ok <- FALSE
-    problems <- c(problems, paste0("alpha_min < 0.0: ", formatC(alpha_min)))
-  }
-  if (alpha_max < alpha_min) {
-    params_ok <- FALSE
-    problems <- c(problems, paste0("alpha_max ", formatC(alpha_max)
-                         , " < alpha_min ", formatC(alpha_min)))
-  }
-  if (maxfev <= 0) {
-    params_ok <- FALSE
-    problems <- c(problems, paste0("maxfev <= 0: ", formatC(maxfev)))
-  }
-  if (!params_ok) {
-    problems <- paste(problems, collapse = "; ")
-    stop("Parameter errors detected: ", problems)
-  }
-
-  # Check that pv is a descent direction.
-  d0 <- step0$d
-  if (step0$d >= 0.0) {
-    stop("Not a descent direction")
-  }
-  dgtest <- c1 * step0$d
-
-  # Initialize local variables.
-  brackt <- FALSE
-  stage1 <- TRUE
-  nfev <- 0
-
-  width <- alpha_max - alpha_min
-  width_old <- 2 * width
-
-  # The variables stx, fx, dgx contain the values of the step,
-  # function, and directional derivative at the best step.
-  # The variables sty, fy, dgy contain the value of the step,
-  # function, and derivative at the other endpoint of
-  # the interval of uncertainty.
-  # The variables alpha, f, dg contain the values of the step,
-  # function, and derivative at the current step.
-  stepx <- step0
-  stepy <- step0
-  step <- list(alpha = alpha)
-
-  #     Start of iteration.
-  iter <- 0
-  while (1) {
-    iter <- iter + 1
-    # Set the minimum and maximum steps to correspond
-    # to the present interval of uncertainty.
-    if (brackt) {
-      stmin <- min(stepx$alpha, stepy$alpha)
-      stmax <- max(stepx$alpha, stepy$alpha)
-    } else {
-      stmin <- stepx$alpha
-      stmax <- step$alpha + xtrapf * (step$alpha - stepx$alpha)
-    }
-
-    # Force the step to be within the bounds alpha_max and alpha_min.
-    step$alpha <- max(step$alpha, alpha_min)
-    step$alpha <- min(step$alpha, alpha_max)
-
-    # Evaluate the function and gradient at alpha
-    # and compute the directional derivative.
-    step <- phi(step$alpha)
-    nfev <- nfev + 1
-    # Test for convergence.
-    info <- check_convergence(step0, step, brackt, infoc, stmin, stmax,
-                              alpha_min, alpha_max, c1, c2, dgtest, nfev,
-                              maxfev, xtol)
-    # Check for termination.
-    if (info != 0) {
-      # If an unusual termination is to occur, then set step to the best step
-      # found
-      if (info == 2 || info == 3 || info == 6) {
-        step <- stepx
-      }
-      return(list(step = step, info = info, nfn = nfev))
-    }
-
-    # In the first stage we seek a step for which the modified
-    # function has a nonpositive value and nonnegative derivative.
-    if (stage1 && armijo_ok_step(step0, step, c1) && step$df >= min(c1, c2) * d0) {
-      stage1 <- FALSE
-    }
-
-    # A modified function is used to predict the step only if
-    # we have not obtained a step for which the modified
-    # function has a nonpositive function value and nonnegative
-    # derivative, and if a lower function value has been
-    # obtained but the decrease is not sufficient.
-    if (stage1 && step$f <= stepx$f && !armijo_ok_step(step0, step, c1)) {
-      # Define the modified function and derivative values.
-
-      stepxm <- modify_step(stepx, dgtest)
-      stepym <- modify_step(stepy, dgtest)
-      stepm <- modify_step(step, dgtest)
-
-      step_result <- cstep(stepxm, stepym, stepm, brackt, stmin, stmax)
-
-      brackt <- step_result$brackt
-      infoc <- step_result$info
-      stepxm <- step_result$stepx
-      stepym <- step_result$stepy
-      stepm <- step_result$step
-
-      # Reset the function and gradient values for f.
-      stepx <- unmodify_step(stepxm, dgtest)
-      stepy <- unmodify_step(stepym, dgtest)
-      step$alpha <- stepm$alpha
-    } else {
-      # Call cstep to update the interval of uncertainty
-      # and to compute the new step.
-      step_result <- cstep(stepx, stepy, step, brackt, stmin, stmax)
-      brackt <- step_result$brackt
-      infoc <- step_result$info
-      stepx <- step_result$stepx
-      stepy <- step_result$stepy
-      step <- step_result$step
-    }
-
-    # Force a sufficient decrease in the size of the interval of uncertainty.
-    if (brackt) {
-      # if the length of I does not decrease by a factor of delta < 1
-      # then use a bisection step for the next trial alpha
-      width_new <- abs(stepy$alpha - stepx$alpha)
-      if (width_new >= delta * width_old) {
-        step$alpha <- stepx$alpha + 0.5 * (stepy$alpha - stepx$alpha)
-      }
-      width_old <- width
-      width <- width_new
-    }
-  }
-}
-
-
-# Modify Line Search Values
-#
-# Modifies a line search function and directional derivative value.
-# Used by MINPACK version of More'-Thuente line search algorithm.
-#
-# @param step Line search information.
-# @param dgtest Product of the initial line search directional derivative and
-#   the sufficent decrease condition constant.
-# @return Modified step size.
-modify_step <- function(step, dgtest) {
-  stepm <- step
-  stepm$f <- step$f - step$alpha * dgtest
-  stepm$d <- step$d - dgtest
-  stepm
-}
-
-# Un-modify Line Search Values
-#
-# Un-modifies a line search function and directional derivative value that was
-# modified by the modify_step function. Used by MINPACK version of More'-Thuente
-# line search algorithm.
-#
-# @param stepm Modified line search information.
-# @param dgtest Product of the initial line search directional derivative and
-#   the sufficent decrease condition constant.
-# @return Unmodified step size.
-unmodify_step <- function(stepm, dgtest) {
-  stepm$f <- stepm$f + stepm$alpha * dgtest
-  stepm$d <- stepm$d + dgtest
-  stepm
-}
-
-# Check Convergence of More'-Thuente Line Search
-#
-# @param step0 Line search values at starting point.
-# @param step Line search value at a step along the line.
-# @param brackt TRUE if the step has been bracketed.
-# @param infoc Return code of the last step size update.
-# @param stmin Smallest value of the step size interval.
-# @param stmax Largest value of the step size interval.
-# @param alpha_min Smallest acceptable value of the step size.
-# @param alpha_max Largest acceptable value of the step size.
-# @param c1 Constant used in sufficient decrease condition. Should take a value
-#   between 0 and 1.
-# @param c2 Constant used in curvature condition. Should take a value between
-#   c1 and 1.
-# @param dgtest Product of the initial line search directional derivative and
-#   the sufficent decrease condition constant.
-# @param nfev Current number of function evaluations.
-# @param maxfev Maximum number of function evaluations allowed.
-# @param xtol Relative width tolerance: convergence is reached if width falls
-#   below xtol * stmax.
-# @return Integer code indicating convergence state:
-#  \itemize{
-#   \item \code{0} No convergence.
-#   \item \code{1} The sufficient decrease condition and the directional
-#     derivative condition hold.
-#	  \item \code{2} Relative width of the interval of uncertainty
-#		    is at most xtol.
-#	  \item \code{3} Number of calls to fcn has reached maxfev.
-#	  \item \code{4} The step is at the lower bound alpha_min.
-#	  \item \code{5} The step is at the upper bound alpha_max.
-#	  \item \code{6} Rounding errors prevent further progress.
-# }
-check_convergence <- function(step0, step, brackt, infoc, stmin, stmax,
-                              alpha_min, alpha_max, c1, c2, dgtest, nfev,
-                              maxfev, xtol) {
-  info <- 0
-  if (!is.finite(step$f) || any(is.nan(step$df))) {
-    return(6)
-  }
-  if ((brackt && (step$alpha <= stmin || step$alpha >= stmax)) || infoc == 0) {
-    # rounding errors prevent further progress
-    info <- 6
-  }
-  if (step$alpha == alpha_max && armijo_ok_step(step0, step, c1) && step$d <= dgtest) {
-    # reached alpha_max
-    info <- 5
-  }
-  if (step$alpha == alpha_min && (!armijo_ok_step(step0, step, c1) || step$d >= dgtest)) {
-    # reached alpha_min
-    info <- 4
-  }
-  if (nfev >= maxfev) {
-    # maximum number of function evaluations reached
-    info <- 3
-  }
-  if (brackt && stmax - stmin <= xtol * stmax) {
-    # interval width is below xtol
-    info <- 2
-  }
-  if (strong_wolfe_ok_step(step0, step, c1, c2)) {
-    # success!
-    info <- 1
-  }
-  info
-}
 # Various Gradient-based optimization routines: steepest descent, conjugate
 # gradient, BFGS etc.
 
@@ -1052,7 +309,7 @@ cg_direction <- function(ortho_check = FALSE, nu = 0.1,
         beta <- sub_stage$cg_update(gm, gm_old, pm_old, sub_stage$eps)
         pm <- pm + (beta * pm_old)
         descent <- dot(gm, pm)
-        if (descent > 0) {
+        if (descent >= 0) {
           #message("Next CG direction is not a descent direction, resetting to SD")
           pm <- -gm
         }
@@ -1210,7 +467,7 @@ bfgs_direction <- function(eps =  .Machine$double.eps,
         pm <- as.vector(-sub_stage$hm %*% gm)
 
         descent <- dot(gm, pm)
-        if (descent > 0) {
+        if (descent >= 0) {
           pm <- -gm
         }
       }
@@ -1302,7 +559,7 @@ lbfgs_direction <- function(memory = 5, scale_inverse = FALSE,
         pm <- -pm
 
         descent <- dot(gm, pm)
-        if (descent > 0) {
+        if (descent >= 0) {
           pm <- -gm
         }
 
@@ -1364,7 +621,7 @@ newton_direction <- function() {
         pm <- hessian_solve(rm, gm)
 
         descent <- dot(gm, pm)
-        if (descent > 0) {
+        if (descent >= 0) {
           pm <- -gm
         }
       }
@@ -1390,7 +647,7 @@ partial_hessian_direction <- function() {
       pm <- hessian_solve(rm, gm)
 
       descent <- dot(gm, pm)
-      if (descent > 0) {
+      if (descent >= 0) {
         pm <- -gm
       }
       sub_stage$value <- pm
@@ -1448,6 +705,715 @@ require_gradient_old <- function(opt, par, fg, iter, par0, update) {
 }
 attr(require_gradient_old, 'event') <- 'after step'
 attr(require_gradient_old, 'name') <- 'gradient_old'
+# Line Search as described by Hager and Zhang in:
+#
+# Hager, W. W., & Zhang, H. (2005).
+# A new conjugate gradient method with guaranteed descent and an efficient line
+# search.
+# SIAM Journal on Optimization, 16(1), 170-192.
+#
+# Hager, W. W., & Zhang, H. (2006).
+# Algorithm 851: CG_DESCENT, a conjugate gradient method with guaranteed
+# descent.
+# ACM Transactions on Mathematical Software (TOMS), 32(1), 113-137.
+#
+# I have tried to indicate in the comments which parts of which routines
+# match the notation in the above papers.
+
+
+# Adapter -----------------------------------------------------------------
+
+hager_zhang <- function(c1 = c2 / 2, c2 = 0.1, max_fn = Inf,
+                        strong_curvature = TRUE,
+                        approx_armijo = TRUE) {
+  if (c2 < c1) {
+    stop("hager-zhang line search: c2 < c1")
+  }
+  function(phi, step0, alpha,
+           total_max_fn = Inf, total_max_gr = Inf, total_max_fg = Inf,
+           pm) {
+    maxfev <- min(max_fn, total_max_fn, total_max_gr, floor(total_max_fg / 2))
+    if (maxfev <= 0) {
+      return(list(step = step0, nfn = 0, ngr = 0))
+    }
+    res <- line_search_hz(alpha, step0, phi, c1 = c1, c2 = c2,
+                               eps = 1e-6, theta = 0.5, rho = 5,
+                               gamma = 0.66,
+                               max_fn = maxfev,
+                               xtol = 1e-6,
+                               strong_curvature = strong_curvature,
+                               always_check_convergence = TRUE,
+                               approx_armijo = approx_armijo,
+                               verbose = FALSE)
+
+    res$ngr = res$nfn
+    res
+  }
+}
+
+
+# Line Search -------------------------------------------------------------
+
+# Routine 'Line Search Algorithm' L0-3
+
+# alpha initial guess
+# step0
+# phi
+# c1
+# c2
+# eps - determines when to apply approximate Wolfe condition. Ignored if
+# approx_armijo is FALSE.
+# theta - bisection weight during bracket update
+# rho - factor to increase step size by during bracket phase
+# gamma - bisection weight if secant2 step fails
+# max_fn - maximum number of function evaluations allowed
+# xtol - stop if bracket size ever falls below alpha * xtol
+# strong_curvature - use Strong curvature condition
+# always_check_convergence - if FALSE, only check for satisfaction of the
+#   Wolfe conditions when a step size is produced by interpolation, not
+#   bisection or the bracketing phase. May produce a result closer to a
+#   minimizer.
+# approx_armijo - if TRUE, use the approximate version of the armijo condition
+# when testing the Wolfe conditions.
+line_search_hz <- function(alpha, step0, phi, c1 = 0.1, c2 = 0.9,
+                           eps = 1e-6, theta = 0.5, rho = 5,
+                           gamma = 0.66,
+                           max_fn = Inf,
+                           xtol = 1e-6,
+                           strong_curvature = FALSE,
+                           always_check_convergence = TRUE,
+                           approx_armijo = TRUE,
+                           verbose = FALSE) {
+  ls_max_fn <- max_fn
+  if (max_fn == 0) {
+    return(list(step = step0, nfn = 0))
+  }
+  # For approximate Wolfe error parameters implicitly set delta = 0
+  # no C or Q parameters to update
+  eps_k <- eps * abs(step0$f)
+
+  # Bisect alpha if needed in case initial alpha guess gives a mad or bad value
+  nfn <- 0
+  result <- find_finite(phi, alpha, max_fn, min_alpha = 0)
+  nfn <- nfn + result$nfn
+  if (!result$ok) {
+    if (verbose) {
+      message("Unable to create finite initial guess")
+    }
+    return(list(step = step0, nfn = nfn))
+  }
+  step_c <- result$step
+
+  if (always_check_convergence && hz_ok_step(step_c, step0, c1, c2, eps_k,
+                                             strong_curvature = strong_curvature,
+                                             approx_armijo = approx_armijo)) {
+    if (verbose) {
+      message("initial step OK = ", formatC(step_c$alpha))
+    }
+    return(list(step = step_c, nfn = nfn))
+  }
+  ls_max_fn <- max_fn - nfn
+  if (ls_max_fn <= 0) {
+    if (verbose) {
+      message("max fn reached after initial step")
+    }
+    return(list(step = step_c, nfn = nfn))
+  }
+
+  # L0
+  br_res <- bracket_hz(step_c, step0, phi, eps_k, ls_max_fn, theta, rho,
+                       xtol = xtol, verbose = verbose)
+  bracket <- br_res$bracket
+  nfn <- nfn + br_res$nfn
+  if (!br_res$ok) {
+    LOpos <- which.min(bracket_props(bracket, 'f'))
+    if (verbose) {
+      message("Failed to create bracket, aborting, alpha = ",
+              formatC(bracket[[LOpos]]$alpha))
+    }
+    return(list(step = bracket[[LOpos]], nfn = nfn))
+  }
+
+  # Check for T1/T2
+  if (always_check_convergence) {
+    LOpos <- hz_ok_bracket_pos(bracket, step0, c1, c2, eps_k,
+                               strong_curvature = strong_curvature,
+                               approx_armijo = approx_armijo)
+    if (LOpos > 0) {
+      if (verbose) {
+        message("Bracket OK after bracket phase alpha = ",
+                formatC(bracket[[LOpos]]$alpha))
+      }
+      return(list(step = bracket[[LOpos]], nfn = nfn))
+    }
+  }
+  ls_max_fn <- max_fn - nfn
+  if (ls_max_fn <= 0) {
+    if (verbose) {
+      message("max fn reached after bracket phase")
+    }
+    LOpos <- which.min(bracket_props(bracket, 'f'))
+    return(list(step = bracket[[LOpos]], nfn = nfn))
+  }
+
+  old_bracket <- bracket
+  # Zoom step
+  while (TRUE) {
+    if (verbose) {
+      message("BRACKET: ", format_bracket(old_bracket))
+    }
+    # L1
+
+    # do some of S1 here in case it's already an ok step
+    alpha_c <- secant_hz(old_bracket[[1]], old_bracket[[2]])
+
+    if (!is_finite_numeric(alpha_c)) {
+      # probably only an issue when tolerances are very low and approx armijo
+      # is off: can get NaN when bracket size approaches zero
+      LOpos <- which.min(bracket_props(bracket, 'f'))
+      if (verbose) {
+        message("bad secant alpha, aborting line search")
+      }
+      return(list(step = bracket[[LOpos]], nfn = nfn))
+    }
+    fsec_res <- find_finite(phi, alpha_c, ls_max_fn,
+                            min_alpha = bracket_min_alpha(old_bracket))
+    nfn <- nfn + fsec_res$nfn
+    ls_max_fn <- max_fn - nfn
+    if (!fsec_res$ok) {
+      if (verbose) {
+        message("No finite alpha during secant bisection, aborting line search")
+      }
+      break
+    }
+    step_c <- fsec_res$step
+
+    if (verbose) {
+      message("S1: secant step_c alpha = ", formatC(alpha_c))
+    }
+    if (hz_ok_step(step_c, step0, c1, c2, eps_k,
+                   strong_curvature = strong_curvature,
+                   approx_armijo = approx_armijo)) {
+      if (verbose) {
+        message("step OK after secant alpha = ", formatC(step_c$alpha))
+      }
+      return(list(step = step_c, nfn = nfn))
+    }
+    ls_max_fn <- max_fn - nfn
+    if (ls_max_fn <= 0) {
+      if (verbose) {
+        message("max fn reached after secant")
+      }
+      bracket[[3]] <- step_c
+      LOpos <- which.min(bracket_props(bracket, 'f'))
+      return(list(step = bracket[[LOpos]], nfn = nfn))
+    }
+
+    sec2_res <- secant2_hz(old_bracket, step_c, step0, phi, eps_k, ls_max_fn,
+                           theta, verbose = verbose)
+    bracket <- sec2_res$bracket
+    nfn <- nfn + sec2_res$nfn
+    if (!sec2_res$ok) {
+      break
+    }
+
+    if (verbose) {
+      message("new bracket: ", format_bracket(bracket))
+    }
+    # Check for T1/T2
+    LOpos <- hz_ok_bracket_pos(bracket, step0, c1, c2, eps_k,
+                               strong_curvature = strong_curvature,
+                               approx_armijo = approx_armijo)
+    if (LOpos > 0) {
+      # if we only allow interpolated steps to count as converged,
+      # check that any satisfactory result of secant2 came from a secant step
+      # (i.e. wasn't already part of the bracket)
+      if (always_check_convergence ||
+          (bracket[[LOpos]]$alpha != old_bracket[[1]]$alpha &&
+           bracket[[LOpos]]$alpha != old_bracket[[2]]$alpha)) {
+        if (verbose) {
+          message("Bracket OK after secant2 alpha = ", formatC(bracket[[LOpos]]$alpha))
+        }
+        return(list(step = bracket[[LOpos]], nfn = nfn))
+      }
+    }
+    ls_max_fn <- max_fn - nfn
+    if (ls_max_fn <= 0) {
+      if (verbose) {
+        message("max fn reached after secant2")
+      }
+      break
+    }
+
+    # L2
+    # Ensure the bracket size decreased by a factor of gamma
+    old_range <- bracket_props(old_bracket, 'alpha')
+    old_diff <- abs(old_range[2] - old_range[1])
+    new_range <- bracket_props(bracket, 'alpha')
+    new_diff <- abs(new_range[2] - new_range[1])
+
+    if (verbose) {
+      message("Bracket size = ", formatC(new_diff), " old bracket size = ",
+              formatC(old_diff))
+    }
+
+    if (new_diff < xtol * max(new_range)) {
+      if (verbose) {
+        message("Bracket size reduced below tolerance")
+      }
+
+      break
+    }
+
+    if (new_diff > old_diff * gamma) {
+      if (verbose) {
+        message("Bracket size did not decrease sufficiently: bisecting")
+      }
+      # bracket size wasn't decreased sufficiently: bisection step
+      alpha_c <- mean(new_range)
+      bisec_res <- find_finite(phi, alpha_c, ls_max_fn,
+                               min_alpha = bracket_min_alpha(bracket))
+      nfn <- nfn + bisec_res$nfn
+      ls_max_fn <- max_fn - nfn
+      if (!bisec_res$ok) {
+        if (verbose) {
+          message("No finite alpha during bisection, aborting line search")
+        }
+        break
+      }
+      step_c <- bisec_res$step
+
+      if (ls_max_fn <= 0) {
+        if (verbose) {
+          message("Reached max_fn, returning")
+        }
+
+        bracket[[3]] <- step_c
+        LOpos <- which.min(bracket_props(bracket, 'f'))
+        return(list(step = bracket[[LOpos]], nfn = nfn))
+      }
+
+      up_res <- update_bracket_hz(bracket, step_c, step0, phi, eps_k, ls_max_fn,
+                                  xtol = xtol, theta)
+      bracket <- up_res$bracket
+      nfn <- nfn + up_res$nfn
+      if (!up_res$ok) {
+        break
+      }
+      # Check for T1/T2
+      if (always_check_convergence) {
+        LOpos <- hz_ok_bracket_pos(bracket, step0, c1, c2, eps_k,
+                                   strong_curvature = strong_curvature,
+                                   approx_armijo = approx_armijo)
+        if (LOpos > 0) {
+          if (verbose) {
+            message("Bracket OK after bisection alpha = ", formatC(bracket[[LOpos]]$alpha))
+          }
+          return(list(step = bracket[[LOpos]], nfn = nfn))
+        }
+      }
+      ls_max_fn <- max_fn - nfn
+      if (ls_max_fn <= 0) {
+        if (verbose) {
+          message("max fn reached after bisection")
+        }
+        break
+      }
+    }
+
+    # L3
+    old_bracket <- bracket
+  }
+
+  LOpos <- which.min(bracket_props(bracket, 'f'))
+  list(step = bracket[[LOpos]], nfn = nfn)
+}
+
+# Bracket -----------------------------------------------------------------
+
+# Routine 'bracket' B1-3
+# Generates an initial bracket satisfying the opposite slope condition
+# or if max_fn is reached or a non-finite f/g value generated, returns the best
+# two values it can find.
+bracket_hz <- function(step_c, step0, phi, eps, max_fn, theta = 0.5, rho = 5,
+                       xtol = .Machine$double.eps, verbose = FALSE) {
+  step_c_old <- step0
+  # used only if bracket step fails (hit max_fn or non-finite f/g)
+  step_c_old_old <- step0
+
+  ls_max_fn <- max_fn
+  nfn <- 0
+
+  # step_c is the latest attempt at a bracketed point
+  # step_c_old is the previous step_c
+  while (TRUE) {
+    if (verbose) {
+      message("Bracketing: step = ", formatC(step_c$alpha))
+    }
+    if (step_c$d > 0) {
+      # B1 slope is +ve: bracketing successful: return [step_c_old, step_c]
+      if (verbose) {
+        message("B1: slope +ve")
+      }
+      return(list(bracket = list(step_c_old, step_c), nfn = nfn, ok = TRUE))
+    }
+    if (step_c$f > step0$f + eps) {
+      # B2 slope is -ve but f is higher than starting point
+      # we must have stepped too far beyond the minimum and the +ve slope
+      # and its maximum
+      # find the minimum by weighted bisection
+      if (verbose) {
+        message("B2: f > phi0 + eps")
+      }
+
+      if (ls_max_fn <= 0) {
+        # avoid returning step_c in this case, which might be outside the
+        # current minimizer "basin"
+        return(list(bracket = list(step_c_old_old, step_c_old), nfn = nfn,
+                    ok = FALSE))
+      }
+
+      # Probably could use step_c_old as LHS of bracket
+      # but HZ paper specifies step0
+      bracket_sub = list(step0, step_c)
+      bisect_res <- update_bracket_bisect_hz(bracket_sub, step0, phi, eps,
+                                             ls_max_fn, theta,
+                                             xtol = xtol,
+                                             verbose = verbose)
+      bisect_res$nfn <- bisect_res$nfn + nfn
+      # return bisection result: may have failed
+      return(bisect_res)
+    }
+
+    # B3: slope is -ve and f < f0, so we haven't passed the minimum yet
+    if (ls_max_fn <= 0) {
+      return(list(bracket = list(step_c_old, step_c), nfn = nfn, ok = FALSE))
+    }
+
+    # extrapolate: increase the step size
+    step_c_old_old <- step_c_old
+    step_c_old <- step_c
+    alpha <- step_c$alpha * rho
+
+    fext_res <- find_finite(phi, alpha, ls_max_fn, min_alpha = step_c$alpha)
+    nfn <- nfn + fext_res$nfn
+    ls_max_fn <- max_fn - nfn
+    if (!fext_res$ok) {
+      if (verbose) {
+        message("No finite alpha during extrapolation bisection, aborting line search")
+      }
+      return(list(bracket = list(step_c_old_old, step_c_old), nfn = nfn,
+                  ok = FALSE))
+    }
+    step_c <- fext_res$step
+  }
+}
+
+# Update ------------------------------------------------------------------
+
+# routine 'update' U0-U3
+# Given a bracket, create a new bracket with end points which are inside
+# the original bracket.
+# Returns with ok = TRUE if any of U0-U3 succeed (i.e. U0 is not a failure).
+# Returns with ok = FALSE if U3 fails (i.e. exceed max_fn or non-finite
+# function/gradient is calculated before bisection succeeds)
+update_bracket_hz <- function(bracket, step_c, step0, phi, eps, max_fn,
+                              theta = 0.5, xtol = .Machine$double.eps,
+                              verbose = FALSE) {
+  if (verbose) {
+    message("U: alpha = ", formatC(step_c$alpha),
+            " bracket = ", format_bracket(bracket))
+  }
+  nfn <- 0
+  ok <- TRUE
+
+  if (!is_in_bracket(bracket, step_c$alpha)) {
+    # U0: c is not inside, reject it
+    new_bracket <- bracket
+    if (verbose) {
+      message("U0: step not in bracket, reject")
+    }
+  }
+  else if (step_c$d >= 0) {
+    # U1: c is on the +ve slope, make it the new hi
+    new_bracket <- list(bracket[[1]], step_c)
+    if (verbose) {
+      message("U1: step has +ve slope, new hi")
+    }
+  }
+  else if (step_c$f <= step0$f + eps) {
+    # U2: c is on the -ve slope and closer to minimum than a
+    # make it the new lo
+    new_bracket <- list(step_c, bracket[[2]])
+    if (verbose) {
+      message("U2: step has -ve slope and closer to minimum, new lo")
+    }
+  }
+  else {
+    # U3
+    # c is on the -ve slope but larger than f0: must have missed the minimum
+    # and the +ve slope and the maximum
+    # find new hi by weighted bisection
+    if (verbose) {
+      message("U3: step has -ve slope but not closer to minimum, bisect")
+    }
+    sub_bracket <- list(bracket[[1]], step_c)
+    sub_res <- update_bracket_bisect_hz(sub_bracket, step0, phi, eps, max_fn,
+                                        theta, xtol = xtol,
+                                        verbose = verbose)
+    new_bracket <- sub_res$bracket
+    nfn <- sub_res$nfn
+    ok <- sub_res$ok
+  }
+
+  list(bracket = new_bracket, nfn = nfn, ok = ok)
+}
+
+# U3a-c from routine 'update'
+#
+# Use weighted bisection of the current bracket so that bracket[2] contains a
+# step size with a +ve slope. bracket[1] will also be updated if a point
+# with -ve slope closer to the minimizer is found.
+#
+# Also used during the bracket step if the step size gets too large.
+# Called when step size leads to a -ve slope but f is > f0, implying that
+# step size was so large it missed the local minimum, the +ve slope and the
+# local maximum and we are now going downhill to some other minimum.
+# Use weighted bisection until the hi of the bracket has a +ve slope
+# lo of bracket will also be updated if we find a suitable point during
+# bisection.
+#
+# If bisection succeeds, then this function returns with ok = TRUE.
+# If the number of bisections exceeds max_fn, or if any step size contains a
+# non-finite slope or function value, the most recent finite-valued bracket is
+# returned with ok = FALSE
+update_bracket_bisect_hz <- function(bracket, step0, phi, eps, max_fn,
+                                     theta = 0.5,
+                                     xtol = .Machine$double.eps,
+                                     verbose = FALSE) {
+  res <- bracket
+  nfn <- 0
+  ls_max_fn <- max_fn
+  ok <- FALSE
+  while (TRUE) {
+    if (verbose) {
+      message("U3: Bracket: ", format_bracket(res), " width = ",
+              bracket_width(res))
+    }
+    if (bracket_width(res) <= xtol * res[[2]]$alpha) {
+      if (verbose) {
+        message("Relative bracket width reduced below tolerance, aborting")
+      }
+      break
+    }
+
+    ls_max_fn <- max_fn - nfn
+    if (ls_max_fn <= 0) {
+      if (verbose) {
+        message("max_fn reached, aborting bisection bracket update")
+      }
+      break
+    }
+
+    # U3a new point is (weighted) bisection of current bracket
+    alpha <- (1 - theta) * res[[1]]$alpha + theta * res[[2]]$alpha
+    fwbi_res <- find_finite(phi, alpha, ls_max_fn,
+                            min_alpha = bracket_min_alpha(res))
+    nfn <- nfn + fwbi_res$nfn
+    ls_max_fn <- max_fn - nfn
+    if (!fwbi_res$ok) {
+      if (verbose) {
+        message("No finite alpha during weighted bisection, aborting line search")
+      }
+      break
+    }
+    step_d <- fwbi_res$step
+
+    if (step_d$d >= 0) {
+      # d is on +ve slope, make it the new hi and return
+      res[[2]] <- step_d
+      ok <- TRUE
+      break
+    }
+    if (step_d$f <= step0$f + eps) {
+      if (verbose) {
+        message("U3b: alpha ", formatC(step_d$alpha),
+                " f = ", formatC(step_d$f),
+                " d  = ", formatC(step_d$d),
+                " closer to minimizer: new lo")
+      }
+      # U3b: d is on -ve slope but closer to minimizer, make it new lo and loop
+      res[[1]] <- step_d
+    } else {
+      # U3c: d has -ve slope but still > f0 so still too large a step,
+      # make it the new hi and loop
+      if (verbose) {
+        message("U3b: alpha ", formatC(step_d$alpha),
+                " f = ", formatC(step_d$f),
+                " d  = ", formatC(step_d$d),
+                " -ve slope but > f0: new hi")
+      }
+      res[[2]] <- step_d
+    }
+  }
+
+  list(bracket = res, nfn = nfn, ok = ok)
+}
+
+# Secant ------------------------------------------------------------------
+
+# Routine 'secant2'
+# Do the secant step to generate c for step S1 outside of this routine because
+# it may be an acceptable step without having to update any brackets
+secant2_hz <- function(bracket, step_c, step0, phi, eps, max_fn,
+                       theta = 0.5, xtol = .Machine$double.eps,
+                       verbose = FALSE) {
+  nfn <- 0
+  ls_max_fn <- max_fn
+
+  if (ls_max_fn <= 0) {
+    return(list(bracket = bracket, nfn = nfn, ok = FALSE))
+  }
+
+  if (verbose) {
+    message("S1: Creating AB")
+  }
+  bracket_AB_res <- update_bracket_hz(bracket, step_c, step0, phi, eps, theta,
+                                      xtol = xtol, verbose = verbose)
+  if (!bracket_AB_res$ok) {
+    return(list(bracket = bracket, nfn = nfn, ok = FALSE))
+  }
+  bracket_AB <- bracket_AB_res$bracket
+
+  if (verbose) {
+    message("S1: secant alpha = ", formatC(step_c$alpha),
+            " ab = ", format_bracket(bracket),
+            " AB = ", format_bracket(bracket_AB))
+  }
+
+  ok <- TRUE
+  # following two if blocks rely on exact floating point comparison
+  if (step_c$alpha == bracket_AB[[2]]$alpha) {
+    # S2 c == B
+    alpha_cbar <- secant_hz(bracket[[2]], bracket_AB[[2]])
+
+    if (verbose) {
+      message("S2 c = B: cbar = secant(b, B) = (",
+              formatC(bracket[[2]]$alpha), ", ",
+              formatC(bracket_AB[[2]]$alpha), ") = ",
+              formatC(alpha_cbar))
+    }
+    # update routine would also check that c_bar is in [A,B] but do it manually
+    # here to avoid calculating phi(c_bar) if we don't need to
+    if (is.finite(alpha_cbar) && is_in_bracket(bracket_AB, alpha_cbar)
+        && max_fn > 0) {
+      step_cbar <- phi(alpha_cbar)
+      nfn <- nfn + 1
+      max_fn <- ls_max_fn - nfn
+
+      res <- update_bracket_hz(bracket_AB, step_cbar, step0, phi, eps, max_fn,
+                               theta, xtol = xtol, verbose = verbose)
+      new_bracket <- res$bracket
+      nfn <- nfn + res$nfn
+      max_fn <- ls_max_fn - nfn
+      ok <- res$ok
+    }
+    else {
+      new_bracket <- bracket_AB
+    }
+    if (verbose) {
+      message("S2 bracket: ", format_bracket(new_bracket))
+    }
+  }
+  else if (step_c$alpha == bracket_AB[[1]]$alpha) {
+    # S3 c == A
+    alpha_cbar <- secant_hz(bracket[[1]], bracket_AB[[1]])
+    if (verbose) {
+      message("S3 c = A: cbar = secant(a, A) = (",
+              formatC(bracket[[1]]$alpha), ", ",
+              formatC(bracket_AB[[1]]$alpha), ") = ",
+              formatC(alpha_cbar))
+    }
+    if (is.finite(alpha_cbar) && is_in_bracket(bracket_AB, alpha_cbar)
+        && max_fn > 0) {
+
+      step_cbar <- phi(alpha_cbar)
+      nfn <- nfn + 1
+      max_fn <- ls_max_fn - nfn
+
+      res <- update_bracket_hz(bracket_AB, step_cbar, step0, phi, eps, max_fn,
+                               theta, xtol = xtol, verbose = verbose)
+      new_bracket <- res$bracket
+      nfn <- nfn + res$nfn
+      max_fn <- ls_max_fn - nfn
+      ok <- res$ok
+    }
+    else {
+      new_bracket <- bracket_AB
+    }
+    if (verbose) {
+      message("S3 bracket: ", format_bracket(new_bracket))
+    }
+  }
+  else {
+    # S4
+    new_bracket <- bracket_AB
+    if (verbose) {
+      message("S4 bracket: ", format_bracket(new_bracket))
+    }
+  }
+
+  list(bracket = new_bracket, nfn = nfn, ok = ok)
+}
+
+secant_hz <- function(step_a, step_b) {
+  (step_a$alpha * step_b$d - step_b$alpha * step_a$d) / (step_b$d - step_a$d)
+}
+
+
+# Termination Conditions --------------------------------------------------
+
+hz_ok_step <- function(step, step0, c1, c2, eps, strong_curvature = FALSE,
+                       approx_armijo = TRUE) {
+  if (strong_curvature) {
+    ok <- strong_curvature_ok_step(step0, step, c2)
+  }
+  else {
+    ok <- curvature_ok_step(step0, step, c2)
+  }
+  if (!ok) {
+    return(ok)
+  }
+
+  if (armijo_ok_step(step0, step, c1)) {
+    return(ok)
+  }
+
+  approx_armijo && (step$f <= step0$f + eps) &&
+    approx_armijo_ok_step(step0, step, c1)
+}
+
+hz_ok_bracket_pos <- function(bracket, step0, c1, c2, eps,
+                          strong_curvature = FALSE,
+                          approx_armijo = TRUE) {
+  ok_pos <- 0
+  if (hz_ok_step(bracket[[1]], step0, c1, c2, eps,
+                 strong_curvature = strong_curvature,
+                 approx_armijo = approx_armijo)) {
+    ok_pos <- 1
+  }
+  if (hz_ok_step(bracket[[2]], step0, c1, c2, eps,
+                 strong_curvature = strong_curvature,
+                 approx_armijo = approx_armijo)) {
+    # if somehow we've reached a situation where both sides of the bracket
+    # meet the conditions, choose the one with the lower function value
+    if (ok_pos == 0 || bracket[[2]]$f < bracket[[1]]$f) {
+      ok_pos <- 2
+    }
+  }
+  ok_pos
+}
+
 # Adaptive algorithms, normally used in the neural network/deep learning
 # communities, and normally associated with stochastic gradient descent.
 
@@ -1520,8 +1486,12 @@ delta_bar_delta <- function(kappa = 1.1, kappa_fun = `*`,
 
       if (!is.numeric(sub_stage$epsilon)) {
         d0 <- dot(delta, stage$direction$value)
-        sub_stage$epsilon <- make_step_zero(sub_stage$epsilon, d0,
-                                            try_newton_step = FALSE)
+        sub_stage$epsilon <- guess_alpha0(sub_stage$epsilon,
+                                          x0 = NULL,
+                                          f0 = NULL,
+                                          gr0 = delta,
+                                          d0 = d0,
+                                          try_newton_step = FALSE)
       }
 
       if (use_momentum && !is.null(opt$cache$update_old)) {
@@ -1559,196 +1529,6 @@ delta_bar_delta <- function(kappa = 1.1, kappa_fun = `*`,
       }
       sub_stage$gamma_old <- gamma
       list(opt = opt, sub_stage = sub_stage)
-    },
-    depends = c("gradient")
-  ))
-}
-
-
-# Adagrad -----------------------------------------------------------------
-# http://jmlr.org/papers/v12/duchi11a.html
-adagrad <- function(eta = 0.01, eps = sqrt(.Machine$double.eps)) {
-  make_step_size(list(
-    name = "adagrad",
-    eta = eta,
-    eps = eps,
-    init = function(opt, stage, sub_stage, par, fg, iter) {
-      sub_stage$grad2_hist <- rep(0, length(par))
-      sub_stage$value <- sub_stage$grad2_hist
-      list(sub_stage = sub_stage)
-    },
-    calculate = function(opt, stage, sub_stage, par, fg, iter) {
-      grad <- opt$cache$gr_curr
-
-      if (!is.numeric(sub_stage$eta)) {
-        d0 <- dot(grad, stage$direction$value)
-        sub_stage$eta <- make_step_zero(sub_stage$eta, d0,
-                                        try_newton_step = FALSE)
-      }
-
-      grad2_hist <- sub_stage$grad2_hist
-      grad2_hist <- grad2_hist + grad * grad
-
-      sub_stage$value <- sub_stage$eta / sqrt(grad2_hist + sub_stage$eps)
-
-      sub_stage$grad2_hist <- grad2_hist
-      list(sub_stage = sub_stage)
-    },
-    depends = c("gradient")
-  ))
-}
-
-
-# Adadelta ----------------------------------------------------------------
-
-# https://arxiv.org/abs/1212.5701
-adadelta <- function(rho = 0.95, eps = sqrt(.Machine$double.eps)) {
-  make_step_size(list(
-    name = "adadelta",
-    rho = rho,
-    eps = eps,
-    init = function(opt, stage, sub_stage, par, fg, iter) {
-      sub_stage$grad2_hist <- rep(0, length(par))
-      sub_stage$dx2_hist <- rep(0, length(par))
-      sub_stage$value <- rep(0, length(par))
-      list(sub_stage = sub_stage)
-    },
-    calculate = function(opt, stage, sub_stage, par, fg, iter) {
-      grad <- opt$cache$gr_curr
-      rho <- sub_stage$rho
-      grad2_hist <- sub_stage$grad2_hist
-      dx2_hist <- sub_stage$dx2_hist
-      eps <- sub_stage$eps
-
-      # accumulate gradient
-      grad2_hist <- rho * grad2_hist + (1 - rho) * grad * grad
-
-      # compute update
-      rms_grad <- sqrt(grad2_hist + eps)
-      rms_dx <- sqrt(dx2_hist + eps)
-      dx <- rms_dx / rms_grad
-      sub_stage$value <- dx
-
-      # accumulate update
-      # TODO: fix this to work for total update when using momentum?
-      dx <- dx * stage$direction$value
-      dx2_hist <- rho * dx2_hist + (1 - rho) * dx * dx
-
-      sub_stage$grad2_hist <- grad2_hist
-      sub_stage$dx2_hist <- dx2_hist
-
-      list(sub_stage = sub_stage)
-    },
-    depends = c("gradient")
-  ))
-}
-
-
-# RMSProp -----------------------------------------------------------------
-
-# http://www.cs.toronto.edu/~tijmen/csc321/slides/lecture_slides_lec6.pdf
-# Initial eta suggested Ruder in https://arxiv.org/abs/1609.04747
-rmsprop <- function(eta = 0.001, rho = 0.9, eps = sqrt(.Machine$double.eps)) {
-  make_step_size(list(
-    name = "rmsprop",
-    eta = eta,
-    rho = rho,
-    eps = eps,
-    init = function(opt, stage, sub_stage, par, fg, iter) {
-      sub_stage$grad2_hist <- rep(0, length(par))
-      sub_stage$value <- rep(0, length(par))
-      list(sub_stage = sub_stage)
-    },
-    calculate = function(opt, stage, sub_stage, par, fg, iter) {
-      grad <- opt$cache$gr_curr
-      if (!is.numeric(sub_stage$eta)) {
-        d0 <- dot(grad, stage$direction$value)
-        sub_stage$eta <- make_step_zero(sub_stage$eta, d0,
-                                        try_newton_step = FALSE)
-      }
-      eta <- sub_stage$eta
-      rho <- sub_stage$rho
-      grad2_hist <- sub_stage$grad2_hist
-      eps <- sub_stage$eps
-
-      # accumulate gradient
-      grad2_hist <- rho * grad2_hist + (1 - rho) * grad * grad
-
-      # compute update
-      rms_grad <- sqrt(grad2_hist + eps)
-      dx <- eta / rms_grad
-
-      sub_stage$value <- dx
-      sub_stage$grad2_hist <- grad2_hist
-
-      list(sub_stage = sub_stage)
-    },
-    depends = c("gradient")
-  ))
-}
-
-# Adam --------------------------------------------------------------------
-# https://arxiv.org/abs/1412.6980
-# Unlike the other adaptive learning rate methods, uses a non-steepest
-# descent direction
-adam_direction <- function(beta1 = 0.9, normalize = FALSE) {
-
-  make_direction(list(
-    beta1 = beta1,
-    normalize = normalize,
-    init = function(opt, stage, sub_stage, par, fg, iter) {
-      sub_stage$value <- rep(0, length(par))
-      sub_stage$m <- rep(0, length(par))
-      list(sub_stage = sub_stage)
-    },
-    calculate = function(opt, stage, sub_stage, par, fg, iter) {
-      grad <- opt$cache$gr_curr
-      m <- sub_stage$m
-      beta1 <- sub_stage$beta1
-      m <- beta1 * m + (1 - beta1) * grad
-      m_hat <- m / (1 - beta1)
-      sub_stage$value <- -m_hat
-      sub_stage$m <- m
-
-      if (sub_stage$normalize) {
-        sub_stage$value <- normalize(sub_stage$value)
-      }
-
-      list(sub_stage = sub_stage)
-    }
-  ))
-}
-
-adam <- function(eta = 0.001, beta2 = 0.999,
-                 eps = sqrt(.Machine$double.eps)) {
-  make_step_size(list(
-    name = "adam",
-    eta = eta,
-    beta2 = beta2,
-    eps = eps,
-    init = function(opt, stage, sub_stage, par, fg, iter) {
-      sub_stage$v <- rep(0, length(par))
-      list(sub_stage = sub_stage)
-    },
-    calculate = function(opt, stage, sub_stage, par, fg, iter) {
-      grad <- opt$cache$gr_curr
-      if (!is.numeric(sub_stage$eta)) {
-        d0 <- dot(grad, stage$direction$value)
-        sub_stage$eta <- make_step_zero(sub_stage$eta, d0,
-                                        try_newton_step = FALSE)
-      }
-      eta <- sub_stage$eta
-      eps <- sub_stage$eps
-      v <- sub_stage$v
-      beta2 <- sub_stage$beta2
-
-      v <- beta2 * v + (1 - beta2) * grad * grad
-      v_hat <- v / (1 - beta2)
-
-      sub_stage$value <- eta / (sqrt(v_hat) + eps)
-      sub_stage$v <- v
-
-      list(sub_stage = sub_stage)
     },
     depends = c("gradient")
   ))
@@ -2170,9 +1950,17 @@ list_hooks <- function(opt) {
 #
 # \itemize{
 #   \item \code{"Rasmussen"} carries out a line search using the strong Wolfe
-#   conditions and the method of Rasmussen.
+#   conditions as implemented by Carl Edward Rasmussen's minimize.m routines.
 #   \item \code{"More-Thuente"} carries out a line search using the strong Wolfe
-#   conditions and the method of More-Thuente.
+#   conditions and the method of More-Thuente. Can be abbreviated to
+#   \code{"MT"}.
+#   \item \code{"Schmidt"} carries out a line search using the strong Wolfe
+#   conditions as implemented in Mark Schmidt's minFunc routines.
+#   \item \code{"Backtracking"} carries out a back tracking line search using
+#   the sufficient decrease (Armijo) condition. By default, cubic interpolation
+#   is used to find an acceptable step size. A constant step size reduction
+#   can be used by specifying a value for \code{step_down} between 0 and 1
+#   (e.g. step size will be halved if \code{step_down} is set to \code{0.5}).
 #   \item \code{"Bold Driver"} carries out a back tracking line search until a
 #   reduction in the function value is found.
 #   \item \code{"Constant"} uses a constant line search, the value of which
@@ -2184,10 +1972,10 @@ list_hooks <- function(opt) {
 # }
 #
 # If using one of the methods: \code{"BFGS"}, \code{"L-BFGS"}, \code{"CG"} or
-# \code{"NAG"}, one of the Wolfe line searches, \code{"Rasmussen"} or
-# \code{"More-Thuente"} should be used, otherwise very poor performance is
-# likely to be encountered. The following parameters can be used to control
-# the line search:
+# \code{"NAG"}, one of the Wolfe line searches: \code{"Rasmussen"} or
+# \code{"More-Thuente"}, \code{"Schmidt"} or \code{"Hager-Zhang"} should be
+# used, otherwise very poor performance is likely to be encountered. The
+# following parameters can be used to control the line search:
 #
 #  \itemize{
 #    \item{\code{c1}} The sufficient decrease condition. Normally left at its
@@ -2200,7 +1988,8 @@ list_hooks <- function(opt) {
 #    \item{\code{step0}} Initial value for the line search on the first step.
 #    If a positive numeric value is passed as an argument, that value is used
 #    as-is. Otherwise, by passing a string as an argument, a guess is made
-#    based on the gradient at the starting point:
+#    based on values of the gradient, function or parameters, at the starting
+#    point:
 #    \itemize{
 #      \item{\code{"rasmussen"}} As used by Rasmussen in \code{minimize.m}:
 #      \deqn{\frac{1}{1+\left|g\right|^2}}{1 / 1 + (|g|^2)}
@@ -2209,22 +1998,50 @@ list_hooks <- function(opt) {
 #      \item{\code{"schmidt"}} As used by Schmidt in \code{minFunc.m}
 #      (the reciprocal of the l1 norm of g)
 #      \deqn{\frac{1}{\left|g\right|_1}}{1 / |g|1}
+#      \item{\code{"hz"}} The method suggested by Hager and Zhang (2006) for
+#      the CG_DESCENT software.
 #    }
 #    These arguments can be abbreviated.
 #    \item{\code{step_next_init}} How to initialize subsequent line searches
-#    after the first, using results from the previous line search,
-#    based on two suggestions mentioned by Nocedal and Wright:
+#    after the first, using results from the previous line search:
 #    \itemize{
 #      \item{\code{"slope ratio"}} Slope ratio method.
 #      \item{\code{"quadratic"}} Quadratic interpolation method.
+#      \item{\code{"hz"}} The QuadStep method of Hager and Zhang (2006) for
+#      the CG_DESCENT software.
 #    }
-#    These arguments can be abbreviated.
+#    These arguments can be abbreviated. Details on the first two methods
+#    are provided by Nocedal and Wright.
 #    \item{\code{try_newton_step}} For quasi-Newton methods (\code{"BFGS"} and
 #    \code{"L-BFGS"}), setting this to \code{TRUE} will try the "natural" step
 #    size of 1, whenever the \code{step_next_init} method suggests an initial
 #    step size larger than that. On by default for BFGS and L-BFGS, off for
 #    everything else.
+#    \item{\code{strong_curvature}} If \code{TRUE}, then the strong curvature
+#    condition will be used to check termination in Wolfe line search methods.
+#    If \code{FALSE}, then the standard curvature condition will be used. The
+#    default is \code{NULL} which lets the different Wolfe line searches choose
+#    whichever is their default behavior. This option is ignored if not using
+#    a Wolfe line search method.
+#    \item{\code{approx_armijo}} If \code{TRUE}, then the approximate Armijo
+#    sufficient decrease condition (Hager and Zhang, 2005) will be used to
+#    check termination in Wolfe line search methods. If \code{FALSE}, then the
+#    exact curvature condition will be used. The default is \code{NULL} which
+#    lets the different Wolfe line searches choose whichever is their default
+#    behavior. This option is ignored if not using a Wolfe line search method.
 # }
+#
+# For the Wolfe line searches, the methods of \code{"Rasmussen"},
+# \code{"Schmidt"} and \code{"More-Thuente"} default to using the strong
+# curvature condition and the exact Armijo condition to terminate the line
+# search (i.e. Strong Wolfe conditions). The default step size initialization
+# methods use the Rasmussen method for the first iteration and quadratic
+# interpolation for subsequent iterations.
+#
+# The \code{"Hager-Zhang"} Wolfe line search method defaults to the standard
+# curvature condition and the approximate Armijo condition (i.e. approximate
+# Wolfe conditions). The default step size initialization methods are those
+# used by Hager and Zhang (2006) in the description of CG_DESCENT.
 #
 # If the \code{"DBD"} is used for the optimization \code{"method"}, then the
 # \code{line_search} parameter is ignored, because this method controls both
@@ -2237,19 +2054,19 @@ list_hooks <- function(opt) {
 #   should be a positive scalar.
 #   \item{\code{step_down}} The amount by which to decrease the step size in a
 #   direction where the currents step size is deemed to be too long. This
-#   should be a positive scalar smaller than 1.
+#   should be a positive scalar smaller than 1. Default is 0.5.
 #   \item{\code{step_up_fun}} How to increase the step size: either the method of
 #   Jacobs (addition of \code{step_up}) or Janet and co-workers (multiplication
 #   by \code{step_up}). Note that the step size decrease \code{step_down} is always
 #   a multiplication.
 # }
 #
-# The \code{"bold driver"} line search also uses the \code{step_up} and \code{step_down}
-# parameters with similar meanings to their use with the \code{"DBD"} method:
-# the backtracking portion reduces the step size by a factor of \code{step_down}.
-# Once a satisfactory step size has been found, the line search for the
-# next iteration is initialized by multiplying the previously found step size
-# by \code{step_up}.
+# The \code{"bold driver"} line search also uses the \code{step_up} and
+# \code{step_down} parameters with similar meanings to their use with the
+# \code{"DBD"} method: the backtracking portion reduces the step size by a
+# factor of \code{step_down}. Once a satisfactory step size has been found, the
+# line search for the next iteration is initialized by multiplying the
+# previously found step size by \code{step_up}.
 #
 # @section Momentum:
 # For \code{method} \code{"Momentum"}, momentum schemes can be accessed
@@ -2384,7 +2201,7 @@ list_hooks <- function(opt) {
 # non-finite (i.e. \code{Inf} or \code{NaN}) gradient or function value.
 # Some, but not all, line-searches will try to recover from the latter, by
 # reducing the step size, but a non-finite gradient calculation during the
-# gradient descent portion of opimization is considered catastrostep_downc by mizer,
+# gradient descent portion of opimization is considered catastrosphic by mizer,
 # and it will give up. Termination under non-finite gradient or function
 # conditions will result in \code{terminate$what} being \code{"gr_inf"} or
 # \code{"fn_inf"} respectively. Unlike the convergence criteria, the
@@ -2438,8 +2255,8 @@ list_hooks <- function(opt) {
 # \code{step_up}. Can be one of \code{"*"} (to multiply the current step size
 # with \code{step_up}) or \code{"+"} (to add).
 # @param step_down Multiplier to reduce the step size by if using the \code{"DBD"}
-# method or the \code{"bold"} or \code{"back"} line search method. Should be
-# a positive value less than 1.
+# method or the \code{"bold"} line search method. Should be a positive value
+# less than 1. Also optional for use with the \code{"back"} line search method.
 # @param dbd_weight Weighting parameter used by the \code{"DBD"} method only, and
 # only if no momentum scheme is provided. Must be an integer between 0 and 1.
 # @param line_search Type of line search to use. See 'Details'.
@@ -2461,6 +2278,14 @@ list_hooks <- function(opt) {
 # line search.
 # @param ls_max_fg Maximum number of function or gradient evaluations allowed
 # during a line search.
+# @param ls_max_alpha_mult Maximum multiplier for alpha between iterations.
+# Only applies for Wolfe-type line searches and if \code{step_next_init} is
+# set to \code{"slope"}
+# @param strong_curvature (Optional). If \code{TRUE} use the strong
+# curvature condition in Wolfe line search. See the 'Line Search' section
+# for details.
+# @param approx_armijo (Optional). If \code{TRUE} use the approximate Armijo
+# condition in Wolfe line search. See the 'Line Search' section for details.
 # @param mom_type Momentum type, either \code{"classical"} or
 # \code{"nesterov"}. See 'Details'.
 # @param mom_schedule Momentum schedule. See 'Details'.
@@ -2639,7 +2464,7 @@ mize <- function(par, fg,
                  # DBD
                  step_up = 1.1,
                  step_up_fun = "*",
-                 step_down = 0.5,
+                 step_down = NULL,
                  dbd_weight = 0.1,
                  # Line Search configuration
                  line_search = "More-Thuente",
@@ -2651,6 +2476,9 @@ mize <- function(par, fg,
                  ls_max_fn = 20,
                  ls_max_gr = Inf,
                  ls_max_fg = Inf,
+                 ls_max_alpha_mult = Inf,
+                 strong_curvature = NULL,
+                 approx_armijo = NULL,
                  # Momentum
                  mom_type = NULL,
                  mom_schedule = NULL,
@@ -2694,6 +2522,9 @@ mize <- function(par, fg,
                    try_newton_step = try_newton_step,
                    ls_max_fn = ls_max_fn, ls_max_gr = ls_max_gr,
                    ls_max_fg = ls_max_fg,
+                   ls_max_alpha_mult = ls_max_alpha_mult,
+                   strong_curvature = strong_curvature,
+                   approx_armijo = approx_armijo,
                    mom_type = mom_type,
                    mom_schedule = mom_schedule,
                    mom_init = mom_init,
@@ -2790,8 +2621,9 @@ mize <- function(par, fg,
 #   \code{step_up}. Can be one of \code{"*"} (to multiply the current step size
 #   with \code{step_up}) or \code{"+"} (to add).
 # @param step_down Multiplier to reduce the step size by if using the
-#   \code{"DBD"} method or the \code{"bold"} or \code{"back"} line search
-#   method. Should be a positive value less than 1.
+#   \code{"DBD"} method or the \code{"bold"}. Can also be used with the
+#   \code{"back"} line search method, but is optional. Should be a positive
+#   value less than 1.
 # @param dbd_weight Weighting parameter used by the \code{"DBD"} method only,
 #   and only if no momentum scheme is provided. Must be an integer between 0
 #   and 1.
@@ -2816,6 +2648,15 @@ mize <- function(par, fg,
 #   search.
 # @param ls_max_fg Maximum number of function or gradient evaluations allowed
 #   during a line search.
+# @param ls_max_alpha_mult Maximum multiplier for alpha between iterations.
+#   Only applies for Wolfe-type line searches and if \code{step_next_init} is
+#   set to \code{"slope"}
+# @param strong_curvature (Optional). If \code{TRUE} use the strong
+#   curvature condition in Wolfe line search. See the 'Line Search' section of
+#   \code{\link{mize}} for details.
+# @param approx_armijo (Optional). If \code{TRUE} use the approximate Armijo
+#   condition in Wolfe line search. See the 'Line Search' section of
+#   \code{\link{mize}} for details.
 # @param mom_type Momentum type, either \code{"classical"} or
 #   \code{"nesterov"}.
 # @param mom_schedule Momentum schedule. See 'Details' of \code{\link{mize}}.
@@ -2888,7 +2729,7 @@ make_mize <- function(method = "L-BFGS",
                       # DBD
                       step_up = 1.1,
                       step_up_fun = c("*", "+"),
-                      step_down = 0.5,
+                      step_down = NULL,
                       dbd_weight = 0.1,
                       # Line Search
                       line_search = "More-Thuente",
@@ -2899,6 +2740,9 @@ make_mize <- function(method = "L-BFGS",
                       ls_max_fn = 20,
                       ls_max_gr = Inf,
                       ls_max_fg = Inf,
+                      ls_max_alpha_mult = Inf,
+                      strong_curvature = NULL,
+                      approx_armijo = NULL,
                       # Momentum
                       mom_type = NULL,
                       mom_schedule = NULL,
@@ -2930,7 +2774,7 @@ make_mize <- function(method = "L-BFGS",
     stop("step_up must be positive")
   }
   step_up_fun <- match.arg(step_up_fun)
-  if (!is_in_range(step_down, 0, 1)) {
+  if (!is.null(step_down) && !is_in_range(step_down, 0, 1)) {
     stop("step_down must be between 0 and 1")
   }
   if (!is_in_range(dbd_weight, 0, 1)) {
@@ -2951,6 +2795,9 @@ make_mize <- function(method = "L-BFGS",
   if (ls_max_fg < 0) {
     stop("ls_max_fg must be non-negative")
   }
+  if (ls_max_alpha_mult <= 0) {
+    stop("ls_max_alpha_mult must be positive")
+  }
   if (restart_wait < 1) {
     stop("restart_wait must be a positive integer")
   }
@@ -2958,9 +2805,7 @@ make_mize <- function(method = "L-BFGS",
   # Gradient Descent Direction configuration
   dir_type <- NULL
   method <- match.arg(tolower(method), c("sd", "newton", "phess", "cg", "bfgs",
-                                "l-bfgs", "nag", "momentum",
-                                "dbd", "adagrad", "adadelta", "rmsprop",
-                                "adam"))
+                                "l-bfgs", "nag", "momentum", "dbd"))
   switch(method,
     sd = {
       dir_type <- sd_direction(normalize = norm_direction)
@@ -3016,18 +2861,6 @@ make_mize <- function(method = "L-BFGS",
     dbd = {
       dir_type <- sd_direction(normalize = norm_direction)
     },
-    adagrad = {
-      dir_type <- sd_direction(normalize = norm_direction)
-    },
-    adadelta = {
-      dir_type <- sd_direction(normalize = norm_direction)
-    },
-    rmsprop = {
-      dir_type <- sd_direction(normalize = norm_direction)
-    },
-    adam = {
-      dir_type <- adam_direction(normalize = norm_direction)
-    },
     stop("Unknown method: '", method, "'")
   )
 
@@ -3055,42 +2888,18 @@ make_mize <- function(method = "L-BFGS",
     else {
       stop("Unknown delta-bar-delta step_up function '", step_up_fun, "'")
     }
+    if (is.null(step_down)) {
+      step_down <- 0.5
+    }
     step_type <- delta_bar_delta(epsilon = eps_init,
                                  kappa = step_up, kappa_fun = step_up_fun,
                                  phi = step_down, theta = dbd_weight,
                                  use_momentum = is.null(mom_schedule))
   }
-  else if (method == "adagrad") {
-    if (is.null(step0)) {
-      step0 <- "rasmussen"
-    }
-    step_type <- adagrad(eta = step0)
-  }
-  else if (method == "adadelta") {
-    step_type <- adadelta(rho = dbd_weight)
-  }
-  else if (method == "rmsprop") {
-    if (is.null(step0)) {
-      step0 <- "rasmussen"
-    }
-    step_type <- rmsprop(rho = dbd_weight, eta = step0)
-  }
-  else if (method == "adam") {
-    if (is.null(step0)) {
-      step0 <- "rasmussen"
-    }
-    step_type <- adam(beta2 = dbd_weight, eta = step0)
-  }
   else {
     if (method %in% c("newton", "phess", "bfgs", "l-bfgs")) {
       if (is.null(c2)) {
         c2 <- 0.9
-      }
-      if (is.null(step0)) {
-        step0 <- 1
-      }
-      if (is.null(step_next_init)) {
-        step_next_init <- "quad"
       }
       if (is.null(try_newton_step)) {
         try_newton_step <- TRUE
@@ -3100,12 +2909,6 @@ make_mize <- function(method = "L-BFGS",
       if (is.null(c2)) {
         c2 <- 0.1
       }
-      if (is.null(step0)) {
-        step0 <- "rasmussen"
-      }
-      if (is.null(step_next_init)) {
-        step_next_init <- "slope"
-      }
       if (is.null(try_newton_step)) {
         try_newton_step <- FALSE
       }
@@ -3114,7 +2917,62 @@ make_mize <- function(method = "L-BFGS",
     line_search <- match.arg(tolower(line_search),
                              c("more-thuente", "mt", "rasmussen",
                                "bold driver",
-                               "backtracking", "constant"))
+                               "backtracking", "constant",
+                               "schmidt", "minfunc", "armijo",
+                               "hager-zhang", "hz"))
+    if (line_search == "hager-zhang") {
+      line_search <- "hz"
+    }
+    if (line_search == "more-thuente") {
+      line_search <- "mt"
+    }
+    if (line_search == "minfunc") {
+      line_search <- "schmidt"
+    }
+
+    if (line_search == "bold driver") {
+      if (is.null(step_down)) {
+        step_down <- 0.5
+      }
+    }
+
+    # Set Wolfe line search termination defaults
+    # Most Wolfe Line Searches use the standard Strong Wolfe conditions
+    if (line_search %in% c("more-thuente", "mt", "rasmussen", "schmidt",
+                           "minfunc")) {
+      if (is.null(strong_curvature)) {
+        strong_curvature <- TRUE
+      }
+      if (is.null(approx_armijo)) {
+        approx_armijo <- FALSE
+      }
+    }
+
+    # Hager-Zhang uses weak Wolfe condtions with an approximation to the
+    # Armijo condition. Also use the step initialization methods used in
+    # CG_DESCENT by default
+    if (line_search == "hz") {
+      if (is.null(strong_curvature)) {
+        strong_curvature <- FALSE
+      }
+      if (is.null(approx_armijo)) {
+        approx_armijo <- TRUE
+      }
+      if (is.null(step_next_init)) {
+        step_next_init <- "hz"
+      }
+      if (is.null(step0)) {
+        step0 <- "hz"
+      }
+    }
+    else {
+      if (is.null(step0)) {
+        step0 <- "rasmussen"
+      }
+      if (is.null(step_next_init)) {
+        step_next_init <- "quad"
+      }
+    }
 
     step_type <- switch(line_search,
       mt = more_thuente_ls(c1 = c1, c2 = c2,
@@ -3123,25 +2981,52 @@ make_mize <- function(method = "L-BFGS",
                            try_newton_step = try_newton_step,
                            max_fn = ls_max_fn,
                            max_gr = ls_max_gr,
-                           max_fg = ls_max_fg),
-      "more-thuente" = more_thuente_ls(c1 = c1, c2 = c2,
-                                       initializer = tolower(step_next_init),
-                                       initial_step_length = step0,
-                                       try_newton_step = try_newton_step,
-                                       max_fn = ls_max_fn,
-                                       max_gr = ls_max_gr,
-                                       max_fg = ls_max_fg),
+                           max_fg = ls_max_fg,
+                           max_alpha_mult = ls_max_alpha_mult,
+                           strong_curvature = strong_curvature,
+                           approx_armijo = approx_armijo),
       rasmussen = rasmussen_ls(c1 = c1, c2 = c2,
                               initializer = tolower(step_next_init),
                               initial_step_length = step0,
                               try_newton_step = try_newton_step,
                               max_fn = ls_max_fn,
                               max_gr = ls_max_gr,
-                              max_fg = ls_max_fg),
+                              max_fg = ls_max_fg,
+                              max_alpha_mult = ls_max_alpha_mult,
+                              strong_curvature = strong_curvature,
+                              approx_armijo = approx_armijo),
       "bold driver" = bold_driver(inc_mult = step_up, dec_mult = step_down,
                                   max_fn = ls_max_fn),
-      backtracking = backtracking(rho = step_down, c1 = c1, max_fn = ls_max_fn),
-      constant = constant_step_size(value = step0)
+      constant = constant_step_size(value = step0),
+      schmidt = schmidt_ls(c1 = c1, c2 = c2,
+                           initializer = tolower(step_next_init),
+                           initial_step_length = step0,
+                           try_newton_step = try_newton_step,
+                           max_fn = ls_max_fn,
+                           max_gr = ls_max_gr,
+                           max_fg = ls_max_fg,
+                           max_alpha_mult = ls_max_alpha_mult,
+                           strong_curvature = strong_curvature,
+                           approx_armijo = approx_armijo),
+      backtracking = schmidt_armijo_ls(c1 = c1,
+                          initializer = tolower(step_next_init),
+                          initial_step_length = step0,
+                          try_newton_step = try_newton_step,
+                          step_down = step_down,
+                          max_fn = ls_max_fn,
+                          max_gr = ls_max_gr,
+                          max_fg = ls_max_fg,
+                          max_alpha_mult = ls_max_alpha_mult),
+      hz =  hager_zhang_ls(c1 = c1, c2 = c2,
+                           initializer = tolower(step_next_init),
+                           initial_step_length = step0,
+                           try_newton_step = try_newton_step,
+                           max_fn = ls_max_fn,
+                           max_gr = ls_max_gr,
+                           max_fg = ls_max_fg,
+                           max_alpha_mult = ls_max_alpha_mult,
+                           strong_curvature = strong_curvature,
+                           approx_armijo = approx_armijo)
     )
   }
 
@@ -3926,6 +3811,857 @@ attr(require_update_old_init, 'event') <- 'init momentum direction'
 attr(require_update_old_init, 'name') <- 'update_old_init'
 
 
+# More'-Thuente Line Search
+#
+# Combination of the cvsrch and cstep matlab files.
+#
+# Line Search Factory Function
+#
+# Returns a line search function using a variant of the More-Thuente
+#  line search originally implemented in
+#  \href{http://www.netlib.org/minpack/}{MINPACK}.
+#
+# @param c1 Constant used in sufficient decrease condition. Should take a value
+#   between 0 and 1.
+# @param c2 Constant used in curvature condition. Should take a value between
+#   \code{c1} and 1.
+# @param max_fn Maximum number of function evaluations allowed.
+# @return Line search function.
+# @references
+# More, J. J., & Thuente, D. J. (1994).
+# Line search algorithms with guaranteed sufficient decrease.
+# \emph{ACM Transactions on Mathematical Software (TOMS)}, \emph{20}(3),
+# 286-307.
+# @seealso This code is based on a translation of the original MINPACK code
+#  for Matlab by
+#  \href{https://www.cs.umd.edu/users/oleary/software/}{Dianne O'Leary}.
+more_thuente <- function(c1 = 1e-4, c2 = 0.1, max_fn = Inf, eps = 1e-6,
+                         approx_armijo = FALSE,
+                         strong_curvature = TRUE,
+                         verbose = FALSE) {
+  if (approx_armijo) {
+    armijo_check_fn <- make_approx_armijo_ok_step(eps)
+  }
+  else {
+    armijo_check_fn <- armijo_ok_step
+  }
+
+  wolfe_ok_step_fn <- make_wolfe_ok_step_fn(strong_curvature = strong_curvature,
+                                            approx_armijo = approx_armijo,
+                                            eps = eps)
+
+  function(phi, step0, alpha,
+           total_max_fn = Inf, total_max_gr = Inf, total_max_fg = Inf,
+           pm = NULL) {
+    maxfev <- min(max_fn, total_max_fn, total_max_gr, floor(total_max_fg / 2))
+    if (maxfev <= 0) {
+      return(list(step = step0, nfn = 0, ngr = 0))
+    }
+    res <- cvsrch(phi, step0, alpha = alpha, c1 = c1, c2 = c2,
+                  maxfev = maxfev,
+                  armijo_check_fn = armijo_check_fn,
+                  wolfe_ok_step_fn = wolfe_ok_step_fn, verbose = verbose)
+    list(step = res$step, nfn = res$nfn, ngr = res$nfn)
+  }
+}
+
+# More'-Thuente Line Search
+#
+# This routine is a translation of Dianne O'Leary's Matlab code, which was
+# itself a translation of the MINPACK original. Original comments to the Matlab
+# code are at the end.
+# @param phi Line function.
+# @param step0 Line search values at starting point of line search.
+# @param alpha Initial guess for step size.
+# @param c1 Constant used in sufficient decrease condition. Should take a value
+#   between 0 and 1.
+# @param c2 Constant used in curvature condition. Should take a value between
+#   c1 and 1.
+# @param xtol Relative width tolerance: convergence is reached if width falls
+#   below xtol * maximum step size.
+# @param alpha_min Smallest acceptable value of the step size.
+# @param alpha_max Largest acceptable value of the step size.
+# @param maxfev Maximum number of function evaluations allowed.
+# @param delta Value to force sufficient decrease of interval size on
+#   successive iterations. Should be a positive value less than 1.
+# @return List containing:
+# \itemize{
+#   \item \code{step} Best step found and associated line search info.
+#   \item \code{info} Return code from convergence check.
+#   \item \code{nfn}  Number of function evaluations.
+# }
+#   Translation of minpack subroutine cvsrch
+#   Dianne O'Leary   July 1991
+#     **********
+#
+#     Subroutine cvsrch
+#
+#     The purpose of cvsrch is to find a step which satisfies
+#     a sufficient decrease condition and a curvature condition.
+#     The user must provide a subroutine which calculates the
+#     function and the gradient.
+#
+#     At each stage the subroutine updates an interval of
+#     uncertainty with endpoints stx and sty. The interval of
+#     uncertainty is initially chosen so that it contains a
+#     minimizer of the modified function
+#
+#          f(x+alpha*pv) - f(x) - c1*alpha*(gradf(x)'pv).
+#
+#     If a step is obtained for which the modified function
+#     has a nonpositive function value and nonnegative derivative,
+#     then the interval of uncertainty is chosen so that it
+#     contains a minimizer of f(x+alpha*pv).
+#
+#     The algorithm is designed to find a step which satisfies
+#     the sufficient decrease condition
+#
+#           f(x+alpha*pv) <= f(x) + c1*alpha*(gradf(x)'pv),
+#
+#     and the curvature condition
+#
+#           abs(gradf(x+alpha*pv)'pv)) <= c2*abs(gradf(x)'pv).
+#
+#     If c1 is less than c2 and if, for example, the function
+#     is bounded below, then there is always a step which satisfies
+#     both conditions. If no step can be found which satisfies both
+#     conditions, then the algorithm usually stops when rounding
+#     errors prevent further progress. In this case alpha only
+#     satisfies the sufficient decrease condition.
+#
+#     The subroutine statement is
+#
+#        subroutine cvsrch(fcn,n,x,f,g,pv,alpha,c1,c2,xtol,
+#                          alpha_min,alpha_max,maxfev,info,nfev)
+#     where
+#
+#	fcn is the name of the user-supplied subroutine which
+#         calculates the function and the gradient.  fcn must
+#      	  be declared in an external statement in the user
+#         calling program, and should be written as follows.
+#
+#         function [f,g] = fcn(n,x) (Matlab)     (10/2010 change in documentation)
+#	  (derived from Fortran subroutine fcn(n,x,f,g) )
+#         integer n
+#         f
+#         x(n),g(n)
+#	  ---
+#         Calculate the function at x and
+#         return this value in the variable f.
+#         Calculate the gradient at x and
+#         return this vector in g.
+#	  ---
+#	  return
+#	  end
+#
+#       n is a positive integer input variable set to the number
+#	  of variables.
+#
+#	x is an array of length n. On input it must contain the
+#	  base point for the line search. On output it contains
+#         x + alpha*pv.
+#
+#	f is a variable. On input it must contain the value of f
+#         at x. On output it contains the value of f at x + alpha*pv.
+#
+#	g is an array of length n. On input it must contain the
+#         gradient of f at x. On output it contains the gradient
+#         of f at x + alpha*pv.
+#
+#	pv is an input array of length n which specifies the
+#         search direction.
+#
+#	alpha is a nonnegative variable. On input alpha contains an
+#         initial estimate of a satisfactory step. On output
+#         alpha contains the final estimate.
+#
+#       c1 and c2 are nonnegative input variables. Termination
+#         occurs when the sufficient decrease condition and the
+#         directional derivative condition are satisfied.
+#
+#	xtol is a nonnegative input variable. Termination occurs
+#         when the relative width of the interval of uncertainty
+#	  is at most xtol.
+#
+#	alpha_min and alpha_max are nonnegative input variables which
+#	  specify lower and upper bounds for the step.
+#
+#	maxfev is a positive integer input variable. Termination
+#         occurs when the number of calls to fcn is at least
+#         maxfev by the end of an iteration.
+#
+#	info is an integer output variable set as follows:
+#
+#	  info = 0  Improper input parameters.
+#
+#	  info = 1  The sufficient decrease condition and the
+#                   directional derivative condition hold.
+#
+#	  info = 2  Relative width of the interval of uncertainty
+#		    is at most xtol.
+#
+#	  info = 3  Number of calls to fcn has reached maxfev.
+#
+#	  info = 4  The step is at the lower bound alpha_min.
+#
+#	  info = 5  The step is at the upper bound alpha_max.
+#
+#	  info = 6  Rounding errors prevent further progress.
+#                   There may not be a step which satisfies the
+#                   sufficient decrease and curvature conditions.
+#                   Tolerances may be too small.
+#
+#       nfev is an integer output variable set to the number of
+#         calls to fcn.
+#
+#
+#     Subprograms called
+#
+#	user-supplied......fcn
+#
+#	MINPACK-supplied...cstep
+#
+#	FORTRAN-supplied...abs,max,min
+#
+#     Argonne National Laboratory. MINPACK Project. June 1983
+#     Jorge J. More', David J. Thuente
+#
+#     **********
+cvsrch <- function(phi, step0, alpha = 1,
+                   c1 = 1e-4, c2 = 0.1, xtol = .Machine$double.eps,
+                   alpha_min = 0, alpha_max = Inf,
+                   maxfev = Inf, delta = 0.66,
+                   armijo_check_fn = armijo_ok_step,
+                   wolfe_ok_step_fn = strong_wolfe_ok_step,
+                   verbose = FALSE) {
+
+  # increase width by this amount during zoom phase
+  xtrapf <- 4
+  infoc <- 1
+
+  # Check the input parameters for errors.
+  params_ok <- TRUE
+  problems <- c()
+  if (alpha <= 0.0) {
+    params_ok <- FALSE
+    problems <- c(problems, paste0("alpha <= 0.0: ", formatC(alpha)))
+  }
+  if (c1 < 0.0) {
+    params_ok <- FALSE
+    problems <- c(problems, paste0("c1 < 0.0: ", formatC(c1)))
+  }
+  if (c2 < 0.0) {
+    params_ok <- FALSE
+    problems <- c(problems, paste0("c2 < 0.0: ", formatC(c2)))
+  }
+  if (xtol < 0.0) {
+    params_ok <- FALSE
+    problems <- c(problems, paste0("xtol < 0.0: ", formatC(xtol)))
+  }
+  if (alpha_min < 0.0) {
+    params_ok <- FALSE
+    problems <- c(problems, paste0("alpha_min < 0.0: ", formatC(alpha_min)))
+  }
+  if (alpha_max < alpha_min) {
+    params_ok <- FALSE
+    problems <- c(problems, paste0("alpha_max ", formatC(alpha_max)
+                         , " < alpha_min ", formatC(alpha_min)))
+  }
+  if (maxfev < 0) {
+    params_ok <- FALSE
+    problems <- c(problems, paste0("maxfev < 0: ", formatC(maxfev)))
+  }
+  if (!params_ok) {
+    problems <- paste(problems, collapse = "; ")
+    stop("Parameter errors detected: ", problems)
+  }
+
+  if (maxfev == 0) {
+    return(list(step = step0, nfn = 0, info = 3))
+  }
+
+  # Check that pv is a descent direction: if not, return a zero step.
+  if (step0$d >= 0.0) {
+    return(list(step = step0, info = 6, nfn = 0))
+  }
+  dgtest <- c1 * step0$d
+
+  # Initialize local variables.
+  bracketed <- FALSE
+  brackt <- FALSE
+  stage1 <- TRUE
+  nfev <- 0
+
+  width <- alpha_max - alpha_min
+  width_old <- 2 * width
+
+  # The variables stx, fx, dgx contain the values of the step,
+  # function, and directional derivative at the best step.
+  # The variables sty, fy, dgy contain the value of the step,
+  # function, and derivative at the other endpoint of
+  # the interval of uncertainty.
+  # The variables alpha, f, dg contain the values of the step,
+  # function, and derivative at the current step.
+  stepx <- step0
+  stepy <- step0
+  step <- list(alpha = alpha)
+
+  #     Start of iteration.
+  iter <- 0
+  while (1) {
+    iter <- iter + 1
+    # Set the minimum and maximum steps to correspond
+    # to the present interval of uncertainty.
+    if (brackt) {
+      stmin <- min(stepx$alpha, stepy$alpha)
+      stmax <- max(stepx$alpha, stepy$alpha)
+    } else {
+      stmin <- stepx$alpha
+      stmax <- step$alpha + xtrapf * (step$alpha - stepx$alpha)
+    }
+
+    # Force the step to be within the bounds alpha_max and alpha_min.
+    step$alpha <- max(step$alpha, alpha_min)
+    step$alpha <- min(step$alpha, alpha_max)
+
+    if (verbose) {
+    message("Bracket: [", formatC(stmin), ", ", formatC(stmax),
+            "] alpha = ", formatC(step$alpha))
+    }
+
+    # Evaluate the function and gradient at alpha
+    # and compute the directional derivative.
+    # Additional check: bisect (if needed) until a finite value is found
+    # (most important for first iteration)
+    ffres <- find_finite(phi, step$alpha, maxfev - nfev, min_alpha = stmin)
+    nfev <- nfev + ffres$nfn
+    if (!ffres$ok) {
+      if (verbose) {
+        message("Unable to create finite alpha")
+      }
+
+      return(list(step = step0, nfn = nfev, info = 7))
+    }
+    step <- ffres$step
+
+    # Test for convergence.
+    info <- check_convergence(step0, step, brackt, infoc, stmin, stmax,
+                              alpha_min, alpha_max, c1, c2, nfev,
+                              maxfev, xtol,
+                              armijo_check_fn = armijo_check_fn,
+                              wolfe_ok_step_fn = wolfe_ok_step_fn,
+                              verbose = verbose)
+
+    # Check for termination.
+    if (info != 0) {
+      # If an unusual termination is to occur, then set step to the best step
+      # found
+      if (info == 2 || info == 3 || info == 6) {
+        step <- stepx
+      }
+      if (verbose) {
+        message("alpha = ", formatC(step$alpha))
+      }
+      return(list(step = step, info = info, nfn = nfev))
+    }
+
+    # In the first stage we seek a step for which the modified
+    # function has a nonpositive value and nonnegative derivative.
+
+    # In the original MINPACK the following test is:
+    # if (stage1 .and. f .le. ftest1 .and.
+    #    *       dg .ge. min(ftol,gtol)*dginit) stage1
+    # which translates to: step$f <= f0 + alpha * c1 * d0 &&
+    #            step$df >= min(c1, c2) * alpha * d0
+    # The second test is the armijo condition and the third is the
+    # curvature condition but using the smaller of c1 and
+    # c2. This is nearly the standard Wolfe conditions, but because c1 is
+    # always <= c2 for a convergent line search, this means
+    # we would always use c1 for the curvature condition.
+    # I have translated this faithfully, but it seems odd. Using c2 has no
+    # effect on the test function from the More'-Thuente paper
+    if (stage1 && wolfe_ok_step(step0, step, c1, min(c1, c2))) {
+      stage1 <- FALSE
+    }
+
+    # A modified function is used to predict the step only if
+    # we have not obtained a step for which the modified
+    # function has a nonpositive function value and nonnegative
+    # derivative, and if a lower function value has been
+    # obtained but the decrease is not sufficient.
+    if (stage1 && step$f <= stepx$f && !armijo_check_fn(step0, step, c1)) {
+      # Define the modified function and derivative values.
+      stepxm <- modify_step(stepx, dgtest)
+      stepym <- modify_step(stepy, dgtest)
+      stepm <- modify_step(step, dgtest)
+
+      step_result <- cstep(stepxm, stepym, stepm, brackt, stmin, stmax,
+                           verbose = verbose)
+
+      brackt <- step_result$brackt
+      infoc <- step_result$info
+      stepxm <- step_result$stepx
+      stepym <- step_result$stepy
+      stepm <- step_result$step
+
+      # Reset the function and gradient values for f.
+      stepx <- unmodify_step(stepxm, dgtest)
+      stepy <- unmodify_step(stepym, dgtest)
+      step$alpha <- stepm$alpha
+    } else {
+      # Call cstep to update the interval of uncertainty
+      # and to compute the new step.
+      step_result <- cstep(stepx, stepy, step, brackt, stmin, stmax,
+                           verbose = verbose)
+      brackt <- step_result$brackt
+      infoc <- step_result$info
+      stepx <- step_result$stepx
+      stepy <- step_result$stepy
+      step <- step_result$step
+    }
+
+    if (!bracketed && brackt) {
+      bracketed <- TRUE
+      if (verbose) {
+        message("Bracketed")
+      }
+    }
+
+    # Force a sufficient decrease in the size of the interval of uncertainty.
+    if (brackt) {
+      # if the length of I does not decrease by a factor of delta < 1
+      # then use a bisection step for the next trial alpha
+      width_new <- abs(stepy$alpha - stepx$alpha)
+      if (width_new >= delta * width_old) {
+        if (verbose) {
+          message("Interval did not decrease sufficiently: bisecting")
+        }
+        step$alpha <- stepx$alpha + 0.5 * (stepy$alpha - stepx$alpha)
+      }
+      width_old <- width
+      width <- width_new
+    }
+  }
+}
+
+
+# Modify Line Search Values
+#
+# Modifies a line search function and directional derivative value.
+# Used by MINPACK version of More'-Thuente line search algorithm.
+#
+# @param step Line search information.
+# @param dgtest Product of the initial line search directional derivative and
+#   the sufficent decrease condition constant.
+# @return Modified step size.
+modify_step <- function(step, dgtest) {
+  stepm <- step
+  stepm$f <- step$f - step$alpha * dgtest
+  stepm$d <- step$d - dgtest
+  stepm
+}
+
+# Un-modify Line Search Values
+#
+# Un-modifies a line search function and directional derivative value that was
+# modified by the modify_step function. Used by MINPACK version of More'-Thuente
+# line search algorithm.
+#
+# @param stepm Modified line search information.
+# @param dgtest Product of the initial line search directional derivative and
+#   the sufficent decrease condition constant.
+# @return Unmodified step size.
+unmodify_step <- function(stepm, dgtest) {
+  stepm$f <- stepm$f + stepm$alpha * dgtest
+  stepm$d <- stepm$d + dgtest
+  stepm
+}
+
+# Check Convergence of More'-Thuente Line Search
+#
+# @param step0 Line search values at starting point.
+# @param step Line search value at a step along the line.
+# @param brackt TRUE if the step has been bracketed.
+# @param infoc Return code of the last step size update.
+# @param stmin Smallest value of the step size interval.
+# @param stmax Largest value of the step size interval.
+# @param alpha_min Smallest acceptable value of the step size.
+# @param alpha_max Largest acceptable value of the step size.
+# @param c1 Constant used in sufficient decrease condition. Should take a value
+#   between 0 and 1.
+# @param c2 Constant used in curvature condition. Should take a value between
+#   c1 and 1.
+# @param dgtest Product of the initial line search directional derivative and
+#   the sufficent decrease condition constant.
+# @param nfev Current number of function evaluations.
+# @param maxfev Maximum number of function evaluations allowed.
+# @param xtol Relative width tolerance: convergence is reached if width falls
+#   below xtol * stmax.
+# @return Integer code indicating convergence state:
+#  \itemize{
+#   \item \code{0} No convergence.
+#   \item \code{1} The sufficient decrease condition and the directional
+#     derivative condition hold.
+#	  \item \code{2} Relative width of the interval of uncertainty
+#		    is at most xtol.
+#	  \item \code{3} Number of calls to fcn has reached maxfev.
+#	  \item \code{4} The step is at the lower bound alpha_min.
+#	  \item \code{5} The step is at the upper bound alpha_max.
+#	  \item \code{6} Rounding errors prevent further progress.
+# }
+# NB dgtest was originally used in testing for min/max alpha test (code 4 and 5)
+# but has been replaced with a call to the curvature test using c1 instead of c2
+# so dgtest is no longer used in the body of the function.
+check_convergence <- function(step0, step, brackt, infoc, stmin, stmax,
+                              alpha_min, alpha_max, c1, c2, nfev,
+                              maxfev, xtol, armijo_check_fn = armijo_ok_step,
+                              wolfe_ok_step_fn = strong_wolfe_ok_step,
+                              verbose = FALSE) {
+  info <- 0
+  if ((brackt && (step$alpha <= stmin || step$alpha >= stmax)) || infoc == 0) {
+    if (verbose) {
+      message("MT: Rounding errors prevent further progress: stmin = ",
+            formatC(stmin), " stmax = ", formatC(stmax))
+    }
+    # rounding errors prevent further progress
+    info <- 6
+  }
+  # use of c1 in curvature check is on purpose (it's in the MINPACK code)
+  if (step$alpha == alpha_max && armijo_check_fn(step0, step, c1) &&
+      !curvature_ok_step(step0, step, c1)) {
+    # reached alpha_max
+    info <- 5
+    if (verbose) {
+      message("MT: Reached alpha max")
+    }
+
+  }
+  # use of c1 in curvature check here is also in MINPACK code
+  if (step$alpha == alpha_min && (!armijo_check_fn(step0, step, c1) ||
+                                  curvature_ok_step(step0, step, c1))) {
+    # reached alpha_min
+    info <- 4
+    if (verbose) {
+      message("MT: Reached alpha min")
+    }
+
+  }
+  if (nfev >= maxfev) {
+    # maximum number of function evaluations reached
+    info <- 3
+    if (verbose) {
+      message("MT: exceeded fev")
+    }
+  }
+  if (brackt && stmax - stmin <= xtol * stmax) {
+    # interval width is below xtol
+    info <- 2
+    if (verbose) {
+      message("MT: interval width is <= xtol: ", formatC(xtol * stmax))
+    }
+
+  }
+  if (wolfe_ok_step_fn(step0, step, c1, c2)) {
+    # success!
+    info <- 1
+    if (verbose) {
+      message("Success!")
+    }
+  }
+  info
+}
+
+
+# Part of the More'-Thuente line search.
+#
+# Updates the interval of uncertainty of the current step size and updates the
+# current best step size.
+#
+# This routine is a translation of Dianne O'Leary's Matlab code, which was
+# itself a translation of the MINPACK original. Original comments to the Matlab
+# code are at the end.
+#
+# @param stepx One side of the updated step interval, and the associated
+#     line search values.
+# @param stepy Other side of the updated step interval, and the
+#     associated line search values.
+# @param step Optimal step size and associated line search
+#     value.
+# @param brackt TRUE if the interval has been bracketed.
+# @param stpmin Minimum allowed interval length.
+# @param stpmax Maximum allowed interval length.
+# @return List containing:
+# \itemize{
+#   \item \code{stepx} One side of the updated step interval, and the associated
+#     line search values.
+#   \item \code{stepy} Other side of the updated step interval, and the
+#     associated line search values.
+#   \item \code{step} Updated optimal step size and associated line search
+#     value.
+#   \item \code{brackt} TRUE if the interval has been bracketed.
+#   \item \code{info} Integer return code.
+# }
+# The possible integer return codes refer to the cases 1-4 enumerated in the
+# original More'-Thuente paper that correspond to different line search values
+# at the ends of the interval and the current best step size (and therefore
+# the type of cubic or quadratic interpolation). An integer value of 0 indicates
+# that the input parameters are invalid.
+#
+#
+#   Translation of minpack subroutine cstep
+#   Dianne O'Leary   July 1991
+#     **********
+#
+#     Subroutine cstep
+#
+#     The purpose of cstep is to compute a safeguarded step for
+#     a linesearch and to update an interval of uncertainty for
+#     a minimizer of the function.
+#
+#     The parameter stx contains the step with the least function
+#     value. The parameter stp contains the current step. It is
+#     assumed that the derivative at stx is negative in the
+#     direction of the step. If brackt is set true then a
+#     minimizer has been bracketed in an interval of uncertainty
+#     with end points stx and sty.
+#
+#     The subroutine statement is
+#
+#       subroutine cstep(stx,fx,dx,sty,fy,dy,stp,fp,dp,brackt,
+#                        stpmin,stpmax,info)
+#
+#     where
+#
+#       stx, fx, and dx are variables which specify the step,
+#         the function, and the derivative at the best step obtained
+#         so far. The derivative must be negative in the direction
+#         of the step, that is, dx and stp-stx must have opposite
+#         signs. On output these parameters are updated appropriately.
+#
+#       sty, fy, and dy are variables which specify the step,
+#         the function, and the derivative at the other endpoint of
+#         the interval of uncertainty. On output these parameters are
+#         updated appropriately.
+#
+#       stp, fp, and dp are variables which specify the step,
+#         the function, and the derivative at the current step.
+#         If brackt is set true then on input stp must be
+#         between stx and sty. On output stp is set to the new step.
+#
+#       brackt is a logical variable which specifies if a minimizer
+#         has been bracketed. If the minimizer has not been bracketed
+#         then on input brackt must be set false. If the minimizer
+#         is bracketed then on output brackt is set true.
+#
+#       stpmin and stpmax are input variables which specify lower
+#         and upper bounds for the step.
+#
+#       info is an integer output variable set as follows:
+#         If info <- 1,2,3,4,5, then the step has been computed
+#         according to one of the five cases below. Otherwise
+#         info <- 0, and this indicates improper input parameters.
+#
+#     Subprograms called
+#
+#       FORTRAN-supplied ... abs,max,min,sqrt
+#                        ... dble
+#
+#     Argonne National Laboratory. MINPACK Project. June 1983
+#     Jorge J. More', David J. Thuente
+#
+#     **********
+cstep <-  function(stepx, stepy, step, brackt, stpmin, stpmax,
+                   verbose = FALSE) {
+
+  stx <- stepx$alpha
+  fx <- stepx$f
+  dx <- stepx$d
+  dfx <- stepx$df
+
+  sty <- stepy$alpha
+  fy <- stepy$f
+  dy <- stepy$d
+  dfy <- stepy$df
+
+  stp <- step$alpha
+  fp <- step$f
+  dp <- step$d
+  dfp <- step$df
+
+  delta <- 0.66
+  info <- 0
+  # Check the input parameters for errors.
+  if ((brackt && (stp <= min(stx, sty) ||
+                  stp >= max(stx, sty))) ||
+      dx * (stp - stx) >= 0.0 || stpmax < stpmin) {
+    list(
+      stepx = stepx,
+      stepy = stepy,
+      step = step,
+      brackt = brackt, info = info)
+  }
+  # Determine if the derivatives have opposite sign.
+  sgnd <- dp * (dx / abs(dx))
+
+  # First case. Trial function value is larger, so choose a step which is
+  # closer to stx.
+  # The minimum is bracketed.
+  # If the cubic step is closer to stx than the quadratic step, the cubic step
+  # is taken else the average of the cubic and quadratic steps is taken.
+  if (fp > fx) {
+    info <- 1
+    bound <- TRUE
+
+    stpc <- cubic_interpolate(stx, fx, dx, stp, fp, dp, ignoreWarnings = TRUE)
+    stpq <- quadratic_interpolate(stx, fx, dx, stp, fp)
+
+    if (is.nan(stpc)) {
+      stpf <- stpq
+    }
+    else {
+      if (abs(stpc - stx) < abs(stpq - stx)) {
+        stpf <- stpc
+      } else {
+        stpf <- stpc + (stpq - stpc) / 2
+      }
+    }
+    brackt <- TRUE
+
+    # Second case. A lower function value and derivatives of
+    # opposite sign. The minimum is bracketed. If the cubic
+    # step is closer to stx than the quadratic (secant) step,
+    # the cubic step is taken, else the quadratic step is taken.
+  } else if (sgnd < 0.0) {
+    info <- 2
+    bound <- FALSE
+
+    stpc <- cubic_interpolate(stx, fx, dx, stp, fp, dp, ignoreWarnings = TRUE)
+    stpq <- quadratic_interpolateg(stp, dp, stx, dx)
+    if (is.nan(stpc)) {
+      stpf <- stpq
+    }
+    else {
+      if (abs(stpc - stp) > abs(stpq - stp)) {
+        stpf <- stpc
+      } else {
+        stpf <- stpq
+      }
+    }
+
+    brackt <- TRUE
+
+    # Third case. A lower function value, derivatives of the
+    # same sign, and the magnitude of the derivative decreases.
+    # The next trial step exists outside the interval so is an extrapolation.
+    # The cubic may not have a minimizer. If it does, it may be in the
+    # wrong direction, e.g. stc < stx < stp
+    # The cubic step is only used if the cubic tends to infinity
+    # in the direction of the step and if the minimum of the cubic
+    # is beyond stp. Otherwise the cubic step is defined to be
+    # either stpmin or stpmax. The quadratic (secant) step is also
+    # computed and if the minimum is bracketed then the the step
+    # closest to stx is taken, else the step farthest away is taken.
+  } else if (abs(dp) < abs(dx)) {
+    info <- 3
+    bound <- TRUE
+    theta <- 3 * (fx - fp) / (stp - stx) + dx + dp
+    s <- norm(rbind(theta, dx, dp), "i")
+    # The case gamma = 0 only arises if the cubic does not tend
+    # to infinity in the direction of the step.
+    gamma <- s * sqrt(max(0.,(theta / s) ^ 2 - (dx / s) * (dp / s)))
+    if (stp > stx) {
+      gamma <- -gamma
+    }
+    p <- (gamma - dp) + theta
+    q <- (gamma + (dx - dp)) + gamma
+    r <- p / q
+
+    if (r < 0.0 && gamma != 0.0) {
+      stpc <- stp + r * (stx - stp)
+    } else if (stp > stx) {
+      stpc <- stpmax
+    } else {
+      stpc <- stpmin
+    }
+
+    stpq <- quadratic_interpolateg(stp, dp, stx, dx)
+
+    if (brackt) {
+      if (abs(stp - stpc) < abs(stp - stpq)) {
+        stpf <- stpc
+      } else {
+        stpf <- stpq
+      }
+    } else {
+      if (abs(stp - stpc) > abs(stp - stpq)) {
+        stpf <- stpc
+      } else {
+        stpf <- stpq
+      }
+    }
+    # Fourth case. A lower function value, derivatives of the
+    # same sign, and the magnitude of the derivative does
+    # not decrease. If the minimum is not bracketed, the step
+    # is either stpmin or stpmax, else the cubic step is taken.
+  } else {
+    info <- 4
+    bound <- FALSE
+    if (brackt) {
+      stpc <- cubic_interpolate(sty, fy, dy, stp, fp, dp, ignoreWarnings = TRUE)
+      if (is.nan(stpc)) {
+        stpc <- (sty + stp) / 2
+      }
+      stpf <- stpc
+    } else if (stp > stx) {
+      stpf <- stpmax
+    } else {
+      stpf <- stpmin
+    }
+  }
+
+  # Update the interval of uncertainty. This update does not
+  # depend on the new step or the case analysis above.
+  if (fp > fx) {
+    sty <- stp
+    fy <- fp
+    dy <- dp
+    dfy <- dfp
+  } else {
+    if (sgnd < 0.0) {
+      sty <- stx
+      fy <- fx
+      dy <- dx
+      dfy <- dfx
+    }
+    stx <- stp
+    fx <- fp
+    dx <- dp
+    dfx <- dfp
+  }
+
+  # Compute the new step and safeguard it.
+  stpf <- min(stpmax, stpf)
+  stpf <- max(stpmin, stpf)
+  stp <- stpf
+  if (brackt && bound) {
+    # if the new step is too close to an end point
+    # replace with a (weighted) bisection (delta = 0.66 in the paper)
+    if (verbose) {
+      message("Step too close to end point, weighted bisection")
+    }
+    stb <- stx + delta * (sty - stx)
+    if (sty > stx) {
+      stp <- min(stb, stp)
+    } else {
+      stp <- max(stb, stp)
+    }
+  }
+  list(
+    stepx = list(alpha = stx, f = fx, d = dx, df = dfx),
+    stepy = list(alpha = sty, f = fy, d = dy, df = dfy),
+    step = list(alpha = stp, f = fp, d = dp, df = dfp),
+    brackt = brackt, info = info)
+}
 # Nesterov Accelerated Gradient ------------------------------------------------
 
 # This is the actual Nesterov Accelerated Gradient scheme, rather than
@@ -4812,7 +5548,6 @@ quadratic_interpolate_step <- function(step1, step2) {
 # @param g2 f'(x) value at second point.
 # @return Quadratic interpolated estimate of minimum value of x.
 quadratic_interpolateg <- function(x1, g1, x2, g2) {
-  #x1 - (0.5 * g1 * (x2 - x1) ^ 2) / (f2 - f1 - g1 * (x2 - x1))
   x2 + (x1 - x2) * g2 / (g2 - g1)
 }
 
@@ -4879,7 +5614,7 @@ tweak_interpolation <- function(xnew, x1, x2, int) {
 # \enumerate{
 #  \item Using cubic extrapolation from an initial starting guess for the step
 #    size until either the sufficient decrease condition is not met or the
-#    strong curvature condition is met.
+#    curvature condition is met.
 #  \item Interpolation (quadratic or cubic) between that point and the start
 #    point of the search until either a step size is found which meets the
 #    Strong Wolfe conditions or the maximum number of allowed function
@@ -4903,18 +5638,34 @@ tweak_interpolation <- function(xnew, x1, x2, int) {
 #  and also part of the Matlab
 #  \href{(http://www.gaussianprocess.org/gpml/code/matlab/doc/)}{GPML} package.
 rasmussen <- function(c1 = c2 / 2, c2 = 0.1, int = 0.1, ext = 3.0,
-                      max_fn = Inf) {
+                      max_fn = Inf, xtol = 1e-6, eps = 1e-6, approx_armijo = FALSE,
+                      strong_curvature = TRUE, verbose = FALSE) {
   if (c2 < c1) {
     stop("rasmussen line search: c2 < c1")
   }
+
+  if (approx_armijo) {
+    armijo_check_fn <- make_approx_armijo_ok_step(eps)
+  }
+  else {
+    armijo_check_fn <- armijo_ok_step
+  }
+
+  wolfe_ok_step_fn <- make_wolfe_ok_step_fn(strong_curvature = strong_curvature,
+                                            approx_armijo = approx_armijo,
+                                            eps = eps)
+
   function(phi, step0, alpha,
-           total_max_fn = Inf, total_max_gr = Inf, total_max_fg = Inf) {
+           total_max_fn = Inf, total_max_gr = Inf, total_max_fg = Inf,
+           pm = NULL) {
     maxfev <- min(max_fn, total_max_fn, total_max_gr, floor(total_max_fg / 2))
     if (maxfev <= 0) {
       return(list(step = step0, nfn = 0, ngr = 0))
     }
+
     res <- ras_ls(phi, alpha, step0, c1 = c1, c2 = c2, ext = ext, int = int,
-                  max_fn = maxfev)
+                  max_fn = maxfev, armijo_check_fn = armijo_check_fn,
+                  wolfe_ok_step_fn = wolfe_ok_step_fn, verbose = verbose)
     list(step = res$step, nfn = res$nfn, ngr = res$nfn)
   }
 }
@@ -4940,15 +5691,20 @@ rasmussen <- function(c1 = c2 / 2, c2 = 0.1, int = 0.1, ext = 3.0,
 #   \item nfn Number of function evaluations.
 # }
 ras_ls <- function(phi, alpha, step0, c1 = 0.1, c2 = 0.1 / 2, ext = 3.0,
-                   int = 0.1, max_fn = Inf) {
+                   int = 0.1, max_fn = Inf, xtol = 1e-6,
+                   armijo_check_fn = armijo_ok_step,
+                   wolfe_ok_step_fn = strong_wolfe_ok_step,
+                   verbose = verbose) {
   if (c2 < c1) {
     stop("Rasmussen line search: c2 < c1")
   }
-
   # extrapolate from initial alpha until either curvature condition is met
   # or the armijo condition is NOT met
+  if (verbose) {
+    message("Bracketing with initial step size = ", formatC(alpha))
+  }
   ex_result <- extrapolate_step_size(phi, alpha, step0, c1, c2, ext, int,
-                                     max_fn)
+                                     max_fn, armijo_check_fn, verbose = verbose)
 
   step <- ex_result$step
   nfn <- ex_result$nfn
@@ -4957,38 +5713,28 @@ ras_ls <- function(phi, alpha, step0, c1 = 0.1, c2 = 0.1 / 2, ext = 3.0,
     return(ex_result)
   }
 
+  if (!ex_result$ok) {
+    if (verbose) {
+      message("Bracket phase failed, returning best step")
+    }
+    return(list(step = best_bracket_step(list(step0, step))), nfn = nfn)
+  }
+
+  if (verbose) {
+    message("Bracket: ", format_bracket(list(step0, step)), " fn = ", nfn)
+  }
+
   # interpolate until the Strong Wolfe conditions are met
-  int_result <- interpolate_step_size(phi, step0, step, c1, c2, int, max_fn)
+  int_result <- interpolate_step_size(phi, step0, step, c1, c2, int, max_fn,
+                                      xtol = xtol,
+                                      armijo_check_fn = armijo_check_fn,
+                                      wolfe_ok_step_fn = wolfe_ok_step_fn,
+                                      verbose = verbose)
+  if (verbose) {
+    message("alpha = ", formatC(int_result$step$alpha))
+  }
   int_result$nfn <- int_result$nfn + nfn
   int_result
-}
-
-# Ensure Valid Step Size
-#
-# Given an initial step size, if either the function value or the directional
-# derivative is non-finite (NaN or infinite), reduce the step size until
-# finite values are found.
-#
-# @param phi Line function.
-# @param alpha Initial step size.
-# @param min_alpha Minimum step size.
-# @param max_fn Maximum number of function evaluations allowed.
-# @return List containing:
-# \itemize{
-#   \item step Valid step size or the last step size evaluated.
-#   \item nfn Number of function evaluations.
-# }
-find_finite <- function(phi, alpha, min_alpha = 0, max_fn = 20) {
-  nfn <- 0
-  while (nfn < max_fn && alpha > min_alpha) {
-    step <- phi(alpha)
-    nfn <- nfn + 1
-    if (is.finite(step$f) && is.finite(step$df)) {
-      break
-    }
-    alpha <- (min_alpha + alpha) / 2
-  }
-  list(step = step, nfn = nfn)
 }
 
 # Increase Step Size
@@ -5011,23 +5757,39 @@ find_finite <- function(phi, alpha, min_alpha = 0, max_fn = 20) {
 #   \item nfn Number of function evaluations.
 # }
 extrapolate_step_size <- function(phi, alpha, step0, c1, c2, ext, int,
-                                  max_fn = 20) {
-  step <- list(alpha = alpha)
-
+                                  max_fn = 20,
+                                  armijo_check_fn = armijo_ok_step,
+                                  verbose = FALSE) {
+  # holds the largest finite-valued step
+  finite_step <- step0
+  ext_alpha <- alpha
+  ok <- FALSE
   nfn <- 0
-  while (1) {
-    result <- find_finite(phi, step$alpha, max_fn, min_alpha = 0)
+  while (TRUE) {
+    result <- find_finite(phi, ext_alpha, max_fn, min_alpha = 0)
     nfn <- nfn + result$nfn
     max_fn <- max_fn - result$nfn
-    step <- result$step
-
-    if (extrapolation_ok(step0, step, c1, c2) || max_fn == 0) {
+    if (!result$ok) {
+      if (verbose) {
+        message("Couldn't find a finite alpha during extrapolation")
+      }
       break
     }
-    step$alpha <- tweaked_extrapolation(step0, step, ext, int)
+
+    finite_step <- result$step
+
+    if (extrapolation_ok(step0, finite_step, c1, c2, armijo_check_fn)) {
+      ok <- TRUE
+      break
+    }
+    if (max_fn <= 0) {
+      break
+    }
+
+    ext_alpha <- tweaked_extrapolation(step0, finite_step, ext, int)
   }
 
-  list(step = step, nfn = nfn)
+  list(step = finite_step, nfn = nfn, ok = ok)
 }
 
 # Extrapolation Check
@@ -5042,8 +5804,8 @@ extrapolate_step_size <- function(phi, alpha, step0, c1, c2, ext, int,
 # @param c2 Constant used in curvature condition. Should take a value between
 #   c1 and 1.
 # @return TRUE if the extrapolated point is sufficiently large.
-extrapolation_ok <- function(step0, step, c1, c2) {
-  curvature_ok_step(step0, step, c2) || !armijo_ok_step(step0, step, c1)
+extrapolation_ok <- function(step0, step, c1, c2, armijo_check_fn) {
+  curvature_ok_step(step0, step, c2) || !armijo_check_fn(step0, step, c1)
 }
 
 # Extrapolate and Tweak Step Size
@@ -5079,13 +5841,20 @@ tweaked_extrapolation <- function(step0, step, ext, int) {
 #   \item step Valid step size or the last step size evaluated.
 #   \item nfn Number of function evaluations.
 # }
-interpolate_step_size <- function(phi, step0, step, c1, c2, int, max_fn = 20) {
+interpolate_step_size <- function(phi, step0, step, c1, c2, int, max_fn = 20,
+                                  xtol = 1e-6,
+                                  armijo_check_fn = armijo_ok_step,
+                                  wolfe_ok_step_fn = strong_wolfe_ok_step,
+                                  verbose = FALSE) {
   step2 <- step0
   step3 <- step
   nfn <- 0
+  if (verbose) {
+    message("Interpolating")
+  }
 
-  while (!strong_wolfe_ok_step(step0, step3, c1, c2) && nfn < max_fn) {
-    if (step3$d > 0 || !armijo_ok_step(step0, step3, c1)) {
+  while (!wolfe_ok_step_fn(step0, step3, c1, c2) && nfn < max_fn) {
+    if (step3$d > 0 || !armijo_check_fn(step0, step3, c1)) {
       step4 <- step3
     } else {
       step2 <- step3
@@ -5097,14 +5866,1015 @@ interpolate_step_size <- function(phi, step0, step, c1, c2, int, max_fn = 20) {
       step3$alpha <- cubic_interpolate_step(step2, step4)
     }
 
-    step3$alpha <- tweak_interpolation(step3$alpha, step2$alpha, step4$alpha, int)
-    step3 <- phi(step3$alpha)
-    nfn <- nfn + 1
+    if (verbose) {
+      message("Bracket: ", format_bracket(list(step2, step4)),
+              " alpha: ", formatC(step3$alpha), " f: ", formatC(step3$f),
+              " d: ", formatC(step3$d), " nfn: ", nfn, " max_fn: ", max_fn)
+    }
+    step3$alpha <- tweak_interpolation(step3$alpha, step2$alpha, step4$alpha,
+                                       int)
+    # Check interpolated step is finite, and bisect if not, as in extrapolation
+    # stage
+    result <- find_finite(phi, step3$alpha, max_fn - nfn,
+                          min_alpha = bracket_min_alpha(list(step2, step4)))
+    nfn <- nfn + result$nfn
+    if (!result$ok) {
+      if (verbose) {
+        message("Couldn't find a finite alpha during interpolation, aborting")
+      }
+      step3 <- best_bracket_step(list(step2, step4))
+      break
+    }
+    step3 <- result$step
+
+
+    if (bracket_width(list(step2, step4)) < xtol * step3$alpha) {
+      if (verbose) {
+        message("Bracket width: ", formatC(bracket_width(list(step2, step4))),
+                " reduced below tolerance ", formatC(xtol * step3$alpha))
+      }
+      break
+    }
+
   }
   list(step = step3, nfn = nfn)
 }
+# Translation of Mark Schmidt's minFunc line search code for satisfying the
+# Strong Wolfe conditions (and also the Armijo conditions)
+# http://www.cs.ubc.ca/~schmidtm/Software/minFunc.html, 2005.
+
+# Adapters ----------------------------------
+
+# Uses the default line search settings: cubic interpolation/extrapolation
+# Falling back to Armijo backtracking (also using cubic interpolation) if
+# a non-legal value is found
+schmidt <- function(c1 = c2 / 2, c2 = 0.1, max_fn = Inf, eps = 1e-6,
+                    strong_curvature = TRUE, approx_armijo = FALSE) {
+  if (c2 < c1) {
+    stop("schmidt line search: c2 < c1")
+  }
+  function(phi, step0, alpha,
+           total_max_fn = Inf, total_max_gr = Inf, total_max_fg = Inf,
+           pm) {
+    maxfev <- min(max_fn, total_max_fn, total_max_gr, floor(total_max_fg / 2))
+    if (maxfev <= 0) {
+      return(list(step = step0, nfn = 0, ngr = 0))
+    }
+
+    if (approx_armijo) {
+      armijo_check_fn <- make_approx_armijo_ok_step(eps)
+    }
+    else {
+      armijo_check_fn <- armijo_ok_step
+    }
+
+    if (strong_curvature) {
+      curvature_check_fn <- strong_curvature_ok_step
+    }
+    else {
+      curvature_check_fn <- curvature_ok_step
+    }
+
+    res <- WolfeLineSearch(alpha = alpha, f = step0$f, g = step0$df,
+                           gtd = step0$d,
+                           c1 = c1, c2 = c2, LS_interp = 2, LS_multi = 0,
+                           maxLS = maxfev,
+                           funObj = phi, varargin = NULL,
+                           pnorm_inf = max(abs(pm)),
+                           progTol = 1e-9,
+                           armijo_check_fn = armijo_check_fn,
+                           curvature_check_fn = curvature_check_fn,
+                           debug = FALSE)
+    res$ngr = res$nfn
+    res
+  }
+}
+
+# step_down if non-NULL, multiply the step size by this value when backtracking
+# Otherwise, use a cubic interpolation based on previous function and derivative
+# values
+schmidt_armijo_backtrack <- function(c1 = 0.05, step_down = NULL, max_fn = Inf) {
+  function(phi, step0, alpha,
+           total_max_fn = Inf, total_max_gr = Inf, total_max_fg = Inf,
+           pm) {
+    maxfev <- min(max_fn, total_max_fn, total_max_gr, floor(total_max_fg / 2))
+    if (maxfev <= 0) {
+      return(list(step = step0, nfn = 0, ngr = 0))
+    }
+    if (!is.null(step_down)) {
+      # fixed-size step reduction by a factor of step_down
+      LS_interp <- 0
+    }
+    else {
+      # cubic interpolation
+      LS_interp <- 2
+    }
+
+    res <- ArmijoBacktrack(step = alpha, f = step0$f, g = step0$df,
+                           gtd = step0$d,
+                           c1 = c1, LS_interp = LS_interp, LS_multi = 0,
+                           maxLS = maxfev, step_down = step_down,
+                           funObj = phi, varargin = NULL,
+                           pnorm_inf = max(abs(pm)),
+                           progTol = 1e-9, debug = FALSE)
+
+    res$ngr <- res$nfn
+    res
+  }
+}
+
+# Translated minFunc routines ---------------------------------------------
+
+# Bracketing Line Search to Satisfy Wolfe Conditions
+#
+# Inputs:
+#   x: starting location
+#   step: initial step size
+#   d: descent direction
+#   f: function value at starting location
+#   g: gradient at starting location
+#   gtd: directional derivative at starting location
+#   c1: sufficient decrease parameter
+#   c2: curvature parameter
+#   debug: display debugging information
+#   LS_interp: type of interpolation
+#   maxLS: maximum number of funEvals (changed from matlab original)
+#   progTol: minimum allowable step length
+#   funObj: objective function
+#   varargin: parameters of objective function
+#
+# For the Wolfe line-search, these interpolation strategies are available ('LS_interp'):
+#   - 0 : Step Size Doubling and Bisection
+#   - 1 : Cubic interpolation/extrapolation using new function and gradient values (default)
+#   - 2 : Mixed quadratic/cubic interpolation/extrapolation
+# Outputs:
+#   step: step length
+#   f_new: function value at x+step*d
+#   g_new: gradient value at x+step*d
+#   funEvals: number function evaluations performed by line search
+#   H: Hessian at initial guess (only computed if requested
+# @returns [step,f_new,g_new,funEvals,H]
+WolfeLineSearch <-
+  function(alpha, f, g, gtd,
+           c1 = 1e-4, c2 = 0.1, LS_interp = 1, LS_multi = 0, maxLS = 25,
+           funObj, varargin = NULL,
+           pnorm_inf, progTol = 1e-9, armijo_check_fn = armijo_ok_step,
+           curvature_check_fn = strong_curvature_ok_step,
+           debug = FALSE) {
+    # Bracket an Interval containing a point satisfying the
+    # Wolfe criteria
+    step0 <- list(alpha = 0, f = f, df = g, d = gtd)
+
+    bracket_res <- schmidt_bracket(alpha, LS_interp, maxLS, funObj, step0,
+                                   c1, c2, armijo_check_fn, curvature_check_fn,
+                                   debug)
+    bracket_step <- bracket_res$bracket
+    funEvals <- bracket_res$funEvals
+    done <- bracket_res$done
+
+    if (!bracket_is_finite(bracket_step)) {
+      if (debug) {
+        message('Switching to Armijo line-search')
+      }
+      alpha <- mean(bracket_props(bracket_step, 'alpha'))
+
+      # Do Armijo
+      armijo_res <- ArmijoBacktrack(alpha, step0$f, step0$df, step0$d,
+                                    c1 = c1, LS_interp = LS_interp,
+                                    LS_multi = LS_multi,
+                                    maxLS = maxLS - funEvals,
+                                    funObj = funObj, varargin = NULL,
+                                    pnorm_inf = pnorm_inf,
+                                    progTol = progTol, debug = debug)
+
+      armijo_res$nfn <- armijo_res$nfn + funEvals
+      return(armijo_res)
+    }
+
+    ## Zoom Phase
+    # We now either have a point satisfying the criteria, or a bracket
+    # surrounding a point satisfying the criteria
+    # Refine the bracket until we find a point satisfying the criteria
+    if (!done) {
+      maxLS <- maxLS - funEvals
+      zoom_res <- schmidt_zoom(bracket_step, LS_interp, maxLS, funObj,
+                               step0, c1, c2, pnorm_inf, progTol,
+                               armijo_check_fn, curvature_check_fn,
+                               debug)
+
+      funEvals <- funEvals + zoom_res$funEvals
+      bracket_step <- zoom_res$bracket
+    }
+
+    list(step = best_bracket_step(bracket_step), nfn = funEvals)
+  }
+
+# Change from original: maxLS refers to maximum allowed funEvals, not LS iters
+schmidt_bracket <- function(alpha, LS_interp, maxLS, funObj, step0, c1, c2,
+                            armijo_check_fn, curvature_check_fn, debug) {
+  # did we find a bracket
+  ok <- FALSE
+  # did we find a step that already fulfils the line search
+  done <- FALSE
+
+  step_prev <- step0
+
+  # Evaluate the Objective and Gradient at the Initial Step
+  ff_res <- find_finite(funObj, alpha, maxLS, min_alpha = 0)
+  funEvals <- ff_res$nfn
+  step_new <- ff_res$step
+
+  LSiter <- 0
+  while (funEvals < maxLS) {
+
+    if (!ff_res$ok) {
+      if (debug) {
+        message('Extrapolated into illegal region, returning')
+      }
+      bracket_step <- list(step_prev, step_new)
+
+      return(list(bracket = bracket_step, done = done,
+                  funEvals = funEvals, ok = FALSE))
+    }
+
+    # See if we have found the other side of the bracket
+    if (!armijo_check_fn(step0, step_new, c1) ||
+        (LSiter > 1 && step_new$f >= step_prev$f)) {
+      bracket_step <- list(step_prev, step_new)
+      ok <- TRUE
+      if (debug) {
+        message('Armijo failed or step_new$f >= step_prev$f: bracket is [prev new]')
+      }
+      break
+    }
+    else if (curvature_check_fn(step0, step_new, c2)) {
+      bracket_step <- list(step_new)
+      ok <- TRUE
+      done <- TRUE
+
+      if (debug) {
+        message('Sufficient curvature found: bracket is [new]')
+      }
+      break
+    }
+    else if (step_new$d >= 0) {
+      bracket_step <- list(step_prev, step_new)
+
+      if (debug) {
+        message('step_new$d >= 0: bracket is [prev, new]')
+      }
+      break
+    }
+
+    minStep <- step_new$alpha + 0.01 * (step_new$alpha - step_prev$alpha)
+    maxStep <- step_new$alpha * 10
+
+    if (LS_interp <= 1) {
+      if (debug) {
+        message('Extending Bracket')
+      }
+      alpha_new <- maxStep
+    }
+    else if (LS_interp == 2) {
+      if (debug) {
+        message('Cubic Extrapolation')
+      }
+      alpha_new <- polyinterp(point_matrix_step(step_prev, step_new),
+                              minStep, maxStep)
+    }
+    else {
+      # LS_interp == 3
+      alpha_new <- mixedExtrap_step(step_prev, step_new, minStep, maxStep,
+                                    debug)
+    }
+
+    step_prev <- step_new
+
+    ff_res <- find_finite(funObj, alpha_new, maxLS - funEvals,
+                          min_alpha = step_prev$alpha)
+    funEvals <- funEvals + ff_res$nfn
+    step_new <- ff_res$step
+
+    LSiter <- LSiter + 1
+  }
+
+  # If we ran out of fun_evals, need to repeat finite check for last iteration
+  if (!ok && !ff_res$ok) {
+    if (debug) {
+      message('Extrapolated into illegal region, returning')
+    }
+  }
+
+  if (funEvals >= maxLS && !ok) {
+    if (debug) {
+      message("max_fn reached in bracket step")
+    }
+  }
+
+  list(bracket = bracket_step, done = done, funEvals = funEvals, ok = ok)
+}
+
+# Change from original: maxLS refers to max allowed funEvals not LSiters
+schmidt_zoom <- function(bracket_step, LS_interp, maxLS, funObj,
+                         step0, c1, c2, pnorm_inf, progTol, armijo_check_fn,
+                         curvature_check_fn,
+                         debug) {
+  insufProgress <- FALSE
+  Tpos <- 2 # position in the bracket of the current best step
+  # mixed interp only: if true, save point from previous bracket
+  LOposRemoved <- FALSE
+
+  funEvals <- 0
+
+  done <- FALSE
+  while (!done && funEvals < maxLS) {
+    # Find High and Low Points in bracket
+    LOpos <- which.min(bracket_props(bracket_step, 'f'))
+    HIpos <- -LOpos + 3 # 1 or 2, whichever wasn't the LOpos
+
+    # Compute new trial value
+    if (LS_interp <= 1 || !bracket_is_finite(bracket_step)) {
+      if (!bracket_is_finite(bracket_step)) {
+        message("Bad f/g in bracket - bisecting")
+      }
+      alpha <- mean(bracket_props(bracket_step, 'alpha'))
+      if (debug) {
+        message('Bisecting: trial step = ', formatC(alpha))
+      }
+    }
+    else if (LS_interp == 2) {
+      alpha <- polyinterp(
+        point_matrix_step(bracket_step[[1]], bracket_step[[2]]),
+        debug = debug)
+      if (debug) {
+        message('Grad-Cubic Interpolation: trial step = ', formatC(alpha))
+      }
+    }
+    else {
+      # Mixed Case #
+      nonTpos <- -Tpos + 3
+      if (!LOposRemoved) {
+        oldLO <- bracket_step[[nonTpos]]
+      }
+      alpha <- mixedInterp_step(bracket_step, Tpos, oldLO, debug)
+      if (debug) {
+        message('Mixed Interpolation: trial step = ', formatC(alpha))
+      }
+    }
+
+    # Ensure that alpha is finite
+    if (!is.finite(alpha)) {
+      alpha <- mean(bracket_props(bracket_step, 'alpha'))
+      if (debug) {
+        message("Non-finite trial alpha, bisecting: alpha = ", formatC(alpha))
+      }
+    }
+
+    # Test that we are making sufficient progress
+    bracket_alphas <- bracket_props(bracket_step, 'alpha')
+    alpha_max <- max(bracket_alphas)
+    alpha_min <- min(bracket_alphas)
+    alpha_range <- alpha_max - alpha_min
+    if (alpha_range > 0) {
+      if (min(alpha_max - alpha, alpha - alpha_min) / alpha_range < 0.1) {
+        if (debug) {
+          message('Interpolation close to boundary')
+        }
+
+        if (insufProgress || alpha >= alpha_max || alpha <= alpha_min) {
+          if (debug) {
+            message('Evaluating at 0.1 away from boundary')
+          }
+          if (abs(alpha - alpha_max) < abs(alpha - alpha_min)) {
+            alpha <- alpha_max - 0.1 * alpha_range
+          }
+          else {
+            alpha <- alpha_min + 0.1 * alpha_range
+          }
+          insufProgress <- FALSE
+        }
+        else {
+          insufProgress <- TRUE
+        }
+      }
+      else {
+        insufProgress <- FALSE
+      }
+    }
+
+    # Evaluate new point
+
+    # code attempts to handle non-finite values but this is easier in Matlab
+    # where NaN can safely be compared with finite values (returning 0 in all
+    # comparisons), whereas R returns NA. Instead, let's attempt to find a
+    # finite value by bisecting repeatedly. If we run out of evaluations or
+    # hit the bracket, we give up.
+    ff_res <- find_finite(funObj, alpha, maxLS - funEvals,
+                          min_alpha = bracket_min_alpha(bracket_step))
+    funEvals <- funEvals + ff_res$nfn
+    if (!ff_res$ok) {
+      if (debug) {
+        message("Failed to find finite legal step size in zoom phase, aborting")
+      }
+      break
+    }
+    step_new <- ff_res$step
+
+    # Update bracket
+    if (!armijo_check_fn(step0, step_new, c1) ||
+        step_new$f >= bracket_step[[LOpos]]$f) {
+      if (debug) {
+        message("New point becomes new HI")
+      }
+      # Armijo condition not satisfied or not lower than lowest point
+      bracket_step[[HIpos]] <- step_new
+      Tpos <- HIpos
+      # [LO, new]
+    }
+    else {
+      if (curvature_check_fn(step0, step_new, c2)) {
+        # Wolfe conditions satisfied
+        done <- TRUE
+        # [new, HI]
+      }
+      else if (step_new$d * (bracket_step[[HIpos]]$alpha - bracket_step[[LOpos]]$alpha) >= 0) {
+        if (debug) {
+          message("Old LO becomes new HI")
+        }
+        # Old HI becomes new LO
+        bracket_step[[HIpos]] <- bracket_step[[LOpos]]
+
+        if (LS_interp == 3) {
+          if (debug) {
+            message('LO Pos is being removed!')
+          }
+          LOposRemoved <- TRUE
+          oldLO <- bracket_step[[LOpos]]
+        }
+        # [new, LO]
+      }
+      # else [new, HI]
+
+      if (debug) {
+        message("New point becomes new LO")
+      }
+      # New point becomes new LO
+      bracket_step[[LOpos]] <- step_new
+      Tpos <- LOpos
+    }
+
+    if (!done && bracket_width(bracket_step) * pnorm_inf < progTol) {
+      if (debug) {
+        message('Line-search bracket has been reduced below progTol')
+      }
+      break
+    }
+  } # end of while loop
+  if (funEvals >= maxLS) {
+    if (debug) {
+      message('Line Search Exceeded Maximum Function Evaluations')
+    }
+  }
+  list(bracket = bracket_step, funEvals = funEvals)
+}
+
+# Backtracking linesearch to satisfy Armijo condition
+#
+# Inputs:
+#   x: starting location
+#   t: initial step size
+#   d: descent direction
+#   f: function value at starting location
+#   gtd: directional derivative at starting location
+#   c1: sufficient decrease parameter
+#   debug: display debugging information
+#   LS_interp: type of interpolation
+#   progTol: minimum allowable step length
+#   doPlot: do a graphical display of interpolation
+#   funObj: objective function
+#   varargin: parameters of objective function
+#
+# For the Armijo line-search, several interpolation strategies are available
+# ('LS_interp'):
+#   - 0 : Step size halving
+#   - 1 : Polynomial interpolation using new function values
+#   - 2 : Polynomial interpolation using new function and gradient values (default)
+#
+# When (LS_interp = 1), the default setting of (LS_multi = 0) uses quadratic
+# interpolation, while if (LS_multi = 1) it uses cubic interpolation if more
+# than one point are available.
+#
+# When (LS_interp = 2), the default setting of (LS_multi = 0) uses cubic interpolation,
+# while if (LS_multi = 1) it uses quartic or quintic interpolation if more than
+# one point are available
+#
+# Outputs:
+#   t: step length
+#   f_new: function value at x+t*d
+#   g_new: gradient value at x+t*d
+#   funEvals: number function evaluations performed by line search
+#
+# recet change: LS changed to LS_interp and LS_multi
+
+ArmijoBacktrack <-
+  function(step, f, g, gtd,
+           c1 = 1e-4,
+           LS_interp = 2, LS_multi = 0, maxLS = Inf,
+           step_down = 0.5,
+           funObj,
+           varargin = NULL,
+           pnorm_inf,
+           progTol = 1e-9, debug = FALSE)
+  {
+    # Evaluate the Objective and Gradient at the Initial Step
+
+    f_prev <- NA
+    t_prev <- NA
+    g_prev <- NA
+    gtd_prev <- NA
+
+    fun_obj_res <- funObj(step)
+    f_new <- fun_obj_res$f
+    g_new <- fun_obj_res$df
+    gtd_new <- fun_obj_res$d
+
+    funEvals <- 1
+
+    while (funEvals < maxLS && (f_new > f + c1 * step * gtd || !is.finite(f_new))) {
+      temp <- step
+      if (LS_interp == 0 || !is.finite(f_new)) {
+        # Ignore value of new point
+        if (debug) {
+          message('Fixed BT')
+        }
+        step <- step_down * step
+      }
+      else if (LS_interp == 1 || !is.finite(g_new)) {
+        # Use function value at new point, but not its derivative
+        if (funEvals < 2 || LS_multi == 0 || !is.finite(f_prev)) {
+          # Backtracking w/ quadratic interpolation based on two points
+          if (debug) {
+            message('Quad BT')
+          }
+          step <- polyinterp(point_matrix(c(0, step), c(f, f_new), c(gtd, NA)),
+                             0, step)
+        }
+        else {
+          # Backtracking w/ cubic interpolation based on three points
+          if (debug) {
+            message('Cubic BT')
+          }
+          step <-
+            polyinterp(point_matrix(
+              c(0, step, t_prev), c(f, f_new, f_prev), c(gtd, NA, NA)),
+              0, step)
+        }
+      }
+      else {
+        # Use function value and derivative at new point
+        if (funEvals < 2 || LS_multi == 0 || !is.finite(f_prev)) {
+          # Backtracking w/ cubic interpolation w/ derivative
+          if (debug) {
+            message('Grad-Cubic BT')
+          }
+          step <- polyinterp(
+            point_matrix(c(0, step), c(f, f_new), c(gtd, gtd_new)),
+            0, step)
+        }
+        else if (!is.finite(g_prev)) {
+          # Backtracking w/ quartic interpolation 3 points and derivative
+          # of two
+          if (debug) {
+            message('Grad-Quartic BT')
+          }
+
+          step <- polyinterp(point_matrix(
+            c(0, step, t_prev), c(f, f_new, f_prev), c(gtd, gtd_new, NA)),
+            0, step)
+        }
+        else {
+          # Backtracking w/ quintic interpolation of 3 points and derivative
+          # of three
+          if (debug) {
+            message('Grad-Quintic BT')
+          }
+
+          step <- polyinterp(point_matrix(
+            c(0, step, t_prev),
+            c(f, f_new, f_prev),
+            c(gtd, gtd_new, gtd_prev)),
+            0, step)
+        }
+      }
 
 
+      if (!is_finite_numeric(step)) {
+        step <- temp * 0.6
+      }
+      # Adjust if change in step is too small/large
+      if (step < temp * 1e-3) {
+        if (debug) {
+          message('Interpolated Value Too Small, Adjusting')
+        }
+        step <- temp * 1e-3
+
+      } else if (step > temp * 0.6) {
+        if (debug) {
+          message('Interpolated Value Too Large, Adjusting')
+        }
+        step <- temp * 0.6
+      }
+
+      # Store old point if doing three-point interpolation
+      if (LS_multi) {
+        f_prev <- f_new
+        t_prev <- temp
+
+        if (LS_interp == 2) {
+          g_prev <- g_new
+          gtd_prev <- gtd_new
+        }
+      }
+
+      fun_obj_res <- funObj(step)
+      f_new <- fun_obj_res$f
+      g_new <- fun_obj_res$df
+      gtd_new <- fun_obj_res$d
+
+      funEvals <- funEvals + 1
+
+      # Check whether step size has become too small
+      if (pnorm_inf * step <= progTol) {
+        if (debug) {
+          message('Backtracking Line Search Failed')
+        }
+        step <- 0
+        f_new <- f
+        g_new <- g
+        gtd_new <- gtd
+        break
+      }
+    }
+
+    list(
+      step = list(alpha = step, f = f_new, df = g_new, d = gtd_new),
+      nfn = funEvals
+    )
+  }
+
+mixedExtrap_step <- function(step0, step1, minStep, maxStep, debug) {
+  mixedExtrap(step0$alpha, step0$f, step0$d, step1$alpha, step1$f, step1$d,
+              minStep, maxStep, debug)
+}
+
+mixedExtrap <- function(x0, f0, g0, x1, f1, g1, minStep, maxStep, debug) {
+  alpha_c <- polyinterp(point_matrix(c(x0, x1), c(f0, f1), c(g0, g1)),
+                        minStep, maxStep, debug = debug)
+  alpha_s <- polyinterp(point_matrix(c(x0, x1), c(f0, NA), c(g0, g1)),
+                        minStep, maxStep, debug = debug)
+  if (debug) {
+    message("cubic ext = ", formatC(alpha_c), " secant ext = ", formatC(alpha_s),
+            " minStep = ", formatC(minStep),
+            " alpha_c > minStep ? ", alpha_c > minStep,
+            " |ac - x1| = ", formatC(abs(alpha_c - x1)),
+            " |as - x1| = ", formatC( abs(alpha_s - x1))
+    )
+  }
+  if (alpha_c > minStep && abs(alpha_c - x1) < abs(alpha_s - x1)) {
+    if (debug) {
+      message('Cubic Extrapolation ', formatC(alpha_c))
+    }
+    res <- alpha_c
+  }
+  else {
+    if (debug) {
+      message('Secant Extrapolation ', formatC(alpha_s))
+    }
+    res <- alpha_s
+  }
+  res
+}
+
+mixedInterp_step <- function(bracket_step,
+                        Tpos,
+                        oldLO,
+                        debug) {
+
+  bracket <- c(bracket_step[[1]]$alpha, bracket_step[[2]]$alpha)
+  bracketFval <- c(bracket_step[[1]]$f, bracket_step[[2]]$f)
+  bracketDval <- c(bracket_step[[1]]$d, bracket_step[[2]]$d)
+
+  mixedInterp(bracket, bracketFval, bracketDval, Tpos,
+              oldLO$alpha, oldLO$f, oldLO$d, debug)
+}
+
+mixedInterp <- function(
+  bracket, bracketFval, bracketDval,
+  Tpos,
+  oldLOval, oldLOFval, oldLODval,
+  debug) {
+
+  # Mixed Case
+  nonTpos <- -Tpos + 3
+
+
+    gtdT <- bracketDval[Tpos]
+    gtdNonT <- bracketDval[nonTpos]
+    oldLOgtd <- oldLODval
+    if (bracketFval[Tpos] > oldLOFval) {
+      alpha_c <- polyinterp(point_matrix(
+        c(oldLOval, bracket[Tpos]),
+        c(oldLOFval, bracketFval[Tpos]),
+        c(oldLOgtd, gtdT)))
+      alpha_q <- polyinterp(point_matrix(
+        c(oldLOval, bracket[Tpos]),
+        c(oldLOFval, bracketFval[Tpos]),
+        c(oldLOgtd, NA)))
+      if (abs(alpha_c - oldLOval) < abs(alpha_q - oldLOval)) {
+        if (debug) {
+          message('Cubic Interpolation')
+        }
+        res <- alpha_c
+      }
+      else {
+        if (debug) {
+          message('Mixed Quad/Cubic Interpolation')
+        }
+        res <- (alpha_q + alpha_c) / 2
+      }
+    }
+    else if (dot(gtdT, oldLOgtd) < 0) {
+      alpha_c <- polyinterp(point_matrix(
+        c(oldLOval, bracket[Tpos]),
+        c(oldLOFval, bracketFval[Tpos]),
+        c(oldLOgtd, gtdT)))
+      alpha_s <- polyinterp(point_matrix(
+        c(oldLOval, bracket[Tpos]),
+        c(oldLOFval, NA),
+        c(oldLOgtd, gtdT)))
+      if (abs(alpha_c - bracket[Tpos]) >= abs(alpha_s - bracket[Tpos])) {
+        if (debug) {
+          message('Cubic Interpolation')
+        }
+        res <- alpha_c
+      }
+      else {
+        if (debug) {
+          message('Quad Interpolation')
+        }
+        res <- alpha_s
+      }
+    }
+    else if (abs(gtdT) <= abs(oldLOgtd)) {
+      alpha_c <- polyinterp(point_matrix(
+        c(oldLOval, bracket[Tpos]),
+        c(oldLOFval, bracketFval[Tpos]),
+        c(oldLOgtd, gtdT)), min(bracket), max(bracket))
+      alpha_s <- polyinterp(point_matrix(
+        c(oldLOval, bracket[Tpos]),
+        c(NA, bracketFval[Tpos]),
+        c(oldLOgtd, gtdT)), min(bracket), max(bracket))
+
+      if (alpha_c > min(bracket) && alpha_c < max(bracket)) {
+        if (abs(alpha_c - bracket[Tpos]) < abs(alpha_s - bracket[Tpos])) {
+          if (debug) {
+            message('Bounded Cubic Extrapolation')
+          }
+          res <- alpha_c
+        }
+        else {
+          if (debug) {
+            message('Bounded Secant Extrapolation')
+          }
+          res <- alpha_s
+        }
+      }
+      else {
+        if (debug) {
+          message('Bounded Secant Extrapolation')
+        }
+        res <- alpha_s
+      }
+
+      if (bracket[Tpos] > oldLOval) {
+        res <- min(bracket[Tpos] + 0.66 * (bracket[nonTpos] - bracket[Tpos]),
+                   res)
+      }
+      else {
+        res <- max(bracket[Tpos] + 0.66 * (bracket[nonTpos] - bracket[Tpos]),
+                   res)
+      }
+    }
+    else {
+      res <- polyinterp(point_matrix(
+        c(bracket[nonTpos], bracket[Tpos]),
+        c(bracketFval[nonTpos], bracketFval[Tpos]),
+        c(gtdNonT, gtdT)))
+    }
+    res
+  }
+
+# function [minPos] <- polyinterp(points,doPlot,xminBound,xmaxBound)
+#
+#   Minimum of interpolating polynomial based on function and derivative
+#   values
+#
+#   It can also be used for extrapolation if {xmin,xmax} are outside
+#   the domain of the points.
+#
+#   Input:
+#       points(pointNum,[x f g])
+#       xmin: min value that brackets minimum (default: min of points)
+#       xmax: max value that brackets maximum (default: max of points)
+#
+#   set f or g to sqrt(-1) if they are not known
+#   the order of the polynomial is the number of known f and g values minus 1
+# points position, function and gradient values to interpolate.
+# An n x 3 matrix where n is the number of points and each row contains
+# x, f, g in columns 1-3 respectively.
+# @return minPos
+polyinterp <- function(points,
+                       xminBound = range(points[, 1])[1],
+                       xmaxBound = range(points[, 1])[2],
+                       debug = FALSE) {
+
+  # the number of known f and g values minus 1
+  order <- sum(!is.na(points[, 2:3])) - 1
+
+  # Code for most common case:
+  #   - cubic interpolation of 2 points
+  #       w/ function and derivative values for both
+  if (nrow(points) == 2 && order == 3) {
+    if (debug) {
+      message("polyinterp common case")
+    }
+    # Solution in this case (where x2 is the farthest point):
+    #    d1 <- g1 + g2 - 3*(f1-f2)/(x1-x2);
+    #    d2 <- sqrt(d1^2 - g1*g2);
+    #    minPos <- x2 - (x2 - x1)*((g2 + d2 - d1)/(g2 - g1 + 2*d2));
+    #    t_new <- min(max(minPos,x1),x2);
+    minPos <- which.min(points[, 1])
+    notMinPos <- -minPos + 3
+
+    x1 <- points[minPos, 1]
+    x2 <- points[notMinPos, 1]
+    f1 <- points[minPos, 2]
+    f2 <- points[notMinPos, 2]
+    g1 <- points[minPos, 3]
+    g2 <- points[notMinPos, 3]
+
+    if (x1 - x2 == 0) {
+      return(x1)
+    }
+
+    d1 <- g1 + g2 - 3 * (f1 - f2) / (x1 - x2)
+    d2sq <- d1 ^ 2 - g1 * g2
+
+    if (is_finite_numeric(d2sq) && d2sq >= 0) {
+      d2 <- sqrt(d2sq)
+
+      x <- x2 - (x2 - x1) * ((g2 + d2 - d1) / (g2 - g1 + 2 * d2))
+      if (debug) { message("d2 is real ", formatC(d2), " x = ", formatC(x)) }
+
+      minPos <- min(max(x, xminBound), xmaxBound)
+    }
+    else {
+      if (debug) { message("d2 is not real, bisecting") }
+
+      minPos <- (xmaxBound + xminBound) / 2
+    }
+
+    return(minPos)
+  }
+
+  params <- polyfit(points)
+  # If polynomial couldn't be found (due to singular matrix), bisect
+  if (is.null(params)) {
+    return((xminBound + xmaxBound) / 2)
+  }
+
+  # Compute Critical Points
+  dParams <- rep(0, order)
+  for (i in 1:order) {
+    dParams[i] <- params[i + 1] * i
+  }
+
+  cp <- unique(c(xminBound, points[, 1], xmaxBound))
+
+  # Remove mad, bad and dangerous to know critical points:
+  # Must be finite, non-complex and not an extrapolation
+  if (all(is.finite(dParams))) {
+    cp <- c(cp,
+            Re(Filter(
+              function(x) {
+                abs(Im(x)) < 1e-8 &&
+                  Re(x) >= xminBound &&
+                  Re(x) <= xmaxBound },
+              polyroot(dParams))))
+  }
+
+  # Test Critical Points
+  fcp <- polyval(cp, params)
+  fminpos <- which.min(fcp)
+  if (is.finite(fcp[fminpos])) {
+    minpos <- cp[fminpos]
+  }
+  else {
+    # Default to bisection if no critical points valid
+    minpos <- (xminBound + xmaxBound) / 2
+  }
+  minpos
+}
+
+# Fits a polynomial to the known function and gradient values. The order of
+# the polynomial is the number of known function and gradient values, minus one.
+# points - an n x 3 matrix where n is the number of points and each row contains
+#          x, f, g in columns 1-3 respectively.
+# returns an array containing the coefficients of the polynomial in increasing
+# order, e.g. c(1, 2, 3) is the polynomial 1 + 2x + 3x^2
+# Returns NULL if the solution is singular
+polyfit <- function(points) {
+  nPoints <- nrow(points)
+  # the number of known f and g values minus 1
+  order <- sum(!is.na(points[, 2:3])) - 1
+
+  # Constraints Based on available Function Values
+  A <- NULL
+  b <- NULL
+  for (i in 1:nPoints) {
+    if (!is.na(points[i, 2])) {
+      constraint <- rep(0, order + 1)
+      for (j in rev(0:order)) {
+        constraint[order - j + 1] <- points[i, 1] ^ j
+      }
+      if (is.null(A)) {
+        A <- constraint
+      }
+      else {
+        A <- rbind(A, constraint)
+      }
+      if (is.null(b)) {
+        b <- points[i, 2]
+      }
+      else {
+        b <- c(b, points[i, 2])
+      }
+    }
+  }
+
+  # Constraints based on available Derivatives
+  for (i in 1:nPoints) {
+    if (!is.na(points[i, 3])) {
+      constraint <- rep(0, order + 1)
+      for (j in 1:order) {
+        constraint[j] <- (order - j + 1) * points[i, 1] ^ (order - j)
+      }
+      if (is.null(A)) {
+        A <- constraint
+      }
+      else {
+        A <- rbind(A, constraint)
+      }
+      if (is.null(b)) {
+        b <- points[i, 3]
+      }
+      else {
+        b <- c(b, points[i, 3])
+      }
+    }
+  }
+  # Find interpolating polynomial
+  params <- try(solve(A, b), silent = TRUE)
+  if (class(params) == "numeric") {
+    params <- rev(params)
+  }
+  else {
+    params <- NULL
+  }
+}
+
+# Evaluate 1D polynomial with coefs over the set of points x
+# coefs - the coefficients for the terms of the polynomial ordered by
+#   increasing degree, i.e. c(1, 2, 3, 4) represents the polynomial
+#   4x^3 + 3x^2 + 2x + 1. This is the reverse of the ordering used by the Matlab
+#   function, but is consistent with R functions like poly and polyroot
+#   Also, the order of the arguments is reversed from the Matlab function
+# Returns array of values of the evaluated polynomial
+polyval <- function(x, coefs) {
+  deg <- length(coefs) - 1
+  # Sweep multiplies each column of the poly matrix by the coefficient
+  rowSums(sweep(stats::poly(x, degree = deg, raw = TRUE),
+                2, coefs[2:length(coefs)], `*`)) + coefs[1]
+}
+
+point_matrix <- function(xs, fs, gs) {
+  matrix(c(xs, fs, gs), ncol = 3)
+}
+
+point_matrix_step <- function(step1, step2) {
+  point_matrix(c(step1$alpha, step2$alpha), c(step1$f, step2$f),
+               c(step1$d, step2$d))
+}
 
 # Step Size ---------------------------------------------------------------
 
@@ -5357,6 +7127,11 @@ sqnorm2 <- function(v) {
   dot(v, v)
 }
 
+# l1 norm of a vector
+norm1 <- function(v) {
+  sum(abs(v))
+}
+
 # l2 (Euclidean) norm of a vector
 norm2 <- function(v) {
   sqrt(dot(v, v))
@@ -5554,7 +7329,7 @@ attr(require_save_cache_on_failure, 'event') <- 'after step'
 
 # More-Thuente ------------------------------------------------------------
 more_thuente_ls <- function(c1 = c2 / 2, c2 = 0.1,
-                            max_alpha_mult = 10,
+                            max_alpha_mult = Inf,
                             min_step_size = .Machine$double.eps,
                             initializer = "s",
                             initial_step_length = 1,
@@ -5563,6 +7338,8 @@ more_thuente_ls <- function(c1 = c2 / 2, c2 = 0.1,
                             max_fn = Inf,
                             max_gr = Inf,
                             max_fg = Inf,
+                            approx_armijo = FALSE,
+                            strong_curvature = TRUE,
                             debug = FALSE) {
   if (!is_in_range(c1, 0, 1, lopen = FALSE, ropen = FALSE)) {
     stop("c1 must be between 0 and 1")
@@ -5573,7 +7350,9 @@ more_thuente_ls <- function(c1 = c2 / 2, c2 = 0.1,
   max_ls_fn <- min(max_fn, max_gr, floor(max_fg / 2))
 
   line_search(more_thuente(c1 = c1, c2 = c2,
-                           max_fn = max_ls_fn),
+                           max_fn = max_ls_fn,
+                           strong_curvature = strong_curvature,
+                           approx_armijo = approx_armijo),
               name = "more-thuente",
               max_alpha_mult = max_alpha_mult,
               min_step_size = min_step_size, stop_at_min = stop_at_min,
@@ -5587,7 +7366,7 @@ more_thuente_ls <- function(c1 = c2 / 2, c2 = 0.1,
 # Rasmussen ---------------------------------------------------------------
 
 rasmussen_ls <- function(c1 = c2 / 2, c2 = 0.1, int = 0.1, ext = 3.0,
-                         max_alpha_mult = 10,
+                         max_alpha_mult = Inf,
                          min_step_size = .Machine$double.eps,
                          initializer = "s",
                          initial_step_length = 1,
@@ -5596,6 +7375,8 @@ rasmussen_ls <- function(c1 = c2 / 2, c2 = 0.1, int = 0.1, ext = 3.0,
                          max_fn = Inf,
                          max_gr = Inf,
                          max_fg = Inf,
+                         strong_curvature = TRUE,
+                         approx_armijo = FALSE,
                          debug = FALSE) {
   if (!is_in_range(c1, 0, 1, lopen = FALSE, ropen = FALSE)) {
     stop("c1 must be between 0 and 1")
@@ -5607,7 +7388,9 @@ rasmussen_ls <- function(c1 = c2 / 2, c2 = 0.1, int = 0.1, ext = 3.0,
   max_ls_fn <- min(max_fn, max_gr, floor(max_fg / 2))
 
   line_search(rasmussen(c1 = c1, c2 = c2, int = int, ext = ext,
-                        max_fn = max_ls_fn),
+                        max_fn = max_ls_fn,
+                        strong_curvature = strong_curvature,
+                        approx_armijo = approx_armijo),
               name = "rasmussen",
               max_alpha_mult = max_alpha_mult,
               min_step_size = min_step_size, stop_at_min = stop_at_min,
@@ -5619,23 +7402,142 @@ rasmussen_ls <- function(c1 = c2 / 2, c2 = 0.1, int = 0.1, ext = 3.0,
 }
 
 
+# Schmidt (minfunc) -------------------------------------------------------
+
+schmidt_ls <- function(c1 = c2 / 2, c2 = 0.1,
+                         max_alpha_mult = Inf,
+                         min_step_size = .Machine$double.eps,
+                         initializer = "s",
+                         initial_step_length = "schmidt",
+                         try_newton_step = FALSE,
+                         stop_at_min = TRUE, eps = .Machine$double.eps,
+                         max_fn = Inf,
+                         max_gr = Inf,
+                         max_fg = Inf,
+                         strong_curvature = TRUE,
+                         approx_armijo = FALSE,
+                         debug = FALSE) {
+  if (!is_in_range(c1, 0, 1, lopen = FALSE, ropen = FALSE)) {
+    stop("c1 must be between 0 and 1")
+  }
+  if (!is.null(c2) && !is_in_range(c2, c1, 1, lopen = FALSE, ropen = FALSE)) {
+    stop("c2 must be between c1 and 1")
+  }
+
+  max_ls_fn <- min(max_fn, max_gr, floor(max_fg / 2))
+
+  line_search(schmidt(c1 = c1, c2 = c2, max_fn = max_ls_fn,
+                      strong_curvature = strong_curvature,
+                      approx_armijo = approx_armijo),
+              name = "schmidt",
+              max_alpha_mult = max_alpha_mult,
+              min_step_size = min_step_size, stop_at_min = stop_at_min,
+              initializer = initializer,
+              initial_step_length = initial_step_length,
+              try_newton_step = try_newton_step,
+              eps = eps,
+              debug = debug)
+}
+
+
+schmidt_armijo_ls <- function(c1 = 0.005,
+                       max_alpha_mult = Inf,
+                       min_step_size = .Machine$double.eps,
+                       initializer = "s",
+                       initial_step_length = "schmidt",
+                       try_newton_step = FALSE,
+                       step_down = NULL,
+                       stop_at_min = TRUE, eps = .Machine$double.eps,
+                       max_fn = Inf,
+                       max_gr = Inf,
+                       max_fg = Inf,
+                       debug = FALSE) {
+  if (!is_in_range(c1, 0, 1, lopen = FALSE, ropen = FALSE)) {
+    stop("c1 must be between 0 and 1")
+  }
+
+  max_ls_fn <- min(max_fn, max_gr, floor(max_fg / 2))
+
+  line_search(schmidt_armijo_backtrack(c1 = c1, max_fn = max_ls_fn,
+                                       step_down = step_down),
+              name = "schmidt_armijo",
+              max_alpha_mult = max_alpha_mult,
+              min_step_size = min_step_size, stop_at_min = stop_at_min,
+              initializer = initializer,
+              initial_step_length = initial_step_length,
+              try_newton_step = try_newton_step,
+              eps = eps,
+              debug = debug)
+}
+
+
+# Hager-Zhang -------------------------------------------------------------
+
+hager_zhang_ls <- function(c1 = c2 / 2, c2 = 0.1,
+                           max_alpha_mult = Inf,
+                           min_step_size = .Machine$double.eps,
+                           initializer = "hz",
+                           initial_step_length = "hz",
+                           try_newton_step = FALSE,
+                           stop_at_min = TRUE, eps = .Machine$double.eps,
+                           max_fn = Inf,
+                           max_gr = Inf,
+                           max_fg = Inf,
+                           strong_curvature = FALSE,
+                           approx_armijo = TRUE,
+                           debug = FALSE) {
+  if (!is_in_range(c1, 0, 1, lopen = FALSE, ropen = FALSE)) {
+    stop("c1 must be between 0 and 1")
+  }
+  if (!is.null(c2) && !is_in_range(c2, c1, 1, lopen = FALSE, ropen = FALSE)) {
+    stop("c2 must be between c1 and 1")
+  }
+
+  max_ls_fn <- min(max_fn, max_gr, floor(max_fg / 2))
+
+  line_search(hager_zhang(c1 = c1, c2 = c2, max_fn = max_ls_fn,
+                          strong_curvature = strong_curvature,
+                          approx_armijo = approx_armijo),
+              name = "hager-zhang",
+              max_alpha_mult = max_alpha_mult,
+              min_step_size = min_step_size, stop_at_min = stop_at_min,
+              initializer = initializer,
+              initial_step_length = initial_step_length,
+              try_newton_step = try_newton_step,
+              eps = eps,
+              debug = debug)
+
+}
+
 # Line Search -------------------------------------------------------------
 
 line_search <- function(ls_fn,
                         name,
-                        initializer = c("slope ratio", "quadratic"),
+                        initializer = "slope ratio",
                         try_newton_step = FALSE,
                         initial_step_length = 1,
-                        max_alpha_mult = 10,
+                        max_alpha_mult = Inf,
                         min_step_size = .Machine$double.eps,
                         stop_at_min = TRUE,
                         debug = FALSE,
                         eps = .Machine$double.eps) {
 
-  initializer <- match.arg(initializer)
+  initializer <- match.arg(tolower(initializer),
+                           c("slope ratio", "quadratic", "hz", "hager-zhang"))
+  if (initializer == "hager-zhang") {
+    initializer <- "hz"
+  }
+
   if (!is.numeric(initial_step_length)) {
-    initial_step_length <- match.arg(tolower(initial_step_length),
-                                     c("rasmussen", "scipy", "schmidt"))
+    initializer0 <- match.arg(tolower(initial_step_length),
+                                     c("rasmussen", "scipy", "schmidt",
+                                       "hz", "hager-zhang"))
+    if (initializer0 == "hager-zhang") {
+      initializer0 <- "hz"
+    }
+  }
+  else {
+    initializer0 <- initial_step_length
   }
 
   make_step_size(list(
@@ -5647,7 +7549,7 @@ line_search <- function(ls_fn,
       if (!is_first_stage(opt, stage)) {
         # Requires knowing f at the current location
         # If this step size is part of any stage other than the first
-        # we have to turn eager updating
+        # we have to turn on eager updating
         #message("Wolfe: setting stage updating to eager")
         opt$eager_update <- TRUE
       }
@@ -5656,7 +7558,7 @@ line_search <- function(ls_fn,
     calculate = function(opt, stage, sub_stage, par, fg, iter) {
 
       pm <- stage$direction$value
-      if (norm2(pm) < sqrt(sub_stage$eps)) {
+      if (norm2(pm) < .Machine$double.eps) {
         sub_stage$value <- 0
         if (is_last_stage(opt, stage)) {
           opt <- set_fn_new(opt, opt$cache$fn_curr, iter)
@@ -5681,7 +7583,7 @@ line_search <- function(ls_fn,
         d = dot(opt$cache$gr_curr, pm)
       )
 
-      old_step_length <- sub_stage$value
+      alpha_prev <- sub_stage$value
 
       phi_alpha <- make_phi_alpha(par, fg, pm,
                                   calc_gradient_default = TRUE, debug = debug)
@@ -5689,18 +7591,27 @@ line_search <- function(ls_fn,
 
       # described on p59 of Nocedal and Wright
       if (initializer == "slope ratio" && !is.null(sub_stage$d0)) {
-        sub_stage$value <- step_slope_ratio(old_step_length, sub_stage$d0,
+        sub_stage$value <- step_next_slope_ratio(alpha_prev, sub_stage$d0,
                                             step0, eps, max_alpha_mult)
       }
       else if (initializer == "quadratic" && !is.null(sub_stage$f0)) {
         # quadratic interpolation
-        sub_stage$value <- step_quad_interp(sub_stage$f0, step0,
+        sub_stage$value <- step_next_quad_interp(sub_stage$f0, step0,
                                             try_newton_step = try_newton_step)
+      }
+      else if (initializer == "hz" && !is.null(alpha_prev)) {
+        step_next_res <- step_next_hz(phi_alpha, alpha_prev, step0)
+        sub_stage$value <- step_next_res$alpha
+        opt$counts$fn <- opt$counts$fn + step_next_res$fn
       }
 
       if (is.null(sub_stage$value) || sub_stage$value <= 0) {
-        sub_stage$value <- make_step_zero(initial_step_length, step0$d,
-                                          try_newton_step)
+        sub_stage$value <- guess_alpha0(initializer0,
+                                        par,
+                                        step0$f,
+                                        step0$df,
+                                        step0$d,
+                                        try_newton_step)
       }
 
       sub_stage$alpha0 <- sub_stage$value
@@ -5719,6 +7630,7 @@ line_search <- function(ls_fn,
       if (!is.null(opt$convergence$max_fg) && is.finite(opt$convergence$max_fg)) {
         max_fg <- opt$convergence$max_fg - (opt$counts$fn + opt$counts$gr)
       }
+
       if (max_fn <= 0 || max_gr <= 0 || max_fg <= 0) {
         sub_stage$value <- 0
         if (is_last_stage(opt, stage)) {
@@ -5729,9 +7641,8 @@ line_search <- function(ls_fn,
       else {
         ls_result <- ls_fn(phi_alpha, step0, sub_stage$value,
                            total_max_fn = max_fn, total_max_gr = max_gr,
-                           total_max_fg = max_fg)
+                           total_max_fg = max_fg, pm = pm)
         sub_stage$value <- ls_result$step$alpha
-
         opt$counts$fn <- opt$counts$fn + ls_result$nfn
         opt$counts$gr <- opt$counts$gr + ls_result$ngr
 
@@ -5764,37 +7675,8 @@ line_search <- function(ls_fn,
   ))
 }
 
-# Set the initial step length. If initial_step_length is a numeric scalar,
-# then use that as-is. Otherwise, use one of several variations based around
-# the only thing we know (the directional derivative)
-make_step_zero <- function(initial_step_length, d0,
-                           try_newton_step = FALSE) {
-  if (is.numeric(initial_step_length)) {
-    return(initial_step_length)
-  }
-
-  s <- switch(initial_step_length,
-    # Rasmussen default from minimize.m
-    rasmussen =  1 / (1 - d0),
-    # found in _minimize_bfgs in optimize.py with this comment:
-    # # Sets the initial step guess to dx ~ 1
-    # actually sets f_old to f0 + 0.5 * ||g||2 then uses f_old in the quadratic
-    # update formula. If you do the algebra, you get 1 / sqrt(-d)
-    # (2 norm of g is sqrt(d) when starting with steepest descent)
-    scipy = 1 / sqrt(-d0),
-    # Mark Schmidt's minFunc.m uses reciprocal of the one-norm
-    schmidt = 1 / sum(abs(d0))
-  )
-
-  if (try_newton_step) {
-    s <- min(1, 1.01 * s)
-  }
-  s
-}
-
-
 make_phi_alpha <- function(par, fg, pm,
-                            calc_gradient_default = FALSE, debug = FALSE) {
+                           calc_gradient_default = FALSE, debug = FALSE) {
   # LS functions are responsible for updating fn and gr count
   function(alpha, calc_gradient = calc_gradient_default) {
     y_alpha <- par + (alpha * pm)
@@ -5825,6 +7707,8 @@ make_phi_alpha <- function(par, fg, pm,
       }
     }
 
+    step$par <- y_alpha
+
     if (debug) {
       message(format_list(step))
     }
@@ -5832,26 +7716,161 @@ make_phi_alpha <- function(par, fg, pm,
   }
 }
 
-# described on p59 of Nocedal and Wright
-# slope ratio method
-step_slope_ratio <- function(old_step_length, d0, step0, eps, max_alpha_mult) {
-  # NB the p vector must be a descent direction or the directional
-  # derivative will be positive => a negative initial step size!
-  slope_ratio <- d0 / (step0$d + eps)
-  s <- old_step_length * min(max_alpha_mult, slope_ratio)
-  max(s, eps)
+# Ensure Valid Step Size
+#
+# Given an initial step size, if either the function value or the directional
+# derivative is non-finite (NaN or infinite), reduce the step size until
+# finite values are found.
+#
+# @param phi Line function.
+# @param alpha Initial step size.
+# @param min_alpha Minimum step size.
+# @param max_fn Maximum number of function evaluations allowed.
+# @return List containing:
+# \itemize{
+#   \item step Valid step size or the last step size evaluated, or NULL if
+#     max_fn == 0.
+#   \item nfn Number of function evaluations.
+#   \item ok If a valid step was found
+# }
+find_finite <- function(phi, alpha, min_alpha = 0, max_fn = 20) {
+  nfn <- 0
+  ok <- FALSE
+  step <- NULL
+  while (nfn < max_fn && alpha >= min_alpha) {
+    step <- phi(alpha)
+    nfn <- nfn + 1
+    if (step_is_finite(step)) {
+      ok <- TRUE
+      break
+    }
+    alpha <- (min_alpha + alpha) / 2
+  }
+  list(step = step, nfn = nfn, ok = ok)
 }
 
-# quadratic interpolation
-step_quad_interp <- function(f0, step0, try_newton_step = FALSE) {
-  s <- 2  * (step0$f - f0) / step0$d
+step_is_finite <- function(step) {
+  is.finite(step$f) && is.finite(step$df)
+}
+
+
+# Initial Step Length -----------------------------------------------------
+
+# Set the initial step length. If initial_step_length is a numeric scalar,
+# then use that as-is. Otherwise, use one of several variations based around
+# the only thing we know (the directional derivative)
+guess_alpha0 <- function(guess_type, x0, f0, gr0, d0,
+                           try_newton_step = FALSE) {
+  if (is.numeric(guess_type)) {
+    return(guess_type)
+  }
+
+  s <- switch(guess_type,
+    rasmussen = step0_rasmussen(d0),
+    scipy = step0_scipy(gr0, d0),
+    schmidt = step0_schmidt(gr0),
+    hz = step0_hz(x0, f0, gr0, psi0 = 0.01)
+  )
+
   if (try_newton_step) {
     s <- min(1, 1.01 * s)
   }
   s
 }
 
+# From minimize.m
+step0_rasmussen <- function(d0) {
+  1 / (1 - d0)
+}
 
+# found in _minimize_bfgs in optimize.py with this comment:
+# # Sets the initial step guess to dx ~ 1
+# actually sets f_old to f0 + 0.5 * ||g||2 then uses f_old in the quadratic
+# update formula. If you do the algebra,  you get -||g||2 / d
+# Assuming steepest descent for step0, this can be simplified further to
+# 1 / sqrt(-d0), but may as well not assume that
+step0_scipy <- function(gr0, d0) {
+  -norm2(gr0) / d0
+}
+
+# Mark Schmidt's minFunc.m uses reciprocal of the one-norm
+step0_schmidt <- function(gr0) {
+  1 / norm1(gr0)
+}
+
+# I0 in the 'initial' routine in CG_DESCENT paper
+step0_hz <- function(x0, f0, gr0, psi0 = 0.01) {
+  alpha <- 1
+  if (is.null(x0)) {
+    return(alpha)
+  }
+  ginf_norm <- norm_inf(gr0)
+  if (ginf_norm != 0) {
+    xinf_norm <- norm_inf(x0)
+    if (xinf_norm != 0) {
+      alpha <- psi0 * (xinf_norm / ginf_norm)
+    }
+    else if (is_finite_numeric(f0) && f0 != 0) {
+      g2_norm2 <- sqnorm2(gr0)
+      if (is_finite_numeric(g2_norm2) && g2_norm2 != 0) {
+        alpha <- psi0 * (abs(f0) / ginf_norm ^ 2)
+      }
+    }
+  }
+  alpha
+}
+
+# Next Step Length --------------------------------------------------------
+
+# described on p59 of Nocedal and Wright
+# slope ratio method
+step_next_slope_ratio <- function(alpha_prev, d0_prev, step0, eps,
+                                  max_alpha_mult) {
+  # NB the p vector must be a descent direction or the directional
+  # derivative will be positive => a negative initial step size!
+  slope_ratio <- d0_prev / (step0$d + eps)
+  s <- alpha_prev * min(max_alpha_mult, slope_ratio)
+  max(s, eps)
+}
+
+# quadratic interpolation
+step_next_quad_interp <- function(f0_prev, step0, try_newton_step = FALSE) {
+  s <- 2  * (step0$f - f0_prev) / step0$d
+  if (try_newton_step) {
+    s <- min(1, 1.01 * s)
+  }
+  s
+  max(.Machine$double.eps, s)
+}
+
+# steps I1-2 in the routine 'initial' of the CG_DESCENT paper
+step_next_hz <- function(phi, alpha_prev, step0, psi1 = 0.1, psi2 = 2) {
+  if (alpha_prev < .Machine$double.eps) {
+    return(list(alpha = .Machine$double.eps, fn = 0))
+  }
+
+  # I2: use if QuadStep fails
+  alpha <- alpha_prev * psi2
+  nfn <- 0
+  # I1: QuadStep
+  # If function is reduced at the initial guess, carry out a quadratic
+  # interpolation. If the resulting quadratic is strongly convex, use the
+  # minimizer of the quadratic. Otherwise, use I2.
+  step_psi <- phi(alpha_prev * psi1, calc_gradient = FALSE)
+  nfn <- 1
+  if (step_psi$f <= step0$f) {
+    alpha_q <- quadratic_interpolate_step(step0, step_psi)
+    # A 1D quadratic Ax^2 + Bx + C is strongly convex if A > 0. Second clause in
+    # if statement is A expressed in terms of the minimizer (this is easy to
+    # derive by looking at Nocedal & Wright 2nd Edition, equations 3.57 and
+    # 3.58)
+    if (alpha_q > 0 && -step0$d / (2 * alpha_q) > 0) {
+      alpha <- alpha_q
+    }
+  }
+  alpha <- max(.Machine$double.eps, alpha)
+  list(alpha = alpha, fn = nfn)
+}
 
 # Line Search Checks -------------------------------------------------------
 
@@ -6020,7 +8039,7 @@ strong_wolfe_ok <- function(f0, d0, alpha, fa, da, c1, c2) {
     strong_curvature_ok(d0, da, c2)
 }
 
-# Are the Strong Wolfe Conditions Met?
+# Are the Strong Wolfe Conditions Met for the Given Step?
 #
 # Line search test.
 #
@@ -6039,7 +8058,112 @@ strong_wolfe_ok_step <- function(step0, step, c1, c2) {
   armijo_ok_step(step0, step, c1) && strong_curvature_ok_step(step0, step, c2)
 }
 
+# Are the Wolfe Conditions Met for the Given Step?
+wolfe_ok_step <- function(step0, step, c1, c2) {
+  armijo_ok_step(step0, step, c1) && curvature_ok_step(step0, step, c2)
+}
 
+# Create a Wolfe Conditions check function allowing for either approximate or
+# exact Armijo condition and weak or strong curvature condition
+make_wolfe_ok_step_fn <- function(approx_armijo = FALSE,
+                                  strong_curvature = TRUE, eps = 1e-6) {
+
+  approx_armijo_ok_fn <- make_approx_armijo_ok_step(eps)
+
+  function(step0, step, c1, c2) {
+    if (approx_armijo) {
+      ok <- approx_armijo_ok_fn(step0, step, c1)
+    }
+    else {
+      ok <- armijo_ok_step(step0, step, c1)
+    }
+
+    if (ok) {
+      if (strong_curvature) {
+        ok <- strong_curvature_ok_step(step0, step, c2)
+      }
+      else {
+        ok <- curvature_ok_step(step0, step, c2)
+      }
+    }
+    ok
+  }
+}
+
+# Create Approximation Armijo check function:
+# Checks approximate Armijo conditions only if exact Armijo check fails and
+# if function value is sufficiently close to step0 value according to eps
+make_approx_armijo_ok_step <- function(eps) {
+  function(step0, step, c1) {
+    eps_k <- eps * abs(step0$f)
+
+    if (armijo_ok_step(step0, step, c1)) {
+      return(TRUE)
+    }
+    (step$f <= step0$f + eps_k) && approx_armijo_ok_step(step0, step, c1)
+  }
+}
+
+# Is the approximate Armijo condition met?
+#
+# Suggested by Hager and Zhang (2005) as part of the Approximate Wolfe
+# Conditions. The second of these conditions is identical to the (weak)
+# curvature condition.
+#
+# The first condition applies the armijo condition to a quadratic approximation
+# to the function, which allows for higher precision in finding the minimizer.
+#
+# It is suggested that the approximate version of the Armijo condition be used
+# when fa is 'close' to f0, e.g. fa <= f0 + eps * |f0| where eps = 1e-6
+#
+# c1 should be < 0.5
+approx_armijo_ok <- function(d0, da, c1) {
+  (2 * c1 - 1) * d0 >= da
+}
+
+# Is the approximate Armijo condition met for the given step?
+approx_armijo_ok_step <- function(step0, step, c1) {
+  approx_armijo_ok(step0$d, step$d, c1)
+}
+
+
+# Bracket -----------------------------------------------------------------
+
+bracket_is_finite <- function(bracket) {
+  all(is.finite(c(bracket_props(bracket, c('f', 'd')))))
+}
+
+# extracts all the properties (e.g. 'f', 'df', 'd' or 'alpha') from all members
+# of the bracket. Works if there are one or two bracket members. Can get
+# multiple properties at once, by providing an array of the properties,
+# e.g. bracket_props(bracket, c('f', 'd'))
+bracket_props <- function(bracket, prop) {
+  unlist(sapply(bracket, `[`, prop))
+}
+
+bracket_width <- function(bracket) {
+  bracket_range <- bracket_props(bracket, 'alpha')
+  abs(bracket_range[2] - bracket_range[1])
+}
+
+bracket_min_alpha <- function(bracket) {
+  min(bracket_props(bracket, 'alpha'))
+}
+
+best_bracket_step <- function(bracket) {
+  LOpos <- which.min(bracket_props(bracket, 'f'))
+  bracket[[LOpos]]
+}
+
+
+is_in_bracket <- function(bracket, alpha) {
+  is_in_range(alpha, bracket[[1]]$alpha, bracket[[2]]$alpha)
+}
+
+format_bracket <- function(bracket) {
+  paste0("[", formatC(bracket[[1]]$alpha), ", ", formatC(bracket[[2]]$alpha),
+         "]")
+}
 list(
   mize = mize,
   opt_step = mize_step,
