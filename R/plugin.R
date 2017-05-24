@@ -124,6 +124,17 @@ ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
   )
 }
 
+# "Pairwise" Stochastic Neighbor Embedding (PSNE)
+# Uses pairwise probabilities like PSNE, but doesn't enforce that the
+# input matrix P is joint.
+psne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
+                        keep = c("qm", "wm", "d2m")) {
+  lreplace(
+    ssne_plugin(eps = eps, beta = beta, verbose = verbose, keep = keep),
+    prob_type = "cond"
+  )
+}
+
 # t-SNE Method using Plugin Gradient
 #
 # A probability-based embedding method.
@@ -173,6 +184,26 @@ hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
   )
 }
 
+# Heavy-tailed ASNE.
+hasne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
+                         verbose = TRUE, keep = c("qm", "wm", "d2m")) {
+  lreplace(
+    asne_plugin(eps = eps, keep = keep),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
+    verbose = verbose
+  )
+}
+
+# Heavy-tailed PSNE (SSNE without averaging P)
+hpsne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
+                         verbose = TRUE, keep = c("qm", "wm", "d2m")) {
+  lreplace(
+    psne_plugin(eps = eps, keep = keep),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
+    verbose = verbose
+  )
+}
+
 # t-ASNE Method using Plugin Gradient
 #
 # A probability-based embedding method.
@@ -198,7 +229,8 @@ tasne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 #
 # A probability-based embedding method.
 #
-# An implementation of t-PSNE using the plugin gradient.
+# An implementation of t-PSNE using the plugin gradient. Does not enforce
+# that the input probability matrix P is joint (but is pairwise).
 tpsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     tsne_plugin(eps = eps),
