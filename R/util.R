@@ -77,7 +77,9 @@ summarize <- function(vals, msg = "") {
   if (class(vals) == "matrix") {
     vals <- array(vals)
   }
-  message(msg, ": ", paste(names(summary(vals)), ":", summary(vals), "|",
+  message(msg, ": ", paste(names(summary(vals)), ":",
+                           summary(vals, digits = 4),
+                           "|",
                            collapse = ""))
 }
 
