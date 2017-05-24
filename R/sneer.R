@@ -882,10 +882,10 @@ sneer <- function(df,
     scale_type <- match.arg(tolower(scale_type),
                             c("none", "matrix", "range", "auto"))
     preprocess <- switch(scale_type,
-     none = make_preprocess(),
-     matrix = make_preprocess(range_scale_matrix = TRUE),
-     range = make_preprocess(range_scale = TRUE),
-     auto = make_preprocess(auto_scale = TRUE)
+                         none = make_preprocess(),
+                         matrix = make_preprocess(range_scale_matrix = TRUE),
+                         range = make_preprocess(range_scale = TRUE),
+                         auto = make_preprocess(auto_scale = TRUE)
     )
   }
 
@@ -896,9 +896,9 @@ sneer <- function(df,
       perp_kernel_fun <- match.arg(tolower(perp_kernel_fun),
                                    c("exp", "step", "sqrt_exp"))
       weight_fn <- switch(perp_kernel_fun,
-        exp = exp_weight,
-        step = step_weight,
-        sqrt_exp = sqrt_exp_weight
+                          exp = exp_weight,
+                          step = step_weight,
+                          sqrt_exp = sqrt_exp_weight
       )
     }
 
@@ -908,8 +908,8 @@ sneer <- function(df,
         stop("Can't use precision scaling with step input weight function")
       }
       modify_kernel_fn <- switch(prec_scale,
-        scale = scale_prec_to_perp,
-        transfer = transfer_kernel_precisions
+                                 scale = scale_prec_to_perp,
+                                 transfer = transfer_kernel_precisions
       )
     }
 
@@ -934,41 +934,41 @@ sneer <- function(df,
           }
         }
         switch(perp_scale,
-          max = {
-            if (length(perplexity) == 1) {
-              perplexity <- ms_perps(df)
-            }
-            init_inp <- inp_from_dint_max(perplexities = perplexity,
-                                          modify_kernel_fn = modify_kernel_fn,
-                                          input_weight_fn = weight_fn)
-          },
-          multi = {
-            if (length(perplexity) == 1) {
-              perplexity <- ms_perps(df)
-            }
-            init_inp <- inp_from_perps_multi(perplexities = perplexity,
-                                             num_scale_iters = perp_scale_iter,
-                                             modify_kernel_fn = modify_kernel_fn,
-                                             input_weight_fn = weight_fn)
-          },
-          multil = {
-            if (length(perplexity) == 1) {
-              perplexity <- ms_perps(df)
-            }
-            init_inp <- inp_from_perps_multil(perplexities = perplexity,
-                                              num_scale_iters = perp_scale_iter,
-                                              modify_kernel_fn = modify_kernel_fn,
-                                              input_weight_fn = weight_fn)
-          },
-          step = {
-            if (length(perplexity) == 1) {
-              perplexity = step_perps(df)
-            }
-            init_inp <- inp_from_step_perp(perplexities = perplexity,
-                                           num_scale_iters = perp_scale_iter,
-                                           modify_kernel_fn = modify_kernel_fn,
-                                           input_weight_fn = weight_fn)
-          }
+               max = {
+                 if (length(perplexity) == 1) {
+                   perplexity <- ms_perps(df)
+                 }
+                 init_inp <- inp_from_dint_max(perplexities = perplexity,
+                                               modify_kernel_fn = modify_kernel_fn,
+                                               input_weight_fn = weight_fn)
+               },
+               multi = {
+                 if (length(perplexity) == 1) {
+                   perplexity <- ms_perps(df)
+                 }
+                 init_inp <- inp_from_perps_multi(perplexities = perplexity,
+                                                  num_scale_iters = perp_scale_iter,
+                                                  modify_kernel_fn = modify_kernel_fn,
+                                                  input_weight_fn = weight_fn)
+               },
+               multil = {
+                 if (length(perplexity) == 1) {
+                   perplexity <- ms_perps(df)
+                 }
+                 init_inp <- inp_from_perps_multil(perplexities = perplexity,
+                                                   num_scale_iters = perp_scale_iter,
+                                                   modify_kernel_fn = modify_kernel_fn,
+                                                   input_weight_fn = weight_fn)
+               },
+               step = {
+                 if (length(perplexity) == 1) {
+                   perplexity = step_perps(df)
+                 }
+                 init_inp <- inp_from_step_perp(perplexities = perplexity,
+                                                num_scale_iters = perp_scale_iter,
+                                                modify_kernel_fn = modify_kernel_fn,
+                                                input_weight_fn = weight_fn)
+               }
         )
       }
       else {
@@ -1005,10 +1005,10 @@ sneer <- function(df,
                     c("pca", "random", "uniform", "matrix"))
 
   init_out <- switch(init,
-    pca = out_from_PCA(k = ndim),
-    random = out_from_rnorm(k = ndim),
-    uniform = out_from_runif(k = ndim),
-    matrix = out_from_matrix(init_config = init_config, k = ndim)
+                     pca = out_from_PCA(k = ndim),
+                     random = out_from_rnorm(k = ndim),
+                     uniform = out_from_runif(k = ndim),
+                     matrix = out_from_matrix(init_config = init_config, k = ndim)
   )
 
   embed_plot <- NULL
@@ -1025,42 +1025,42 @@ sneer <- function(df,
 
     plot_type <- match.arg(tolower(plot_type), c("none", "ggplot2", "plot"))
     switch(plot_type,
-      ggplot2 = {
-        if (!requireNamespace("ggplot2", quietly = TRUE,
-                              warn.conflicts = FALSE)) {
-          stop("plot type 'g' requires 'ggplot2' package")
-        }
-        if (!requireNamespace("RColorBrewer",
-                              quietly = TRUE,
-                              warn.conflicts = FALSE)) {
-          stop("plot type 'g' requires 'RColorBrewer' package")
-        }
-        embed_plot <-
-          make_qplot(
-            df,
-            labels = labels, label_name = label_name,
-            color_scheme = color_scheme,
-            size = point_size,
-            legend = legend,
-            legend_rows = legend_rows,
-            equal_axes = equal_axes
-          )
-      },
-      plot = {
-        label_fn <- NULL
-        if (!is.null(label_chars)) {
-          label_fn <- make_label(label_chars)
-        }
+           ggplot2 = {
+             if (!requireNamespace("ggplot2", quietly = TRUE,
+                                   warn.conflicts = FALSE)) {
+               stop("plot type 'g' requires 'ggplot2' package")
+             }
+             if (!requireNamespace("RColorBrewer",
+                                   quietly = TRUE,
+                                   warn.conflicts = FALSE)) {
+               stop("plot type 'g' requires 'RColorBrewer' package")
+             }
+             embed_plot <-
+               make_qplot(
+                 df,
+                 labels = labels, label_name = label_name,
+                 color_scheme = color_scheme,
+                 size = point_size,
+                 legend = legend,
+                 legend_rows = legend_rows,
+                 equal_axes = equal_axes
+               )
+           },
+           plot = {
+             label_fn <- NULL
+             if (!is.null(label_chars)) {
+               label_fn <- make_label(label_chars)
+             }
 
-        embed_plot <- make_plot(x = df,
-                                colors = colors,
-                                labels = labels,
-                                label_fn = label_fn,
-                                color_scheme = color_scheme,
-                                cex = point_size,
-                                show_labels = plot_labels,
-                                equal_axes = equal_axes)
-      }
+             embed_plot <- make_plot(x = df,
+                                     colors = colors,
+                                     labels = labels,
+                                     label_fn = label_fn,
+                                     color_scheme = color_scheme,
+                                     cex = point_size,
+                                     show_labels = plot_labels,
+                                     equal_axes = equal_axes)
+           }
     )
   }
 
@@ -1174,10 +1174,10 @@ sneer <- function(df,
   for (r in (ret)) {
     match.arg(tolower(r), ok_rets)
     switch(r,
-      x =  {
-        if (!is.null(inp$xm)) {
-          result$x <- inp$xm
-        }
+      x = {
+       if (!is.null(inp$xm)) {
+         result$x <- inp$xm
+       }
       },
       dx = {
         if (!is.null(inp$dm)) {
