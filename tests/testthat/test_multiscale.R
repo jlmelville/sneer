@@ -85,14 +85,14 @@ test_that("multiscaling SSNE with perp scaling", {
   ssne_iris_ms3 <- embed_prob(
     iris[, 1:4],
     method = ssne_plugin(verbose = FALSE),
-    opt = mize_bfgs(),
+    opt = mize_grad_descent(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
                                     num_scale_iters = 10, verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
                              verbose = FALSE),
-    max_iter = 15,
+    max_iter = 14,
     export = c("report", "method")
   )
 
@@ -100,9 +100,9 @@ test_that("multiscaling SSNE with perp scaling", {
                c(1/150, 1/100, 1/50), info = "scaled kernels")
 
   expect_equal(ssne_iris_ms3$report$costs[,"norm"][1:15],
-               c(0.9291,  0.1339,  0.0741,  0.0443,  0.0362, # perp 75
-                 0.0529,  0.0529,  0.0507,  0.0497,  0.0488, # perp 50
-                 0.0775,  0.0775,  0.0769,  0.0765,  0.0761),
+               c(0.9291,  0.9240,  0.9181,  0.9114,  0.9036, # perp 75
+                 0.8935,  0.8830,  0.8710,  0.8572,  0.8414, # perp 50
+                 0.7985,  0.7759,  0.7505,  0.7222,  0.6907),
                tolerance = 5e-4, scale = 1, label = "ms-SSNE norm costs")
 
 })
@@ -111,7 +111,7 @@ test_that("ms SSNE with unit scaling", {
   ssne_iris_ums3 <- embed_prob(
     iris[, 1:4],
     method = ssne_plugin(verbose = FALSE),
-    opt = mize_bfgs(),
+    opt = mize_grad_descent(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
                                     num_scale_iters = 10,
@@ -120,7 +120,7 @@ test_that("ms SSNE with unit scaling", {
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
                              verbose = FALSE, reltol = NULL),
-    max_iter = 15,
+    max_iter = 14,
     export = c("report", "method")
   )
 
@@ -128,9 +128,9 @@ test_that("ms SSNE with unit scaling", {
                c(1, 1, 1), info = "uniform kernels")
 
   expect_equal(ssne_iris_ums3$report$costs[,"norm"][1:15],
-               c(0.9359,  0.2866,  0.1036,  0.0579,  0.0421, # perp 75
-                 0.0792,  0.0792,  0.0792,  0.0791,  0.0675, # perp 50
-                 0.1210,  0.1209,  0.1056,  0.0960,  0.0925 # perp 25
+               c(0.9359,  0.7661,  0.6064,  0.4603,  0.3301, # perp 75
+                 0.1016,  0.0735,  0.0700,  0.0559,  0.0549, # perp 50
+                 0.1135,  0.1069,  0.1010,  0.0960,  0.0922  # perp 25
                  ),
                tolerance = 5e-4, scale = 1, label = "ms-SSNE unit prec")
 })
