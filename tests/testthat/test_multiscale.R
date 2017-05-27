@@ -85,25 +85,24 @@ test_that("multiscaling SSNE with perp scaling", {
   ssne_iris_ms3 <- embed_prob(
     iris[, 1:4],
     method = ssne_plugin(verbose = FALSE),
-    opt = mize_back_nag_adapt(),
+    opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
                                     num_scale_iters = 10, verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
                              verbose = FALSE),
-    max_iter = 20,
+    max_iter = 15,
     export = c("report", "method")
   )
 
   expect_equal(sapply(ssne_iris_ms3$method$kernels, function(k) { k$beta }),
                c(1/150, 1/100, 1/50), info = "scaled kernels")
 
-  expect_equal(ssne_iris_ms3$report$costs[,"norm"],
-               c(0.9291,  0.9261,  0.9219,  0.9171,  0.9119, # perp 75
-                 0.9054,  0.8995,  0.8934,  0.8871,  0.8806, # perp 50
-                 0.8548,  0.8471,  0.8391,  0.8311,  0.8229, # perp 25
-                 0.8146,  0.8062,  0.7977,  0.7890,  0.7803,  0.7716),
+  expect_equal(ssne_iris_ms3$report$costs[,"norm"][1:15],
+               c(0.9291,  0.1339,  0.0741,  0.0443,  0.0362, # perp 75
+                 0.0529,  0.0529,  0.0507,  0.0497,  0.0488, # perp 50
+                 0.0775,  0.0775,  0.0769,  0.0765,  0.0761),
                tolerance = 5e-4, scale = 1, label = "ms-SSNE norm costs")
 
 })
@@ -112,7 +111,7 @@ test_that("ms SSNE with unit scaling", {
   ssne_iris_ums3 <- embed_prob(
     iris[, 1:4],
     method = ssne_plugin(verbose = FALSE),
-    opt = mize_back_nag_adapt(),
+    opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
                                     num_scale_iters = 10,
@@ -121,18 +120,18 @@ test_that("ms SSNE with unit scaling", {
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
                              verbose = FALSE, reltol = NULL),
-    max_iter = 20,
+    max_iter = 15,
     export = c("report", "method")
   )
 
   expect_equal(sapply(ssne_iris_ums3$method$kernels, function(k) { k$beta }),
                c(1, 1, 1), info = "uniform kernels")
 
-  expect_equal(ssne_iris_ums3$report$costs[,"norm"],
-               c(0.9359,  0.8310,  0.7048,  0.5828,  0.4737, # perp 75
-                 0.1662,  0.1311,  0.1060,  0.0882,  0.0752, # perp 50
-                 0.1216,  0.1216,  0.1106,  0.0992,  0.0926, # perp 25
-                 0.0913,  0.0920,  0.0917,  0.0906,  0.0900,  0.0900),
+  expect_equal(ssne_iris_ums3$report$costs[,"norm"][1:15],
+               c(0.9359,  0.2866,  0.1036,  0.0579,  0.0421, # perp 75
+                 0.0792,  0.0792,  0.0792,  0.0791,  0.0675, # perp 50
+                 0.1210,  0.1209,  0.1056,  0.0960,  0.0925 # perp 25
+                 ),
                tolerance = 5e-4, scale = 1, label = "ms-SSNE unit prec")
 })
 
@@ -141,7 +140,7 @@ test_that("Can apply multiple scales in one iteration", {
   ssne_iris_ums3_s0 <- embed_prob(
     iris[, 1:4],
     method = ssne_plugin(verbose = FALSE),
-    opt = mize_back_nag_adapt(),
+    opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
                                     num_scale_iters = 0,
@@ -150,24 +149,22 @@ test_that("Can apply multiple scales in one iteration", {
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
                              verbose = FALSE),
-    max_iter = 20,
+    max_iter = 9,
     export = c("report", "method")
   )
   expect_equal(sapply(ssne_iris_ums3_s0$method$kernels, function(k) { k$beta }),
                c(1, 1, 1), info = "uniform kernels")
 
-   expect_equal(ssne_iris_ums3_s0$report$costs[,"norm"],
-               c(0.2961,  0.2527,  0.2067,  0.1713,  0.1487,
-                 0.1343,  0.1229,  0.1128,  0.1047,  0.0990,
-                 0.0953,  0.0934,  0.0927,  0.0926,  0.0924,
-                 0.0921,  0.0916,  0.0912,  0.0909,  0.0908,  0.0907),
+  expect_equal(ssne_iris_ums3_s0$report$costs[,"norm"],
+               c(0.2961,  0.1581,  0.1175,  0.1002,  0.0935,
+                 0.0893,  0.0891,  0.0891,  0.0890,  0.0890),
                tolerance = 5e-4, scale = 1,
                label = "ms-SSNE unit prec scale all at once")
 
   ssne_iris_ms3_s0 <- embed_prob(
     iris[, 1:4],
     method = ssne_plugin(verbose = FALSE),
-    opt = mize_back_nag_adapt(),
+    opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
                                     num_scale_iters = 0,
@@ -175,7 +172,7 @@ test_that("Can apply multiple scales in one iteration", {
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
                              verbose = FALSE),
-    max_iter = 20,
+    max_iter = 9,
     export = c("report", "method")
   )
 
@@ -183,10 +180,8 @@ test_that("Can apply multiple scales in one iteration", {
                c(1/150, 1/100, 1/50), info = "scaled kernels")
 
   expect_equal(ssne_iris_ms3_s0$report$costs[,"norm"],
-               c(0.9180,  0.9143,  0.9092,  0.9035,  0.8973,
-                 0.8907,  0.8839,  0.8769,  0.8696,  0.8622,
-                 0.8545,  0.8467,  0.8388,  0.8307,  0.8225,
-                 0.8141,  0.8057,  0.7971,  0.7884,  0.7796,  0.7708),
+               c(0.9180,  0.1627,  0.1012,  0.0858,  0.0773,
+                 0.0725,  0.0711,  0.0705,  0.0702,  0.0701),
                tolerance = 5e-4, scale = 1,
                label = "ms-SSNE scaled prec scale all at once")
 })
@@ -195,10 +190,10 @@ test_that("Can combine multiscaling with asymmetric weights", {
   ssne_iris_tms3_s10 <- embed_prob(
     iris[1:10, 1:4],
     method = ssne_plugin(verbose = FALSE),
-    opt = mize_back_nag_adapt(),
+    opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(8, 4, length.out = 3),
-                                    num_scale_iters = 10,
+                                    num_scale_iters = 6,
                                     modify_kernel_fn =
                                       transfer_kernel_precisions,
                                     verbose = FALSE),
@@ -231,7 +226,7 @@ test_that("Can combine multiscaling with asymmetric weights", {
   ssne_iris_tms3_s0 <- embed_prob(
     iris[1:10, 1:4],
     method = ssne_plugin(verbose = FALSE),
-    opt = mize_back_nag_adapt(),
+    opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(8, 4, length.out = 3),
                                     num_scale_iters = 0,

@@ -139,6 +139,11 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
 
   mize <- opt$mize_module$check_mize_convergence(step_info)
 
+  if (mize$is_terminated && mize$terminate$what == "step_tol") {
+    mize$is_terminated <- FALSE
+    mize$terminate <- NULL
+  }
+
   opt$mize <- mize
   par <- step_res$par
 
@@ -247,6 +252,13 @@ mize_grad_descent <- function() {
   mize_opt("SD", line_search = "bold", norm_direction = TRUE)
 }
 
+mize_bfgs <- function() {
+  mize_opt("BFGS", c1 = 1e-4, c2 = 0.1,
+           abs_tol = 0, rel_tol = 0, step_tol = NULL,
+           step_next_init = "quad", line_search = "mt",
+           step0 = "ras")
+}
+
 
 mize_opt_alt_step <- function(opt, method, inp, out, iter) {
 
@@ -292,6 +304,12 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
   #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
 
   mize <- opt$mize_module$check_mize_convergence(step_info)
+
+  if (mize$is_terminated && mize$terminate$what == "step_tol") {
+    mize$is_terminated <- FALSE
+    mize$terminate <- NULL
+  }
+
 
   opt$mize <- mize
   par <- step_res$par
@@ -358,6 +376,11 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
     #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
 
     mize_alt <- opt$mize_module$check_mize_convergence(step_info)
+
+    if (mize_alt$is_terminated && mize_alt$terminate$what == "step_tol") {
+      mize_alt$is_terminated <- FALSE
+      mize_alt$terminate <- NULL
+    }
 
     opt$mize_alt <- mize_alt
     par <- step_res$par

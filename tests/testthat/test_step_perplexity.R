@@ -65,7 +65,7 @@ test_that("first five costs with single perplexity and custom beta", {
     export = c("report")
   )
   expect_equal(ssne_iris$report$costs[,"norm"],
-               c(0.9291,  0.9261,  0.9219,  0.9171,  0.9119),
+               c(0.9291,  0.9261,  0.9219,  0.915,  0.905),
                tolerance = 5e-4, scale = 1,
                label = "SSNE with single perp but custom beta")
 })
