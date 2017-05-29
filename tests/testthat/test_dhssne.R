@@ -180,6 +180,19 @@ test_that("DHPSNE analytical gradient is correct for range of single alpha and h
   }
 })
 
+test_that("DHASNE analytical gradient is correct for range of single alpha and heterogeneous beta", {
+  for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
+    res <- embedder(dhasne(alpha = alpha, beta = betas,
+                           xi_eps = .Machine$double.eps))
+
+    fd_grad <- gradient_fd_xi(res)
+    an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                   a2x(res$method$kernel$alpha))
+    expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(alpha))
+  }
+})
+
+
 # Test Point-wise Alphas -------------------------------------------------------
 
 # Symmetric
@@ -222,6 +235,18 @@ test_that("iHPSNE analytical gradient is correct for range of multi alpha and mu
 })
 
 
+test_that("iHASNE analytical gradient is correct for range of multi alpha and multi beta", {
+  for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
+    res <- embedder(ihasne(alpha = seq(alpha, alpha * 2, length.out = nr),
+                           beta = betas,
+                           xi_eps = .Machine$double.eps))
+    fd_grad <- gradient_fd_xi_point(res)
+    an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                   a2x(res$method$kernel$alpha))
+    expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(alpha))
+  }
+})
+
 # Doubly Dynamic ----------------------------------------------------------
 
 test_that("DDHSSNE analytical gradient is correct for range of single alpha and single beta", {
@@ -242,6 +267,19 @@ test_that("DDHSSNE analytical gradient is correct for range of single alpha and 
 test_that("DiHSSNE analytical gradient is correct for range of multi alpha and multi beta", {
   for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
     res <- embedder(dihssne(alpha = seq(alpha, alpha * 2, length.out = nr),
+                            beta = betas,
+                            xi_eps = .Machine$double.eps))
+    fd_grad <- gradient_fd_xi_point(res, param_names = c("alpha", "beta"))
+    an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                   a2x(c(res$method$kernel$alpha, res$method$kernel$beta)))
+
+    expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(alpha))
+  }
+})
+
+test_that("DiHASNE analytical gradient is correct for range of multi alpha and multi beta", {
+  for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
+    res <- embedder(dihasne(alpha = seq(alpha, alpha * 2, length.out = nr),
                             beta = betas,
                             xi_eps = .Machine$double.eps))
     fd_grad <- gradient_fd_xi_point(res, param_names = c("alpha", "beta"))
