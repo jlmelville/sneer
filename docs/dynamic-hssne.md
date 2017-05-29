@@ -5,6 +5,8 @@ date: "January 9, 2017"
 output: html_document
 ---
 
+Up: [Index](index.html)
+
 The original stochastic neighbor embedding approach used gaussian kernels to
 produce weights in both the input and output space. The advance of t-SNE was
 to use the the Student's t-distribution with one degree of freedom (also
@@ -350,3 +352,5 @@ $$
 This has a very similar structure to the HSSNE version. The extension to the 
 gradient with respect to $\xi$ is obvious (i.e. multiply the RHS in the above 
 equation by $2\xi$).
+
+Up: [Index](index.html)

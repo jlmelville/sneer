@@ -8,6 +8,32 @@ Back: [Gradients](gradients.html) Up: [Index](index.html)
 Weirdo gradients that don't correspond to any current literature method, but
 may provide inspiration for future directions for `sneer`.
 
+Our starting point is the generic embedding gradient:
+
+$$
+\frac{\partial C}{\partial \mathbf{y_i}} = 
+  \sum_{j} \left(
+  k_{ij}
+  +
+  k_{ji}
+  \right)
+  \frac{\partial f_{ij}}{\partial d_{ij}}
+\frac{1}{d_{ij}}\left(\mathbf{y_i} - \mathbf{y_j}\right)
+$$
+
+with:
+
+$$k_{ij} = 
+\frac{1}{S}
+\left[
+\frac{\partial C}{\partial q_{ij}}
+-
+\sum_{kl} \frac{\partial C}{\partial q_{kl}} 
+q_{kl}
+\right]
+\frac{\partial w_{ij}}{\partial f_{ij}}
+$$
+
 ## Generalized Divergences
 
 Divergences are normally applied to probabilities. But they have been 

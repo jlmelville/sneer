@@ -81,6 +81,19 @@ If you are at all curious about how the gradients are derived, perhaps because
 you would like to tweak a cost function or similarity function, take a look
 at the [gradients](gradients.html) page.
 
+Some other increasingly arcane gradient derivations are also available, which
+are mainly just attempts to demonstrate how specific literature variations can
+be treated within a generic framework.
+
+* [Multi-Scale Gradients](multi-scale-gradients.html) - the multi scale approach
+of Lee and co-workers.
+* [Asymmetric Kernel Gradients](asymmetric-kernel-gradient.html) - extending 
+inhomogeneous t-SNE kernel parameter optimization to symmetrized SNE.
+* [Dynamic HSSNE](dynamic-hssne.html) - exploring the links between HSSNE and
+inhomogeneous t-SNE.
+* [Experimental Gradients](experimental-gradients.html) - ideas for determining
+what makes t-SNE work better than other methods.
+
 ## Source
 
 Available at https://github.com/jlmelville/sneer

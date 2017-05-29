@@ -4,6 +4,8 @@ date: "January 18, 2017"
 output: html_document
 ---
 
+Up: [Index](index.html)
+
 In two papers (in 
 [ESANN 2014 (PDF)](https://www.elen.ucl.ac.be/Proceedings/esann/esannpdf/es2014-64.pdf)
 and [Neurocomputing](https://dx.doi.org/10.1016/j.neucom.2014.12.095)), 
@@ -180,3 +182,4 @@ gradients: create the stiffness matrix, $K_u$ for each weight matrix separately,
 and then average them to get the multi-scaled stiffness matrix. Multiply by the 
 displacement as usual and the multi-scaled gradient is yours.
 
+Up: [Index](index.html)

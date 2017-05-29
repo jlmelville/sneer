@@ -3,6 +3,8 @@ title: "Symmetric Embedding with Asymmetric Kernels"
 output: html_document
 ---
 
+Up: [Index](index.html)
+
 This is a tangent based on [deriving embedding gradients](gradients.html). It's
 not going to make any sense unless you read that first.
 
@@ -133,3 +135,5 @@ using the same generic plug-in gradient you were using before. But don't re-use
 specific simplified gradients given in the literature, such as those commonly
 stated for t-SNE and SSNE. Some simplification may be possible, but you will
 need to re-derive these.
+
+Up: [Index](index.html)
