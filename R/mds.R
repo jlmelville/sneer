@@ -89,11 +89,12 @@ update_dist = function(inp, out, method) {
 # @family sneer distance embedding methods
 mmds <- function(eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
-    -2 * (dxm - dym) / (dym + eps)
+    -2 * (dxm - dym)
   }
 
   list(
     cost = metric_stress_fg(),
+    gradient_fn = dist_gradient,
     stiffness_fn = function(method, inp, out) {
       f(inp$dm, out$dm, eps = method$eps)
     },
@@ -132,11 +133,12 @@ mmds <- function(eps = .Machine$double.eps) {
 # In \emph{Advances in Neural Information Processing Systems} (pp. 913-920).
 smmds <- function(eps = .Machine$double.eps) {
   f <- function(dxm, dym, eps = .Machine$double.eps) {
-    -4 * (dxm ^ 2 - dym ^ 2)
+    -4 * dym * (dxm ^ 2 - dym ^ 2)
   }
 
   list(
     cost = metric_sstress_fg(),
+    gradient_fn = dist_gradient,
     stiffness_fn = function(method, inp, out) {
       f(inp$dm, out$dm, eps = method$eps)
     },
@@ -190,11 +192,12 @@ smmds <- function(eps = .Machine$double.eps) {
 # @family sneer distance embedding methods
 sammon_map <- function(eps = .Machine$double.eps) {
   f <- function(dxm, dym, sum_rij, eps = .Machine$double.eps) {
-    (-2 * (dxm - dym)) / ((dym * dxm) + eps) / sum_rij
+    (-2 * (dxm - dym)) / (dxm + eps) / sum_rij
   }
 
   list(
     cost = sammon_fg(),
+    gradient_fn = dist_gradient,
     stiffness_fn = function(method, inp, out) {
       f(inp$dm, out$dm, sum_rij = method$sum_rij, eps = method$eps)
     },

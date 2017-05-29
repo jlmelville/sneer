@@ -779,7 +779,7 @@ plugin_stiffness_ms_row <- function(method, inp, out) {
     kml <- rowSums(dc_dq * out$qms[[l]]) # row sums
     kml <- sweep(dc_dq, 1, kml) # subtract row sum from each row element
     kml <- kml * (dw_df / (wm_sum + method$eps))
-    kml <- 2 * (kml + t(kml))
+    kml <- kml + t(kml)
 
     if (l == 1) {
       kml_sum <- kml
@@ -806,7 +806,7 @@ plugin_stiffness_ms_cond <- function(method, inp, out) {
   for (l in 1:method$num_scales) {
     kml <- plugin_stiffness_ms_pair(method, inp, out, dc_dq, l)
 
-    kml <- 2 * (kml + t(kml))
+    kml <-  kml + t(kml)
 
     if (l == 1) {
       kml_sum <- kml
@@ -825,10 +825,10 @@ plugin_stiffness_ms_joint <- function(method, inp, out) {
   for (l in 1:method$num_scales) {
     kml <- plugin_stiffness_ms_pair(method, inp, out, dc_dq, l)
     if (attr(method$kernels[[l]]$fn, 'type') == "symm") {
-      kml <- 4 * kml
+      kml <- 2 * kml
     }
     else {
-      kml <- 2 * (kml + t(kml))
+      kml <- kml + t(kml)
     }
 
     if (l == 1) {

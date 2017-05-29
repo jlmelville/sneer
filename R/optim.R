@@ -2,6 +2,13 @@
 
 # Called at every iteration to convert sneer data structures into mize form
 make_optim_fg <- function(opt, inp, out, method, iter) {
+  if (!is.null(method$gradient_fn)) {
+    grad_fn <- method$gradient_fn
+  }
+  else {
+    grad_fn <- sq_dist_gradient
+  }
+
   if (!is.null(inp$xm)) {
     nr <- nrow(inp$xm)
   }
@@ -28,7 +35,7 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
       res <- par_to_out(par, opt, inp, out, method, nr)
       out <- res$out
       inp <- res$inp
-      grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+      grvec <- mat_to_par(grad_fn(inp, out, method, opt$mat_name)$gm)
       if (!is.null(method$extra_gr)) {
         extra_grvec <- method$extra_gr(opt, inp, out, method, iter, extra_par)
         grvec <- c(grvec, extra_grvec)
@@ -46,7 +53,7 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
       res <- par_to_out(par, opt, inp, out, method, nr)
       out <- res$out
       inp <- res$inp
-      grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+      grvec <- mat_to_par(grad_fn(inp, out, method, opt$mat_name)$gm)
       if (!is.null(method$extra_gr)) {
         extra_grvec <- method$extra_gr(opt, inp, out, method, iter, extra_par)
         grvec <- c(grvec, extra_grvec)
@@ -440,6 +447,12 @@ make_optim_alt_fg <- function(opt, inp, out, method, iter) {
 }
 
 make_optim_coord_fg <- function(opt, inp, out, method, iter) {
+  if (!is.null(method$gradient_fn)) {
+    grad_fn <- method$gradient_fn
+  }
+  else {
+    grad_fn <- sq_dist_gradient
+  }
   if (!is.null(inp$xm)) {
     nr <- nrow(inp$xm)
   }
@@ -456,14 +469,14 @@ make_optim_coord_fg <- function(opt, inp, out, method, iter) {
       res <- par_to_out(par, opt, inp, out, method, nr)
       out <- res$out
       inp <- res$inp
-      grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+      grvec <- mat_to_par(grad_fn(inp, out, method, opt$mat_name)$gm)
       grvec
     },
     fg = function(par) {
       res <- par_to_out(par, opt, inp, out, method, nr)
       out <- res$out
       inp <- res$inp
-      grvec <- mat_to_par(gradient(inp, out, method, opt$mat_name)$gm)
+      grvec <- mat_to_par(grad_fn(inp, out, method, opt$mat_name)$gm)
 
       list(
         fn = calculate_cost(method, inp, out),

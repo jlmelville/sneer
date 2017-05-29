@@ -561,7 +561,7 @@ plugin_stiffness_row <- function(method, inp, out) {
   km <- rowSums(dc_dq * out$qm)
   km <- sweep(dc_dq, 1, km) # subtract row sum from each row element
   km <- km * (dw_df / wm_sum)
-  2 * (km + t(km))
+  km + t(km)
 }
 
 # Plugin Stiffness for Conditional Probabilities
@@ -575,7 +575,7 @@ plugin_stiffness_row <- function(method, inp, out) {
 # @return Stiffness matrix.
 plugin_stiffness_cond <- function(method, inp, out) {
   km <- plugin_stiffness_pair(method, inp, out)
-  2 * (km + t(km))
+  km + t(km)
 }
 
 # Plugin Stiffness for Joint Probabilities
@@ -584,16 +584,15 @@ plugin_stiffness_cond <- function(method, inp, out) {
 # they both sum over all pairs, rather than all points.
 #
 # if dw/df is symmetric (i.e. kernel is symmetric) kij = kji
-# and we could replace 2(K + K') with 4K
-# NB: not enough enforce symmetry of Q. We would have to symmetrize W.
-# Not going to do that right now
+# and we could replace K + K' with 2K
+# NB: not enough enforce symmetry of Q: we would have to symmetrize W.
 plugin_stiffness_joint <- function(method, inp, out) {
   km <- plugin_stiffness_pair(method, inp, out)
   if (attr(method$kernel$fn, 'type') == "symm") {
-    4 * km
+    2 * km
   }
   else {
-    2 * (km + t(km))
+    km + t(km)
   }
 }
 

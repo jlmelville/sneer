@@ -2,6 +2,10 @@
 # (and for probability-based embeddings, a specific cost function/weighting
 # function pair). However, some stiffness functions can be written in terms of
 # others.
+#
+# The stiffness expressions here are a factor of two smaller than the
+# gradient expressions you'll see in the literature for the gradient. We
+# account for that factor of two in the gradient function.
 
 # ASNE Stiffness Function
 #
@@ -17,7 +21,7 @@
 # @return Stiffness matrix.
 asne_stiffness <- function(pm, qm, beta = 1) {
   km <- beta * (pm - qm)
-  2 * (km + t(km))
+  km + t(km)
 }
 
 # SSNE Stiffness Function
@@ -32,7 +36,7 @@ asne_stiffness <- function(pm, qm, beta = 1) {
 # @param beta The precision of the weighting function.
 # @return Stiffness matrix.
 ssne_stiffness <- function(pm, qm, beta = 1) {
-  4 * beta * (pm - qm)
+  2 * beta * (pm - qm)
 }
 
 # t-SNE Stiffness Function
@@ -53,7 +57,7 @@ tsne_stiffness <- function(pm, qm, wm) {
 # @return Stiffness matrix.
 tasne_stiffness <- function(pm, qm, wm) {
   km <- (pm - qm) * wm
-  2 * (km + t(km))
+  km + t(km)
 }
 
 # HSSNE Stiffness Function
@@ -91,7 +95,7 @@ hssne_stiffness <- function(pm, qm, wm, alpha = 1.5e-8, beta = 1) {
 reverse_asne_stiffness <- function(pm, qm, rev_kl, beta = 1,
                                    eps = .Machine$double.eps) {
   km <- beta * qm * (log((pm + eps) / (qm + eps)) + rev_kl)
-  2 * (km + t(km))
+  km + t(km)
 }
 
 # "Reverse" SSNE Stiffness Function
@@ -112,7 +116,7 @@ reverse_asne_stiffness <- function(pm, qm, rev_kl, beta = 1,
 # @return Stiffness matrix.
 reverse_ssne_stiffness <- function(pm, qm, rev_kl, beta = 1,
                                    eps = .Machine$double.eps) {
-  4 * beta * qm * (log((pm + eps) / (qm + eps)) + rev_kl)
+  2 * beta * qm * (log((pm + eps) / (qm + eps)) + rev_kl)
 }
 
 # "Reverse" t-SNE Stiffness Function

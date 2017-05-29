@@ -32,7 +32,11 @@ gfd <- function(embedder, diff = 1e-4) {
 }
 
 gan <- function(embedder) {
-  gradient(embedder$inp, embedder$out, embedder$method)$gm
+  grad_fn <- sq_dist_gradient
+  if (!is.null(embedder$method$gradient_fn)) {
+    grad_fn <- embedder$method$gradient_fn
+  }
+  grad_fn(embedder$inp, embedder$out, embedder$method)$gm
 }
 
 # useful for interactive examination of analytical gradients only, diff param is

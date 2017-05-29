@@ -1,19 +1,53 @@
 # Gradient Calculation
-#
-# Calculate the gradient of the cost function for a specified position.
-#
-# @param inp Input data.
-# @param out Output data containing the desired position.
-# @param method Embedding method.
-# @param mat_name Name of the matrix in the output data list that contains the
-# embedded coordinates.
-# @return List containing:
-# \item{\code{km}}{Stiffness matrix.}
-# \item{\code{gm}}{Gradient matrix.}
-gradient <- function(inp, out, method, mat_name = "ym") {
+
+# Calculates an embedding gradient where distances are not transformed before
+# weighting (e.g. metric MDS, Sammon map)
+dist_gradient <- function(inp, out, method, mat_name = "ym") {
   km <- method$stiffness_fn(method, inp, out)
-  gm <- stiff_to_grads(out[[mat_name]], km)
+  # account for 1 / D term in gradient
+  gm <- stiff_to_grads(out[[mat_name]], km / (out$dm + method$eps))
   list(km = km, gm = gm)
+}
+
+# Calculates an embedding gradient where distances are squared (i.e. SNE-like
+# methods)
+sq_dist_gradient <- function(inp, out, method, mat_name = "ym") {
+  km <- method$stiffness_fn(method, inp, out)
+  # multiply K by 2
+  gm <- stiff_to_grads(out[[mat_name]], 2 * km)
+  list(km = km, gm = gm)
+}
+
+# Calculates an embedding gradient for methods with a defined transformation
+# step (assumes square distances if not present)
+generic_gradient <- function(inp, out, method, mat_name = "ym") {
+  if (!is.null(method$transform)) {
+    df_dd <- method$transform$gr(inp, out, method) / (out$dm + method$eps)
+  }
+  else {
+    # assume default square distance tranform
+    # f = dm^2 => df/dd = 2*dm, dm cancels with 1/dm
+    df_dd <- 2
+  }
+  km <- method$stiffness_fn(method, inp, out)
+  gm <- stiff_to_grads(out[[mat_name]], km * df_dd)
+  list(km = km, gm = gm)
+}
+
+# Gradient Matrix from Stiffness Matrix
+#
+# Convert stiffness matrix to gradient matrix.
+#
+# @param ym Embedded coordinates.
+# @param km Stiffness matrix.
+# @return Gradient matrix.
+stiff_to_grads <- function(ym, km) {
+  gm <- matrix(0, nrow(ym), ncol(ym))
+  for (i in 1:nrow(ym)) {
+    disp <- sweep(-ym, 2, -ym[i, ]) #  matrix of y_ik - y_jk
+    gm[i, ] <- apply(disp * km[, i], 2, sum) # row is sum_j (km_ji * disp)
+  }
+  gm
 }
 
 # Finite Difference Gradient Calculation
@@ -68,18 +102,4 @@ gradient_fd <- function(inp, out, method, mat_name = "ym", diff = 1e-4) {
   list(gm = grad)
 }
 
-# Gradient Matrix from Stiffness Matrix
-#
-# Convert stiffness matrix to gradient matrix.
-#
-# @param ym Embedded coordinates.
-# @param km Stiffness matrix.
-# @return Gradient matrix.
-stiff_to_grads <- function(ym, km) {
-  gm <- matrix(0, nrow(ym), ncol(ym))
-  for (i in 1:nrow(ym)) {
-    disp <- sweep(-ym, 2, -ym[i, ]) #  matrix of y_ik - y_jk
-    gm[i, ] <- apply(disp * km[, i], 2, sum) # row is sum_j (km_ji * disp)
-  }
-  gm
-}
+
