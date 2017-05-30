@@ -238,7 +238,7 @@ $$
 \frac{\partial w_{ij}}{\partial \alpha} 
 =-
 \left[
-\frac{\beta_i f_{ij}}{\alpha \beta_i \left(\alpha f_{ij} +1\right)}
+\frac{\beta_i f_{ij}}{\alpha \left(\alpha \beta_i f_{ij} +1\right)}
 -
 \frac{\ln\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha ^ 2}
 \right]
