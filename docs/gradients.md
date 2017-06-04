@@ -692,7 +692,7 @@ sections on [Input Initialization](input-initialization.html) and
 [Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) defines
 a kernel closely related to the gamma function with $\nu$ degrees of freedom:
 
-$$w_{ij} = \left(1 + \frac{f_{ij}}{\nu_{i}}\right)^{-\frac{\nu_{i} + 1}{2}}$$
+$$w_{ij} = \left(1 + \frac{f_{ij}}{\nu_{i}}\right)^{-\left(\nu_{i} + 1\right)/2}$$
 
 where $\nu_{i} = \infty$ gives SNE-like behavior and $\nu_{i} = 1$ gives 
 t-SNE behavior. This is very similar in concept to the tail-heaviness function 
