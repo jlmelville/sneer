@@ -347,21 +347,33 @@ w_{ij}^{\alpha_i + 1}
 </div>
 <div id="the-it-sne-gradient" class="section level2">
 <h2>The it-SNE gradient</h2>
-<p>To demonstrate the connection between HSSNE and it-SNE, here’s the gradient with respect to <span class="math inline">\(\nu_i\)</span>, which is analogous to <span class="math inline">\(\alpha_i\)</span> in inhomogeneous HSSNE:</p>
+<p>To demonstrate the connection between HSSNE and it-SNE, here’s the gradient with respect to <span class="math inline">\(\nu_i\)</span>, which is analogous to <span class="math inline">\(\alpha_i\)</span> in inhomogeneous HSSNE.</p>
+<p>The kernel function is:</p>
+<p><span class="math display">\[w_{ij} = \left(1 + \frac{f_{ij}}{\nu_{i}}\right)^{-\left(\nu_{i} + 1\right)/2}\]</span></p>
+<p>And the derivative of the weight with respect to the degrees of freedom, <span class="math inline">\(\nu_i\)</span> is:</p>
+<p><span class="math display">\[
+\frac{\partial w_{ij}}{\partial \nu_i} = 
+\frac{1}{2}
+\left[
+\frac{f_{ij}\left(\nu_{i} + 1\right)}{\left(\frac{f_{ij}}{\nu_{i}} + 1\right)\nu_i^2}
+-\ln\left(\frac{f_{ij}}{\nu_i} + 1\right)
+\right ]
+w_{ij}
+\]</span></p>
+<p>This eventually leads to the final expression for the gradient of the cost with respect to <span class="math inline">\(\nu_{i}\)</span>:</p>
 <p><span class="math display">\[
 \frac{\partial C}{\partial \nu_i} = 
   \frac{1}{2}
   \sum_{j}
-  \left\{
-    \ln\left(\frac{f_{ij}}{\nu_i} + 1\right)
-    -
     \left[
-      \frac{f_{ij}\nu_i + 1}{\nu_i^2 \left(\frac{f_{ij}}{\nu_i} + 1\right)}
+      \ln\left(\frac{f_{ij}}{\nu_i} + 1\right)
+      -
+      \frac{f_{ij}\left(\nu_i + 1\right)}
+      {\left(\frac{f_{ij}}{\nu_i} + 1\right) \nu_i^2}
     \right]
       \left(
         p_{ij} - q_{ij}
       \right)
-\right\}
 \]</span> This has a very similar structure to the HSSNE version. The extension to the gradient with respect to <span class="math inline">\(\xi\)</span> is obvious (i.e. multiply the RHS in the above equation by <span class="math inline">\(2\xi\)</span>).</p>
 <p>Up: <a href="index.html">Index</a></p>
 </div>

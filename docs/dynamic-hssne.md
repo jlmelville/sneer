@@ -332,22 +332,41 @@ multiplying the above gradient by $2\xi_i$.
 
 To demonstrate the connection between HSSNE and it-SNE, here's the gradient
 with respect to $\nu_i$, which is analogous to $\alpha_i$ in inhomogeneous
-HSSNE:
+HSSNE.
+
+The kernel function is:
+
+$$w_{ij} = \left(1 + \frac{f_{ij}}{\nu_{i}}\right)^{-\left(\nu_{i} + 1\right)/2}$$
+
+And the derivative of the weight with respect to the degrees of freedom, $\nu_i$
+is:
+
+$$
+\frac{\partial w_{ij}}{\partial \nu_i} = 
+\frac{1}{2}
+\left[
+\frac{f_{ij}\left(\nu_{i} + 1\right)}{\left(\frac{f_{ij}}{\nu_{i}} + 1\right)\nu_i^2}
+-\ln\left(\frac{f_{ij}}{\nu_i} + 1\right)
+\right ]
+w_{ij}
+$$
+
+This eventually leads to the final expression for the gradient of the cost with 
+respect to $\nu_{i}$:
 
 $$
 \frac{\partial C}{\partial \nu_i} = 
   \frac{1}{2}
   \sum_{j}
-  \left\{
-    \ln\left(\frac{f_{ij}}{\nu_i} + 1\right)
-    -
     \left[
-      \frac{f_{ij}\nu_i + 1}{\nu_i^2 \left(\frac{f_{ij}}{\nu_i} + 1\right)}
+      \ln\left(\frac{f_{ij}}{\nu_i} + 1\right)
+      -
+      \frac{f_{ij}\left(\nu_i + 1\right)}
+      {\left(\frac{f_{ij}}{\nu_i} + 1\right) \nu_i^2}
     \right]
       \left(
         p_{ij} - q_{ij}
       \right)
-\right\}
 $$
 This has a very similar structure to the HSSNE version. The extension to the 
 gradient with respect to $\xi$ is obvious (i.e. multiply the RHS in the above 
