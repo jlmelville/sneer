@@ -365,7 +365,7 @@ $$
       {\left(\frac{f_{ij}}{\nu_i} + 1\right) \nu_i^2}
     \right]
       \left(
-        p_{ij} - q_{ij}
+        p_{j|i} - q_{j|i}
       \right)
 $$
 This has a very similar structure to the HSSNE version. The extension to the 
