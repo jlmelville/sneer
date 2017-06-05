@@ -411,3 +411,17 @@ handle_prob <- function(pm, method) {
   }
   pm
 }
+
+# TRUE if the output probabilities are joint
+# If you are using an asymmetric kernel (i.e. there are per-point parameters
+# which aren't guaranteed to be uniform), you will need to take extra steps
+# to enforce jointness.
+# see also is_asymmetric_kernel
+is_joint_out_prob <- function(method) {
+  if (is.null(method$out_prob_type)) {
+    method$prob_type == "joint"
+  }
+  else {
+    method$out_prob_type == "joint"
+  }
+}
