@@ -2,6 +2,55 @@
 # are in turn converted to probabilities in probability-based embedding. These
 # functions work on the squared distances.
 
+# Utility Functions -------------------------------------------------------
+
+# Finite Difference Gradient of Kernel
+#
+# Calculates the gradient of a similarity kernel by finite difference.
+# Only intended for testing purposes.
+#
+# @param kernel A similarity kernel.
+# @param d2m Matrix of squared distances.
+# @param diff Step size to take in finite difference calculation.
+# @return Gradient matrix.
+kernel_gr_fd <- function(kernel, d2m, diff = 1e-4) {
+  d2m_fwd <- d2m + diff
+  fwd <- kernel$fn(kernel, d2m_fwd)
+
+  d2m_back <- d2m - diff
+  back <- kernel$fn(kernel, d2m_back)
+
+  (fwd - back) / (2 * diff)
+}
+
+# Ensure the Kernel has the Correct Symmetry
+#
+# This function should be called when the parameters of a kernel (e.g.
+# the beta parameter of the exponential) are changed from a scalar to
+# a vector or (vice versa). Such a change may result in the symmetry of
+# the kernel changing from asymmetric to symmetric (and vice versa again).
+#
+# @param kernel A similarity kernel.
+# @return Kernel with the type attribute of the function correctly set for
+# its parameters.
+check_symmetry <- function(kernel) {
+  if (!is.null(kernel$check_symmetry)) {
+    kernel <- kernel$check_symmetry(kernel)
+  }
+  kernel
+}
+
+# TRUE if the kernel is asymmetric.
+# (potentially of interest if you are forcing the output probabilities to be
+# joint)
+# see also is_joint_out_prob
+is_asymmetric_kernel <- function(kernel) {
+  attr(kernel$fn, "type") == "asymm"
+}
+
+
+# Weight Functions --------------------------------------------------------
+
 # Exponential Weighted Similarity
 #
 # A similarity function for probability-based embedding.
@@ -116,6 +165,42 @@ heavy_tail_weight <- function(d2m, beta = 1, alpha = 1.5e-8) {
 }
 attr(heavy_tail_weight, "type") <- "symm"
 
+# Step Weight
+#
+# A similarity function for probability-based embedding.
+#
+# This function returns a value of one for input data less than or equal to
+# the beta parameter, and zero otherwise.
+#
+# Useful for emulating a k-nearest neighbor style of weighting, as favored by
+# Yang and co-workers (see the publication list). Note that the value of beta
+# of beta is clamped so that it can't be smaller than the smallest value in the
+# input matrix. This is to stop the output weights all being zero, which
+# results in a uniform probability and hence a large perplexity. This can
+# cause problems for the bisection search used to find the target perplexity.
+#
+# @param d2m Matrix of squared distances.
+# @param beta step cutoff parameter.
+# @return Weight matrix.
+# @family sneer weight functions
+#
+#
+# @references
+# Yang, Z., Peltonen, J., & Kaski, S. (2014).
+# Optimization equivalence of divergences improves neighbor embedding.
+# In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
+# (pp. 460-468).
+#
+# Yang, Z., Peltonen, J., & Kaski, S. (2015).
+# Majorization-Minimization for Manifold Embedding.
+# In \emph{AISTATS}.
+step_weight <- function(d2m, beta = 1) {
+  # beta is not allowed to be smaller than the smallest value in the distance
+  # matrix
+  (d2m <= max(beta, min(d2m))) * 1
+}
+
+# Exponential Kernel ------------------------------------------------------
 
 # Exponential Kernel Factory Function
 #
@@ -165,6 +250,9 @@ exp_gr <- function(d2m, beta = 1) {
   -beta * exp_weight(d2m, beta = beta)
 }
 
+
+# Cauchy Kernel -----------------------------------------------------------
+
 # t-Distribution Kernel Factory Function
 #
 # Similarity Kernel factory function.
@@ -200,6 +288,9 @@ tdist_kernel <- function() {
 tdist_gr <- function(d2m) {
   -(tdist_weight(d2m) ^ 2)
 }
+
+
+# Heavy-Tail Kernel -------------------------------------------------------
 
 # Heavy Tailed Kernel Factory Function
 #
@@ -241,6 +332,8 @@ heavy_tail_kernel <- function(beta = 1, alpha = 0) {
   kernel
 }
 
+
+
 # Heavy Tail Kernel Gradient.
 #
 # Calculates the gradient of the Student-t distribution with one degree of
@@ -256,76 +349,8 @@ heavy_tail_gr <- function(d2m, beta = 1, alpha = 1.5e-8) {
   -beta * heavy_tail_weight(d2m, beta = beta, alpha = alpha) ^ (alpha + 1)
 }
 
-# Finite Difference Gradient of Kernel
-#
-# Calculates the gradient of a similarity kernel by finite difference.
-# Only intended for testing purposes.
-#
-# @param kernel A similarity kernel.
-# @param d2m Matrix of squared distances.
-# @param diff Step size to take in finite difference calculation.
-# @return Gradient matrix.
-kernel_gr_fd <- function(kernel, d2m, diff = 1e-4) {
-  d2m_fwd <- d2m + diff
-  fwd <- kernel$fn(kernel, d2m_fwd)
+# Inhomogeneous Kernel ----------------------------------------------------
 
-  d2m_back <- d2m - diff
-  back <- kernel$fn(kernel, d2m_back)
-
-  (fwd - back) / (2 * diff)
-}
-
-# Ensure the Kernel has the Correct Symmetry
-#
-# This function should be called when the parameters of a kernel (e.g.
-# the beta parameter of the exponential) are changed from a scalar to
-# a vector or (vice versa). Such a change may result in the symmetry of
-# the kernel changing from asymmetric to symmetric (and vice versa again).
-#
-# @param kernel A similarity kernel.
-# @return Kernel with the type attribute of the function correctly set for
-# its parameters.
-check_symmetry <- function(kernel) {
-  if (!is.null(kernel$check_symmetry)) {
-    kernel <- kernel$check_symmetry(kernel)
-  }
-  kernel
-}
-
-# Step Weight
-#
-# A similarity function for probability-based embedding.
-#
-# This function returns a value of one for input data less than or equal to
-# the beta parameter, and zero otherwise.
-#
-# Useful for emulating a k-nearest neighbor style of weighting, as favored by
-# Yang and co-workers (see the publication list). Note that the value of beta
-# of beta is clamped so that it can't be smaller than the smallest value in the
-# input matrix. This is to stop the output weights all being zero, which
-# results in a uniform probability and hence a large perplexity. This can
-# cause problems for the bisection search used to find the target perplexity.
-#
-# @param d2m Matrix of squared distances.
-# @param beta step cutoff parameter.
-# @return Weight matrix.
-# @family sneer weight functions
-#
-#
-# @references
-# Yang, Z., Peltonen, J., & Kaski, S. (2014).
-# Optimization equivalence of divergences improves neighbor embedding.
-# In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
-# (pp. 460-468).
-#
-# Yang, Z., Peltonen, J., & Kaski, S. (2015).
-# Majorization-Minimization for Manifold Embedding.
-# In \emph{AISTATS}.
-step_weight <- function(d2m, beta = 1) {
-  # beta is not allowed to be smaller than the smallest value in the distance
-  # matrix
-  (d2m <= max(beta, min(d2m))) * 1
-}
 
 itsne_weight <- function(d2m, dof = 1) {
   (1 + d2m / dof) ^ (-0.5 * (dof + 1))
