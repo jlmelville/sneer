@@ -1,6 +1,8 @@
-# A set of methods where the meta-parameters are also optimized.
+# A set of methods where the kernel parameters are also optimized.
 # As these fluctuate over the course of the optimization, I call them
 # "dynamic" SNE methods.
+
+# See also the inhomogeneous (it-SNE) functions
 
 # Dynamic HSSNE -----------------------------------------------------------
 
@@ -62,10 +64,14 @@ dh3sne <- function(beta = 1, alpha = 0, opt_iter = 0, alt_opt = TRUE,
 # inhomogeneous Heavy-Tailed "Pair-wise" SNE, P and Q are cond
 ihpsne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    alt_opt = TRUE, xi_eps = 1e-3,
+                   gr_alpha = NULL,
+                   gr_beta = NULL,
+                   keep = c("qm", "wm", "d2m"),
                    eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
             alt_opt = alt_opt, eps = eps,
+            gr_alpha = gr_alpha, gr_beta = gr_beta, keep = keep,
             verbose = verbose, dyn_beta = "static", dyn_alpha = "point"),
     prob_type = "cond"
   )
@@ -84,17 +90,26 @@ ih3sne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
   )
 }
 
+# Inhomogeneous HSSNE: P is joint, Q is joint (by averaging)
+# Definitely know we have an asymmetric kernel here, so let's pass in asymm
+# versions of the parameter gradients
+# If we kept these NULL, the gradients would be correct, but slightly less
+# efficient
 ihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    alt_opt = TRUE, xi_eps = 1e-3,
                    eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     ihpsne(beta = beta, alpha = alpha, opt_iter = opt_iter,
            switch_iter = switch_iter, xi_eps = xi_eps,
+           keep = c("qm", "wm", "d2m", "qcm"),
+           gr_alpha = heavy_tail_cost_gr_alpha_kl_asymm,
+           gr_beta = heavy_tail_cost_gr_beta_kl_asymm,
            alt_opt = alt_opt, eps = eps, verbose = verbose),
     prob_type = "joint"
   )
 }
 
+# Inhomogeneous HASNE: the heavy-tailed equivalent of it-SNE
 ihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    alt_opt = TRUE, xi_eps = 1e-3,
                    eps = .Machine$double.eps, verbose = FALSE) {
@@ -108,10 +123,29 @@ ihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
 
 # Doubly Dynamic HSSNE ----------------------------------------------------
 
-# dyn_ can be one of 'static', 'global', 'point'
+# dyn_ can be one of 'static' (don't optimize), 'global' (one value),
+# 'point' (allow each parameter to vary per point)
+# If you are transferring precisions, it makes so sense to specify a 'global'
+# dynamic beta. So don't do that.
+# opt_iter - at what iteration to start optimizing the parameters
+# switch_iter - if doing 'point' optimization, treat parameters as global
+# between opt_iter and switch_iter
+# gr_alpha - function to use for calculating the alpha gradient. If NULL, we
+#  check to see if we are using an asymmetric kernel with joint output
+#  probabilities. If so, we use the safe, but slow plugin gradient. Otherwise,
+#  we can use a faster version, but this assumes that we are using the KL
+#  divergence as a cost function (a likely scenario). If not, provide your
+#  own function here.
+# gr_beta - function to use for calculating the beta gradient. Same rules apply
+#  here as with gr_alpha.
+# NB an asymmetric kernel results from using a non-uniform alpha or beta, even
+# if you aren't optimizing them, e.g. transferring precisions.
 ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
                     dyn_beta = "global", dyn_alpha = "global",
                     opt_iter = 0, switch_iter = opt_iter,
+                    keep = c("qm", "wm", "d2m"),
+                    gr_alpha = NULL,
+                    gr_beta = NULL,
                     eps = .Machine$double.eps,
                     alt_opt = TRUE,
                     verbose = FALSE) {
@@ -133,58 +167,46 @@ ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
     stop("One of alpha and beta must be non-static")
   }
 
-  alpha_fn <- sum
-  if (dyn_alpha == "point") {
-    alpha_fn <- rowSums
-  }
-
-  beta_fn <- sum
-  if (dyn_beta == "point") {
-    beta_fn <- rowSums
-  }
-
   lreplace(
     hssne_plugin(beta = beta, alpha = alpha, eps = eps, verbose = verbose,
-                 keep = c("qm", "wm", "d2m", "qcm")),
+                 keep = keep),
     after_init_fn = function(inp, out, method) {
       nr <- nrow(out$ym)
-      if (dyn_alpha == "point" && length(alpha) != nr) {
-        method$kernel$alpha <- rep(method$kernel$alpha, nr)
+      kernel <- method$kernel
+      if (method$dyn_alpha == "point" && length(kernel$alpha) != nr) {
+        kernel$alpha <- rep(kernel$alpha, nr)
       }
-      if (dyn_beta == "point" && length(beta) != nr) {
-        method$kernel$beta <- rep(method$kernel$beta, nr)
+      if (method$dyn_beta == "point" && length(kernel$beta) != nr) {
+        kernel$beta <- rep(kernel$beta, nr)
       }
-      method$kernel <- check_symmetry(method$kernel)
+      method$kernel <- check_symmetry(kernel)
+
+      # Leaving methods null means we want to use the simpler kernel for KL
+      # divergence and a non-joint output probability, if possible
+      if (is.null(method$gr_alpha) || is.null(method$gr_beta)) {
+        if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
+          if (verbose) {
+            message("Asymmetric kernel: using plugin parameter gradients")
+          }
+          # There might be a more efficient gradient, but these are always safe
+          method$gr_alpha <- heavy_tail_cost_gr_alpha_plugin
+          method$gr_beta <- heavy_tail_cost_gr_beta_plugin
+        }
+        else {
+          # These are only correct using the KL divergence!
+          method$gr_alpha <- heavy_tail_cost_gr_alpha_kl_symm
+          method$gr_beta <- heavy_tail_cost_gr_beta_kl_symm
+        }
+      }
+
       list(method = method)
     },
     get_extra_par = function(method) {
-      params <- c()
-      if (dyn_alpha != "static") {
-        params <- c(params, method$kernel$alpha)
-      }
-      if (dyn_beta != "static") {
-        params <- c(params, method$kernel$beta)
-      }
-
-      xi <- params - method$xi_eps
-      xi[xi < 0] <- 0
-      sqrt(xi)
+      heavy_tail_params_xi(method$kernel, method)
     },
     set_extra_par = function(method, extra_par) {
-      xi <- extra_par
-      params <- xi * xi + method$xi_eps
-      if (dyn_alpha != "static") {
-        method$kernel$alpha <- params[1:length(method$kernel$alpha)]
-      }
-      if (dyn_beta != "static") {
-        if (dyn_alpha != "static") {
-          beta_start <- length(method$kernel$alpha) + 1
-        }
-        else {
-          beta_start <- 1
-        }
-        method$kernel$beta <- params[beta_start:length(params)]
-      }
+      method$kernel <- set_heavy_tail_params_xi(method$kernel, method,
+                                                extra_par)
       method
     },
     extra_gr = function(opt, inp, out, method, iter, extra_par) {
@@ -192,66 +214,27 @@ ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
         return(rep(0, length(extra_par)))
       }
 
-      xi <- extra_par
-      params <- xi * xi + method$xi_eps
-      eps <- method$eps
+      heavy_tail_gr_param_xi(method$kernel, inp, out, method, xi = extra_par,
+                             iter)
 
-      pm <- inp$pm
-      fm <- out$d2m
-      wm <- out$wm
-      qm <- out$qm
-
-      gr <- c()
-
-      if (dyn_alpha != "static") {
-        xi_alpha_range <- 1:(length(method$kernel$alpha))
-        alpha <- params[xi_alpha_range]
-        gr_alpha <- dhssne_gr_mat_alpha(pm, qm, fm, alpha, method$kernel$beta,
-                                        out$qcm, eps)
-        gr_alpha <- 2 * (xi[xi_alpha_range] / (alpha + eps)) * alpha_fn(gr_alpha)
-        if (iter < switch_iter) {
-          gr <- c(gr, rep(mean(gr_alpha), length(gr_alpha)))
-        }
-        else {
-          gr <- c(gr, gr_alpha)
-        }
-      }
-
-      if (dyn_beta != "static") {
-        if (dyn_alpha != "static") {
-          beta_start <- length(method$kernel$alpha) + 1
-        }
-        else {
-          beta_start <- 1
-        }
-        xi_beta_range <- beta_start:length(xi)
-        gr_beta <- dhssne_gr_mat_beta(pm, qm, fm, wm, method$kernel$alpha,
-                                      out$qcm, eps)
-        gr_beta <- 2 * xi[xi_beta_range] * beta_fn(gr_beta)
-
-        if (iter < switch_iter) {
-          gr <- c(gr, rep(mean(gr_beta), length(gr_beta)))
-        }
-        else {
-          gr <- c(gr, gr_beta)
-        }
-      }
-
-      gr
     },
     export_extra_par = function(method) {
-      list(alpha = method$kernel$alpha,
-           beta =  method$kernel$beta)
+      heavy_tail_params(method$kernel)
     },
+    gr_alpha = gr_alpha,
+    gr_beta = gr_beta,
     opt_iter = opt_iter,
+    dyn_alpha = dyn_alpha,
+    dyn_beta = dyn_beta,
+    switch_iter = switch_iter,
     xi_eps = xi_eps,
     alt_opt = alt_opt
   )
 }
 
 dihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
-                   xi_eps = 1e-3, alt_opt = TRUE,
-                   eps = .Machine$double.eps, verbose = FALSE) {
+                    xi_eps = 1e-3, alt_opt = TRUE,
+                    eps = .Machine$double.eps, verbose = FALSE) {
   ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
           alt_opt = alt_opt, eps = eps,
           verbose = verbose, dyn_beta = "point", dyn_alpha = "point")
@@ -262,43 +245,231 @@ dihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                     eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
-          verbose = verbose, dyn_beta = "point", dyn_alpha = "point",
-          alt_opt = alt_opt, xi_eps = xi_eps),
+            verbose = verbose, dyn_beta = "point", dyn_alpha = "point",
+            alt_opt = alt_opt, xi_eps = xi_eps),
     prob_type = "row")
 }
 
 # Gradients ---------------------------------------------------------------
 
-# dw/da can be written as -h*w, which allows for simplification of dC/da
-# This function returns the "-h" portion
-gr_mult <- function(alpha, beta, fm, eps = .Machine$double.eps) {
-  c1 <- alpha * beta * fm + 1
-  (beta * fm) / (c1 + eps) - log(c1 + eps) / (alpha + eps)
-}
+# Generic functions which can be used with any cost, kernel and normalization
+# gradient for kernel parameters
 
-# Gradient matrix dc/dalpha, used by both inhomogeneous HSSNE and dynamic HSSNE
-dhssne_gr_mat_alpha <- function(pm, qm, fm, alpha, beta, qcm = NULL,
-                                eps = .Machine$double.eps) {
-  hm <- gr_mult(alpha, beta, fm, eps = eps)
-  dhssne_gr_mat_kl(hm, pm, qm, qcm, eps)
-}
-
-dhssne_gr_mat_beta <- function(pm, qm, fm, wm, alpha, qcm = NULL,
-                               eps = .Machine$double.eps) {
-  hm <- fm * wm ^ alpha
-  dhssne_gr_mat_kl(hm, pm, qm, qcm, eps)
-}
-
-dhssne_gr_mat_kl <- function(hm, pm, qm, qcm = NULL,
-                             eps = .Machine$double.eps) {
-  if (!is.null(qcm)) {
-    # Presence of qcm indicates an asymmetric kernel with a joint
-    # probability: can't simplify expression as much
-    gr <- hm * qcm * (pm / (qm + eps) - 1)
+# Calculates dC/d_param
+param_gr <- function(method, inp, out, dw_dparam, dyn) {
+  gr <- dw_dparam * param_stiffness_norm(method, inp, out)
+  if (dyn == "point") {
+    rowSums(gr)
   }
   else {
-    # pairwise and semi-symmetric versions can use simpler version
-    gr <- hm * (pm - qm)
+    sum(gr)
   }
-  gr
 }
+
+# Calcultes dC/dw accounting for the type of normalization (if any)
+param_stiffness_norm <- function(method, inp, out) {
+  dc_dq <- method$cost$gr(inp, out, method)
+  if (!is.null(method$out_prob_type) && method$out_prob_type == "un") {
+    norm_term <- dc_dq
+  }
+  else if (method$prob_type == "row") {
+    wm_sum <- rowSums(out$wm)
+    norm_term <- rowSums(dc_dq * out$qm)
+    norm_term <- sweep(dc_dq, 1, norm_term) # subtract row sum from each row element
+    norm_term <- norm_term / wm_sum
+  }
+  else {
+    wm_sum <- sum(out$wm)
+    norm_term <- (dc_dq - sum(dc_dq * out$qm)) / wm_sum
+  }
+  norm_term
+}
+
+# Heavy Tail Parameter Gradient -------------------------------------------
+
+# These functions are used only with DHSSNE and related methods so don't
+# need to be with the generic kernels
+
+# dw/d_alpha
+heavy_tail_gr_alpha <- function(d2m, beta = 1, alpha = 1.5e-8,
+                                wm = heavy_tail_weight(d2m, beta = beta,
+                                                       alpha = alpha),
+                                eps = .Machine$double.eps) {
+  c1 <- alpha * beta * d2m + 1
+  c1e <- c1 + eps
+  hm <- log(c1e) / (alpha * alpha + eps) - (beta * d2m) / (alpha * c1e)
+  wm * hm
+}
+
+# dw/d_beta
+heavy_tail_gr_beta <- function(d2m, beta = 1, alpha = 1.5e-8,
+                               wm = heavy_tail_weight(d2m, beta = beta,
+                                                      alpha = alpha)) {
+  hm <- -d2m * wm ^ alpha
+  wm * hm
+}
+
+# A generic dC/d_xi(alpha)
+heavy_tail_cost_gr_alpha_plugin <- function(inp, out, method, xi) {
+  xi_alpha_range <- 1:(length(method$kernel$alpha))
+
+  dw_da <- heavy_tail_gr_alpha(out$d2m, method$kernel$beta, method$kernel$alpha,
+                               out$wm, method$eps)
+  gr_alpha <- param_gr(method, inp, out, dw_da, method$dyn_alpha)
+  2 * xi[xi_alpha_range] * gr_alpha
+}
+
+# A generic dC/d_xi(beta)
+heavy_tail_cost_gr_beta_plugin <- function(inp, out, method, xi) {
+  if (method$dyn_alpha != "static") {
+    beta_start <- length(method$kernel$alpha) + 1
+  }
+  else {
+    beta_start <- 1
+  }
+  xi_beta_range <- beta_start:length(xi)
+
+  dw_db <- heavy_tail_gr_beta(out$d2m, method$kernel$beta, method$kernel$alpha,
+                              out$wm)
+  gr_beta <- param_gr(method, inp, out, dw_db, method$dyn_beta)
+  2 * xi[xi_beta_range] * gr_beta
+}
+
+# A more efficient dC/d_xi(alpha) if using the KL divergence as a cost function
+# and a symmetric kernel
+heavy_tail_cost_gr_alpha_kl_symm <- function(inp, out, method, xi) {
+  xi_alpha_range <- 1:(length(method$kernel$alpha))
+
+  alpha <- method$kernel$alpha + method$eps
+  beta <- method$kernel$beta
+  c1 <- alpha * beta * out$d2m + 1 + method$eps
+  gr <- ((beta * out$d2m) / c1 - log(c1) / alpha) / alpha
+  gr <- gr * (inp$pm - out$qm)
+  if (method$dyn_alpha == "point") {
+    gr <- rowSums(gr)
+  }
+  else {
+    gr <- sum(gr)
+  }
+  2 * xi[xi_alpha_range] * gr
+}
+
+# A more efficient dC/d_xi(beta) if using the KL divergence as a cost function
+# and a symmetric kernel
+heavy_tail_cost_gr_beta_kl_symm <- function(inp, out, method, xi) {
+  if (method$dyn_alpha != "static") {
+    beta_start <- length(method$kernel$alpha) + 1
+  }
+  else {
+    beta_start <- 1
+  }
+  xi_beta_range <- beta_start:length(xi)
+
+  gr <- out$d2m * out$wm ^ method$kernel$alpha
+  gr <- gr * (inp$pm - out$qm)
+  if (method$dyn_beta == "point") {
+    gr <- rowSums(gr)
+  }
+  else {
+    gr <- sum(gr)
+  }
+  2 * xi[xi_beta_range] * gr
+}
+
+# A more efficient dC/d_xi(alpha) if using the KL divergence as a cost function
+# and an asymmetric kernel
+heavy_tail_cost_gr_alpha_kl_asymm <- function(inp, out, method, xi) {
+  xi_alpha_range <- 1:(length(method$kernel$alpha))
+
+  alpha <- method$kernel$alpha + method$eps
+  beta <- method$kernel$beta
+  c1 <- alpha * beta * out$d2m + 1 + method$eps
+  gr <- ((beta * out$d2m) / c1 - log(c1) / alpha) / alpha
+  gr <- gr * out$qcm * ((inp$pm / (out$qm + method$eps)) - 1)
+  if (method$dyn_alpha == "point") {
+    gr <- rowSums(gr)
+  }
+  else {
+    gr <- sum(gr)
+  }
+  2 * xi[xi_alpha_range] * gr
+}
+
+# A more efficient dC/d_xi(beta) if using the KL divergence as a cost function
+# and an asymmetric kernel
+heavy_tail_cost_gr_beta_kl_asymm <- function(inp, out, method, xi) {
+  if (method$dyn_alpha != "static") {
+    beta_start <- length(method$kernel$alpha) + 1
+  }
+  else {
+    beta_start <- 1
+  }
+  xi_beta_range <- beta_start:length(xi)
+
+  gr <- out$d2m * out$wm ^ method$kernel$alpha
+  gr <- gr * out$qcm * ((inp$pm / (out$qm + method$eps)) - 1)
+  if (method$dyn_beta == "point") {
+    gr <- rowSums(gr)
+  }
+  else {
+    gr <- sum(gr)
+  }
+  2 * xi[xi_beta_range] * gr
+}
+
+# dC/d_xi
+heavy_tail_gr_param_xi <- function(kernel, inp, out, method, xi, iter) {
+  gr_alpha <- c()
+  if (method$dyn_alpha != "static") {
+    gr_alpha <- method$gr_alpha(inp, out, method, xi)
+    if (iter < method$switch_iter) {
+      gr_alpha <- rep(mean(gr_alpha), length(gr_alpha))
+    }
+  }
+
+  gr_beta <- c()
+  if (method$dyn_beta != "static") {
+    gr_beta <- method$gr_beta(inp, out, method, xi)
+    if (iter < method$switch_iter) {
+      gr_beta <- rep(mean(gr_beta), length(gr_beta))
+    }
+  }
+
+  c(gr_alpha, gr_beta)
+}
+
+heavy_tail_params <- function(kernel) {
+  list(alpha = kernel$alpha, beta =  kernel$beta)
+}
+
+heavy_tail_params_xi <- function(kernel, method) {
+  params <- c()
+  if (method$dyn_alpha != "static") {
+    params <- c(params, kernel$alpha)
+  }
+  if (method$dyn_beta != "static") {
+    params <- c(params, kernel$beta)
+  }
+
+  xi <- params - method$xi_eps
+  xi[xi < 0] <- 0
+  sqrt(xi)
+}
+
+set_heavy_tail_params_xi <- function(kernel, method, xi) {
+  params <- xi * xi + method$xi_eps
+  if (method$dyn_alpha != "static") {
+    kernel$alpha <- params[1:length(kernel$alpha)]
+  }
+  if (method$dyn_beta != "static") {
+    if (method$dyn_alpha != "static") {
+      beta_start <- length(kernel$alpha) + 1
+    }
+    else {
+      beta_start <- 1
+    }
+    kernel$beta <- params[beta_start:length(params)]
+  }
+  kernel
+}
+

@@ -94,7 +94,7 @@ quick_embed <- function(method, df = iris[, 1:4],
              preprocess = make_preprocess(verbose = FALSE),
              reporter = make_reporter(report_every = 1, keep_costs = TRUE,
                                       verbose = FALSE),
-             export = c("report"),opt = opt)
+             export = c("report"), opt = opt)
 }
 
 # Test Global Alpha ------------------------------------------------------------
@@ -208,6 +208,22 @@ test_that("iHSSNE analytical gradient is correct for range of multi alpha and mu
   }
 })
 
+test_that("iHSSNE analytical gradient is correct using generic parameter gradient", {
+  for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
+    method <- ihssne(alpha = seq(alpha, alpha * 2, length.out = nr),
+                     beta = betas,
+                     xi_eps = .Machine$double.eps)
+    method$gr_alpha <- heavy_tail_cost_gr_alpha_plugin
+    method$gr_beta <- heavy_tail_cost_gr_beta_plugin
+    res <- embedder(method)
+    fd_grad <- gradient_fd_xi_point(res)
+    an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                   a2x(res$method$kernel$alpha))
+    expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(alpha))
+  }
+})
+
+
 # Semi-symmetric
 test_that("iH3SNE analytical gradient is correct for range of multi alpha and multi beta", {
   for (alpha in c(1e-3, 0.25, 0.5, 0.75, 1, 2, 5, 10)) {
@@ -308,12 +324,37 @@ test_that("it-SNE analytical gradient is correct for range of dof", {
   for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
     res <- embedder(itsne(dof = seq(dof, dof * 2, length.out = nr),
                           xi_eps = .Machine$double.eps))
+
     fd_grad <- gradient_fd_xi_point(res, param_names = c("dof"))
     an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
                                    a2x(res$method$kernel$dof))
     expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(dof))
   }
 })
+
+test_that("it-3SNE analytical gradient is correct for range of dof", {
+  for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
+    res <- embedder(it3sne(dof = dof,
+                          xi_eps = .Machine$double.eps))
+    fd_grad <- gradient_fd_xi_point(res, param_names = c("dof"))
+    an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                   a2x(res$method$kernel$dof))
+    expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(dof))
+  }
+})
+
+test_that("it-SSNE analytical gradient is correct for range of dof", {
+  for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
+    res <- embedder(itssne(dof = seq(dof, dof * 2, length.out = nr),
+                          xi_eps = .Machine$double.eps))
+
+    fd_grad <- gradient_fd_xi_point(res, param_names = c("dof"))
+    an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                   a2x(res$method$kernel$dof))
+    expect_equal(an_grad, fd_grad, tol = 1e-6, info = formatC(dof))
+  }
+})
+
 
 
 # Test Fixed Iteration Behavior -------------------------------------------
