@@ -250,6 +250,82 @@ dihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
     prob_type = "row")
 }
 
+# Dynamic ASNE ------------------------------------------------------------
+
+# Optimizes beta parameter of exponential kernel. Less complex due to only
+# one parameter being involved, but probably not that useful.
+
+iasne <- function(beta = 1, opt_iter = 0,
+                  xi_eps = 1e-3, alt_opt = TRUE,
+                  keep = c("qm", "wm", "d2m"),
+                  extra_gr = exp_cost_gr_param_kl_symm,
+                  eps = .Machine$double.eps, verbose = FALSE) {
+
+  lreplace(
+    asne_plugin(beta = beta, eps = eps, keep = keep),
+    after_init_fn = function(inp, out, method) {
+      nr <- nrow(out$ym)
+      if (method$dyn == "point" && length(method$kernel$beta) != nr) {
+        method$kernel$beta <- rep(method$kernel$beta, nr)
+      }
+      method$kernel <- check_symmetry(method$kernel)
+      list(method = method)
+    },
+    opt_iter = opt_iter,
+    dyn = "point",
+    xi_eps = xi_eps,
+    alt_opt = alt_opt,
+    extra_gr = extra_gr,
+    get_extra_par = function(method) {
+      xi <- method$kernel$beta - method$xi_eps
+      xi[xi < 0] <- xi
+      sqrt(xi)
+    },
+    set_extra_par = function(method, extra_par) {
+      xi <- extra_par
+      method$kernel$beta <- xi * xi + method$xi_eps
+      method
+    },
+    export_extra_par = function(method) {
+      list(beta = method$kernel$beta)
+    }
+  )
+}
+
+dasne <- function(beta = 1, opt_iter = 0,
+                  xi_eps = 1e-3, alt_opt = TRUE,
+                  extra_gr = exp_cost_gr_param_kl_symm,
+                  eps = .Machine$double.eps, verbose = FALSE) {
+  lreplace(
+    iasne(beta = beta, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
+          extra_gr = extra_gr, eps = eps, verbose = verbose),
+    dyn = "global"
+  )
+}
+
+issne <- function(beta = 1, opt_iter = 0,
+                  xi_eps = 1e-3, alt_opt = TRUE,
+                  extra_gr = exp_cost_gr_param_kl_asymm,
+                  eps = .Machine$double.eps, verbose = FALSE) {
+  lreplace(
+    iasne(beta = beta, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
+          keep = c("qm", "wm", "d2m", "qcm"),
+          extra_gr = extra_gr, eps = eps, verbose = verbose),
+    prob_type = "joint"
+  )
+}
+
+dssne <- function(beta = 1, opt_iter = 0,
+                  xi_eps = 1e-3, alt_opt = TRUE,
+                  extra_gr = exp_cost_gr_param_kl_symm,
+                  eps = .Machine$double.eps, verbose = FALSE) {
+  lreplace(
+    issne(beta = beta, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
+          extra_gr = extra_gr, eps = eps, verbose = verbose),
+    dyn = "global"
+  )
+}
+
 # Gradients ---------------------------------------------------------------
 
 # Generic functions which can be used with any cost, kernel and normalization
@@ -473,3 +549,62 @@ set_heavy_tail_params_xi <- function(kernel, method, xi) {
   kernel
 }
 
+
+# Exponential Parameter Gradient ------------------------------------------
+
+# dC/d_xi generic for exponential kernel
+exp_cost_gr_param_plugin <- function(opt, inp, out, method, iter, extra_par) {
+  if (iter < method$opt_iter) {
+    return(rep(0, length(extra_par)))
+  }
+  xi <- extra_par
+
+  dw_dbeta <- exp_gr_param(out)
+  gr <- param_gr(method, inp, out, dw_dbeta, method$dyn)
+
+  2 * xi * gr
+}
+
+# dc/d_xi for exponential kernel and KL divergence
+# Can only be used with joint output probabilities if the kernel is symmetric
+# (i.e. uniform beta)
+exp_cost_gr_param_kl_symm <- function(opt, inp, out, method, iter, extra_par) {
+  if (iter < method$opt_iter) {
+    return(rep(0, length(extra_par)))
+  }
+  xi <- extra_par
+
+  gr <- out$d2m * (inp$pm - out$qm)
+  if (method$dyn == "point") {
+    gr <- rowSums(gr)
+  }
+  else {
+    gr <- sum(gr)
+  }
+  2 * xi * gr
+}
+
+# dc/d_xi for exponential kernel and KL divergence
+# Can be used with asymmetric or symmetric kernel and any output probability
+# type - but exp_cost_gr_param_kl_symm is a better choice for non-joint output
+# probabilities
+exp_cost_gr_param_kl_asymm <- function(opt, inp, out, method, iter, extra_par) {
+  if (iter < method$opt_iter) {
+    return(rep(0, length(extra_par)))
+  }
+  xi <- extra_par
+
+  gr <- out$d2m * out$qcm * ((inp$pm / (out$qm + method$eps)) - 1)
+  if (method$dyn == "point") {
+    gr <- rowSums(gr)
+  }
+  else {
+    gr <- sum(gr)
+  }
+  2 * xi * gr
+}
+
+# dw/d_beta
+exp_gr_param <- function(out) {
+  -out$d2m * out$wm
+}

@@ -306,6 +306,59 @@ test_that("DiHASNE analytical gradient is correct for range of multi alpha and m
   }
 })
 
+
+# Dynamic ASNE (Precision Only) -------------------------------------------
+
+test_that("iASNE analytical gradient is correct for non-uniform beta", {
+  res <- embedder(iasne(beta = betas,
+                        xi_eps = .Machine$double.eps))
+  fd_grad <- gradient_fd_xi_point(res, param_names = c("beta"))
+  an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                 a2x(res$method$kernel$beta))
+  expect_equal(an_grad, fd_grad, tol = 1e-6)
+})
+
+test_that("iSSNE analytical gradient is correct for non-uniform beta", {
+  res <- embedder(issne(beta = betas,
+                        xi_eps = .Machine$double.eps))
+  fd_grad <- gradient_fd_xi_point(res, param_names = c("beta"))
+  an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                 a2x(res$method$kernel$beta))
+  expect_equal(an_grad, fd_grad, tol = 1e-6)
+})
+
+test_that("iSSNE works with generic parameter gradient too", {
+  method <- issne(beta = betas,
+                  xi_eps = .Machine$double.eps)
+  method$extra_gr <- exp_cost_gr_param_plugin
+  res <- embedder(method)
+  fd_grad <- gradient_fd_xi_point(res, param_names = c("beta"))
+  an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                 a2x(res$method$kernel$beta))
+  expect_equal(an_grad, fd_grad, tol = 1e-6)
+})
+
+
+test_that("DASNE analytical gradient is correct for single beta", {
+  res <- embedder(dasne(beta = 0.5,
+                        xi_eps = .Machine$double.eps))
+  fd_grad <- gradient_fd_xi(res, param_names = c("beta"))
+  an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                 a2x(res$method$kernel$beta))
+  expect_equal(an_grad, fd_grad, tol = 1e-6)
+})
+
+test_that("DSSNE analytical gradient is correct for single beta", {
+  res <- embedder(dssne(beta = 0.5,
+                        xi_eps = .Machine$double.eps))
+  fd_grad <- gradient_fd_xi(res, param_names = c("beta"))
+  an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                 a2x(res$method$kernel$beta))
+  expect_equal(an_grad, fd_grad, tol = 1e-6)
+})
+
+
+
 # Test inhomogeneous t-SNE ------------------------------------------------
 
 # {h,i}t-SNE has no beta parameter so spared some complications
