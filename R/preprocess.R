@@ -134,14 +134,14 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
   }
 
   function(xm) {
-    if (class(xm) != "dist") {
+    if (!methods::is(xm, "dist")) {
       xm <- as.matrix(xm)
       for (name in names(preprocess)) {
         xm <- preprocess[[name]](xm)
       }
     }
 
-    if (class(xm) == "dist") {
+    if (methods::is(xm, "dist")) {
       dm <- as.matrix(xm)
     } else {
       dm <- distance_matrix(xm)
@@ -152,7 +152,7 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
 
     utils::flush.console()
     result <- list(dm = dm, dirty = TRUE)
-    if (class(xm) != "dist") {
+    if (!methods::is(xm, "dist")) {
       result$xm <- xm
     }
     result

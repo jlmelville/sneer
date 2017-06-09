@@ -74,7 +74,7 @@ reltol <- function(x, y) {
 # @param vals Array or matrix of data.
 # @param msg Label to identify the data summary.
 summarize <- function(vals, msg = "") {
-  if (class(vals) == "matrix") {
+  if (methods::is(vals, "matrix")) {
     vals <- array(vals)
   }
   message(msg, ": ", paste(names(summary(vals)), ":",
@@ -94,7 +94,7 @@ summarize <- function(vals, msg = "") {
 # this value.
 # @return Distance matrix.
 distance_matrix <- function(xm, min_dist = .Machine$double.eps) {
-  if (class(xm) != "dist") {
+  if (!methods::is(xm, "dist")) {
     # a lot faster than as.matrix(dist(x)) - no effect on unit test results
     dm <- sqrt(clamp(coords_to_dist2(as.matrix(xm))))
   } else {

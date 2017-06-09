@@ -772,10 +772,10 @@ sneer <- function(df,
                   quality_measures = NULL,
                   ret = c()) {
 
-  if (class(df) != "dist" && class(df) != "data.frame") {
+  if (!methods::is(df, "dist") && !methods::is(df, "data.frame")) {
     stop("df should be a data frame or dist object")
   }
-  if (class(df) != "dist" && is.null(indexes)) {
+  if (!methods::is(df, "dist") && is.null(indexes)) {
     indexes <- which(vapply(df, is.numeric, logical(1)))
     message("Found ", length(indexes), " numeric columns")
   }
@@ -849,7 +849,7 @@ sneer <- function(df,
 
   extra_costs <- NULL
   # Usually, method is a name of a method that needs to be created
-  if (class(method) == "character") {
+  if (methods::is(method, "character")) {
     method <- tolower(method)
     if (!method %in% names(embed_methods)) {
       stop("Unknown embedding method '",
@@ -942,7 +942,7 @@ sneer <- function(df,
       )
     }
 
-    if (!is.null(perp_scale) && class(perp_scale) == "function") {
+    if (!is.null(perp_scale) && methods::is(perp_scale, "function")) {
       init_inp <- perp_scale
     }
     else {
@@ -1003,7 +1003,7 @@ sneer <- function(df,
       else {
         # no perplexity scaling asked for
         if (length(perplexity) == 1) {
-          if (class(df) == "dist") {
+          if (methods::is(df, "dist")) {
             # length = (nr * (nr + 1)) / 2; solve for nr by quadratic equation
             nr <- (1 + sqrt(1 + (8 * length(df)))) / 2
           }
@@ -1026,7 +1026,7 @@ sneer <- function(df,
     }
   }
 
-  if (class(init) == "matrix") {
+  if (methods::is(init, "matrix")) {
     init_config <- init
     init <- "matrix"
   }
@@ -1139,7 +1139,7 @@ sneer <- function(df,
 
   # Ensure that if Spectral Direction optimizer is chosen, it can be used with
   # the chosen embedding method
-  if (class(opt) == "character" && opt == "SPEC" &&
+  if (methods::is(opt, "character") && opt == "SPEC" &&
       (is.null(embed_method$prob_type) || embed_method$prob_type != "joint")) {
     stop("Spectral direction optimizer is only compatible with ",
          "probability-based embedding methods that use symmetric input ",
@@ -1147,7 +1147,7 @@ sneer <- function(df,
   }
   optimizer <- opt_sneer(opt, embed_method)
 
-  if (class(df) == 'dist') {
+  if (methods::is(df, "dist")) {
     xm <- df
   }
   else {
@@ -1285,7 +1285,7 @@ sneer <- function(df,
 }
 
 opt_sneer <- function(opt, method, epsilon = 500) {
-  if (class(opt) == "list") {
+  if (methods::is(opt, "list")) {
     return(mize_opt(opt))
   }
 

@@ -205,7 +205,7 @@ init_out <- function(initializer) {
 scores_matrix <- function(xm, ncol = min(nrow(xm), base::ncol(xm)),
                           verbose = TRUE) {
   ncomp <- ncol
-  if (class(xm) == "dist") {
+  if (methods::is(xm, "dist")) {
     res_mds <- stats::cmdscale(xm, x.ret = TRUE, eig = TRUE, k = ncol)
     if (verbose) {
       lambda <- res_mds$eig

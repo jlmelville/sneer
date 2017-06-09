@@ -223,9 +223,9 @@ embed_plotly <- function(coords, x = NULL, colors = NULL,
 
   if (is.null(colors)) {
     if (!is.null(x)) {
-      if (class(x) == "numeric") {
+      if (methods::is(x, "numeric")) {
         labels <- x
-        if (class(color_scheme) == "character") {
+        if (methods::is(color_scheme, "character")) {
           colors <- color_scheme
         }
         else {
@@ -317,7 +317,7 @@ process_color_options <- function(df,
                                   verbose = FALSE) {
   if (is.null(colors)) {
     # if no color vector was provided, look for a color name
-    if (!is.null(color_name) && class(df) == "data.frame") {
+    if (!is.null(color_name) && methods::is(df, "data.frame")) {
       colors <- df[[color_name]]
       if (is.null(colors)) {
         stop("Couldn't find color column '", color_name, "'")
@@ -330,7 +330,8 @@ process_color_options <- function(df,
 
   if (is.null(colors)) {
     # Neither colors nor color_name was specified, let's try with labels
-    if (is.null(labels) && !is.null(label_name) && class(df) == "data.frame") {
+    if (is.null(labels) && !is.null(label_name) &&
+        methods::is(df, "data.frame")) {
       # No labels provided, but there was a label name
       labels <- df[[label_name]]
       if (is.null(labels)) {
@@ -339,7 +340,7 @@ process_color_options <- function(df,
     }
     if (!is.null(labels)) {
       # Either we provided explicit labels or the label name worked out
-      if (class(labels) != "factor") {
+      if (!methods::is(labels, "factor")) {
         stop("Label column should be a factor")
       }
       colors <- factor_to_colors(labels, color_scheme = color_scheme)
@@ -347,7 +348,7 @@ process_color_options <- function(df,
   }
   # Neither labels nor colors provided (or names to look up)
   # Let's go look ourselves
-  if (is.null(colors) && class(df) == "data.frame") {
+  if (is.null(colors) && methods::is(df, "data.frame")) {
     res <- color_helper_df(df = df, color_scheme = color_scheme,
                            ret_labels = TRUE, verbose = verbose)
     if (is.null(colors)) {
@@ -374,7 +375,7 @@ color_helper <- function(x,
                         num_colors = 15, limits = NULL, top = NULL,
                         ret_labels = FALSE,
                         verbose = FALSE) {
-  if (class(x) == 'data.frame') {
+  if (methods::is(x, "data.frame")) {
     res <- color_helper_df(x, color_scheme = color_scheme,
                            ret_labels = ret_labels,
                            verbose = verbose)
@@ -383,7 +384,7 @@ color_helper <- function(x,
     }
   }
   else {
-    if (class(x) == 'factor') {
+    if (methods::is(x, "factor")) {
       labels <- x
     }
     else {
@@ -532,7 +533,7 @@ factor_to_colors <- function(x, color_scheme = grDevices::rainbow) {
 # }
 numeric_to_colors <- function(x, color_scheme = "Blues", n = 15,
                               limits = NULL) {
-  if (class(color_scheme) == "character" &&
+  if (methods::is(color_scheme, "character") &&
       !requireNamespace("RColorBrewer", quietly = TRUE,
                         warn.conflicts = FALSE)) {
     stop("numeric_to_colors function requires 'RColorBrewer' package")
@@ -568,7 +569,7 @@ numeric_to_colors <- function(x, color_scheme = "Blues", n = 15,
 # @value A palette with the specified number of colors, interpolated if
 #  necessary.
 make_palette <- function(ncolors, color_scheme = grDevices::rainbow) {
-  if (class(color_scheme) == "function") {
+  if (methods::is(color_scheme, "function")) {
     palette <- color_scheme(ncolors)
   }
   else {
@@ -702,7 +703,7 @@ scores_qplot <- function(df, pca_indexes = NULL, label_name = NULL,
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
     stop("scores_qplot function requires 'ggplot2' package")
   }
-  if (class(color_scheme) == "character" &&
+  if (methods::is(color_scheme, "character") &&
       !requireNamespace("RColorBrewer", quietly = TRUE,
                         warn.conflicts = FALSE)) {
     stop("scores_qplot function requires 'RColorBrewer' package")
@@ -809,7 +810,7 @@ scatterqplot <- function(df, x, y, label_name = NULL, labels = NULL, size = 1,
   }
 
   ncolors <- length(unique(labels))
-  if (class(color_scheme) == "function") {
+  if (methods::is(color_scheme, "function")) {
     color_palette <- color_scheme(ncolors)
   }
   else {
@@ -1049,7 +1050,7 @@ make_qplot <- function(df, label_name = "Label", labels = NULL, mat_name = "ym",
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
     stop("make_qplot function requires 'ggplot2' package")
   }
-  if (class(color_scheme) == "character" &&
+  if (methods::is(color_scheme, "character") &&
       !requireNamespace("RColorBrewer", quietly = TRUE, warn.conflicts = FALSE)) {
     stop("make_qplot function using ColorBrewer names requires ",
          "'RColorBrewer' package")
@@ -1128,7 +1129,7 @@ make_embedding_qplot <- function(df, label_name = "Label", labels = NULL,
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
     stop("make_embedding_qplot function requires 'ggplot2' package")
   }
-  if (class(color_scheme) == "character" &&
+  if (methods::is(color_scheme, "character") &&
       !requireNamespace("RColorBrewer", quietly = TRUE,
                         warn.conflicts = FALSE)) {
     stop("make_embedding_qplot function requires 'RColorBrewer' package")
