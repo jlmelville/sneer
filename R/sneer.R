@@ -1302,7 +1302,7 @@ opt_sneer <- function(opt, method, epsilon = 500) {
   else if (opt == "l-bfgs") {
     optimizer <- ctor(
       "L-BFGS", c1 = 1e-4, c2 = 0.1,
-      abs_tol = 0, rel_tol = 1e-9, step_tol = 1e-9,
+      abs_tol = 0, rel_tol = 0, step_tol = NULL,
       step_next_init = "quad", line_search = "mt",
       step0 = "ras")
   }
