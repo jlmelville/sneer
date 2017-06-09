@@ -136,10 +136,11 @@
 # \emph{Neurocomputing}, \emph{169}, 246-261.
 # @family sneer input initializers
 inp_from_perps_multi <- function(perplexities = NULL,
-                                  input_weight_fn = exp_weight,
-                                  num_scale_iters = NULL,
-                                  modify_kernel_fn = scale_prec_to_perp,
-                                  verbose = TRUE) {
+                                 input_weight_fn = exp_weight,
+                                 num_scale_iters = NULL,
+                                 modify_kernel_fn = scale_prec_to_perp,
+                                 keep_weights = FALSE,
+                                 verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
 
@@ -194,6 +195,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
 
           inpl <- single_perplexity(inp, perplexity = perp,
                                     input_weight_fn = input_weight_fn,
+                                    keep_weights = keep_weights,
                                     verbose = verbose)$inp
 
           inp$pms[[l]] <- handle_prob(inpl$pm, method)
@@ -217,7 +219,6 @@ inp_from_perps_multi <- function(perplexities = NULL,
             h_fwd <- log2(perplexities[l - 1])
             h <- log2(perplexities[l])
             dh <- h_fwd - h
-
 
             d_hat <- mean(-2 * dh / dlog2b)
 
@@ -361,6 +362,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
                                  input_weight_fn = exp_weight,
                                  num_scale_iters = NULL,
                                  modify_kernel_fn = scale_prec_to_perp,
+                                 keep_weights = FALSE,
                                  verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
@@ -414,6 +416,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
 
         inp <- single_perplexity(inp, perplexity = perp,
                                  input_weight_fn = input_weight_fn,
+                                 keep_weights = keep_weights,
                                  verbose = verbose)$inp
         inp$perp <- perp
         inp$pr <- inp$pm
@@ -536,6 +539,7 @@ inp_from_step_perp <- function(perplexities = NULL,
                           input_weight_fn = exp_weight,
                           num_scale_iters = 20,
                           modify_kernel_fn = scale_prec_to_perp,
+                          keep_weights = FALSE,
                           verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
@@ -579,6 +583,7 @@ inp_from_step_perp <- function(perplexities = NULL,
 
         inp <- single_perplexity(inp, perplexity = perp,
                                  input_weight_fn = input_weight_fn,
+                                 keep_weights = keep_weights,
                                  verbose = verbose)$inp
 
         inp$perp <- perp
@@ -687,6 +692,7 @@ scale_prec_to_perp <- function(inp, out, method) {
 inp_from_dint_max <- function(perplexities = NULL,
                               input_weight_fn = exp_weight,
                               modify_kernel_fn = NULL,
+                              keep_weights = FALSE,
                               verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
@@ -711,8 +717,9 @@ inp_from_dint_max <- function(perplexities = NULL,
         perp <- perplexities[l]
 
         inpl <- single_perplexity(inp, perplexity = perp,
-                                 input_weight_fn = input_weight_fn,
-                                 verbose = verbose)$inp
+                                  input_weight_fn = input_weight_fn,
+                                  keep_weights = keep_weights,
+                                  verbose = verbose)$inp
 
         d_hat <- stats::median(inpl$dims)
         if (is.null(inp$d_hat)) {

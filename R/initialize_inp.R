@@ -104,10 +104,14 @@ inp_from_perp <- function(perplexity = 30,
                           input_weight_fn = exp_weight,
                           modify_kernel_fn = NULL,
                           keep_all_results = TRUE,
+                          keep_weights = FALSE,
                           verbose = TRUE) {
+  if (is.null(keep_weights)) {
+    keep_weights <- FALSE
+  }
+
   inp_prob(
     function(inp, method, opt, iter, out) {
-
       if (!is.null(modify_kernel_fn)) {
         method <- on_inp_updated(method, function(inp, out, method) {
           method$kernel <- modify_kernel_fn(inp, out, method)
@@ -118,12 +122,11 @@ inp_from_perp <- function(perplexity = 30,
       inp <- single_perplexity(inp, perplexity = perplexity,
                         input_weight_fn = input_weight_fn,
                         keep_all_results = keep_all_results,
+                        keep_weights = keep_weights,
                         verbose = verbose)$inp
 
       inp$d_hat <- stats::median(inp$dims)
-
       list(inp = inp, method = method)
-
     }
   )
 }
@@ -191,12 +194,14 @@ inp_prob <- function(input_initializer, init_only = TRUE,
 single_perplexity <- function(inp, perplexity = 30,
                               input_weight_fn = exp_weight,
                               keep_all_results = TRUE,
+                              keep_weights = FALSE,
                               verbose = TRUE) {
   if (verbose) {
     message("Parameter search for perplexity = ", formatC(perplexity))
   }
-  d_to_p_result <- d_to_p_perp_bisect(inp$dm, perplexity = perplexity,
+  d_to_p_result <- d_to_p_perp_bisect(dm = inp$dm, perplexity = perplexity,
                                       weight_fn = input_weight_fn,
+                                      keep_weights = keep_weights,
                                       verbose = verbose)
 
   if (keep_all_results) {

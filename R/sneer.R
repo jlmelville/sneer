@@ -918,6 +918,16 @@ sneer <- function(df,
     )
   }
 
+  ok_rets <- c("x", "dx", "dy", "p", "q", "w", "prec", "dim", "deg", "degs",
+               "v", "dyn")
+  ret <- unique(ret)
+  for (r in (ret)) {
+    match.arg(tolower(r), ok_rets)
+    if (r == "v") {
+      embed_method$keep_inp_weights <- TRUE
+    }
+  }
+
   init_inp <- NULL
   if (!is.null(perplexity)) {
 
@@ -967,36 +977,45 @@ sneer <- function(df,
                  if (length(perplexity) == 1) {
                    perplexity <- ms_perps(df)
                  }
-                 init_inp <- inp_from_dint_max(perplexities = perplexity,
-                                               modify_kernel_fn = modify_kernel_fn,
-                                               input_weight_fn = weight_fn)
+                 init_inp <- inp_from_dint_max(
+                   perplexities = perplexity,
+                   modify_kernel_fn = modify_kernel_fn,
+                   input_weight_fn = weight_fn,
+                   keep_weights = embed_method$keep_inp_weights)
                },
                multi = {
                  if (length(perplexity) == 1) {
                    perplexity <- ms_perps(df)
                  }
-                 init_inp <- inp_from_perps_multi(perplexities = perplexity,
-                                                  num_scale_iters = perp_scale_iter,
-                                                  modify_kernel_fn = modify_kernel_fn,
-                                                  input_weight_fn = weight_fn)
+                 init_inp <- inp_from_perps_multi(
+                   perplexities = perplexity,
+                   num_scale_iters = perp_scale_iter,
+                   modify_kernel_fn = modify_kernel_fn,
+                   input_weight_fn = weight_fn,
+                   keep_weights = embed_method$keep_inp_weights)
                },
                multil = {
                  if (length(perplexity) == 1) {
                    perplexity <- ms_perps(df)
                  }
-                 init_inp <- inp_from_perps_multil(perplexities = perplexity,
-                                                   num_scale_iters = perp_scale_iter,
-                                                   modify_kernel_fn = modify_kernel_fn,
-                                                   input_weight_fn = weight_fn)
+                 init_inp <- inp_from_perps_multil(
+                   perplexities = perplexity,
+                   num_scale_iters = perp_scale_iter,
+                   modify_kernel_fn = modify_kernel_fn,
+                   input_weight_fn = weight_fn,
+                   keep_weights = embed_method$keep_inp_weights
+                   )
                },
                step = {
                  if (length(perplexity) == 1) {
                    perplexity = step_perps(df)
                  }
-                 init_inp <- inp_from_step_perp(perplexities = perplexity,
-                                                num_scale_iters = perp_scale_iter,
-                                                modify_kernel_fn = modify_kernel_fn,
-                                                input_weight_fn = weight_fn)
+                 init_inp <- inp_from_step_perp(
+                   perplexities = perplexity,
+                   num_scale_iters = perp_scale_iter,
+                   modify_kernel_fn = modify_kernel_fn,
+                   keep_weights = embed_method$keep_inp_weights,
+                   input_weight_fn = weight_fn)
                }
         )
       }
@@ -1014,9 +1033,11 @@ sneer <- function(df,
             perplexity <- nr / 4
             message("Setting perplexity to ", perplexity)
           }
-          init_inp <- inp_from_perp(perplexity = perplexity,
-                                    modify_kernel_fn = modify_kernel_fn,
-                                    input_weight_fn = weight_fn)
+          init_inp <- inp_from_perp(
+            perplexity = perplexity,
+            modify_kernel_fn = modify_kernel_fn,
+            input_weight_fn = weight_fn,
+            keep_weights = embed_method$keep_inp_weights)
         }
         else {
           stop("Must provide 'perp_scale' argument if using multiple perplexity ",
@@ -1123,13 +1144,6 @@ sneer <- function(df,
     }
   }
 
-  ok_rets <- c("x", "dx", "dy", "p", "q", "w", "prec", "dim", "deg", "degs",
-               "v", "dyn")
-  ret <- unique(ret)
-  for (r in (ret)) {
-
-    match.arg(tolower(r), ok_rets)
-  }
   tricks <- NULL
   if (!is.null(exaggerate)) {
     tricks <- make_tricks(early_exaggeration(exaggeration = exaggerate,
@@ -1153,6 +1167,7 @@ sneer <- function(df,
   else {
     xm <- df[, indexes]
   }
+
   embed_result <- embed_main(
     xm,
     method = embed_method,
@@ -1268,7 +1283,7 @@ sneer <- function(df,
         }
       },
       v = {
-        result$v <- dist2_to_weights(inp$dm ^ 2, exp_kernel(inp$beta))
+        result$v <- inp$wm
       },
       dyn = {
         if (!is.null(embed_result$method$export_extra_par)) {

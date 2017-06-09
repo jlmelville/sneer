@@ -250,7 +250,10 @@ iembed <- function(method,
                    xm = datasets::iris[1:50, 1:4],
                    preprocess = make_preprocess(range_scale_matrix = TRUE,
                                    verbose = FALSE),
-                   init_inp = inp_from_perp(perplexity = 20, verbose = FALSE),
+                   init_inp = inp_from_perp(perplexity = 20,
+                                            keep_weights =
+                                              method$keep_inp_weights,
+                                            verbose = FALSE),
                    init_out = out_from_PCA(verbose = FALSE),
                    opt = mize_grad_descent()
 ) {
