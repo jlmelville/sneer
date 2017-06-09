@@ -820,17 +820,31 @@ sneer <- function(df,
     itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter,
                                alt_opt = alt_opt) },
     dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                 alt_opt = alt_opt) },
-    dhssne_plugin = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                        alt_opt = alt_opt) },
+                                 alt_opt = alt_opt, verbose = TRUE) },
     dhasne = function() { dhasne(alpha = alpha, opt_iter = kernel_opt_iter,
                                  alt_opt = alt_opt) },
     dhasne_plugin = function() { dhasne(alpha = alpha, opt_iter = kernel_opt_iter,
                                         alt_opt = alt_opt) },
     ihssne = function() { ihssne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                 alt_opt = alt_opt) },
+                                 alt_opt = alt_opt, verbose = TRUE) },
     ihssne_plugin = function() { ihssne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                        alt_opt = alt_opt) }
+                                        alt_opt = alt_opt, verbose = TRUE) },
+    ihasne = function() { ihasne(alpha = alpha, opt_iter = kernel_opt_iter,
+                                 alt_opt = alt_opt, verbose = TRUE) },
+    ihasne_plugin = function() { ihasne(alpha = alpha, opt_iter = kernel_opt_iter,
+                                        alt_opt = alt_opt, verbose = TRUE) },
+    unasne = function() { unasne() },
+    unssne = function() { unssne() },
+    untsne = function() { untsne() },
+
+    diunhssne = function() { diunhssne(alpha = alpha, opt_iter = kernel_opt_iter,
+                                       alt_opt = alt_opt) },
+    dunhssne = function() { dunhssne(alpha = alpha, opt_iter = kernel_opt_iter,
+                                     alt_opt = alt_opt) },
+    dasne = function() { dasne(opt_iter = kernel_opt_iter, alt_opt = alt_opt) },
+    iasne = function() { iasne(opt_iter = kernel_opt_iter, alt_opt = alt_opt) },
+    dssne = function() { dssne(opt_iter = kernel_opt_iter, alt_opt = alt_opt) },
+    issne = function() { issne(opt_iter = kernel_opt_iter, alt_opt = alt_opt) }
   )
 
   extra_costs <- NULL
@@ -851,18 +865,18 @@ sneer <- function(df,
 
     # Need to use plugin method if precisions can be non-uniform
     # NB only applicable for 'cond' and 'row' probability types
+    embed_method <- embed_methods[[method]]()
     if (prec_scale == "transfer") {
-      if (!endsWith(method, "_plugin")) {
-        new_method <- paste0(method, "_plugin")
+      if (is.null(embed_method$is_plugin || !embed_method$is_plugin)) {
+        if (!endsWith(method, "_plugin")) {
+          new_method <- paste0(method, "_plugin")
+        }
+        if (!new_method %in% names(embed_methods)) {
+          stop("Method '", method, "' is not compatible with prec_scale option 't'")
+        }
+        message("Switching to plugin method for non-uniform output precisions")
+        embed_method <- embed_methods[[new_method]]()
       }
-      if (!new_method %in% names(embed_methods)) {
-        stop("Method '", method, "' is not compatible with prec_scale option 't'")
-      }
-      message("Switching to plugin method for non-uniform output precisions")
-      embed_method <- embed_methods[[new_method]]()
-    }
-    else {
-      embed_method <- embed_methods[[method]]()
     }
 
     # special casing for different methods
