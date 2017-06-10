@@ -396,6 +396,19 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
   out
 }
 
+# Pre Initialization
+# Runs before any input or output initialization, but from inside init_embed, so
+# should always be called even if no iterations are run Effectively also a Post
+# Creation hook. Useful if there are functions that could be called during
+# creation but depend on constituents that could get switched out after the
+# "constructor" function is called (e.g. dynamizing a kernel)
+before_init <- function(method) {
+  if (!is.null(method$before_init_fn)) {
+    method <- method$before_init_fn(method)
+  }
+  method
+}
+
 # Post Initialization
 #
 # Function called after input and output data have been initialized. Useful for
@@ -451,6 +464,9 @@ after_init <- function(inp, out, method) {
 #   \item \code{report} Initialized report.
 #  }
 init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
+
+  method <- before_init(method)
+
   inp <- preprocess(xm)
 
   # Output initialization normally only needs to make us of input coordinates
