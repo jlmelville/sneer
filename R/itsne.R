@@ -24,32 +24,12 @@ itsne <- function(dof = 1, opt_iter = 0,
   lreplace(
     asne_plugin(eps = eps, keep = c("qm", "wm", "d2m")),
     kernel = itsne_kernel(dof = dof),
-    after_init_fn = function(inp, out, method) {
-      nr <- nrow(out$ym)
-      if (method$dyn == "point" && length(method$kernel$dof) != nr) {
-        method$kernel$dof <- rep(method$kernel$dof, nr)
-      }
-      method$kernel <- check_symmetry(method$kernel)
-      list(method = method)
-    },
+    before_init_fn = make_kernel_dynamic,
     opt_iter = opt_iter,
     dyn = "point",
     xi_eps = xi_eps,
     alt_opt = alt_opt,
-    extra_gr = extra_gr,
-    get_extra_par = function(method) {
-      xi <- method$kernel$dof - method$xi_eps
-      xi[xi < 0] <- xi
-      sqrt(xi)
-    },
-    set_extra_par = function(method, extra_par) {
-      xi <- extra_par
-      method$kernel$dof <- xi * xi + method$xi_eps
-      method
-    },
-    export_extra_par = function(method) {
-      list(dof = method$kernel$dof)
-    }
+    extra_gr = extra_gr
   )
 }
 
@@ -149,4 +129,34 @@ itsne_cost_gr_param <- function(opt, inp, out, method, iter, extra_par) {
     gr_dof <- sum(gr_dof)
   }
   xi * gr_dof
+}
+
+# Dynamize Kernel ---------------------------------------------------------
+
+# should be called by make_kernel_dynamic, delegating to kernel$make_dynamic
+# as part of before_init
+dynamize_inhomogeneous_kernel <- function(method) {
+  lreplace(
+    method,
+    after_init_fn = function(inp, out, method) {
+      nr <- nrow(out$ym)
+      if (method$dyn == "point" && length(method$kernel$dof) != nr) {
+        method$kernel$dof <- rep(method$kernel$dof, nr)
+      }
+      method$kernel <- check_symmetry(method$kernel)
+      list(method = method)
+    },
+    get_extra_par = function(method) {
+      xi <- method$kernel$dof - method$xi_eps
+      xi[xi < 0] <- xi
+      sqrt(xi)
+    },
+    set_extra_par = function(method, extra_par) {
+      xi <- extra_par
+      method$kernel$dof <- xi * xi + method$xi_eps
+      method
+    },
+    export_extra_par = function(method) {
+      list(dof = method$kernel$dof)
+    })
 }

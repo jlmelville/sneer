@@ -170,45 +170,7 @@ ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
   lreplace(
     hssne_plugin(beta = beta, alpha = alpha, eps = eps, verbose = verbose,
                  keep = keep),
-    after_init_fn = function(inp, out, method) {
-      nr <- nrow(out$ym)
-      kernel <- method$kernel
-      if (method$dyn_alpha == "point" && length(kernel$alpha) != nr) {
-        kernel$alpha <- rep(kernel$alpha, nr)
-      }
-      if (method$dyn_beta == "point" && length(kernel$beta) != nr) {
-        kernel$beta <- rep(kernel$beta, nr)
-      }
-      method$kernel <- check_symmetry(kernel)
-
-      # Leaving methods null means we want to use the simpler kernel for KL
-      # divergence and a non-joint output probability, if possible
-      if (is.null(method$gr_alpha) || is.null(method$gr_beta)) {
-        if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
-          if (verbose) {
-            message("Asymmetric kernel: using plugin parameter gradients")
-          }
-          # There might be a more efficient gradient, but these are always safe
-          method$gr_alpha <- heavy_tail_cost_gr_alpha_plugin
-          method$gr_beta <- heavy_tail_cost_gr_beta_plugin
-        }
-        else {
-          # These are only correct using the KL divergence!
-          method$gr_alpha <- heavy_tail_cost_gr_alpha_kl_symm
-          method$gr_beta <- heavy_tail_cost_gr_beta_kl_symm
-        }
-      }
-
-      list(method = method)
-    },
-    get_extra_par = function(method) {
-      heavy_tail_params_xi(method$kernel, method)
-    },
-    set_extra_par = function(method, extra_par) {
-      method$kernel <- set_heavy_tail_params_xi(method$kernel, method,
-                                                extra_par)
-      method
-    },
+    before_init_fn = make_kernel_dynamic,
     extra_gr = function(opt, inp, out, method, iter, extra_par) {
       if (iter < method$opt_iter) {
         return(rep(0, length(extra_par)))
@@ -217,9 +179,6 @@ ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
       heavy_tail_gr_param_xi(method$kernel, inp, out, method, xi = extra_par,
                              iter)
 
-    },
-    export_extra_par = function(method) {
-      heavy_tail_params(method$kernel)
     },
     gr_alpha = gr_alpha,
     gr_beta = gr_beta,
@@ -260,35 +219,14 @@ iasne <- function(beta = 1, opt_iter = 0,
                   keep = c("qm", "wm", "d2m"),
                   extra_gr = exp_cost_gr_param_kl_symm,
                   eps = .Machine$double.eps, verbose = FALSE) {
-
   lreplace(
     asne_plugin(beta = beta, eps = eps, keep = keep),
-    after_init_fn = function(inp, out, method) {
-      nr <- nrow(out$ym)
-      if (method$dyn == "point" && length(method$kernel$beta) != nr) {
-        method$kernel$beta <- rep(method$kernel$beta, nr)
-      }
-      method$kernel <- check_symmetry(method$kernel)
-      list(method = method)
-    },
+    before_init_fn = make_kernel_dynamic,
     opt_iter = opt_iter,
     dyn = "point",
     xi_eps = xi_eps,
     alt_opt = alt_opt,
-    extra_gr = extra_gr,
-    get_extra_par = function(method) {
-      xi <- method$kernel$beta - method$xi_eps
-      xi[xi < 0] <- xi
-      sqrt(xi)
-    },
-    set_extra_par = function(method, extra_par) {
-      xi <- extra_par
-      method$kernel$beta <- xi * xi + method$xi_eps
-      method
-    },
-    export_extra_par = function(method) {
-      list(beta = method$kernel$beta)
-    }
+    extra_gr = extra_gr
   )
 }
 
@@ -608,3 +546,92 @@ exp_cost_gr_param_kl_asymm <- function(opt, inp, out, method, iter, extra_par) {
 exp_gr_param <- function(out) {
   -out$d2m * out$wm
 }
+
+
+# Dynamize Kernels ---------------------------------------------------------
+
+# should be called by make_kernel_dynamic, delegating to kernel$make_dynamic
+# as part of before_init
+
+dynamize_exp_kernel <- function(method) {
+  lreplace(method,
+  after_init_fn = function(inp, out, method) {
+    nr <- nrow(out$ym)
+    if (method$dyn == "point" && length(method$kernel$beta) != nr) {
+      method$kernel$beta <- rep(method$kernel$beta, nr)
+    }
+    method$kernel <- check_symmetry(method$kernel)
+    list(method = method)
+  },
+  get_extra_par = function(method) {
+    xi <- method$kernel$beta - method$xi_eps
+    xi[xi < 0] <- xi
+    sqrt(xi)
+  },
+  set_extra_par = function(method, extra_par) {
+    xi <- extra_par
+    method$kernel$beta <- xi * xi + method$xi_eps
+    method
+  },
+  export_extra_par = function(method) {
+    list(beta = method$kernel$beta)
+  }
+  )
+}
+
+dynamize_heavy_tail_kernel <- function(method) {
+  lreplace(method,
+  after_init_fn = function(inp, out, method) {
+    nr <- nrow(out$ym)
+    kernel <- method$kernel
+    if (method$dyn_alpha == "point" && length(kernel$alpha) != nr) {
+      kernel$alpha <- rep(kernel$alpha, nr)
+    }
+    if (method$dyn_beta == "point" && length(kernel$beta) != nr) {
+      kernel$beta <- rep(kernel$beta, nr)
+    }
+    method$kernel <- check_symmetry(kernel)
+
+    # Leaving methods null means we want to use the simpler kernel for KL
+    # divergence and a non-joint output probability, if possible
+    if (is.null(method$gr_alpha) || is.null(method$gr_beta)) {
+      if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
+        if (method$verbose) {
+          message("Asymmetric kernel: using plugin parameter gradients")
+        }
+        # There might be a more efficient gradient, but these are always safe
+        method$gr_alpha <- heavy_tail_cost_gr_alpha_plugin
+        method$gr_beta <- heavy_tail_cost_gr_beta_plugin
+      }
+      else {
+        # These are only correct using the KL divergence!
+        method$gr_alpha <- heavy_tail_cost_gr_alpha_kl_symm
+        method$gr_beta <- heavy_tail_cost_gr_beta_kl_symm
+      }
+    }
+
+    list(method = method)
+  },
+  get_extra_par = function(method) {
+    heavy_tail_params_xi(method$kernel, method)
+  },
+  set_extra_par = function(method, extra_par) {
+    method$kernel <- set_heavy_tail_params_xi(method$kernel, method,
+                                              extra_par)
+    method
+  },
+  extra_gr = function(opt, inp, out, method, iter, extra_par) {
+    if (iter < method$opt_iter) {
+      return(rep(0, length(extra_par)))
+    }
+
+    heavy_tail_gr_param_xi(method$kernel, inp, out, method, xi = extra_par,
+                           iter)
+
+  },
+  export_extra_par = function(method) {
+    heavy_tail_params(method$kernel)
+  }
+  )
+}
+
