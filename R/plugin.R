@@ -66,7 +66,8 @@ plugin <- function(cost = kl_fg(),
       prob_type = prob_type,
       eps = eps,
       out_keep = keep,
-      verbose = verbose
+      verbose = verbose,
+      is_plugin = TRUE
     )
   )
   method$update_out_fn <- make_update_out(keep = method$out_keep)

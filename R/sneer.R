@@ -867,7 +867,7 @@ sneer <- function(df,
     # NB only applicable for 'cond' and 'row' probability types
     embed_method <- embed_methods[[method]]()
     if (prec_scale == "transfer") {
-      if (is.null(embed_method$is_plugin || !embed_method$is_plugin)) {
+      if (is.null(embed_method$is_plugin) || !embed_method$is_plugin) {
         if (!endsWith(method, "_plugin")) {
           new_method <- paste0(method, "_plugin")
         }
