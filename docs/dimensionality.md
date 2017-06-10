@@ -5,6 +5,8 @@ date: "February 7, 2017"
 output: html_document
 ---
 
+Up: [Index](index.html)
+
 Choosing the correct perplexity value for an embedding is an open research
 problem. The usual approach is to plump for a value around 30. The
 [How to Use t-SNE Effectively](http://distill.pub/2016/misread-tsne/) web site
@@ -248,3 +250,4 @@ of a ball with a fixed radius means that the estimation is subject to edge
 effects. Therefore, in multiscaling, only the dimensionality averaged over all
 points in the dataset is used.
 
+Up: [Index](index.html)
