@@ -87,6 +87,9 @@ be treated within a generic framework.
 
 * [Multi-Scale Gradients](multi-scale-gradients.html) - the multi scale approach
 of Lee and co-workers.
+* [Perplexity and Intrinsic Dimensionality](dimensionality.html) - the connection
+between perplexity and intrinsic dimensionality, as used by Lee and co-workers
+in their multi-scale work.
 * [Asymmetric Kernel Gradients](asymmetric-kernel-gradient.html) - extending 
 inhomogeneous t-SNE kernel parameter optimization to symmetrized SNE.
 * [Dynamic HSSNE](dynamic-hssne.html) - exploring the links between HSSNE and
