@@ -18,9 +18,7 @@ dhssne <- function(beta = 1, alpha = 0, opt_iter = 0, xi_eps = 1e-3,
     ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
             eps = eps, verbose = verbose, alt_opt = alt_opt),
     dyn_alpha = "global",
-    dyn_beta = "static",
-    gr_alpha = NULL,
-    gr_beta = NULL
+    dyn_beta = "static"
   )
 }
 
@@ -32,9 +30,8 @@ dhasne <- function(beta = 1, alpha = 0, opt_iter = 0,
   lreplace(
     dhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
            xi_eps = xi_eps, alt_opt = alt_opt, verbose = verbose),
-    prob_type = "row",
-    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
-    gr_beta = heavy_tail_cost_gr_beta_kl_symm)
+    prob_type = "row"
+  )
 }
 
 
@@ -52,9 +49,7 @@ dhpsne <- function(beta = 1, alpha = 0, opt_iter = 0, alt_opt = TRUE,
     dhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
            alt_opt = alt_opt, eps = eps,
            verbose = verbose),
-    prob_type = "cond",
-    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
-    gr_beta = heavy_tail_cost_gr_beta_kl_symm
+    prob_type = "cond"
   )
 }
 
@@ -69,9 +64,7 @@ dh3sne <- function(beta = 1, alpha = 0, opt_iter = 0, alt_opt = TRUE,
     dhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
            alt_opt = alt_opt, eps = eps,
            verbose = verbose),
-    out_prob_type = "cond",
-    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
-    gr_beta = heavy_tail_cost_gr_beta_kl_symm
+    out_prob_type = "cond"
   )
 }
 
@@ -85,17 +78,13 @@ ihpsne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    alt_opt = TRUE, xi_eps = 1e-3,
                    gr_alpha = NULL,
                    gr_beta = NULL,
-                   keep = c("qm", "wm", "d2m"),
                    eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
-            alt_opt = alt_opt, eps = eps, keep = keep,
-            verbose = verbose),
+            alt_opt = alt_opt, eps = eps, verbose = verbose),
     prob_type = "cond",
     dyn_alpha = "point",
-    dyn_beta = "static",
-    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
-    gr_beta = heavy_tail_cost_gr_beta_kl_symm
+    dyn_beta = "static"
   )
 }
 
@@ -121,11 +110,8 @@ ihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
   lreplace(
     ihpsne(beta = beta, alpha = alpha, opt_iter = opt_iter,
            switch_iter = switch_iter, xi_eps = xi_eps,
-           keep = c("qm", "wm", "d2m", "qcm"),
            alt_opt = alt_opt, eps = eps, verbose = verbose),
-    prob_type = "joint",
-    gr_alpha = heavy_tail_cost_gr_alpha_kl_asymm,
-    gr_beta = heavy_tail_cost_gr_beta_kl_asymm
+    prob_type = "joint"
   )
 }
 
@@ -166,7 +152,6 @@ ihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
 # Because we assume a uniform beta, we can use the symm KL parameter gradient
 ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
                     opt_iter = 0, switch_iter = opt_iter,
-                    keep = c("qm", "wm", "d2m"),
                     eps = .Machine$double.eps,
                     alt_opt = TRUE,
                     verbose = FALSE) {
@@ -176,14 +161,11 @@ ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
   }
 
   lreplace(
-    hssne_plugin(beta = beta, alpha = alpha, eps = eps, verbose = verbose,
-                 keep = keep),
+    hssne_plugin(beta = beta, alpha = alpha, eps = eps, verbose = verbose),
     dynamic_kernel = TRUE,
-    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
-    gr_beta = heavy_tail_cost_gr_beta_kl_symm,
-    opt_iter = opt_iter,
     dyn_alpha = "global",
     dyn_beta = "global",
+    opt_iter = opt_iter,
     switch_iter = switch_iter,
     xi_eps = xi_eps,
     alt_opt = alt_opt
@@ -196,13 +178,9 @@ dihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                     eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
-            alt_opt = alt_opt, eps = eps,
-            keep = c("qm", "wm", "d2m", "qcm"),
-            verbose = verbose),
+            alt_opt = alt_opt, eps = eps, verbose = verbose),
     dyn_beta = "point",
-    dyn_alpha = "point",
-    gr_alpha = heavy_tail_cost_gr_alpha_kl_asymm,
-    gr_beta = heavy_tail_cost_gr_beta_kl_asymm
+    dyn_alpha = "point"
   )
 }
 
@@ -214,28 +192,25 @@ dihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
     dihssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
             verbose = verbose,
             alt_opt = alt_opt, xi_eps = xi_eps),
-    prob_type = "row",
-    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
-    gr_beta = heavy_tail_cost_gr_beta_kl_symm)
+    prob_type = "row"
+  )
 }
 
 # Dynamic ASNE ------------------------------------------------------------
 
 # Optimizes beta parameter of exponential kernel. Less complex due to only
 # one parameter being involved, but probably not that useful.
-
-iasne <- function(beta = 1, opt_iter = 0,
-                  xi_eps = 1e-3, alt_opt = TRUE,
-                  keep = c("qm", "wm", "d2m"),
-                  eps = .Machine$double.eps, verbose = FALSE) {
+# gr_beta is the parameter gradient fn - can leave NULL and let after_init_fn
+# decide the best choice
+iasne <- function(beta = 1, eps = .Machine$double.eps, verbose = FALSE,
+                  opt_iter = 0, xi_eps = 1e-3, alt_opt = TRUE) {
   lreplace(
-    asne_plugin(beta = beta, eps = eps, keep = keep),
+    asne_plugin(beta = beta, eps = eps, verbose = verbose),
     dynamic_kernel = TRUE,
+    dyn_beta= "point",
     opt_iter = opt_iter,
-    dyn = "point",
     xi_eps = xi_eps,
-    alt_opt = alt_opt,
-    extra_gr = exp_cost_gr_param_kl_symm
+    alt_opt = alt_opt
   )
 }
 
@@ -246,7 +221,7 @@ dasne <- function(beta = 1, opt_iter = 0,
   lreplace(
     iasne(beta = beta, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
           eps = eps, verbose = verbose),
-    dyn = "global"
+    dyn_beta= "global"
   )
 }
 
@@ -255,9 +230,7 @@ issne <- function(beta = 1, opt_iter = 0,
                   eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     iasne(beta = beta, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
-          keep = c("qm", "wm", "d2m", "qcm"),
           eps = eps, verbose = verbose),
-    extra_gr = exp_cost_gr_param_kl_asymm,
     prob_type = "joint"
   )
 }
@@ -269,8 +242,7 @@ dssne <- function(beta = 1, opt_iter = 0,
   lreplace(
     issne(beta = beta, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
           eps = eps, verbose = verbose),
-    extra_gr = exp_cost_gr_param_kl_symm,
-    dyn = "global"
+    dyn_beta= "global"
   )
 }
 
@@ -502,13 +474,10 @@ set_heavy_tail_params_xi <- function(kernel, method, xi) {
 
 # dC/d_xi generic for exponential kernel
 exp_cost_gr_param_plugin <- function(opt, inp, out, method, iter, extra_par) {
-  if (iter < method$opt_iter) {
-    return(rep(0, length(extra_par)))
-  }
   xi <- extra_par
 
   dw_dbeta <- exp_gr_param(out)
-  gr <- param_gr(method, inp, out, dw_dbeta, method$dyn)
+  gr <- param_gr(method, inp, out, dw_dbeta, method$dyn_beta)
 
   2 * xi * gr
 }
@@ -517,13 +486,10 @@ exp_cost_gr_param_plugin <- function(opt, inp, out, method, iter, extra_par) {
 # Can only be used with joint output probabilities if the kernel is symmetric
 # (i.e. uniform beta)
 exp_cost_gr_param_kl_symm <- function(opt, inp, out, method, iter, extra_par) {
-  if (iter < method$opt_iter) {
-    return(rep(0, length(extra_par)))
-  }
   xi <- extra_par
 
   gr <- out$d2m * (inp$pm - out$qm)
-  if (method$dyn == "point") {
+  if (method$dyn_beta == "point") {
     gr <- rowSums(gr)
   }
   else {
@@ -537,13 +503,10 @@ exp_cost_gr_param_kl_symm <- function(opt, inp, out, method, iter, extra_par) {
 # type - but exp_cost_gr_param_kl_symm is a better choice for non-joint output
 # probabilities
 exp_cost_gr_param_kl_asymm <- function(opt, inp, out, method, iter, extra_par) {
-  if (iter < method$opt_iter) {
-    return(rep(0, length(extra_par)))
-  }
   xi <- extra_par
 
   gr <- out$d2m * out$qcm * ((inp$pm / (out$qm + method$eps)) - 1)
-  if (method$dyn == "point") {
+  if (method$dyn_beta == "point") {
     gr <- rowSums(gr)
   }
   else {
@@ -567,19 +530,19 @@ dynamize_exp_kernel <- function(method) {
   lreplace(method,
   after_init_fn = function(inp, out, method) {
     nr <- nrow(out$ym)
-    if (method$dyn == "point" && length(method$kernel$beta) != nr) {
+    if (method$dyn_beta == "point" && length(method$kernel$beta) != nr) {
       method$kernel$beta <- rep(method$kernel$beta, nr)
     }
     method$kernel <- check_symmetry(method$kernel)
 
     # Leaving method null means we are dynamizing a method manually
-    if (is.null(method$extra_gr)) {
+    if (is.null(method$gr_beta)) {
       if (method$cost$name == "KL") {
         if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
           if (method$verbose) {
             message("Using KL cost + asymmetric kernel parameter gradients")
           }
-          method$extra_gr <- exp_cost_gr_kl_asymm
+          method$gr_beta <- exp_cost_gr_param_kl_asymm
           method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
           method$update_out_fn <- make_update_out(keep = method$out_keep)
         }
@@ -587,7 +550,7 @@ dynamize_exp_kernel <- function(method) {
           if (method$verbose) {
             message("Using KL cost + symmetric kernel parameter gradients")
           }
-          method$extra_gr <- exp_cost_gr_kl_symm
+          method$gr_beta <- exp_cost_gr_param_kl_symm
         }
       }
       else {
@@ -595,11 +558,18 @@ dynamize_exp_kernel <- function(method) {
         if (method$verbose) {
           message("Using plugin parameter gradients")
         }
-        method$extra_gr <- exp_cost_gr_plugin
+        method$gr_beta <- exp_cost_gr_param_plugin
       }
     }
 
     list(method = method)
+  },
+  extra_gr = function(opt, inp, out, method, iter, extra_par) {
+    if (iter < method$opt_iter) {
+      return(rep(0, length(extra_par)))
+    }
+
+    method$gr_beta(opt, inp, out, method, iter, extra_par)
   },
   get_extra_par = function(method) {
     xi <- method$kernel$beta - method$xi_eps
@@ -687,4 +657,3 @@ dynamize_heavy_tail_kernel <- function(method) {
   }
   )
 }
-

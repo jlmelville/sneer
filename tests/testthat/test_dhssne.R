@@ -328,9 +328,10 @@ test_that("iSSNE analytical gradient is correct for non-uniform beta", {
 })
 
 test_that("iSSNE works with generic parameter gradient too", {
-  method <- issne(beta = betas,
-                  xi_eps = .Machine$double.eps)
-  method$extra_gr <- exp_cost_gr_param_plugin
+  method <- lreplace(
+    issne(beta = betas, xi_eps = .Machine$double.eps),
+    gr_beta = exp_cost_gr_param_plugin
+  )
   res <- embedder(method)
   fd_grad <- gradient_fd_xi_point(res, param_names = c("beta"))
   an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
@@ -408,6 +409,19 @@ test_that("it-SSNE analytical gradient is correct for range of dof", {
   }
 })
 
+test_that("it-SSNE works with generic parameter gradient too", {
+  dof <- 0.1
+  method <- lreplace(
+    itssne(dof = seq(dof, dof * 2, length.out = nr),
+           xi_eps = .Machine$double.eps),
+    gr_dof = itsne_cost_gr_param_plugin)
+
+  res <- embedder(method)
+  fd_grad <- gradient_fd_xi_point(res, param_names = c("dof"))
+  an_grad <- res$method$extra_gr(res$opt, res$inp, res$out, res$method, 0,
+                                 a2x(res$method$kernel$dof))
+  expect_equal(an_grad, fd_grad, tol = 1e-6)
+})
 
 
 # Test Fixed Iteration Behavior -------------------------------------------
