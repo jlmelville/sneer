@@ -642,7 +642,8 @@ attr(reverse_kl_cost, "sneer_cost_type") <- "prob"
 reverse_kl_fg <- function() {
   list(
     fn = reverse_kl_cost,
-    gr = reverse_kl_cost_gr
+    gr = reverse_kl_cost_gr,
+    name = "Reverse KL"
   )
 }
 
@@ -816,7 +817,8 @@ nerv_fg <- function(lambda = 0.5) {
   list(
     fn = fn,
     gr = nerv_cost_gr,
-    lambda = lambda
+    lambda = lambda,
+    name = "NeRV"
   )
 }
 

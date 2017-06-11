@@ -50,7 +50,8 @@ metric_stress <- function(dxm, dym) {
 # Metric Stress fungrad
 metric_stress_fg <- function() {
   list(
-    fn = metric_stress_cost
+    fn = metric_stress_cost,
+    name = "STRESS"
   )
 }
 
@@ -108,7 +109,8 @@ metric_sstress <- function(dxm, dym) {
 # Metric Stress fungrad
 metric_sstress_fg <- function() {
   list(
-    fn = metric_sstress_cost
+    fn = metric_sstress_cost,
+    name = "SSTRESS"
   )
 }
 
@@ -462,7 +464,8 @@ sammon_stress_unnorm <- function(dxm, dym, eps = .Machine$double.eps) {
 # Sammon
 sammon_fg <- function() {
   list(
-    fn = sammon_stress_cost
+    fn = sammon_stress_cost,
+    name = "Sammon"
   )
 }
 

@@ -545,7 +545,8 @@ jse_fg <- function(kappa = 0.5) {
     fn = jse_cost,
     gr = jse_cost_gr,
     kappa = kappa,
-    kappa_inv = 1 / kappa
+    kappa_inv = 1 / kappa,
+    name = "JS"
   )
 }
 
