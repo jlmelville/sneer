@@ -403,6 +403,9 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
 # creation but depend on constituents that could get switched out after the
 # "constructor" function is called (e.g. dynamizing a kernel)
 before_init <- function(method) {
+  if (!is.null(method$dynamic_kernel) && method$dynamic_kernel) {
+    method <- make_kernel_dynamic(method)
+  }
   if (!is.null(method$before_init_fn)) {
     method <- method$before_init_fn(method)
   }

@@ -24,7 +24,7 @@ itsne <- function(dof = 1, opt_iter = 0,
   lreplace(
     asne_plugin(eps = eps, keep = c("qm", "wm", "d2m")),
     kernel = itsne_kernel(dof = dof),
-    before_init_fn = make_kernel_dynamic,
+    dynamic_kernel = TRUE,
     opt_iter = opt_iter,
     dyn = "point",
     xi_eps = xi_eps,

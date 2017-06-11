@@ -8,14 +8,15 @@
 
 # "Dynamic" HSSNE, alpha is optimized with coordinates
 # Fully symmetric
-# Can use DDHSSNE default symm KL param gradient iff beta is uniform
+# Can use DDHSSNE default symm KL param gradient iff beta is uniform. Would also
+# need to do this if we had a static-alpha/dynamic-beta method and static alphas
+# can be non-uniform (we don't currently do either, though)
 dhssne <- function(beta = 1, alpha = 0, opt_iter = 0, xi_eps = 1e-3,
                    alt_opt = TRUE,
                    eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
-            eps = eps, verbose = verbose, alt_opt = alt_opt,
-            keep = c("qm", "wm", "d2m", "qcm")),
+            eps = eps, verbose = verbose, alt_opt = alt_opt),
     dyn_alpha = "global",
     dyn_beta = "static",
     gr_alpha = NULL,
@@ -177,16 +178,7 @@ ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
   lreplace(
     hssne_plugin(beta = beta, alpha = alpha, eps = eps, verbose = verbose,
                  keep = keep),
-    before_init_fn = make_kernel_dynamic,
-    extra_gr = function(opt, inp, out, method, iter, extra_par) {
-      if (iter < method$opt_iter) {
-        return(rep(0, length(extra_par)))
-      }
-
-      heavy_tail_gr_param_xi(method$kernel, inp, out, method, xi = extra_par,
-                             iter)
-
-    },
+    dynamic_kernel = TRUE,
     gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
     gr_beta = heavy_tail_cost_gr_beta_kl_symm,
     opt_iter = opt_iter,
@@ -238,7 +230,7 @@ iasne <- function(beta = 1, opt_iter = 0,
                   eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     asne_plugin(beta = beta, eps = eps, keep = keep),
-    before_init_fn = make_kernel_dynamic,
+    dynamic_kernel = TRUE,
     opt_iter = opt_iter,
     dyn = "point",
     xi_eps = xi_eps,
@@ -247,6 +239,7 @@ iasne <- function(beta = 1, opt_iter = 0,
   )
 }
 
+# Don't use this with non-uniform beta
 dasne <- function(beta = 1, opt_iter = 0,
                   xi_eps = 1e-3, alt_opt = TRUE,
                   eps = .Machine$double.eps, verbose = FALSE) {
@@ -269,6 +262,7 @@ issne <- function(beta = 1, opt_iter = 0,
   )
 }
 
+# Don't use this with non-uniform beta
 dssne <- function(beta = 1, opt_iter = 0,
                   xi_eps = 1e-3, alt_opt = TRUE,
                   eps = .Machine$double.eps, verbose = FALSE) {
@@ -570,10 +564,6 @@ exp_gr_param <- function(out) {
 # as part of before_init
 
 dynamize_exp_kernel <- function(method) {
-  if (is.null(method$extra_gr)) {
-    method$extra_gr <- exp_cost_gr_param_plugin
-  }
-
   lreplace(method,
   after_init_fn = function(inp, out, method) {
     nr <- nrow(out$ym)
@@ -581,6 +571,34 @@ dynamize_exp_kernel <- function(method) {
       method$kernel$beta <- rep(method$kernel$beta, nr)
     }
     method$kernel <- check_symmetry(method$kernel)
+
+    # Leaving method null means we are dynamizing a method manually
+    if (is.null(method$extra_gr)) {
+      if (method$cost$name == "KL") {
+        if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
+          if (method$verbose) {
+            message("Using KL cost + asymmetric kernel parameter gradients")
+          }
+          method$extra_gr <- exp_cost_gr_kl_asymm
+          method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
+          method$update_out_fn <- make_update_out(keep = method$out_keep)
+        }
+        else {
+          if (method$verbose) {
+            message("Using KL cost + symmetric kernel parameter gradients")
+          }
+          method$extra_gr <- exp_cost_gr_kl_symm
+        }
+      }
+      else {
+        # But we can fall back to the plugin gradient which is always safe
+        if (method$verbose) {
+          message("Using plugin parameter gradients")
+        }
+        method$extra_gr <- exp_cost_gr_plugin
+      }
+    }
+
     list(method = method)
   },
   get_extra_par = function(method) {
@@ -613,8 +631,9 @@ dynamize_heavy_tail_kernel <- function(method) {
     }
     method$kernel <- check_symmetry(kernel)
 
-    # Leaving methods null means we are using the KL cost and would like to
-    # use a slightly more efficient gradient calculation
+    # Leaving method null means we are dynamizing a method manually OR we are
+    # using the KL cost and would like to use a slightly more efficient gradient
+    # calculation, but can't be sure if a static parameter is uniform or not
     if (is.null(method$gr_alpha) || is.null(method$gr_beta)) {
       if (method$cost$name == "KL") {
         if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
@@ -623,6 +642,8 @@ dynamize_heavy_tail_kernel <- function(method) {
           }
           method$gr_alpha <- heavy_tail_cost_gr_alpha_kl_asymm
           method$gr_beta <- heavy_tail_cost_gr_beta_kl_asymm
+          method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
+          method$update_out_fn <- make_update_out(keep = method$out_keep)
         }
         else {
           if (method$verbose) {
