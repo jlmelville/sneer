@@ -455,3 +455,25 @@ test_that("during fixed alpha iterations iHPSNE behaves like HPSNE", {
                                      xi_eps = .Machine$double.eps))
   expect_equal(res$report$costs, hpsne_res$report$costs)
 })
+
+
+test_that("can dynamize HSSNE manually", {
+  auto_dyn <- ihssne(alpha = 0.5, opt_iter = 0,
+                     xi_eps = .Machine$double.eps)
+  auto_res <- quick_embed(method = auto_dyn)
+
+  manual_dyn <- hssne(alpha = 0.5)
+  manual_dyn$opt_iter <- auto_dyn$opt_iter
+  manual_dyn$dyn_alpha <- auto_dyn$dyn_alpha
+  manual_dyn$dyn_beta <- auto_dyn$dyn_beta
+  manual_dyn$switch_iter <- auto_dyn$switch_iter
+  manual_dyn$xi_eps <- auto_dyn$xi_eps
+  manual_dyn$alt_opt <- auto_dyn$alt_opt
+
+  manual_dyn$dynamic_kernel <- TRUE
+
+  manual_res <- quick_embed(method = manual_dyn)
+
+  expect_equal(manual_res$report$costs, auto_res$report$costs, tol = 1e-4)
+})
+
