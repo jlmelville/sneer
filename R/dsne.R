@@ -8,21 +8,32 @@
 
 # "Dynamic" HSSNE, alpha is optimized with coordinates
 # Fully symmetric
+# Can use DDHSSNE default symm KL param gradient iff beta is uniform
 dhssne <- function(beta = 1, alpha = 0, opt_iter = 0, xi_eps = 1e-3,
                    alt_opt = TRUE,
                    eps = .Machine$double.eps, verbose = FALSE) {
-  ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
-          eps = eps, verbose = verbose, alt_opt = alt_opt,
-          dyn_beta = "static", dyn_alpha = "global")
+  lreplace(
+    ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
+            eps = eps, verbose = verbose, alt_opt = alt_opt,
+            keep = c("qm", "wm", "d2m", "qcm")),
+    dyn_alpha = "global",
+    dyn_beta = "static",
+    gr_alpha = NULL,
+    gr_beta = NULL
+  )
 }
 
+# Asymmetric version of DHSSNE
+# Can use DDHSSNE default symm KL param gradient
 dhasne <- function(beta = 1, alpha = 0, opt_iter = 0,
                    alt_opt = TRUE, xi_eps = 1e-3, eps = .Machine$double.eps,
                    verbose = FALSE) {
   lreplace(
     dhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
            xi_eps = xi_eps, alt_opt = alt_opt, verbose = verbose),
-    prob_type = "row")
+    prob_type = "row",
+    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
+    gr_beta = heavy_tail_cost_gr_beta_kl_symm)
 }
 
 
@@ -31,6 +42,7 @@ dhasne <- function(beta = 1, alpha = 0, opt_iter = 0,
 # are joint by construction, due to global alpha, unless inhomogeneous betas
 # are used.
 # Mainly useful for comparison with iHPSNE
+# Can use DDHSSNE default symm KL param gradient
 dhpsne <- function(beta = 1, alpha = 0, opt_iter = 0, alt_opt = TRUE,
                    xi_eps = 1e-3,
                    eps = .Machine$double.eps,
@@ -39,12 +51,15 @@ dhpsne <- function(beta = 1, alpha = 0, opt_iter = 0, alt_opt = TRUE,
     dhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
            alt_opt = alt_opt, eps = eps,
            verbose = verbose),
-    prob_type = "cond"
+    prob_type = "cond",
+    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
+    gr_beta = heavy_tail_cost_gr_beta_kl_symm
   )
 }
 
 # Dynamic Heavy-Tailed Semi Symmetric SNE
 # P is joint, Q is cond
+# Can use DDHSSNE default symm KL param gradient
 dh3sne <- function(beta = 1, alpha = 0, opt_iter = 0, alt_opt = TRUE,
                    xi_eps = 1e-3,
                    eps = .Machine$double.eps,
@@ -53,7 +68,9 @@ dh3sne <- function(beta = 1, alpha = 0, opt_iter = 0, alt_opt = TRUE,
     dhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
            alt_opt = alt_opt, eps = eps,
            verbose = verbose),
-    out_prob_type = "cond"
+    out_prob_type = "cond",
+    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
+    gr_beta = heavy_tail_cost_gr_beta_kl_symm
   )
 }
 
@@ -62,6 +79,7 @@ dh3sne <- function(beta = 1, alpha = 0, opt_iter = 0, alt_opt = TRUE,
 # Point wise values of alpha
 
 # inhomogeneous Heavy-Tailed "Pair-wise" SNE, P and Q are cond
+# symm KL param gradient
 ihpsne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    alt_opt = TRUE, xi_eps = 1e-3,
                    gr_alpha = NULL,
@@ -70,14 +88,18 @@ ihpsne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
-            alt_opt = alt_opt, eps = eps,
-            gr_alpha = gr_alpha, gr_beta = gr_beta, keep = keep,
-            verbose = verbose, dyn_beta = "static", dyn_alpha = "point"),
-    prob_type = "cond"
+            alt_opt = alt_opt, eps = eps, keep = keep,
+            verbose = verbose),
+    prob_type = "cond",
+    dyn_alpha = "point",
+    dyn_beta = "static",
+    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
+    gr_beta = heavy_tail_cost_gr_beta_kl_symm
   )
 }
 
 # Inhomogeneous H3SNE: Semi Symmetric P is joint, Q is cond
+# Can use DDHSSNE default symm KL param gradient
 ih3sne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    alt_opt = TRUE, xi_eps = 1e-3,
                    eps = .Machine$double.eps, verbose = FALSE) {
@@ -91,10 +113,7 @@ ih3sne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
 }
 
 # Inhomogeneous HSSNE: P is joint, Q is joint (by averaging)
-# Definitely know we have an asymmetric kernel here, so let's pass in asymm
-# versions of the parameter gradients
-# If we kept these NULL, the gradients would be correct, but slightly less
-# efficient
+# Can use DDHSSNE default asymm KL param gradient (NOT the symmetric version)
 ihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    alt_opt = TRUE, xi_eps = 1e-3,
                    eps = .Machine$double.eps, verbose = FALSE) {
@@ -102,22 +121,25 @@ ihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
     ihpsne(beta = beta, alpha = alpha, opt_iter = opt_iter,
            switch_iter = switch_iter, xi_eps = xi_eps,
            keep = c("qm", "wm", "d2m", "qcm"),
-           gr_alpha = heavy_tail_cost_gr_alpha_kl_asymm,
-           gr_beta = heavy_tail_cost_gr_beta_kl_asymm,
            alt_opt = alt_opt, eps = eps, verbose = verbose),
-    prob_type = "joint"
+    prob_type = "joint",
+    gr_alpha = heavy_tail_cost_gr_alpha_kl_asymm,
+    gr_beta = heavy_tail_cost_gr_beta_kl_asymm
   )
 }
 
 # Inhomogeneous HASNE: the heavy-tailed equivalent of it-SNE
+# Can use DDHSSNE default symm KL param gradient
 ihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                    alt_opt = TRUE, xi_eps = 1e-3,
                    eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter,
-            dyn_beta = "static", dyn_alpha = "point",
             alt_opt = alt_opt, xi_eps = xi_eps, eps = eps, verbose = verbose),
-    prob_type = "row")
+    prob_type = "row",
+    dyn_alpha = "point",
+    dyn_beta = "static"
+  )
 }
 
 
@@ -125,7 +147,7 @@ ihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
 
 # dyn_ can be one of 'static' (don't optimize), 'global' (one value),
 # 'point' (allow each parameter to vary per point)
-# If you are transferring precisions, it makes so sense to specify a 'global'
+# If you are transferring precisions, it makes no sense to specify a 'global'
 # dynamic beta. So don't do that.
 # opt_iter - at what iteration to start optimizing the parameters
 # switch_iter - if doing 'point' optimization, treat parameters as global
@@ -140,31 +162,16 @@ ihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
 #  here as with gr_alpha.
 # NB an asymmetric kernel results from using a non-uniform alpha or beta, even
 # if you aren't optimizing them, e.g. transferring precisions.
+# Because we assume a uniform beta, we can use the symm KL parameter gradient
 ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
-                    dyn_beta = "global", dyn_alpha = "global",
                     opt_iter = 0, switch_iter = opt_iter,
                     keep = c("qm", "wm", "d2m"),
-                    gr_alpha = NULL,
-                    gr_beta = NULL,
                     eps = .Machine$double.eps,
                     alt_opt = TRUE,
                     verbose = FALSE) {
 
-  # If no inhomogeneity, then switch_iter is meaningless
-  if (dyn_alpha == "global" && dyn_beta == "global") {
-    switch_iter <- opt_iter
-  }
-
   if (switch_iter < opt_iter) {
     stop("switch_iter must be >= opt_iter")
-  }
-
-  ok_dyn <- c("static", "global", "point")
-  dyn_beta <- match.arg(dyn_beta, ok_dyn)
-  dyn_alpha <- match.arg(dyn_alpha, ok_dyn)
-
-  if (dyn_beta == "static" && dyn_alpha == "static") {
-    stop("One of alpha and beta must be non-static")
   }
 
   lreplace(
@@ -180,33 +187,44 @@ ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
                              iter)
 
     },
-    gr_alpha = gr_alpha,
-    gr_beta = gr_beta,
+    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
+    gr_beta = heavy_tail_cost_gr_beta_kl_symm,
     opt_iter = opt_iter,
-    dyn_alpha = dyn_alpha,
-    dyn_beta = dyn_beta,
+    dyn_alpha = "global",
+    dyn_beta = "global",
     switch_iter = switch_iter,
     xi_eps = xi_eps,
     alt_opt = alt_opt
   )
 }
 
+# Use Asymmetric KL kernel parameter gradient
 dihssne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                     xi_eps = 1e-3, alt_opt = TRUE,
                     eps = .Machine$double.eps, verbose = FALSE) {
-  ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
-          alt_opt = alt_opt, eps = eps,
-          verbose = verbose, dyn_beta = "point", dyn_alpha = "point")
+  lreplace(
+    ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, xi_eps = xi_eps,
+            alt_opt = alt_opt, eps = eps,
+            keep = c("qm", "wm", "d2m", "qcm"),
+            verbose = verbose),
+    dyn_beta = "point",
+    dyn_alpha = "point",
+    gr_alpha = heavy_tail_cost_gr_alpha_kl_asymm,
+    gr_beta = heavy_tail_cost_gr_beta_kl_asymm
+  )
 }
 
+# Use Symmetric KL kernel parameter gradient
 dihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
                     xi_eps = 1e-3, alt_opt = TRUE,
                     eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
-    ddhssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
-            verbose = verbose, dyn_beta = "point", dyn_alpha = "point",
+    dihssne(beta = beta, alpha = alpha, opt_iter = opt_iter, eps = eps,
+            verbose = verbose,
             alt_opt = alt_opt, xi_eps = xi_eps),
-    prob_type = "row")
+    prob_type = "row",
+    gr_alpha = heavy_tail_cost_gr_alpha_kl_symm,
+    gr_beta = heavy_tail_cost_gr_beta_kl_symm)
 }
 
 # Dynamic ASNE ------------------------------------------------------------
@@ -217,7 +235,6 @@ dihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
 iasne <- function(beta = 1, opt_iter = 0,
                   xi_eps = 1e-3, alt_opt = TRUE,
                   keep = c("qm", "wm", "d2m"),
-                  extra_gr = exp_cost_gr_param_kl_symm,
                   eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     asne_plugin(beta = beta, eps = eps, keep = keep),
@@ -226,40 +243,39 @@ iasne <- function(beta = 1, opt_iter = 0,
     dyn = "point",
     xi_eps = xi_eps,
     alt_opt = alt_opt,
-    extra_gr = extra_gr
+    extra_gr = exp_cost_gr_param_kl_symm
   )
 }
 
 dasne <- function(beta = 1, opt_iter = 0,
                   xi_eps = 1e-3, alt_opt = TRUE,
-                  extra_gr = exp_cost_gr_param_kl_symm,
                   eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     iasne(beta = beta, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
-          extra_gr = extra_gr, eps = eps, verbose = verbose),
+          eps = eps, verbose = verbose),
     dyn = "global"
   )
 }
 
 issne <- function(beta = 1, opt_iter = 0,
                   xi_eps = 1e-3, alt_opt = TRUE,
-                  extra_gr = exp_cost_gr_param_kl_asymm,
                   eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     iasne(beta = beta, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
           keep = c("qm", "wm", "d2m", "qcm"),
-          extra_gr = extra_gr, eps = eps, verbose = verbose),
+          eps = eps, verbose = verbose),
+    extra_gr = exp_cost_gr_param_kl_asymm,
     prob_type = "joint"
   )
 }
 
 dssne <- function(beta = 1, opt_iter = 0,
                   xi_eps = 1e-3, alt_opt = TRUE,
-                  extra_gr = exp_cost_gr_param_kl_symm,
                   eps = .Machine$double.eps, verbose = FALSE) {
   lreplace(
     issne(beta = beta, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
-          extra_gr = extra_gr, eps = eps, verbose = verbose),
+          eps = eps, verbose = verbose),
+    extra_gr = exp_cost_gr_param_kl_symm,
     dyn = "global"
   )
 }
@@ -554,6 +570,10 @@ exp_gr_param <- function(out) {
 # as part of before_init
 
 dynamize_exp_kernel <- function(method) {
+  if (is.null(method$extra_gr)) {
+    method$extra_gr <- exp_cost_gr_param_plugin
+  }
+
   lreplace(method,
   after_init_fn = function(inp, out, method) {
     nr <- nrow(out$ym)
@@ -580,6 +600,7 @@ dynamize_exp_kernel <- function(method) {
 }
 
 dynamize_heavy_tail_kernel <- function(method) {
+
   lreplace(method,
   after_init_fn = function(inp, out, method) {
     nr <- nrow(out$ym)
@@ -592,21 +613,32 @@ dynamize_heavy_tail_kernel <- function(method) {
     }
     method$kernel <- check_symmetry(kernel)
 
-    # Leaving methods null means we want to use the simpler kernel for KL
-    # divergence and a non-joint output probability, if possible
+    # Leaving methods null means we are using the KL cost and would like to
+    # use a slightly more efficient gradient calculation
     if (is.null(method$gr_alpha) || is.null(method$gr_beta)) {
-      if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
-        if (method$verbose) {
-          message("Asymmetric kernel: using plugin parameter gradients")
+      if (method$cost$name == "KL") {
+        if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
+          if (method$verbose) {
+            message("Using KL cost + asymmetric kernel parameter gradients")
+          }
+          method$gr_alpha <- heavy_tail_cost_gr_alpha_kl_asymm
+          method$gr_beta <- heavy_tail_cost_gr_beta_kl_asymm
         }
-        # There might be a more efficient gradient, but these are always safe
-        method$gr_alpha <- heavy_tail_cost_gr_alpha_plugin
-        method$gr_beta <- heavy_tail_cost_gr_beta_plugin
+        else {
+          if (method$verbose) {
+            message("Using KL cost + symmetric kernel parameter gradients")
+          }
+          method$gr_alpha <- heavy_tail_cost_gr_alpha_kl_symm
+          method$gr_beta <- heavy_tail_cost_gr_beta_kl_symm
+        }
       }
       else {
-        # These are only correct using the KL divergence!
-        method$gr_alpha <- heavy_tail_cost_gr_alpha_kl_symm
-        method$gr_beta <- heavy_tail_cost_gr_beta_kl_symm
+        # But we can fall back to the plugin gradient which is always safe
+        if (method$verbose) {
+          message("Using plugin parameter gradients")
+        }
+        method$gr_alpha <- heavy_tail_cost_gr_alpha_plugin
+        method$gr_beta <- heavy_tail_cost_gr_beta_plugin
       }
     }
 
