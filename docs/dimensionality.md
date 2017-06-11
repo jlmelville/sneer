@@ -204,9 +204,22 @@ $$
   \log \left( p_{j|i} \right) + H
  \right]
 $$
+At this point:
 
-The gradient of the weight with respect to the precision parameter, $\beta_i$,
-is:
+$$
+ \frac{\partial H}{\partial \beta_i} = 
+ \sum_{j}
+ -\frac{1}{S_{i}}
+ \frac{\partial w_{ij}}{\partial \beta_{i}}
+  \left[
+  \log \left( p_{j|i} \right) + H
+ \right]
+$$
+
+which is an entirely generic expression for the intrinsic dimensionality with
+respect to some parameter $\beta_i$ of a kernel function. But continuing with
+the assumption that we're dealing with an exponential function, the gradient of 
+the weight with respect to the precision parameter, $\beta_i$, is:
 
 $$
 \frac{\partial w_{ij}}{\partial \beta_{i}}

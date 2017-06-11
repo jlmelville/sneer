@@ -246,8 +246,17 @@ S_{i} = \sum_{j} w_{ij}
  -\left[
   \log \left( p_{j|i} \right) + H
  \right]
+\]</span> At this point:</p>
+<p><span class="math display">\[
+ \frac{\partial H}{\partial \beta_i} = 
+ \sum_{j}
+ -\frac{1}{S_{i}}
+ \frac{\partial w_{ij}}{\partial \beta_{i}}
+  \left[
+  \log \left( p_{j|i} \right) + H
+ \right]
 \]</span></p>
-<p>The gradient of the weight with respect to the precision parameter, <span class="math inline">\(\beta_i\)</span>, is:</p>
+<p>which is an entirely generic expression for the intrinsic dimensionality with respect to some parameter <span class="math inline">\(\beta_i\)</span> of a kernel function. But continuing with the assumption that we’re dealing with an exponential function, the gradient of the weight with respect to the precision parameter, <span class="math inline">\(\beta_i\)</span>, is:</p>
 <p><span class="math display">\[
 \frac{\partial w_{ij}}{\partial \beta_{i}}
 =
