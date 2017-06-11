@@ -70,7 +70,6 @@ plugin <- function(cost = kl_fg(),
       is_plugin = TRUE
     )
   )
-  method$update_out_fn <- make_update_out(keep = method$out_keep)
   method <- on_inp_updated(method, inp_updated_fn)$method
   method
 }

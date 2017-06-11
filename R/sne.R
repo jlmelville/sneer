@@ -66,7 +66,7 @@ NULL
 # }
 asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
                  keep = c("qm")) {
-  method <- list(
+  list(
     cost = kl_fg(),
     kernel = exp_kernel(beta = beta),
     stiffness_fn = function(method, inp, out) {
@@ -75,9 +75,8 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
     out_keep = keep,
     prob_type = "row",
     eps = eps,
-    verbose = verbose)
-  method$update_out_fn = make_update_out(method$out_keep)
-  method
+    verbose = verbose
+  )
 }
 
 # Symmetric Stochastic Neighbor Embedding (SSNE)

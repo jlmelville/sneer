@@ -156,7 +156,6 @@ dynamize_inhomogeneous_kernel <- function(method) {
             }
             method$gr_dof <- itsne_cost_gr_param_asymm
             method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
-            method$update_out_fn <- make_update_out(keep = method$out_keep)
           }
           else {
             if (method$verbose) {

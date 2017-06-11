@@ -184,8 +184,8 @@ inp_from_perps_multi <- function(perplexities = NULL,
         })$method
 
         method$orig_kernel <- method$kernel
-        method$update_out_fn <- make_update_out_ms(
-          unique(c(method$out_keep, "wm")))
+        method$out_keep <- unique(c(method$out_keep, "wm"))
+        method$update_out_fn <- update_out_prob_ms
         method$stiffness_fn <- plugin_stiffness_ms
 
         inp$pms <- list()
@@ -399,8 +399,8 @@ inp_from_perps_multil <- function(perplexities = NULL,
         })$method
 
         method$orig_kernel <- method$kernel
-        method$update_out_fn <- make_update_out_ms(
-          unique(c(method$out_keep, "wm")))
+        method$out_keep <- unique(c(method$out_keep, "wm"))
+        method$update_out_fn <- update_out_prob_ms
         method$stiffness_fn <- plugin_stiffness_ms
       }
 
@@ -856,8 +856,7 @@ plugin_stiffness_ms_pair <- function(method, inp, out, dc_dq, l) {
   (dc_dq - sum(dc_dq * out$qms[[l]])) * (dw_df / (wm_sum + method$eps))
 }
 
-
-# Output Update Factory Function for Multiscale Probability
+# Output Update Function for Multiscale Probability
 #
 # In a multiscale embedding, the distance matrix is calculated once
 # when the coordinates change, and then multiple similarity kernels
@@ -869,32 +868,31 @@ plugin_stiffness_ms_pair <- function(method, inp, out, dc_dq, l) {
 # the \code{wms[[l]]} and \code{qms[[l]]} list on \code{out}. The averaged
 # probability matrix is stored as \code{out$qm} as usual.
 #
-# @return The output update function which will be invoked as part of the
-# embedding.
-make_update_out_ms <- function(keep = c("qm", "wm")) {
-  function(inp, out, method) {
-    out$d2m = coords_to_dist2(out$ym)
+# @return List containing updated output data
+update_out_prob_ms <- function(inp, out, method) {
+  out$d2m = coords_to_dist2(out$ym)
 
-    out$qms <- list()
-    out$wms <- list()
+  out$qms <- list()
+  out$wms <- list()
 
-    for (l in 1:method$num_scales) {
-      method$kernel <- method$kernels[[l]]
-      res <- update_probs(out, method, d2m = out$d2m)
+  keep <- method$out_keep
 
-      for (i in 1:length(keep)) {
-        keep_name <- paste0(keep[i], 's')
-        out[[keep_name]][[l]] <- res[[keep[i]]]
-      }
+  for (l in 1:method$num_scales) {
+    method$kernel <- method$kernels[[l]]
+    res <- update_probs(out, method, d2m = out$d2m)
+
+    for (i in 1:length(keep)) {
+      keep_name <- paste0(keep[i], 's')
+      out[[keep_name]][[l]] <- res[[keep[i]]]
     }
-
-    # average the probability matrices
-    out$qm <- Reduce(`+`, out$qms) / length(out$qms)
-    if (!is.null(method$out_updated_fn)) {
-      out <- method$out_updated_fn(inp, out, method)
-    }
-    list(out = out, inp = inp)
   }
+
+  # average the probability matrices
+  out$qm <- Reduce(`+`, out$qms) / length(out$qms)
+  if (!is.null(method$out_updated_fn)) {
+    out <- method$out_updated_fn(inp, out, method)
+  }
+  list(out = out)
 }
 
 # Takes existing inp_updated listeners and wraps them so that they receive

@@ -852,7 +852,6 @@ sneer <- function(df,
     prec_scale <- match.arg(tolower(prec_scale), c("none", "scale", "transfer"))
 
     # Need to use plugin method if precisions can be non-uniform
-    # NB only applicable for 'cond' and 'row' probability types
     embed_method <- embed_methods[[method]]()
     if (prec_scale == "transfer") {
       if (is.null(embed_method$is_plugin) || !embed_method$is_plugin) {

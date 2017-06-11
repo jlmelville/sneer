@@ -21,9 +21,10 @@ inp_tms <- function() { inp_from_perps_multi(perplexities = seq(45, 25, length.o
                                 verbose = FALSE) }
 
 aw <- function(method) {
-  lreplace(method,
-       inp_updated_fn = nerv_inp_update,
-       update_out_fn = make_update_out(keep = c("qm", "wm", "d2m", "qcm"))
+  lreplace(
+    method,
+    inp_updated_fn = nerv_inp_update,
+    out_keep = c("qm", "wm", "d2m", "qcm")
   )
 }
 

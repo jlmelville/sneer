@@ -405,7 +405,7 @@ uhsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
                        lambda = method$cost$lambda, alpha = method$kernel$alpha,
                        beta = method$kernel$beta, eps = method$eps)
     },
-    update_out_fn = make_update_out(keep = c("qm", "wm"))
+    out_keep = c("qm", "wm")
   )
 }
 

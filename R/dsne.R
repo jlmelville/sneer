@@ -544,7 +544,6 @@ dynamize_exp_kernel <- function(method) {
           }
           method$gr_beta <- exp_cost_gr_param_kl_asymm
           method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
-          method$update_out_fn <- make_update_out(keep = method$out_keep)
         }
         else {
           if (method$verbose) {
@@ -613,7 +612,6 @@ dynamize_heavy_tail_kernel <- function(method) {
           method$gr_alpha <- heavy_tail_cost_gr_alpha_kl_asymm
           method$gr_beta <- heavy_tail_cost_gr_beta_kl_asymm
           method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
-          method$update_out_fn <- make_update_out(keep = method$out_keep)
         }
         else {
           if (method$verbose) {

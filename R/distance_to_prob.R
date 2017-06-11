@@ -95,39 +95,39 @@
 # @name probability_matrices
 NULL
 
-# Output Update Factory Function
+# Output Update Function
 #
-# Embedding methods can specify which of the three matrices created as
-# part of mapping from embedded coordinates to the output probabilities they
-# want to keep. The squared distances (\code{d2m}) are not always useful,
-# except if the plugin gradient is being used to calculate the stiffness
-# matrix. The weight matrix (\code{wm}) is used by the plugin gradient method
-# and by some non-plugin method stiffness functions (e.g. \code{tsne}
-# or \code{hssne}). The output probability (\code{qm}) is an integral
-# part of all cost functions and gradients so should always be retained.
+# Embedding methods can specify which matrices created as part of mapping from
+# embedded coordinates to the output probabilities they want to keep. The
+# squared distances (\code{d2m}) are not always useful, except if the plugin
+# gradient is being used to calculate the stiffness matrix. The weight matrix
+# (\code{wm}) is used by the plugin gradient method and by some non-plugin
+# method stiffness functions (e.g. \code{tsne} or \code{hssne}). The output
+# probability (\code{qm}) is an integral part of all cost functions and
+# gradients so should always be retained.
 #
 # @param keep List containing any or all of the following matrix names:
 # \describe{
 #  \item{\code{d2m}}{Output squared distances matrix.}
 #  \item{\code{wm}}{Output weight matrix.}
 #  \item{\code{qm}}{Output probability matrix.}
+#  \item{\code{qcm}}{Output conditional probability matrix, before any averaging
+#  (if any) is applied.}
 # }
-# @return The output update function, which, when invoked will return the
-# updated, output data with all the matrices specified by \code{keep}
-# added to it.
-make_update_out <- function(keep = c("qm")) {
-  function(inp, out, method) {
-    res <- update_probs(out, method)
+# @return List containing updated output data with all the matrices specified
+# by \code{keep} added to it.
+update_out_prob <- function(inp, out, method) {
+  res <- update_probs(out, method)
 
-    for (i in 1:length(keep)) {
-      out[[keep[i]]] <- res[[keep[i]]]
-    }
-
-    if (!is.null(method$out_updated_fn)) {
-      out <- method$out_updated_fn(inp, out, method)
-    }
-    list(out = out, inp = inp)
+  keep <- method$out_keep
+  for (i in 1:length(keep)) {
+    out[[keep[i]]] <- res[[keep[i]]]
   }
+
+  if (!is.null(method$out_updated_fn)) {
+    out <- method$out_updated_fn(inp, out, method)
+  }
+  list(out = out)
 }
 
 # Update Output Probabilities
