@@ -20,7 +20,7 @@ itsne <- function(dof = 1, opt_iter = 0,
     asne_plugin(eps = eps),
     kernel = itsne_kernel(dof = dof),
     dynamic_kernel = TRUE,
-    dyn_dof = "point",
+    dyn = list(dof = "point"),
     opt_iter = opt_iter,
     xi_eps = xi_eps,
     alt_opt = alt_opt
@@ -72,7 +72,7 @@ htsne <- function(dof = 1, opt_iter = 0, xi_eps = 1e-3, alt_opt = TRUE,
   lreplace(
     itsne(dof = dof, opt_iter = opt_iter, xi_eps = xi_eps, alt_opt = alt_opt,
           eps = eps, verbose = verbose),
-    dyn_dof = "global"
+    dyn = list(dof = "global")
   )
 }
 
@@ -92,7 +92,7 @@ itsne_cost_gr_param_plugin <- function(opt, inp, out, method, iter, extra_par) {
   dof <- xi * xi + method$xi_eps
 
   dw_ddof <- itsne_gr_param(out$d2m, out$wm, dof)
-  gr <- param_gr(method, inp, out, dw_ddof, method$dyn_dof)
+  gr <- param_gr(method, inp, out, dw_ddof, method$dyn$dof)
 
   2 * xi * gr
 }
@@ -107,7 +107,7 @@ itsne_cost_gr_param <- function(opt, inp, out, method, iter, extra_par) {
   c1 <- (out$d2m / dof) + 1
   hm <- log(c1) - ((out$d2m * (dof + 1)) / (dof * dof * c1))
   gr <- hm * (inp$pm - out$qm)
-  if (method$dyn_dof == "point") {
+  if (method$dyn$dof == "point") {
     gr <- rowSums(gr)
   }
   else {
@@ -124,7 +124,7 @@ itsne_cost_gr_param_asymm <- function(opt, inp, out, method, iter, extra_par) {
   c1 <- (out$d2m / dof) + 1
   gr <- log(c1) - ((out$d2m * (dof + 1)) / (dof * dof * c1))
   gr <- gr * out$qcm * ((inp$pm / (out$qm + method$eps)) - 1)
-  if (method$dyn_dof == "point") {
+  if (method$dyn$dof == "point") {
     gr <- rowSums(gr)
   }
   else {
@@ -142,7 +142,7 @@ dynamize_inhomogeneous_kernel <- function(method) {
     method,
     after_init_fn = function(inp, out, method) {
       nr <- nrow(out$ym)
-      if (method$dyn_dof == "point" && length(method$kernel$dof) != nr) {
+      if (method$dyn$dof == "point" && length(method$kernel$dof) != nr) {
         method$kernel$dof <- rep(method$kernel$dof, nr)
       }
       method$kernel <- check_symmetry(method$kernel)

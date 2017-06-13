@@ -478,8 +478,7 @@ test_that("can dynamize HSSNE manually", {
 
   manual_dyn <- hssne(alpha = 0.5)
   manual_dyn$opt_iter <- auto_dyn$opt_iter
-  manual_dyn$dyn_alpha <- auto_dyn$dyn_alpha
-  manual_dyn$dyn_beta <- auto_dyn$dyn_beta
+  manual_dyn$dyn <- auto_dyn$dyn
   manual_dyn$switch_iter <- auto_dyn$switch_iter
   manual_dyn$xi_eps <- auto_dyn$xi_eps
   manual_dyn$alt_opt <- auto_dyn$alt_opt
