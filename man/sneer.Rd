@@ -8,13 +8,13 @@
 \title{sneer: Stochastic Neighbor Embedding Experiments in R.}
 \usage{
 sneer(df, indexes = NULL, ndim = 2, method = "tsne", alpha = 0.5,
-  dof = 10, kernel_opt_iter = 50, lambda = 0.5, kappa = 0.5,
-  scale_type = "none", perplexity = 32, perp_scale = "single",
-  perp_scale_iter = NULL, perp_kernel_fun = "exp", prec_scale = "none",
-  init = "pca", opt = "L-BFGS", alt_opt = FALSE, epsilon = 1,
-  max_iter = 1000, report_every = 50, tol = 1e-04, exaggerate = NULL,
-  exaggerate_off_iter = 50, plot_type = "plot", colors = NULL,
-  color_name = NULL, labels = NULL, label_name = NULL,
+  dof = 10, dyn = c(), kernel_opt_iter = 50, lambda = 0.5,
+  kappa = 0.5, scale_type = "none", perplexity = 32,
+  perp_scale = "single", perp_scale_iter = NULL, perp_kernel_fun = "exp",
+  prec_scale = "none", init = "pca", opt = "L-BFGS", alt_opt = FALSE,
+  epsilon = 1, max_iter = 1000, report_every = 50, tol = 1e-04,
+  exaggerate = NULL, exaggerate_off_iter = 50, plot_type = "plot",
+  colors = NULL, color_name = NULL, labels = NULL, label_name = NULL,
   label_chars = NULL, point_size = 1, plot_labels = FALSE,
   color_scheme = grDevices::rainbow, equal_axes = FALSE, legend = TRUE,
   legend_rows = NULL, quality_measures = NULL, ret = c())
@@ -37,6 +37,8 @@ value of the parameter.}
 \item{dof}{Initial number of degrees of freedom. Used only if the method is
 \code{"itsne"}. A value of 1 gives initial behavior like t-ASNE, and values
 approaching infinity behave like ASNE.}
+
+\item{dyn}{List containing kernel parameters to be optimized. See "Details".}
 
 \item{kernel_opt_iter}{Wait this number of iterations before beginning to
 optimize non-coordinate parameters. Used by the \code{method}s \code{"itsne"}
@@ -204,6 +206,37 @@ The embedding methods available are:
  \item \code{"dhssne"} A "dynamic" version of HSSNE, inspired by the
  inhomogeneous t-SNE Method of Kitazono et al.
 }
+
+The \code{"dyn"} parameter allows for kernel parameters to be optimized, if
+the output kernel is exponential or heavy-tailed, i.e. methods \code{asne},
+\code{ssne}, \code{nerv} and \code{jse} (which use the exponential kernel)
+and \code{hssne} (which uses the heavy-tailed kernel). The parameter
+should be a list consisting of the following names:
+
+\itemize{
+  \item For exponential kernels, \code{"beta"} (the precision of the
+  exponential.)
+  \item For the heavy-tailed kernel, \code{"alpha"} (the heavy-tailedness),
+  and \code{"beta"} (analogous to the precision of the exponential).
+}
+
+The values of the list items should be one of:
+
+\itemize{
+  \item \code{"global"} The parameter is the same for every point.
+  \item \code{"point"} The value is applied per point, and can be different
+  for each point.
+  \item \code{"static"} The value is fixed at its initial value and is not
+  optimized.
+}
+
+Setting a value to \code{"static"} only makes sense for kernels where there
+is more than one parameter that could be optimized and you don't want all of
+them optimized (e.g. you may only want to optimize alpha in the heavy-tailed
+kernel). It's an error to specify all parameters as \code{"static"}.
+
+The methods \code{"dhssne"} and \code{"itsne"} already use dynamic kernel
+optimization and don't require any further specification.
 
 The following scaling options can be applied via the \code{scale_type}
 parameter:
@@ -417,11 +450,9 @@ following options can be supplied:
  \item \code{"deg"} Degree centrality of the input probability. Calculated
  if not present.
  \item \code{"dyn"} "Dynamic" parameters, i.e. any non-coordinate parameters
- which were optimized. Only used if the method was \code{"itsne"}, in which
- case the result is a list labelled \code{"dof"} which provides the degree
- of freedom parameters for each point, and \code{"dhssne"}, in which case
- the result is a scalar \code{"alpha"}, representing the global heavy
- tailedness parameter.
+ which were optimized. Only used if the \code{"dyn"} input parameter was
+ non-\code{NULL}, in which case the values of the parameters specified
+ are returned.
 }
 
 The \code{color_scheme} parameter is used to set the color scheme for the
@@ -632,6 +663,20 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
   # only one global value being optimized)
   # Setting alpha simply chooses the initial value
   res <- sneer(iris, method = "dhssne", alpha = 0.5)
+
+  # Can make other embedding methods "dynamic" in the style of it-SNE and
+  # DSSNE. Here we let the ASNE output kernel have different precision
+  # parameters:
+  res <- sneer(iris, method = "asne", dyn = list(beta = "point"))
+
+  # DHSSNE could be defined manually like this: alpha is optimized as a single
+  # global parameter, while the beta parameters are not optimized
+  res <- sneer(iris, method = "hssne",
+               dyn = list(alpha = "global", beta = "static"))
+
+  # Allow both alpha and beta in the heavy-tailed function to vary per-point:
+  res <- sneer(iris, method = "hssne",
+               dyn = list(alpha = "point", beta = "point"))
 
   # wTSNE treats the input probability like a graph where the probabilities
   # are weighted edges and adds extra repulsion to nodes with higher degrees

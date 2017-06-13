@@ -171,6 +171,37 @@ NULL
 #'  inhomogeneous t-SNE Method of Kitazono et al.
 #' }
 #'
+#' The \code{"dyn"} parameter allows for kernel parameters to be optimized, if
+#' the output kernel is exponential or heavy-tailed, i.e. methods \code{asne},
+#' \code{ssne}, \code{nerv} and \code{jse} (which use the exponential kernel)
+#' and \code{hssne} (which uses the heavy-tailed kernel). The parameter
+#' should be a list consisting of the following names:
+#'
+#' \itemize{
+#'   \item For exponential kernels, \code{"beta"} (the precision of the
+#'   exponential.)
+#'   \item For the heavy-tailed kernel, \code{"alpha"} (the heavy-tailedness),
+#'   and \code{"beta"} (analogous to the precision of the exponential).
+#' }
+#'
+#' The values of the list items should be one of:
+#'
+#' \itemize{
+#'   \item \code{"global"} The parameter is the same for every point.
+#'   \item \code{"point"} The value is applied per point, and can be different
+#'   for each point.
+#'   \item \code{"static"} The value is fixed at its initial value and is not
+#'   optimized.
+#' }
+#'
+#' Setting a value to \code{"static"} only makes sense for kernels where there
+#' is more than one parameter that could be optimized and you don't want all of
+#' them optimized (e.g. you may only want to optimize alpha in the heavy-tailed
+#' kernel). It's an error to specify all parameters as \code{"static"}.
+#'
+#' The methods \code{"dhssne"} and \code{"itsne"} already use dynamic kernel
+#' optimization and don't require any further specification.
+#'
 #' The following scaling options can be applied via the \code{scale_type}
 #' parameter:
 #' \itemize{
@@ -383,11 +414,9 @@ NULL
 #'  \item \code{"deg"} Degree centrality of the input probability. Calculated
 #'  if not present.
 #'  \item \code{"dyn"} "Dynamic" parameters, i.e. any non-coordinate parameters
-#'  which were optimized. Only used if the method was \code{"itsne"}, in which
-#'  case the result is a list labelled \code{"dof"} which provides the degree
-#'  of freedom parameters for each point, and \code{"dhssne"}, in which case
-#'  the result is a scalar \code{"alpha"}, representing the global heavy
-#'  tailedness parameter.
+#'  which were optimized. Only used if the \code{"dyn"} input parameter was
+#'  non-\code{NULL}, in which case the values of the parameters specified
+#'  are returned.
 #' }
 #'
 #' The \code{color_scheme} parameter is used to set the color scheme for the
@@ -412,6 +441,7 @@ NULL
 #' @param dof Initial number of degrees of freedom. Used only if the method is
 #' \code{"itsne"}. A value of 1 gives initial behavior like t-ASNE, and values
 #' approaching infinity behave like ASNE.
+#' @param dyn List containing kernel parameters to be optimized. See "Details".
 #' @param kernel_opt_iter Wait this number of iterations before beginning to
 #' optimize non-coordinate parameters. Used by the \code{method}s \code{"itsne"}
 #' and \code{"dhssne"} only.
@@ -661,6 +691,20 @@ NULL
 #'   # Setting alpha simply chooses the initial value
 #'   res <- sneer(iris, method = "dhssne", alpha = 0.5)
 #'
+#'   # Can make other embedding methods "dynamic" in the style of it-SNE and
+#'   # DSSNE. Here we let the ASNE output kernel have different precision
+#'   # parameters:
+#'   res <- sneer(iris, method = "asne", dyn = list(beta = "point"))
+#'
+#'   # DHSSNE could be defined manually like this: alpha is optimized as a single
+#'   # global parameter, while the beta parameters are not optimized
+#'   res <- sneer(iris, method = "hssne",
+#'                dyn = list(alpha = "global", beta = "static"))
+#'
+#'   # Allow both alpha and beta in the heavy-tailed function to vary per-point:
+#'   res <- sneer(iris, method = "hssne",
+#'                dyn = list(alpha = "point", beta = "point"))
+#'
 #'   # wTSNE treats the input probability like a graph where the probabilities
 #'   # are weighted edges and adds extra repulsion to nodes with higher degrees
 #'   res <- sneer(iris, scale_type = "a", method = "wtsne")
@@ -740,7 +784,9 @@ sneer <- function(df,
                   ndim = 2,
                   method = "tsne",
                   alpha = 0.5,
-                  dof = 10, kernel_opt_iter = 50,
+                  dof = 10,
+                  dyn = c(),
+                  kernel_opt_iter = 50,
                   lambda = 0.5,
                   kappa = 0.5,
                   scale_type = "none",
@@ -854,16 +900,24 @@ sneer <- function(df,
     # Need to use plugin method if precisions can be non-uniform
     embed_method <- embed_methods[[method]]()
     if (prec_scale == "transfer") {
-      if (is.null(embed_method$is_plugin) || !embed_method$is_plugin) {
-        if (!endsWith(method, "_plugin")) {
-          new_method <- paste0(method, "_plugin")
-        }
-        if (!new_method %in% names(embed_methods)) {
-          stop("Method '", method, "' is not compatible with prec_scale option 't'")
-        }
-        message("Switching to plugin method for non-uniform output precisions")
-        embed_method <- embed_methods[[new_method]]()
+      if (embed_method$verbose) {
+        message("Using plugin method for prec_scale 'transfer'")
       }
+      embed_method <- convert_to_plugin(embed_method, method, embed_methods)
+    }
+
+    if (!is.null(dyn)) {
+      if ("point" %in% dyn && is_joint_out_prob(embed_method)) {
+        message("Using plugin method for dynamic kernel parameter optimization")
+        embed_method <- convert_to_plugin(embed_method, method, embed_methods)
+      }
+
+      embed_method$dynamic_kernel <- TRUE
+      embed_method$dyn <- dyn
+      embed_method$opt_iter <- kernel_opt_iter
+      embed_method$switch_iter <- kernel_opt_iter
+      embed_method$xi_eps <- 1e-3
+      embed_method$alt_opt <- alt_opt
     }
 
     # special casing for different methods
@@ -1342,4 +1396,17 @@ opt_sneer <- function(opt, method, epsilon = 500) {
   }
 
   optimizer
+}
+
+convert_to_plugin <- function(embed_method, method_name, embed_method_names) {
+  if (is.null(embed_method$is_plugin) || !embed_method$is_plugin) {
+    if (!endsWith(method_name, "_plugin")) {
+      new_method <- paste0(method_name, "_plugin")
+    }
+    if (!new_method %in% names(embed_method_names)) {
+      stop("Method '", method_name, "' cannot be converted to plugin method")
+    }
+    embed_method <- embed_method_names[[new_method]]()
+  }
+  embed_method
 }
