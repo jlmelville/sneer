@@ -546,6 +546,7 @@ dynamize_exp_kernel <- function(method) {
             message("Using KL cost + symmetric kernel parameter gradients")
           }
           method$gr_beta <- exp_cost_gr_param_kl_symm
+          method$out_keep <- unique(c(method$out_keep, "d2m"))
         }
       }
       else {
@@ -554,6 +555,7 @@ dynamize_exp_kernel <- function(method) {
           message("Using plugin parameter gradients")
         }
         method$gr_beta <- exp_cost_gr_param_plugin
+        method$out_keep <- unique(c(method$out_keep, "d2m", "wm"))
       }
     }
 
@@ -615,6 +617,7 @@ dynamize_heavy_tail_kernel <- function(method) {
           }
           method$gr_alpha <- heavy_tail_cost_gr_alpha_kl_symm
           method$gr_beta <- heavy_tail_cost_gr_beta_kl_symm
+          method$out_keep <- unique(c(method$out_keep, "d2m"))
         }
       }
       else {
@@ -624,6 +627,7 @@ dynamize_heavy_tail_kernel <- function(method) {
         }
         method$gr_alpha <- heavy_tail_cost_gr_alpha_plugin
         method$gr_beta <- heavy_tail_cost_gr_beta_plugin
+        method$out_keep <- unique(c(method$out_keep, "d2m", "wm"))
       }
     }
 

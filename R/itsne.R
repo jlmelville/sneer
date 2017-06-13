@@ -162,6 +162,7 @@ dynamize_inhomogeneous_kernel <- function(method) {
               message("Using KL cost + symmetric kernel parameter gradients")
             }
             method$gr_dof <- itsne_cost_gr_param
+            method$out_keep <- unique(c(method$out_keep, "d2m"))
           }
         }
         else {
@@ -170,6 +171,7 @@ dynamize_inhomogeneous_kernel <- function(method) {
             message("Using plugin parameter gradients")
           }
           method$gr_dof <- itsne_cost_gr_param_plugin
+          method$out_keep <- unique(c(method$out_keep, "wm", "d2m"))
         }
       }
 
