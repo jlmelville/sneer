@@ -506,7 +506,7 @@ init_embed <- function(xm, method, preprocess, init_inp, init_out, opt) {
 
   # reuse reports from old invocation of reporter, so we can use info
   # to determine whether to stop early (e.g. relative convergence tolerance)
-  report <- list()
+  report <- list( stop_early = FALSE )
 
   list(
     inp = inp,

@@ -922,7 +922,7 @@ sneer <- function(df,
 
     # special casing for different methods
     if (method == "pca") {
-      max_iter <- 0
+      max_iter <- -1
       perplexity <- NULL
       init <- "p"
       if (is.null(extra_costs)) {
