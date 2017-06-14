@@ -866,19 +866,7 @@ sneer <- function(df,
     itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter,
                                alt_opt = alt_opt) },
     dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                 alt_opt = alt_opt, verbose = TRUE) },
-    dhasne = function() { dhasne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                 alt_opt = alt_opt) },
-    ihssne = function() { ihssne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                 alt_opt = alt_opt, verbose = TRUE) },
-
-    ihasne = function() { ihasne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                 alt_opt = alt_opt, verbose = TRUE) },
-
-    dasne = function() { dasne(opt_iter = kernel_opt_iter, alt_opt = alt_opt) },
-    iasne = function() { iasne(opt_iter = kernel_opt_iter, alt_opt = alt_opt) },
-    dssne = function() { dssne(opt_iter = kernel_opt_iter, alt_opt = alt_opt) },
-    issne = function() { issne(opt_iter = kernel_opt_iter, alt_opt = alt_opt) }
+                                 alt_opt = alt_opt, verbose = TRUE) }
   )
 
   extra_costs <- NULL
