@@ -2,7 +2,9 @@
 title: "Perplexity and Intrinsic Dimensionality"
 author: "James Melville"
 date: "February 7, 2017"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
 ---
 
 Up: [Index](index.html)

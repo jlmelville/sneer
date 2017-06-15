@@ -1,14 +1,22 @@
-### Examples
+---
+title: "Examples"
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
+---
 
 Provides a sampling of what's available through `sneer`. But see
 the full [Documentation](index.html) for the available options.
 
-#### Run t-SNE By Default
+## Run t-SNE By Default
 ```R
 res <- sneer(iris)
 ```
 
-#### PCA on iris dataset and plot result using Species label name
+## PCA on iris dataset and plot result using Species label name
 
 ```R
 res <- sneer(iris, indexes = 1:4, label_name = "Species", method = "pca")
@@ -18,28 +26,32 @@ res <- sneer(iris, indexes = 1:4, label_name = "Species", method = "pca")
 res <- sneer(iris, method = "pca")
 ```
 
-#### Scale Columns to Mean 0 and Unit Variance
+## Scaling
+
+### Scale Columns to Mean 0 and Unit Variance
 
 ```R
 res <- sneer(iris, method = "pca", scale_type = "a")
 ```
 
-#### Range Scale Each Column
+### Range Scale Each Column
 ```R
 res <- sneer(iris, method = "pca", scale_type = "r")
 ```
 
-#### Range Scale Entire Matrix
+### Range Scale Entire Matrix
 ```R
 res <- sneer(iris, method = "pca", scale_type = "m")
 ```
 
-#### Only Run Plot for 200 Iterations
+### Only Run Plot for 200 Iterations
 ```R
 res <- sneer(iris, max_iter = 200)
 ```
 
-#### Plotting Category Names
+## Visualization During the Embedding
+
+### Plotting Category Names
 ```R
 # full species name on plot is cluttered, so just use the first two
 # letters and half size
@@ -47,7 +59,7 @@ res <- sneer(iris, scale_type = "a", label_chars = 2,
                    point_size = 0.5, plot_labels = TRUE)
 ```
 
-#### Use Pre-Chosen Colors in the Embedding Plot
+### Use Pre-Chosen Colors in the Embedding Plot
 ```R
 # Create a 5D gaussian with its own column specifying colors to use
 # for each point (in this case, random)
@@ -59,14 +71,14 @@ g5d <- data.frame(matrix(rnorm(100 * 5), ncol = 5),
 res <- sneer(g5d, method = "pca", color_name = "color")
 ```
 
-#### Use `ggplot2` for the Embedding Plot
+### Use `ggplot2` for the Embedding Plot
 ```R
 # You need to install and load ggplot2 and RColorBrewer yourself
 library("ggplot2")
 res <- sneer(iris, method = "pca", scale_type = "a", plot_type = "g")
 ```
 
-#### Use ColorBrewer color schemes for the embedding plot
+### Use ColorBrewer color schemes for the embedding plot
 ```R
 # Use a different ColorBrewer palette, bigger points, and range scale each
 # column
@@ -74,24 +86,25 @@ res <- sneer(iris, method = "pca", scale_type = "r", plot_type = "g",
              color_scheme = "Dark2", label_size = 2)
 ```
 
-#### No plot at all
+### No plot at all
 ```R
 res <- sneer(iris, plot_type = "n")
 ```
 
+## Embedding Methods
 
-#### Metric MDS
+### Metric MDS
 ```R
 res <- sneer(iris, method = "mmds")
 ```
 
-#### Sammon Map
+### Sammon Map
 ```R
 # Sammon map starting from random distribution
 res <- sneer(iris, method = "sammon", scale_type = "a", init = "r")
 ```
 
-#### t-SNE
+### t-SNE
 ```R
 # TSNE with a perplexity of 32, initialize from PCA
 res <- sneer(iris, method = "tsne", scale_type = "a", init = "p",
@@ -102,7 +115,7 @@ res <- sneer(iris, method = "tsne", scale_type = "a", init = "p",
 res <- sneer(iris, scale_type = "a")
 ```
 
-#### t-SNE with Jacobs Step Size method
+### t-SNE with Jacobs Step Size method
 ```R
 # Use the standard tSNE optimization method (Jacobs step size method) with
 # step momentum. Range scale the matrix and use an aggressive learning
@@ -111,13 +124,13 @@ res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
              epsilon = 500)
 ```
 
-#### t-SNE with Jacobs Step Size and Early Exaggeration
+### t-SNE with Jacobs Step Size and Early Exaggeration
 ```R
 res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
              epsilon = 500, exaggerate = 4, exaggerate_off_iter = 100)
 ```
 
-#### t-SNE with Jacobs Step Size, Early Exaggeration and Random Initialization
+### t-SNE with Jacobs Step Size, Early Exaggeration and Random Initialization
 
 ```R
 # By default we initialize from a PCA scores plot, but we can initialize
@@ -127,14 +140,14 @@ res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
              init = "r")
 ```
 
-#### NeRV with perplexity stepping
+### NeRV with perplexity stepping
 
 ```R
 # Will step from a global-ish perplexity value towards a perplexity of 32
 res <- sneer(iris, scale_type = "a", method = "nerv", perp_scale = "step")
 ```
 
-#### NeRV with adjusted lamda parameter
+### NeRV with adjusted lambda parameter
 ```R
 # NeRV method has a lambda parameter - closer to 1 it gets, the more it
 # tries to avoid false positives (close points in the map that aren't close
@@ -143,7 +156,7 @@ res <- sneer(iris, scale_type = "a", method = "nerv", perp_scale = "step",
              lambda = 1)
 ```
 
-#### NeRV with transferred input kernel precisions
+### NeRV with transferred input kernel precisions
 ```R
 # Original NeRV paper transferred input exponential similarity kernel
 # precisions to the output kernel, and initialized from a uniform random
@@ -152,7 +165,7 @@ res <- sneer(iris, scale_type = "a", method = "nerv", perp_scale = "step",
              lambda = 1, prec_scale = "t", init = "u")
 ```
 
-#### JSE 
+### JSE 
 ```R
 # Like NeRV, the JSE method also has a controllable parameter that goes
 # between 0 and 1, called kappa. It gives similar results to NeRV at 0 and
@@ -162,7 +175,7 @@ res <- sneer(iris, scale_type = "a", method = "jse", perp_scale = "step",
              kappa = 0)
 ```
 
-#### Multiscale JSE
+### Multiscale JSE
 ```R
 # Rather than step perplexities, use multiscaling to combine and average
 # probabilities across multiple perplexities. Output kernel precisions
@@ -172,7 +185,7 @@ res <- sneer(iris, scale_type = "a", method = "jse", perp_scale = "multi",
              prec_scale = "s")
 ```
 
-#### Heavy-tailed SNE
+### Heavy-tailed SNE
 ```R
 # HSSNE has a controllable parameter, alpha, that lets you control how
 # much extra space to give points compared to the input distances.
@@ -180,7 +193,7 @@ res <- sneer(iris, scale_type = "a", method = "jse", perp_scale = "multi",
 res <- sneer(iris, scale_type = "a", method = "hssne", alpha = 1.1)
 ```
 
-#### Dynamic HSSNE
+### Dynamic HSSNE
 ```R
 # Similar to HSSNE, but directly optimizes alpha along with the coordinates.
 # We wait 25 iterations here before starting to modify alpha from its initial 
@@ -188,7 +201,7 @@ res <- sneer(iris, scale_type = "a", method = "hssne", alpha = 1.1)
 res <- sneer(iris, method = "dhssne", kernel_opt_iter = 25, alpha = 0)
 ```
 
-#### Inhomogenenous t-SNE
+### Inhomogenenous t-SNE
 ```R
 # Similar to DHSSNE, but directly optimizes a per-point degree of freedom
 # Also recommended to wait a few iterations before starting optimization of
@@ -196,14 +209,14 @@ res <- sneer(iris, method = "dhssne", kernel_opt_iter = 25, alpha = 0)
 res <- sneer(iris, method = "itsne", kernel_opt_iter = 25, dof = 10)
 ```
 
-#### Importance-weighted SNE
+### Importance-weighted SNE
 ```R
 # ws-SNE treats the input probability like a graph where the probabilities
 # are weighted edges and adds extra repulsion to nodes with higher degrees
 res <- sneer(iris, scale_type = "a", method = "wssne")
 ```
 
-#### Use step function for input probabilities
+### Use step function for input probabilities
 ```R
 # can use a step-function input kernel to make input probability more like
 # a k-nearest neighbor graph (but note that we don't take advantage of the
@@ -211,7 +224,7 @@ res <- sneer(iris, scale_type = "a", method = "wssne")
 res <- sneer(iris, scale_type = "a", method = "wtsne", perp_kernel_fun = "step")
 ```
 
-#### Export Data For Later Analysis
+## Export Data For Later Analysis
 
 ```R
 # export the distance matrices and do whatever quality measures we want at our
@@ -224,7 +237,7 @@ res <- sneer(iris, scale_type = "a", method = "wtsne",
   ret = c("deg", "prec", "dim"))
 ```
 
-#### Quality Measures
+## Quality Measures
 
 If your dataset labels divide the data into natural classes, can calculate
 average area under the ROC and/or precision-recall curve too, but you need to
@@ -250,7 +263,7 @@ library(PRROC)
 res <- sneer(iris, quality_measures =  c("n", "r", "p"))
 ```
 
-#### Quality Measures as Separate Functions
+## Quality Measures as Separate Functions
 ```R
 # export input (dx) and output (dy) distance matrices
 res <- sneer(iris, scale_type = "a", method = "wtsne",
@@ -263,8 +276,7 @@ pr_auc <- pr_auc_embed(res$dy, iris$Species)
 roc_auc <- roc_auc_embed(res$dy, iris$Species)
 ```
 
-
-#### Visualizing the Results
+## Visualizing the Results After Embedding
 
 ```R
 res <- sneer(iris)
@@ -278,7 +290,7 @@ embed_plot(res$coords, iris$Species, color_scheme = rainbow)
 embed_plot(res$coords, iris, color_scheme = rainbow)
 ```
 
-#### Using RColorBrewer Color Scheme Names
+### Using RColorBrewer Color Scheme Names
 ```R
 res <- sneer(iris, scale_type = "a", method = "wtsne",
   ret = c("deg", "prec", "dim"))
@@ -291,7 +303,7 @@ library(RColorBrewer)
 embed_plot(res$coords, iris$Species, color_scheme = "Dark2")
 ```
 
-#### Visualize Plot With Projected Quality Results
+### Visualize Plot With Projected Quality Results
 
 ```R
 res <- sneer(iris, scale_type = "a", method = "wtsne",
@@ -333,7 +345,7 @@ library(RColorBrewer)
 embed_plot(iris_itsne$coords, iris_itsne$dyn$dof, color_scheme = "Blues")
 ```
 
-#### View Embeddings with Plotly
+### View Embeddings with Plotly
 
 Using the `embed_plotly` function will open a browser window (unless you're
 using RStudio, in which case it will appear in the Plots tab as usual).

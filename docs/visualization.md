@@ -1,6 +1,11 @@
 ---
 title: "Visualization"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
 Previous: [Analysis](analysis.html). Next: [References](references.html). Up: [Index](index.html).
@@ -10,7 +15,7 @@ configuration. But you can also use a standalone function to visualize the
 coordinates (or any 2D matrix), so we'll look at that first while we run
 through the different options available.
 
-### `embed_plot`
+## `embed_plot`
 
 `embed_plot` is a function you can use to easily view the results of the plot.
 Just looking at the output as an undifferentiated mass is rarely enlightening,
@@ -41,7 +46,7 @@ each node too so we have something numeric to project onto the plot.
 tsne_iris <- sneer(iris, max_iter = 200, ret = c("deg"))
 ```
 
-#### Default
+### Default
 
 Let's take a look at the embedding:
 
@@ -51,19 +56,19 @@ Well, that's garish. This is because you haven't provided any color information,
 so the default is that each point gets its own color from the default color 
 scheme, which happens to be the `grDevices::rainbow` function. This might be 
 useful for some simulation data sets where the data is produced by a sequential 
-function of some kind (e.g. a random walk or a path around a circle or some other
-parametric function) and the progression of the color gives some clue about
-location.
+function of some kind (e.g. a random walk or a path around a circle or some
+other parametric function) and the progression of the color gives some clue
+about location.
 
-#### Explicit `colors`
+### Explicit `colors`
 
 If you just want everything to be one color, pass that to the `colors` 
 parameter:
 
 ![`embed_plot(tsne_iris$coords, colors = "black")`](embed-plot-all-black.png)
 
-If you have a preset vector of colors, that makes a lot more sense. Perhaps,
-inspired the technicolor dream plot of the first example, you want each iris
+If you have a preset vector of colors, that makes a lot more sense. Perhaps, 
+inspired by the technicolor dream plot of the first example, you want each iris 
 to have its own random color:
 
 ```R
@@ -94,7 +99,7 @@ View the results with a less foolish set of colors than random:
 
 ![`embed_plot(pca_3d$coords, colors = three_c$color)`](embed-plot-3c.png)
 
-#### Mapping from factor levels to colors
+### Mapping from factor levels to colors
 
 Back to our long-suffering iris example. It consists of measurements of the
 sepal and petal dimensions of 150 flowers, from 3 species: *Iris setosa*,
@@ -110,7 +115,7 @@ do based on what it's passed. In this case, the result is:
 
 Three species, three colors (sorry you can't see a legend).
 
-#### `color_scheme`
+### `color_scheme`
 
 If you don't like the color scheme used, you can change it by passing a different
 color function to `color_scheme`. For example, here's the use of the 
@@ -134,7 +139,7 @@ as:
 
 ![`embed_plot(tsne_iris$coords, x = iris$Species, color_scheme = random_colors`)](embed-plot-iris-random-series.png)
 
-#### `RColorBrewer`
+### `RColorBrewer`
 
 If, like me, you have little creativity when it comes to picking color schemes,
 I recommend just deferring to the [ColorBrewer](http://colorbrewer2.org/)
@@ -162,7 +167,7 @@ If the data set you are using has more factors than the color scheme has colors,
 `embed_plot` attempts to interpolate the colors into a new set of colors. Not
 ideal, but better than nothing.
 
-#### Passing a data frame to `x`
+### Passing a data frame to `x`
 
 Previously, I mentioned that if you pass a data frame rather than a vector to
 the `x` parameter, the function will attempt to do the right thing. What this
@@ -196,7 +201,7 @@ embed_plot(tsne_iris$coords, colors = iris_colors)
 embed_plot(tsne_iris$coords, iris_colors) 
 ```
 
-#### Factor levels as text
+### Factor levels as text
 
 In some cases, you may want to plot the factor levels you're using for the color
 scheme as labels on the plot, instead of the points themselves, especially 
@@ -215,7 +220,7 @@ the first two characters of the species name?
 That's a bit better. As you can see, this probably isn't a great option, unless
 you have a small dataset with short labels.
 
-#### Mapping numeric vectors
+### Mapping numeric vectors
 
 You can also map a numeric vector to a point. Choosing a good color scheme is
 very important here, so I recommend the ColorBrewer sequential and diverging 
@@ -235,7 +240,7 @@ highlight values at both ends of the scale, use a diverging scale, like
 
 ![`embed_plot(tsne_iris$coords, tsne_iris$deg, color_scheme = "RdYlGn")`](embed-plot-deg-rdylgn.png)
 
-#### Extra parameters for numerical mapping
+### Extra parameters for numerical mapping
 
 There are some extra parameters that can be used to control the display of the
 numerical mapping. Sometimes, you may only want to see the points with the 
@@ -281,7 +286,7 @@ scale, by passing the lower and upper limits to the `limits` argument:
 
 Doesn't seem so bad now those red points have turned yellow.
 
-#### Miscellaneous
+### Miscellaneous
 
 There are a few other commands that can modify the look of the plot.
 
@@ -299,13 +304,13 @@ now with equal X and Y axes:
 The clusters now look a lot less "tall" and stretched in the vertical 
 direction.
 
-### Plotting in `sneer`
+## Plotting in `sneer`
 
 Much of what has been described here applies to the plots which appear during
 the embedding process when running `sneer`. Here are the options to be aware
 of.
 
-#### `colors`, `color_name`
+### `colors`, `color_name`
 
 You may provide a vector of colors directly to `sneer` via the `colors` 
 parameter, or the name of a column in the data frame via `color_name`.
@@ -315,7 +320,7 @@ sneer(three_c, colors = three_c$color)
 sneer(three_c, color_name = "color") # the same as the previous command
 ```
 
-#### `labels`, `label_name`
+### `labels`, `label_name`
 
 Similarly, you can map from a factor to colors with the `labels` and 
 `label_name` parameters:
@@ -325,7 +330,7 @@ sneer(iris, labels = iris$Species)
 sneer(iris, label_name = "Species") # the same as the previous command
 ```
 
-#### Defaults
+### Defaults
 
 Just like `embed_plot`, `sneer` will try and find a color of label column from
 the data frame you pass it:
@@ -340,13 +345,13 @@ color columns are returned in preference to factor columns, and if nothing is
 found, one color is used per point. If more than one column is found, the
 last column is used.
 
-#### `color_scheme`
+### `color_scheme`
 
 You can specify the color scheme just like in `embed_plot`: pass either a color
 function like `rainbow` or the *name* of a ColorBrewer color scheme, e.g. 
 `"Set1"`.
 
-#### `plot_type`
+### `plot_type`
 
 If you embed in other than 2 dimensions, you won't see a plot. You can also
 turn off plotting by setting `plot_type = "none"`.
@@ -381,22 +386,22 @@ color scheme currently (i.e. no columns of explicit color names). Finally,
 you can't choose to display factor labels instead of points (but at least you
 have a legend).
 
-#### `cex`
+### `cex`
 
 As with `embed_plot`, the `cex` parameter changes the size of the plotted 
 points.
 
-#### `equal_axes`
+### `equal_axes`
 
 Set this to `TRUE` to have the axes have the same scale.
 
-#### `plot_labels`
+### `plot_labels`
 
 If `TRUE`, whatever factor column provided to `sneer` (or it finds itself)
 will be plotted as labels on the embedding plot. As discussed under the 
 `text` parameter of `embed_plot`, has limited (but not zero) use.
 
-### `embed_plotly`
+## `embed_plotly`
 
 As an alternative to `embed_plot`, you can try out `embed_plotly`, which 
 uses the JavaScript charting library [plotly](https://plot.ly) and its R API

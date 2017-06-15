@@ -1,12 +1,19 @@
 ---
 title: "Experimental Gradients"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
 Back: [Gradients](gradients.html) Up: [Index](index.html)
 
 Weirdo gradients that don't correspond to any current literature method, but
 may provide inspiration for future directions for `sneer`.
+
+## Generic Gradient
 
 Our starting point is the generic embedding gradient:
 
@@ -154,7 +161,7 @@ there's no further simplification.
 We now have can be plugged in with metric MDS and Sammon-like cost function 
 derivatives, but with the distances replaced by normalized distances.
 
-## Distance-based gradient with transformed distances
+## Transformed distances
 
 We could also consider keeping with raw distances and their square loss, but
 transforming them. In this case, the chain of variable dependencies is 

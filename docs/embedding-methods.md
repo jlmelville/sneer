@@ -1,16 +1,21 @@
 ---
 title: "Embedding Methods"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 Previous: [Optimization](optimization.html). Next: [Reporting](reporting.html). Up: [Index](index.html).
 
-### `method`
+## `method`
 
 By default, `sneer` carries out t-SNE. But other optimization methods are
 available, which you can access via the `method` argument. The currently
 available methods are:
 
-#### Principal Component Analysis (PCA)
+### Principal Component Analysis (PCA)
 
 This is neither a distance-based embedding or a probability-based embedding. 
 It just carries out a Principal Component Analysis of the data set and uses the 
@@ -23,9 +28,9 @@ optimization. As a result, this method ignores the `init` option.
 iris_pca <- sneer(iris, method = "pca")
 ```
 
-#### Metric Multi Dimensional Scaling (MDS)
+### Metric Multi Dimensional Scaling (MDS)
 
-There are a whole lot of techniques out there under the rubric 'MDS'. Just to
+There are a whole lot of techniques out there under the rubric "MDS". Just to
 be totally clear, the version of MDS that is used here is one that arises 
 naturally from the idea of minimizing the difference between the input
 and output distances. The cost function is simply the square loss between 
@@ -41,7 +46,7 @@ But it's the very simplest possible distance-based embedding. I recommend
 trying this and/or PCA as a sanity check with new data sets before embarking
 on the more exotic methods on offer.
 
-#### Sammon Map
+### Sammon Map
 
 Sammon mapping works like metric MDS but it adds an extra weighting to put more
 emphasis on reproducing short distances rather than long distances. In practice
@@ -51,7 +56,7 @@ it doesn't produce results that are all that different from metric MDS.
 iris_sammon <- sneer(iris, method = "sammon")
 ```
 
-#### Asymmetric Stochastic Neighbor Embedding (ASNE)
+### Asymmetric Stochastic Neighbor Embedding (ASNE)
 
 This is the original SNE method as described in the
 [SNE paper](https://papers.nips.cc/paper/2276-stochastic-neighbor-embedding),
@@ -67,7 +72,7 @@ t-distribution with one degree of freedom used in t-SNE.
 iris_asne <- sneer(iris, method = "asne")
 ```
 
-#### Symmetric Stochastic Neighbor Embedding (SSNE)
+### Symmetric Stochastic Neighbor Embedding (SSNE)
 
 The [SSNE paper (PDF)](https://www.cs.toronto.edu/~amnih/papers/sne_am.pdf) 
 differentiates itself from ASNE by changing how the normalization procedure
@@ -85,7 +90,7 @@ effect" of the normalization procedure on the results they presented.
 iris_ssne <- sneer(iris, method = "ssne")
 ```
 
-#### t-Distributed SNE (t-SNE)
+### t-Distributed SNE (t-SNE)
 
 As mentioned, t-SNE is the default method. But to be really sure you can
 provide `"tsne"` as the argument:
@@ -97,7 +102,7 @@ iris_tsne <- sneer(iris, method = "tsne")
 Compared to SSNE, the heavier tail of the output kernel in t-SNE allows close
 neighbors to take up larger distances in the output configuration.
 
-#### t-Distributed ASNE (t-ASNE)
+### t-Distributed ASNE (t-ASNE)
 
 This is not a literature method. But if t-SNE is a modified version of SSNE,
 does an equivalent version exist for ASNE? In `sneer`, the answer is yes, 
@@ -109,7 +114,7 @@ it, although parts of the literature on NerV and inhomogeneous t-SNE
 iris_tasne <- sneer(iris, method = "tasne")
 ```
 
-#### Weighted Symmetric SNE (ws-SNE)
+### Weighted Symmetric SNE (ws-SNE)
 
 This method scales each weight by its "importance", which is related to the
 input probability. The higher the probability, the more important it is.
@@ -121,7 +126,7 @@ SSNE.
 iris_wssne <- sneer(iris, method = "wssne")
 ```
 
-#### Heavy-tailed Symmetric Stochastic Neighbor Embedding (HSSNE)
+### Heavy-tailed Symmetric Stochastic Neighbor Embedding (HSSNE)
 
 [HSSNE](http://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding)
 generalizes SSNE and t-SNE, by introducing a tail-heaviness parameter, `alpha`,
@@ -144,7 +149,7 @@ optimization slowly separating clusters, that might mean that t-SNE is just
 too heavy. I suggest trying HSSNE with a value of `alpha` below `1` - you may 
 find it produces a better, more compact final result.
 
-#### Neighbor Retrieval Visualizer (NeRV)
+### Neighbor Retrieval Visualizer (NeRV)
 
 As implemented in `sneer`, NeRV is a generalization of ASNE, that uses 
 a symmetrized version of the Kullback-Leibler divergence.
@@ -180,7 +185,7 @@ mention this difference and I recommend not setting `prec_scale`. See the
 [Input Initialization](input-initialization.html) section for more on 
 `prec_scale`.
 
-#### Jensen-Shannon Embedding (JSE)
+### Jensen-Shannon Embedding (JSE)
 
 [JSE](http://dx.doi.org/10.1016/j.neucom.2012.12.036) is a technique that is 
 similar to NeRV in that it uses a symmetrized version of a divergence as 
@@ -214,7 +219,7 @@ embedding methods, you're not alone, but I decided to try and stick with
 the nomenclature used in the original publications wherever possible, to make
 comparison with literature results easier.
 
-#### Inhomogeneous t-SNE (it-SNE)
+### Inhomogeneous t-SNE (it-SNE)
 
 [Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) is 
 reminiscent of HSSNE, in that it defines a parameter that controls the 
@@ -277,7 +282,7 @@ therefore more closely related to ASNE and t-ASNE than t-SNE, despite the name.
 If you don't like the results you see with it-SNE compared with t-SNE, you
 may want to compare with `method = "asne"` and `method = "tasne"`.
 
-#### Dynamic HSSNE (DHSSNE)
+### Dynamic HSSNE (DHSSNE)
 
 The similarities between HSSNE and it-SNE inspired me to create the obvious
 extension to HSSNE: instead of having to choose a fixed version of HSSNE's
@@ -310,7 +315,7 @@ anywhere. But I think it's useful. There is some extra background material on
 [computing the gradient for DHSSNE](dynamic-hssne.html), if you're interested in
 more details.
 
-#### Console log
+## Console log
 
 The details of what appears during optimization is covered in the 
 [Reporting](reporting.html) section. Just be aware that the choice of `method`

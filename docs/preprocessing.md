@@ -1,6 +1,11 @@
 ---
 title: "Preprocessing"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
 Previous: [Data Sets](datasets.html). Next: [Input Initialization](input-initialization.html). Up: [Index](index.html).
@@ -13,13 +18,13 @@ comparing with other embedding methods.
 The following options mainly apply to input supplied as a data frame. If you
 supply a distance matrix, sneer won't do anything to it.
 
-### Duplicate observations
+## Duplicate Observations
 
 First, some preprocessing you _don't_ need to to do: some embedding methods ask
 you to weed out duplicates in the data before proceeding, but `sneer` tries
 to be robust enough to avoid that.
 
-### Low variance column filtering
+## Low Variance Column Filtering
 
 However, if you have some columns with very low or zero variance (for instance,
 because one column contains identical values for all observations), that can
@@ -28,7 +33,7 @@ these will be removed from the data frame automatically before other
 pre-processing takes place. Sneer will log to the console the number of columns
 it filters in this way.
 
-### The `scale_type` parameter
+## The `scale_type` Parameter
 
 By default, no scaling is applied to the input data. By providing an argument
 to `scale_type` you can scale the data in the following way:
@@ -47,7 +52,7 @@ mnist data set as an example:
 
 ```res_mnist <- sneer(mnist, range_scale = "m")```
 
-### Preprocessing that isn't part of sneer
+## What `sneer` Doesn't Do
 
 Some data sets can be very high dimensional, and processing time can be
 greatly reduced by doing PCA on the input data and keeping only a certain number

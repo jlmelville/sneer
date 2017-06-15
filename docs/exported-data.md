@@ -1,11 +1,16 @@
 ---
 title: "Exported Data"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
 Previous: [Reporting](reporting.html). Next:[Analysis](analysis.html). Up: [Index](index.html).
 
-### `sneer` return value
+## `sneer` return value
 
 Having run an embedding: 
 
@@ -25,7 +30,7 @@ following:
 * `norm_cost` - the normalized version of `cost`. Again, see the 
   [Reporting](reporting.html) section for more.
 
-### `ret`
+## `ret`
 
 You can also ask for some other data. Some of it might be useful for 
 diagnostics, debugging, visualization or as input to another algorithm. To 

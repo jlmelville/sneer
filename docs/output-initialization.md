@@ -1,6 +1,11 @@
 ---
 title: "Output Initialization"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 Previous: [Input Initialization](input-initialization.html). Next: [Optimization](optimization.html). Up: [Index](index.html).
 
@@ -8,11 +13,13 @@ In contrast to input initialization, output initialization is pretty
 straightforward. You just need a source of initial coordinates, which you
 can specify with the `init` parameter.
 
-### `init`
+## `init`
 
 A common approach to initialization is to start with a random configuration.
 The most important thing to do is to make sure the points aren't too far away
 initially, or otherwise the gradients are very small and no optimization occurs.
+
+### Gaussian Random
 
 The [t-SNE paper](http://jmlr.org/papers/v9/vandermaaten08a.html) suggests
 initialization from a small (standard deviation of `1e-4`) gaussian 
@@ -22,6 +29,8 @@ distribution. Set `init` to `"random"` for that:
 set.seed(1337) # if you want to be reproducible
 s1k_tsne <- sneer(s1k, init = "random")
 ```
+
+### Uniform Random
 
 The [NeRV paper](http://www.jmlr.org/papers/v11/venna10a.html) uses a uniform
 distribution instead. I can't imagine it makes much difference, but that's what
@@ -33,6 +42,8 @@ s1k_tsne <- sneer(s1k, init = "uniform")
 
 These small random distributions do well with probability-based embeddings, but 
 they produce pretty horrible results for Sammon Mapping.
+
+### PCA
 
 For Sammon Mapping, and in my opinion most embedding methods, a better choice 
 is the default initialization method, which uses PCA. It's the default because 
@@ -53,6 +64,13 @@ the input distances are Euclidean.
 This removes any niggling issues of reproducibility and in my experience gives 
 good results for most data sets without the hassle of having to repeat the 
 embedding multiple times.
+
+PCA is not always better than a random initialization and if the scores plot
+results in some distance points, these will have a hard time having any 
+meaningful gradient associated with them, at least with methods like t-SNE. But
+it's always worth trying first.
+
+### Existing Coordinates
 
 Finally, if you already have some coordinates to hand, you can provide them 
 directly:

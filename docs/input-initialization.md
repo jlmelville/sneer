@@ -1,6 +1,11 @@
 ---
 title: "Input Initialization"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 Previous: [Preprocessing](preprocessing.html). Next: [Output Initialization](output-initialization.html). Up: [Index](index.html).
 
@@ -15,14 +20,14 @@ embedding and the input data. It can range from doing nothing to some fairly
 substantial work, although computationally the time taken is normally dwarfed
 by the optimization procedure once the embedding proper kicks off.
 
-### Distance-based embedding
+## Distance-based embedding
 
 Good news. If you're trying match input to output distances, you have almost
 no initialization to do. Probably at most you have to convert the data frame
 into a distance matrix. Unless you passed in a distance matrix, in which case
 you don't even have to do that.
 
-### Probability-based embedding
+## Probability-based embedding
 
 But you are probably carrying out a probability-based embedding. In this case
 you have to generate the input probabilities from the input distances. Normally
@@ -35,7 +40,7 @@ precision is, the faster it decays. The `sneer` options refer to it
 as the precision, so I'll try not to refer to it in other ways, unless it makes 
 the discussion clearer.
 
-### Perplexity and precision
+## Perplexity and precision
 
 The precision of the kernel function is not set directly. It's done by 
 specifying a desired value for the perplexity, which is usually described as 
@@ -54,7 +59,7 @@ a gaussian kernel for the output distances, but just sets all the bandwidths
 to unity. For more exotic treatments, look for the discussion of the 
 `prec_scale` parameter below.
 
-### `perplexity`
+## `perplexity`
 
 Set it to the value you want for the perplexity:
 
@@ -70,7 +75,7 @@ too high and you will end up with a homogeneous embedding which ignores local
 structure. Set it too low and you'll get a series of overlapping, disconnected
 regions.
 
-### `perp_scale`
+## `perp_scale`
 
 Apart from the annoyance of having to work out a good value of the perplexity,
 some researchers have suggested that, especially when using a initialization
@@ -123,7 +128,7 @@ causes the embedding to do a lot of un-necessary work: there is no free
 parameter in the output kernel, so identical probabilities are generated
 multiple times and pointlessly averaged.
 
-### `perp_scale_iter`
+## `perp_scale_iter`
 
 If you are using the stepped or multiscaled perplexities, the usual approach
 is to slowly introduce the new perplexities over time, but not to take so long
@@ -141,7 +146,7 @@ The default number of total iterations is 1000, and is controlled by the
 `max_iter` parameter. See the [Optimization](optimization.html) section if you 
 want to know more.
 
-### `prec_scale`
+## `prec_scale`
 
 This option controls how the free parameter (if it exists) on the output kernel
 is scaled, relative to the input kernel. The "prec" in the option name is short
@@ -198,7 +203,7 @@ s1k_mssne <- sneer(s1k, perp_scale = "multi", prec_scale = "scale",
                    method = "ssne")
 ```
 
-### `perp_kernel_fun`
+## `perp_kernel_fun`
 
 Some methods directly or indirectly use a sparse representation of the input
 probabilities, which substantially helps with memory and speed issues. See,
@@ -223,13 +228,16 @@ the console during input initialization (see the 'Console Output' section
 below), don't use this kernel function, as the intrinsic dimensionality is only 
 defined for gaussian functions.
 
-### `exaggerate`
+## `exaggerate`
 
 The early exaggeration "trick" is akin to perplexity scaling in the sense
 that it causes the input probabilities to change. Set the `exaggerate` 
-parameter to the value that the input probabilities should be multiplied by
-(normally `4`). The scaling will be turned off at the iteration number given
-by `exaggerate_off_iter` (normally `50` or `100`).
+parameter to the value that the input probabilities should be multiplied by:
+normally `4`, but the 
+[Barnes-Hut t-SNE paper](http://www.jmlr.org/papers/v15/vandermaaten14a.html) 
+suggests that for larger data sets, a value of `12` is more appropriate. The
+scaling will be turned off at the iteration number given by
+`exaggerate_off_iter` (normally `50` or `100`).
 
 ```R
 s1k_tsne <- sneer(s1k, exaggerate = 4, exaggerate_off_iter = 100)
@@ -242,7 +250,7 @@ or initializing from a fixed set of coordinates. See the use of `init`
 parameter in [Output Initialization](output-initialization.html) for more on
 output initialization.
 
-### Console Output
+## Console Output
 
 The results of the perplexity scaling will result in some summary statistic
 being logged to the console. They'll look a bit like this:
@@ -290,9 +298,13 @@ can have an effect on the reported values, but there might be some value in
 comparing the distribution between different data sets. It can also be
 instructive to play around with the simulation data sets that are part of
 the `snedata` package which have known topology and dimensionality and seeing
-what the reported intrinsic dimensionality is. For more on the `snedata` package
-see the [Data Sets](datasets.html) section. And for the definition and use
-of intrinsic dimensionality, see the 
-[multiscale JSE](http://dx.doi.org/10.1016/j.neucom.2014.12.095) paper.
+what the reported intrinsic dimensionality is. 
+
+For more on the `snedata` package see the [Data Sets](datasets.html) section. 
+And for the definition and use of intrinsic dimensionality, see the 
+[multiscale JSE](http://dx.doi.org/10.1016/j.neucom.2014.12.095) paper. You can
+also peruse my notes on the subject of deriving an 
+[analytical expression](dimensionality.html) for the intrinsic dimensionality,
+which might make the connection between it and perplexity a little clearer.
 
 Previous: [Preprocessing](preprocessing.html). Next: [Output Initialization](output-initialization.html). Up: [Index](index.html).

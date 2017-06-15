@@ -1,7 +1,9 @@
 ---
 title: "Multi-scale Gradients"
 date: "January 18, 2017"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
 ---
 
 Up: [Index](index.html)

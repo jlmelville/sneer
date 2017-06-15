@@ -1,6 +1,11 @@
 ---
 title: "Optimization"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
 Previous: [Output Initialization](output-initialization.html). Next: [Embedding Methods](embedding-methods.html). Up: [Index](index.html).
@@ -9,7 +14,7 @@ I have exposed a lot of options to do with optimization, but I don't really
 recommend using most of them, except out of morbid curiosity. Here are the 
 ones that matter:
 
-### `max_iter`
+## `max_iter`
 
 This controls the maximum number of iterations. The default is 1000, which
 is probably way too high, but it depends on your data set.
@@ -31,12 +36,19 @@ qualitatively the wrong conclusions.
 
 If you attempt to quantify the result of your embedding, for example by using
 some of the methods mentioned in the [Analysis](analysis.html) section, these
-can be sensitive to the coordinates. So if you're comparing different methods,
+can be sensitive to the coordinates. So if you're comparing different methods, 
 ensure you are not unfairly maligning a method because you didn't let it 
-converge. But most of the time, if you're just trying to eyeball a data set,
-don't be afraid to crank down `max_iter`.
+converge. But most of the time, embedding methods are used to eyeball a data 
+set, not for quantitative dimensionality reduction, so you probably don't care. 
+Additionally, a lower error embedding can sometimes look *worse* than a 
+configuration from earlier iterations. The overall structure of the embedding, 
+e.g. the number of relative positons of clusters, appears quite early in the 
+optimization. These clusters then tend to spend the rest of the time increasing 
+their relative distances and growing tighter. You then have to spend more time 
+panning and zooming than you would otherwise. So don't be afraid to crank down
+`max_iter`.
 
-### `tol`
+## `tol`
 
 Another way to stop the embedding early is to adjust the tolerance parameter,
 `tol`. If you jump ahead to the [Reporting](reporting.html), you'll see a
@@ -52,7 +64,7 @@ down for simple visualizations. A `tol` of `0.01` is pretty reasonable:
 iris_tsne <- sneer(iris, tol = 0.01) # stops after 200 steps
 ```
 
-### `opt`
+## `opt`
 
 Most t-SNE implementations follow the optimization technique given by the 
 [t-SNE paper](http://jmlr.org/papers/v9/vandermaaten08a.html): the direction
