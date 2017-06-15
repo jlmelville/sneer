@@ -138,63 +138,71 @@ itsne_cost_gr_param_asymm <- function(opt, inp, out, method, iter, extra_par) {
 # should be called by make_kernel_dynamic, delegating to kernel$make_dynamic
 # as part of before_init
 dynamize_inhomogeneous_kernel <- function(method) {
-  lreplace(
-    method,
-    after_init_fn = function(inp, out, method) {
-      nr <- nrow(out$ym)
-      if (method$dyn$dof == "point" && length(method$kernel$dof) != nr) {
-        method$kernel$dof <- rep(method$kernel$dof, nr)
-      }
-      method$kernel <- check_symmetry(method$kernel)
+  if (method$dyn$dof == "static") {
+    if (method$verbose) {
+      message("Kernel parameters are all marked as 'static', no optimization")
+    }
+    method
+  }
+  else {
+    lreplace(
+      method,
+      after_init_fn = function(inp, out, method) {
+        nr <- nrow(out$ym)
+        if (method$dyn$dof == "point" && length(method$kernel$dof) != nr) {
+          method$kernel$dof <- rep(method$kernel$dof, nr)
+        }
+        method$kernel <- check_symmetry(method$kernel)
 
-      # Leaving method null means we are dynamizing a method manually
-      if (is.null(method$gr_dof)) {
-        if (method$cost$name == "KL") {
-          if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
-            if (method$verbose) {
-              message("Using KL cost + asymmetric kernel parameter gradients")
+        # Leaving method null means we are dynamizing a method manually
+        if (is.null(method$gr_dof)) {
+          if (method$cost$name == "KL") {
+            if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
+              if (method$verbose) {
+                message("Using KL cost + asymmetric kernel parameter gradients")
+              }
+              method$gr_dof <- itsne_cost_gr_param_asymm
+              method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
             }
-            method$gr_dof <- itsne_cost_gr_param_asymm
-            method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
+            else {
+              if (method$verbose) {
+                message("Using KL cost + symmetric kernel parameter gradients")
+              }
+              method$gr_dof <- itsne_cost_gr_param
+              method$out_keep <- unique(c(method$out_keep, "d2m"))
+            }
           }
           else {
+            # But we can fall back to the plugin gradient which is always safe
             if (method$verbose) {
-              message("Using KL cost + symmetric kernel parameter gradients")
+              message("Using plugin parameter gradients")
             }
-            method$gr_dof <- itsne_cost_gr_param
-            method$out_keep <- unique(c(method$out_keep, "d2m"))
+            method$gr_dof <- itsne_cost_gr_param_plugin
+            method$out_keep <- unique(c(method$out_keep, "wm", "d2m"))
           }
         }
-        else {
-          # But we can fall back to the plugin gradient which is always safe
-          if (method$verbose) {
-            message("Using plugin parameter gradients")
-          }
-          method$gr_dof <- itsne_cost_gr_param_plugin
-          method$out_keep <- unique(c(method$out_keep, "wm", "d2m"))
+
+        list(method = method)
+      },
+      get_extra_par = function(method) {
+        xi <- method$kernel$dof - method$xi_eps
+        xi[xi < 0] <- xi
+        sqrt(xi)
+      },
+      set_extra_par = function(method, extra_par) {
+        xi <- extra_par
+        method$kernel$dof <- xi * xi + method$xi_eps
+        method
+      },
+      extra_gr = function(opt, inp, out, method, iter, extra_par) {
+        if (iter < method$opt_iter) {
+          return(rep(0, length(extra_par)))
         }
-      }
 
-      list(method = method)
-    },
-    get_extra_par = function(method) {
-      xi <- method$kernel$dof - method$xi_eps
-      xi[xi < 0] <- xi
-      sqrt(xi)
-    },
-    set_extra_par = function(method, extra_par) {
-      xi <- extra_par
-      method$kernel$dof <- xi * xi + method$xi_eps
-      method
-    },
-    extra_gr = function(opt, inp, out, method, iter, extra_par) {
-      if (iter < method$opt_iter) {
-        return(rep(0, length(extra_par)))
-      }
-
-      method$gr_dof(opt, inp, out, method, iter, extra_par)
-    },
-    export_extra_par = function(method) {
-      list(dof = method$kernel$dof)
-    })
+        method$gr_dof(opt, inp, out, method, iter, extra_par)
+      },
+      export_extra_par = function(method) {
+        list(dof = method$kernel$dof)
+      })
+  }
 }
