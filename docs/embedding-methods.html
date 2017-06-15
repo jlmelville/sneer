@@ -235,7 +235,7 @@ div.tocify {
 </div>
 <div id="metric-multi-dimensional-scaling-mds" class="section level3">
 <h3>Metric Multi Dimensional Scaling (MDS)</h3>
-<p>There are a whole lot of techniques out there under the rubric ‘MDS’. Just to be totally clear, the version of MDS that is used here is one that arises naturally from the idea of minimizing the difference between the input and output distances. The cost function is simply the square loss between the input and output distance matrices. There is no re-scaling or any other funny business.</p>
+<p>There are a whole lot of techniques out there under the rubric “MDS”. Just to be totally clear, the version of MDS that is used here is one that arises naturally from the idea of minimizing the difference between the input and output distances. The cost function is simply the square loss between the input and output distance matrices. There is no re-scaling or any other funny business.</p>
 <pre class="r"><code>iris_mmds &lt;- sneer(iris, method = &quot;mmds&quot;)</code></pre>
 <p>I don’t exactly commend this as a shining example of an efficient MDS routine. But it’s the very simplest possible distance-based embedding. I recommend trying this and/or PCA as a sanity check with new data sets before embarking on the more exotic methods on offer.</p>
 </div>
@@ -334,7 +334,48 @@ iris_dhssne &lt;- sneer(iris, method = &quot;dhssne&quot;, alpha = 0,
                      kernel_opt_iter = 0, ret = c(&quot;dyn&quot;))
 # Optimized alpha:
 iris_dhssne$dyn$alpha</code></pre>
-<p>I made this method up, so you’re not going to find it in any literature anywhere. But I think it’s useful. There is some extra background material on <a href="dynamic-hssne.html">computing the gradient for DHSSNE</a>, if you’re interested in more details.</p>
+<p>I made this method up, so you’re not going to find it in any literature anywhere. But I think it might be useful. There is some extra background material on <a href="dynamic-hssne.html">computing the gradient for DHSSNE</a>, if you’re interested in more details.</p>
+</div>
+</div>
+<div id="dyn" class="section level2">
+<h2><code>dyn</code></h2>
+<p>If you’re interested in the way that the <code>itsne</code> and <code>dhssne</code> methods optimize the kernel parameters, you can apply this to any method that uses either the exponential or heavy-tailed kernel, which is pretty much ever method listed here except <code>tsne</code>, <code>tasne</code> and <code>wtsne</code>, which don’t have any free parameters associated with their output kernels.</p>
+<p>To “dynamize” a kernel (my own terrible term), supply the <code>dyn</code> parameter with a named list, where the names are the names of the kernel parameters to optimize, and the values whether they should be static, global or point-wise optimized (more on what the acceptable values are below):</p>
+<div id="exponential-kernel" class="section level3">
+<h3>Exponential Kernel</h3>
+<p>For the exponential kernel, the free parameter is <code>beta</code>:</p>
+<pre class="r"><code>iris_dyn &lt;- sneer(iris, method = &quot;asne&quot;, dyn = list(beta = &quot;global&quot;))</code></pre>
+<p>This should work with methods <code>asne</code>, <code>ssne</code>, <code>jse</code> and <code>nerv</code>.</p>
+</div>
+<div id="heavy-tailed-kernel" class="section level3">
+<h3>Heavy-tailed Kernel</h3>
+<p>For the heavy-tailed kernel, you must specify one or both of <code>alpha</code> and <code>beta</code>:</p>
+<pre class="r"><code>iris_dyn &lt;- sneer(iris, method = &quot;hssne&quot;, 
+                   dyn = list(alpha = &quot;static&quot;, beta = &quot;point&quot;))</code></pre>
+<p>This will work with <code>hssne</code>.</p>
+<p>The acceptable values of the list and their meanings are:</p>
+<ul>
+<li><code>static</code> - don’t optimize this parameter. For the exponential kernel, because there’s only one parameter, this is pointless. This is useful for the heavy-tailed kernel though, if you want to only optimize the heavy-tailedness parameter <code>alpha</code>, and not touch the precisions, <code>beta</code>.</li>
+<li><code>global</code> - optimize a single global parameter that applies to every point.</li>
+<li><code>point</code> - optimize multiple parameters, with one parameter per point. This allows the parameters for the kernel to be optimized for each point individually.</li>
+</ul>
+<p>For <code>dhssne</code>, where a single value of <code>alpha</code> is applied to all points, the following two commands are equivalent:</p>
+<pre class="r"><code>iris_dhssne    &lt;- sneer(iris, method = &quot;dhssne&quot;)
+iris_dyn_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, 
+                          dyn = list(alpha = &quot;global&quot;, beta = &quot;static&quot;))</code></pre>
+</div>
+<div id="itsne-kernel" class="section level3">
+<h3><code>itsne</code> kernel</h3>
+<p>You can also modify <code>itsne</code> in a similar way, although the <code>itsne</code> kernel uses <code>dof</code> as a name. It’s already dynamic, so this is one place where the use of <code>static</code> in the <code>dyn</code> list would have an effect.</p>
+<p>Because <code>itsne</code> already allows its kernel to be optimized for each point, it’s the equivalent of invoking it like this:</p>
+<pre class="r"><code>iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;point&quot;))</code></pre>
+<p>but in this case, the <code>dyn</code> parameter is redundant. However, you can change its behavior:</p>
+<pre class="r"><code># Optimize one value of dof for all points
+iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;global&quot;))
+
+# Keep dof fixed to its input value(s) for the entire embedding
+iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;static&quot;))</code></pre>
+<p>If you “dynamize” the heavy-tailed, exponential or itsne kernel in this way, you can get to the final optimized values by passing <code>ret = c(&quot;dyn&quot;)</code> to <code>sneer</code> just as described for <code>dhssne</code> and <code>itsne</code> methods above.</p>
 </div>
 </div>
 <div id="console-log" class="section level2">

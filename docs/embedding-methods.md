@@ -311,9 +311,90 @@ iris_dhssne$dyn$alpha
 ```
 
 I made this method up, so you're not going to find it in any literature 
-anywhere. But I think it's useful. There is some extra background material on 
-[computing the gradient for DHSSNE](dynamic-hssne.html), if you're interested in
-more details.
+anywhere. But I think it might be useful. There is some extra background
+material on [computing the gradient for DHSSNE](dynamic-hssne.html), if you're 
+interested in more details.
+
+## `dyn`
+
+If you're interested in the way that the `itsne` and `dhssne` methods optimize 
+the kernel parameters, you can apply this to any method that uses either the 
+exponential or heavy-tailed kernel, which is pretty much ever method listed here
+except `tsne`, `tasne` and `wtsne`, which don't have any free parameters 
+associated with their output kernels. 
+
+To "dynamize" a kernel (my own terrible term), supply the `dyn` parameter with a
+named list, where the names are the names of the kernel parameters to optimize,
+and the values whether they should be static, global or point-wise optimized
+(more on what the acceptable values are below):
+
+### Exponential Kernel
+
+For the exponential kernel, the free parameter is `beta`:
+
+```R
+iris_dyn <- sneer(iris, method = "asne", dyn = list(beta = "global"))
+```
+
+This should work with methods `asne`, `ssne`, `jse` and `nerv`.
+
+### Heavy-tailed Kernel
+
+For the heavy-tailed kernel, you must specify one or both of `alpha` and `beta`:
+
+```R
+iris_dyn <- sneer(iris, method = "hssne", 
+                   dyn = list(alpha = "static", beta = "point"))
+```
+
+This will work with `hssne`.
+
+The acceptable values of the list and their meanings are:
+
+* `static` - don't optimize this parameter. For the exponential kernel, because
+there's only one parameter, this is pointless. This is useful for the 
+heavy-tailed kernel though, if you want to only optimize the heavy-tailedness
+parameter `alpha`, and not touch the precisions, `beta`.
+* `global` - optimize a single global parameter that applies to every point.
+* `point` - optimize multiple parameters, with one parameter per point. This 
+allows the parameters for the kernel to be optimized for each point individually.
+
+For `dhssne`, where a single value of `alpha` is applied to all points, the
+following two commands are equivalent:
+
+```R
+iris_dhssne    <- sneer(iris, method = "dhssne")
+iris_dyn_hssne <- sneer(iris, method = "hssne", 
+                          dyn = list(alpha = "global", beta = "static"))
+```
+
+### `itsne` kernel
+
+You can also modify `itsne` in a similar way, although the `itsne` kernel uses
+`dof` as a name. It's already dynamic, so this is one place where the use of
+`static` in the `dyn` list would have an effect.
+
+Because `itsne` already allows its kernel to be optimized for each point, it's
+the equivalent of invoking it like this:
+
+```R
+iris_itsne <- sneer(iris, method = "itsne", dyn = list(dof = "point"))
+```
+
+but in this case, the `dyn` parameter is redundant. However, you can change
+its behavior:
+
+```R
+# Optimize one value of dof for all points
+iris_itsne <- sneer(iris, method = "itsne", dyn = list(dof = "global"))
+
+# Keep dof fixed to its input value(s) for the entire embedding
+iris_itsne <- sneer(iris, method = "itsne", dyn = list(dof = "static"))
+```
+
+If you "dynamize" the heavy-tailed, exponential or itsne kernel in this way, you
+can get to the final optimized values by passing `ret = c("dyn")` to `sneer` 
+just as described for `dhssne` and `itsne` methods above.
 
 ## Console log
 
