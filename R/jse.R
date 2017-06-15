@@ -69,9 +69,9 @@
 # embed_prob(method = jse(kappa = 1), ...)
 # }
 jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
-                verbose = TRUE, keep = c("qm")) {
+                verbose = TRUE) {
   lreplace(
-    asne(beta = beta, eps = eps, verbose = verbose, keep = keep),
+    asne(beta = beta, eps = eps, verbose = verbose),
     cost = jse_fg(kappa = kappa),
     stiffness_fn = function(method, inp, out) {
       jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
@@ -139,10 +139,9 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 # embed_prob(method = hsjse(kappa = 1), ...)
 # }
 sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
-                 verbose = TRUE, keep = c("qm")) {
+                 verbose = TRUE) {
   lreplace(
-    jse(kappa = kappa, beta = beta, eps = eps, verbose = verbose,
-        keep = keep),
+    jse(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
     stiffness_fn = function(method, inp, out) {
       sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
                      beta = method$kernel$beta, eps = method$eps)
@@ -230,13 +229,14 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
 hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
                   verbose = TRUE) {
   lreplace(
-    sjse(kappa = kappa, eps = eps, verbose = verbose, keep = c("qm", "wm")),
+    sjse(kappa = kappa, eps = eps, verbose = verbose),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     stiffness_fn = function(method, inp, out) {
       hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz,
                       kappa = method$cost$kappa, alpha = method$kernel$alpha,
                       beta = method$kernel$beta, eps = method$eps)
-    }
+    },
+    out_keep = c("qm", "wm")
   )
 }
 

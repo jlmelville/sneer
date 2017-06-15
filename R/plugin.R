@@ -89,15 +89,14 @@ plugin <- function(cost = kl_fg(),
 # a bit more efficient.
 # @family sneer embedding methods
 # @family sneer probability embedding methods
-asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
-                        keep = c("qm", "wm", "d2m")) {
+asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   plugin(
     cost = kl_fg(),
     kernel = exp_kernel(beta = beta),
     eps = eps,
     prob_type = "row",
     verbose = verbose,
-    keep = keep
+    keep = c("qm", "wm", "d2m")
   )
 }
 
@@ -116,10 +115,9 @@ asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
 # a bit more efficient.
 # @family sneer embedding methods
 # @family sneer probability embedding methods
-ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
-                        keep = c("qm", "wm", "d2m")) {
+ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    asne_plugin(eps = eps, beta = beta, verbose = verbose, keep = keep),
+    asne_plugin(eps = eps, beta = beta, verbose = verbose),
     prob_type = "joint"
   )
 }
@@ -127,10 +125,9 @@ ssne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
 # "Pairwise" Stochastic Neighbor Embedding (PSNE)
 # Uses pairwise probabilities like PSNE, but doesn't enforce that the
 # input matrix P is joint.
-psne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE,
-                        keep = c("qm", "wm", "d2m")) {
+psne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    ssne_plugin(eps = eps, beta = beta, verbose = verbose, keep = keep),
+    ssne_plugin(eps = eps, beta = beta, verbose = verbose),
     prob_type = "cond"
   )
 }
@@ -176,9 +173,9 @@ tsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 # @family sneer embedding methods
 # @family sneer probability embedding methods
 hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
-                         verbose = TRUE, keep = c("qm", "wm", "d2m")) {
+                         verbose = TRUE) {
   lreplace(
-    ssne_plugin(eps = eps, keep = keep),
+    ssne_plugin(eps = eps),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     verbose = verbose
   )
@@ -186,21 +183,19 @@ hssne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
 
 # Heavy-tailed ASNE.
 hasne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
-                         verbose = TRUE, keep = c("qm", "wm", "d2m")) {
+                         verbose = TRUE) {
   lreplace(
-    asne_plugin(eps = eps, keep = keep),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    verbose = verbose
+    asne_plugin(eps = eps, verbose = verbose),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 
 # Heavy-tailed PSNE (SSNE without averaging P)
 hpsne_plugin <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
-                         verbose = TRUE, keep = c("qm", "wm", "d2m")) {
+                         verbose = TRUE) {
   lreplace(
-    psne_plugin(eps = eps, keep = keep),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    verbose = verbose
+    psne_plugin(eps = eps, verbose = verbose),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 
@@ -233,9 +228,8 @@ tasne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 # that the input probability matrix P is joint (but is pairwise).
 tpsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
-    tsne_plugin(eps = eps),
-    prob_type = "cond",
-    verbose = verbose
+    tsne_plugin(eps = eps, verbose = verbose),
+    prob_type = "cond"
   )
 }
 
