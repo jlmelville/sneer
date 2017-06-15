@@ -320,7 +320,7 @@ interested in more details.
 If you're interested in the way that the `itsne` and `dhssne` methods optimize 
 the kernel parameters, you can apply this to any method that uses either the 
 exponential or heavy-tailed kernel, which is pretty much ever method listed here
-except `tsne`, `tasne` and `wtsne`, which don't have any free parameters 
+except `tsne`, `tasne` and `wssne`, which don't have any free parameters 
 associated with their output kernels. 
 
 To "dynamize" a kernel (my own terrible term), supply the `dyn` parameter with a
@@ -385,11 +385,11 @@ but in this case, the `dyn` parameter is redundant. However, you can change
 its behavior:
 
 ```R
-# Optimize one value of dof for all points
-iris_itsne <- sneer(iris, method = "itsne", dyn = list(dof = "global"))
+# Optimize one value of dof for all points (initialized to 5)
+iris_itsne <- sneer(iris, method = "itsne", dyn = list(dof = "global"), dof = 5)
 
-# Keep dof fixed to its input value(s) for the entire embedding
-iris_itsne <- sneer(iris, method = "itsne", dyn = list(dof = "static"))
+# Keep dof fixed to its input value(s) for the entire embedding (5 in this case)
+iris_itsne <- sneer(iris, method = "itsne", dyn = list(dof = "static"), dof = 5)
 ```
 
 If you "dynamize" the heavy-tailed, exponential or itsne kernel in this way, you

@@ -339,7 +339,7 @@ iris_dhssne$dyn$alpha</code></pre>
 </div>
 <div id="dyn" class="section level2">
 <h2><code>dyn</code></h2>
-<p>If you’re interested in the way that the <code>itsne</code> and <code>dhssne</code> methods optimize the kernel parameters, you can apply this to any method that uses either the exponential or heavy-tailed kernel, which is pretty much ever method listed here except <code>tsne</code>, <code>tasne</code> and <code>wtsne</code>, which don’t have any free parameters associated with their output kernels.</p>
+<p>If you’re interested in the way that the <code>itsne</code> and <code>dhssne</code> methods optimize the kernel parameters, you can apply this to any method that uses either the exponential or heavy-tailed kernel, which is pretty much ever method listed here except <code>tsne</code>, <code>tasne</code> and <code>wssne</code>, which don’t have any free parameters associated with their output kernels.</p>
 <p>To “dynamize” a kernel (my own terrible term), supply the <code>dyn</code> parameter with a named list, where the names are the names of the kernel parameters to optimize, and the values whether they should be static, global or point-wise optimized (more on what the acceptable values are below):</p>
 <div id="exponential-kernel" class="section level3">
 <h3>Exponential Kernel</h3>
@@ -370,11 +370,11 @@ iris_dyn_hssne &lt;- sneer(iris, method = &quot;hssne&quot;,
 <p>Because <code>itsne</code> already allows its kernel to be optimized for each point, it’s the equivalent of invoking it like this:</p>
 <pre class="r"><code>iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;point&quot;))</code></pre>
 <p>but in this case, the <code>dyn</code> parameter is redundant. However, you can change its behavior:</p>
-<pre class="r"><code># Optimize one value of dof for all points
-iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;global&quot;))
+<pre class="r"><code># Optimize one value of dof for all points (initialized to 5)
+iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;global&quot;), dof = 5)
 
-# Keep dof fixed to its input value(s) for the entire embedding
-iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;static&quot;))</code></pre>
+# Keep dof fixed to its input value(s) for the entire embedding (5 in this case)
+iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;static&quot;), dof = 5)</code></pre>
 <p>If you “dynamize” the heavy-tailed, exponential or itsne kernel in this way, you can get to the final optimized values by passing <code>ret = c(&quot;dyn&quot;)</code> to <code>sneer</code> just as described for <code>dhssne</code> and <code>itsne</code> methods above.</p>
 </div>
 </div>
