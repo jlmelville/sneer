@@ -1,6 +1,8 @@
 ---
 title: "Symmetric Embedding with Asymmetric Kernels"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
 ---
 
 Up: [Index](index.html)
@@ -8,7 +10,7 @@ Up: [Index](index.html)
 This is a tangent based on [deriving embedding gradients](gradients.html). It's
 not going to make any sense unless you read that first.
 
-### Asymmetric Kernels with Symmetric Embedding
+## Asymmetric Kernels with Symmetric Embedding
 
 When [deriving the gradient](gradients.html) for 
 [inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) I 

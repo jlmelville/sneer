@@ -1,6 +1,11 @@
 ---
 title: "Deriving Embedding Gradients"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
 Next: [Experimental Gradients](experimental-gradients.html) Up: [Index](index.html)
@@ -572,16 +577,16 @@ $$
 Plug whatever combination of cost function derivative and weight function
 derivative you like, and off you go.
 
-### Some Cost Functions and their Derivatives
+## Some Cost Functions and their Derivatives
 
-#### Kullback-Leibler Divergence
+### Kullback-Leibler Divergence
 
 Used by the ASNE, SSNE, t-SNE and variants:
 
 $$C = D_{KL}(P||Q) = \sum_{ij} p_{ij}\ln\left(\frac{p_{ij}}{q_{ij}}\right)$$
 $$\frac{\partial C}{\partial q_{ij}} = - \frac{p_{ij}}{q_{ij}}$$
 
-#### "Reverse" Kullback-Leibler Divergence
+### "Reverse" Kullback-Leibler Divergence
 
 [NeRV](http://www.jmlr.org/papers/v11/venna10a.html) symmetrizes the KL 
 divergence by also considering the cost when $q_{ij}$ is the "reference" 
@@ -590,7 +595,7 @@ probability distribution:
 $$C = D_{KL}(Q||P) = \sum_{ij} q_{ij}\ln\left(\frac{q_{ij}}{p_{ij}}\right)$$
 $$\frac{\partial C}{\partial q_{ij}} = \ln\left(\frac{p_{ij}}{q_{ij}}\right) + 1$$
 
-#### Jensen-Shannon Divergence
+### Jensen-Shannon Divergence
 
 The Jensen-Shannon Divergence, as defined in 
 [JSE](https://dx.doi.org/10.1016/j.neucom.2012.12.036) is:
@@ -622,9 +627,9 @@ $$\frac{\partial C}{\partial q_{ij}} =
 -\frac{1}{\kappa}\ln\left(\frac{q_{ij}}{z_{ij}}\right)
 $$
 
-### Some Similarity Kernels and their Derivatives
+## Some Similarity Kernels and their Derivatives
 
-#### Exponential/Gaussian Kernel
+### Exponential/Gaussian Kernel
 
 The weighting function most commonly encountered is a gaussian kernel, although
 because I've separated the distance transformation from the weighting, it's 
@@ -645,7 +650,7 @@ $$\frac{\partial w_{ij}}{\partial f_{ij}}
 = -\beta_{i} w_{ij}
 $$
 
-#### t-Distribution Kernel
+### t-Distribution Kernel
 
 As used in the output kernel of t-SNE. Also referred to as the Cauchy 
 distribution sometimes.
@@ -656,7 +661,7 @@ $$\frac{\partial w_{ij}}{\partial f_{ij}}
 = -w_{ij}^2
 $$
 
-#### Heavy-tailed Kernel
+### Heavy-tailed Kernel
 
 A generalization of the exponential and t-distributed kernel, and described in
 the 
@@ -687,7 +692,7 @@ that would allow t-SNE to be used with the method described in
 sections on [Input Initialization](input-initialization.html) and
 [Embedding Methods](embedding-methods.html) for how to do that in `sneer`.
 
-#### Inhomogeneous t-SNE
+### Inhomogeneous t-SNE
 
 [Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) defines
 a kernel closely related to the gamma function with $\nu$ degrees of freedom:
@@ -715,7 +720,7 @@ despite its name, actually uses a point-wise normalization, making it more like
 a t-Distributed version of ASNE, rather than SSNE. For point-wise normalization
 schemes the complications don't arise.
 
-### Deriving the ASNE, SSNE and t-SNE Gradient
+## Deriving the ASNE, SSNE and t-SNE Gradient
 
 With a master equation and an expression for the derivative of the cost function
 and kernel function, we have all we need to mix and match various costs and
@@ -747,6 +752,8 @@ q_{kl}
 \right]
 \frac{\partial w_{ij}}{\partial f_{ij}}
 $$
+
+### Inserting the Kullback-Leibler Divergence
 
 Time to simplify the expression for $k_{ij}$. Both SNE and t-SNE use the 
 Kullback-Leibler Divergence, which as noted above, has the following
@@ -832,6 +839,8 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   \right)
 $$
 
+### ASNE (More or Less)
+
 For SNE, $w_{ij}^{n-1} = 1$ because $n = 1$ and we get:
 
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
@@ -848,6 +857,8 @@ This looks a lot like the ASNE gradient. Note, however, that ASNE used a
 point-wise normalization, so we would need to use the point-wise version of
 $k_{ij}$. Fortunately, you get to the same expression by nearly the exact same 
 steps, so I leave this as an exercise to you, dear reader.
+
+### SSNE
 
 For SSNE, there are further simplifications to be made. Both the $P$ and $Q$ 
 matrices are symmetric, so $p_{ij} = p_{ji}$, and $q_{ij} = q_{ji}$, leading to:
@@ -879,7 +890,11 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   \right)
 $$
 
-The familiar SSNE gradient. For t-SNE, we get:
+The familiar SSNE gradient. 
+
+### t-SNE
+
+For t-SNE, we get:
 
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
   2
@@ -977,7 +992,7 @@ $$
 where
 $$k_{ij} = \frac{\partial C}{\partial d_{ij}}\frac{1}{d_{ij}}$$
   
-### Distance-based Costs
+## Distance-based Costs
 
 Let's run over some distance-based cost functions. To be consistent with
 the probability-based costs I'm going to write them as full double sums:
@@ -997,7 +1012,7 @@ and not $d_{ji}$ to avoid double counting the same contribution. The gradients
 given below may therefore contain constants a factor of two larger than you'll
 see elsewhere in the literature.
 
-#### Metric MDS
+### Metric MDS
 
 For a standard metric MDS, the cost for a pair is just the square loss between 
 the input distances $r_{ij}$ and the output distances $d_{ij}$:
@@ -1018,7 +1033,7 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   \right)
 $$
 
-#### SSTRESS
+### SSTRESS
 
 The SSTRESS criterion is
 
@@ -1040,7 +1055,7 @@ There is some interesting discussion of artefactual structure that can result
 from the use of the SSTRESS criterion in a paper by 
 [Hughes and Lowe](https://papers.nips.cc/paper/2239-artefactual-structure-from-least-squares-multidimensional-scaling).
 
-#### Sammon Mapping
+### Sammon Mapping
 
 Sammon Mapping is very similar to metric MDS, except that it tries to put
 more weight on preserving short distances (and hence local structure), by

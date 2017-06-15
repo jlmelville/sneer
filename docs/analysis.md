@@ -1,6 +1,11 @@
 ---
 title: "Analysis"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
 Previous: [Exported Data](exported-data.html). Next: [Visualization](visualization.html). Up: [Index](index.html).
@@ -16,7 +21,7 @@ out on a small (100-1000) subset of your data first, and preferably on at
 least two sizes, so you can get a feel for both the absolute time it takes
 and how they scale.
 
-### `roc_auc_embed` and `pr_auc_embed`
+## `roc_auc_embed` and `pr_auc_embed`
 
 When the data has obvious categories for each point (e.g. every observation in
 the MNIST dataset is a digit from 0-9), you can treat every observation as if
@@ -89,7 +94,7 @@ Using the embedding as a retrieval experiment and evaluating the PR AUC was
 done in the 
 [ws-SNE paper](http://jmlr.org/proceedings/papers/v32/yange14.html).
 
-### `nbr_pres`
+## `nbr_pres`
 
 ROC AUC and PR AUC only works if you have some categories to classify each
 point in the dataset into. An alternative approach would be to look at
@@ -115,7 +120,7 @@ You will get back a vector containing the preservation for each point.
 It ranges from `0` (no neighbors in common) to `1` (all neighbors the same). 
 With random performance, you'd expect a value around `k / (k - 1)`.
 
-### `rnx_auc_embed`
+## `rnx_auc_embed`
 
 Because `nbr_pres` only gives you the results for one neighborhood value, and 
 it's hard to know what (if any) single value of `k` to use, an obvious 
@@ -135,7 +140,7 @@ average RNX AUC value over all observations.
 The RNX AUC was used as an evaluation method in the 
 [multiscale JSE](http://dx.doi.org/10.1016/j.neucom.2014.12.095) paper.
 
-### `quality_measures`
+## `quality_measures`
 
 If you know for sure you definitely want to calculate all these values, then
 you can ask `sneer` to calculate them automatically after the embedding. Pass

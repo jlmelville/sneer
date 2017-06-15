@@ -1,6 +1,8 @@
 ---
 title: "Embedding Concepts"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
 ---
 
 Next: [Data Sets](datasets.html). Up: [Index](index.html).

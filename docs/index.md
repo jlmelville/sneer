@@ -1,6 +1,11 @@
 ---
 title: "Sneer"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
 Welcome to the documentation for `sneer`: Stochastic Neighbor Embedding 
@@ -50,9 +55,10 @@ The [examples](examples.html) page brings most of this together. The same
 examples can be found in the R documentation for the `sneer` function, i.e.
 type `?sneer` at the R console.
 
-## I just want to do t-SNE and not deal with all those options
+## Just t-SNE, Please
 
-Ok, let's use the iris data set as an example.
+Don't want to deal with all those options? Ok, let's use the iris data set as an
+example.
 
 ```R
 library("sneer")

@@ -1,6 +1,11 @@
 ---
 title: "Reporting"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 Previous: [Embedding Methods](embedding-methods.html). Next:[Exported Data](exported-data.html). Up: [Index](index.html).
 
@@ -9,6 +14,8 @@ a plot of the current state of the output configuration. Details of that
 gets its own section: [Visualization](visualization.html). This section
 covers both the textual part of the logging, its frequency and how it knows
 when to stop.
+
+## Console Logging
 
 During optimization, various information is logged to the screen. Some of it
 appears during input initialization (see the 
@@ -49,7 +56,7 @@ Stress formula 1, which is related to the square loss of the input and output
 distances. It's not reported for other embedding methods which aren't concerned
 with preserving distances.
 
-### `tol`
+## `tol`
 
 The `rtol` value in the output measures the relative tolerance between the 
 currently reported cost value and that of the previous report. As mentioned in 
@@ -60,7 +67,7 @@ the section on [Optimization](optimization.html), the embedding will stop if the
 tsne_iris <- sneer(iris, tol = 0.01)
 ```
 
-### `report_every`
+## `report_every`
 
 You can change how often optimization progress is logged to screen by changing
 the `report_every` value. For example, if you set it `100`, it will report

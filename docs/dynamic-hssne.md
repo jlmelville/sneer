@@ -2,7 +2,12 @@
 title: "Dynamic HSSNE"
 author: "James Melville"
 date: "January 9, 2017"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 
 Up: [Index](index.html)
@@ -32,6 +37,8 @@ each data point. They also suggest choosing values for each of these parameters
 by including them in the optimization process along with the coordinates.
 
 Could we do the same with the global $\alpha$ parameter used in HSSNE? We could.
+
+## Pair-wise Normalization
 
 Assuming a pairwise normalization scheme (as used in HSSNE), and the notation
 introduced in the [gradients](gradients.html) section, we can write the partial 

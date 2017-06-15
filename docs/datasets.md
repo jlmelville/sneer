@@ -1,6 +1,11 @@
 ---
 title: "Data Sets"
-output: html_document
+output:
+  html_document:
+    theme: cosmo
+    toc: true
+    toc_float:
+      collapsed: false
 ---
 Previous: [Concepts](concepts.html). Next: [Preprocessing](preprocessing.html). Up: [Index](index.html).
 
