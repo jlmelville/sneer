@@ -319,21 +319,21 @@ res &lt;- sneer(iris, scale_type = &quot;a&quot;)</code></pre>
 <h3>t-SNE with Jacobs Step Size method</h3>
 <pre class="r"><code># Use the standard tSNE optimization method (Jacobs step size method) with
 # step momentum. Range scale the matrix and use an aggressive learning
-# rate (epsilon).
+# rate (eta).
 res &lt;- sneer(iris, scale_type = &quot;m&quot;, perplexity = 25, opt = &quot;tsne&quot;,
-             epsilon = 500)</code></pre>
+             eta = 500)</code></pre>
 </div>
 <div id="t-sne-with-jacobs-step-size-and-early-exaggeration" class="section level3">
 <h3>t-SNE with Jacobs Step Size and Early Exaggeration</h3>
 <pre class="r"><code>res &lt;- sneer(iris, scale_type = &quot;m&quot;, perplexity = 25, opt = &quot;tsne&quot;,
-             epsilon = 500, exaggerate = 4, exaggerate_off_iter = 100)</code></pre>
+             eta = 500, exaggerate = 4, exaggerate_off_iter = 100)</code></pre>
 </div>
 <div id="t-sne-with-jacobs-step-size-early-exaggeration-and-random-initialization" class="section level3">
 <h3>t-SNE with Jacobs Step Size, Early Exaggeration and Random Initialization</h3>
 <pre class="r"><code># By default we initialize from a PCA scores plot, but we can initialize
 # from random too
 res &lt;- sneer(iris, scale_type = &quot;m&quot;, perplexity = 25, opt = &quot;tsne&quot;,
-             epsilon = 500, exaggerate = 4, exaggerate_off_iter = 100,
+             eta = 500, exaggerate = 4, exaggerate_off_iter = 100,
              init = &quot;r&quot;)</code></pre>
 </div>
 <div id="nerv-with-perplexity-stepping" class="section level3">

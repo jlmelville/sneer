@@ -12,7 +12,7 @@ sneer(df, indexes = NULL, ndim = 2, method = "tsne", alpha = 0.5,
   kappa = 0.5, scale_type = "none", perplexity = 32,
   perp_scale = "single", perp_scale_iter = NULL, perp_kernel_fun = "exp",
   prec_scale = "none", init = "pca", opt = "L-BFGS", alt_opt = FALSE,
-  epsilon = 1, max_iter = 1000, report_every = 50, tol = 1e-04,
+  eta = 1, max_iter = 1000, report_every = 50, tol = 1e-04,
   exaggerate = NULL, exaggerate_off_iter = 50, plot_type = "plot",
   colors = NULL, color_name = NULL, labels = NULL, label_name = NULL,
   label_chars = NULL, point_size = 1, plot_labels = FALSE,
@@ -79,7 +79,7 @@ Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.}
 \item{alt_opt}{If \code{TRUE}, then optimize non-coordinates separately from
 coordinates. Applies only if \code{method} is \code{"itsne"} or \code{"dhssne"}.}
 
-\item{epsilon}{Learning rate when \code{opt} is set to \code{"TSNE"} and
+\item{eta}{Learning rate when \code{opt} is set to \code{"TSNE"} and
 the initial step size for the bold driver and back tracking step search
 methods.}
 
@@ -326,7 +326,7 @@ parameter are:
  \item \code{"TSNE"} The optimization method used in the original t-SNE
    paper: the Jacobs method for step size selection and a step function
    for the momentum: switching from 0.4 to 0.8 after 250 steps. You may need
-   to modify the \code{"epsilon"} parameter to get good results, depending
+   to modify the \code{"eta"} parameter to get good results, depending
    on how you have scaled and preprocessed your data, and the embedding
    method used.
  \item \code{"BFGS"} The Broyden-Fletcher-Goldfarb-Shanno (BFGS) method.
@@ -602,9 +602,9 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
 
   # Use the standard tSNE optimization method (Jacobs step size method) with
   # step momentum. Range scale the matrix and use an aggressive learning
-  # rate (epsilon).
+  # rate (eta).
   res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
-               epsilon = 500)
+               eta = 500)
 
   # Use the L-BFGS optimization method
   res <- sneer(iris, scale_type = "a", opt = "L-BFGS")

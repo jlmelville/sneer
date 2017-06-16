@@ -119,15 +119,15 @@ res <- sneer(iris, scale_type = "a")
 ```R
 # Use the standard tSNE optimization method (Jacobs step size method) with
 # step momentum. Range scale the matrix and use an aggressive learning
-# rate (epsilon).
+# rate (eta).
 res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
-             epsilon = 500)
+             eta = 500)
 ```
 
 ### t-SNE with Jacobs Step Size and Early Exaggeration
 ```R
 res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
-             epsilon = 500, exaggerate = 4, exaggerate_off_iter = 100)
+             eta = 500, exaggerate = 4, exaggerate_off_iter = 100)
 ```
 
 ### t-SNE with Jacobs Step Size, Early Exaggeration and Random Initialization
@@ -136,7 +136,7 @@ res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
 # By default we initialize from a PCA scores plot, but we can initialize
 # from random too
 res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
-             epsilon = 500, exaggerate = 4, exaggerate_off_iter = 100,
+             eta = 500, exaggerate = 4, exaggerate_off_iter = 100,
              init = "r")
 ```
 

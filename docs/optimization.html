@@ -250,11 +250,11 @@ div.tocify {
 </div>
 <div id="opt" class="section level2">
 <h2><code>opt</code></h2>
-<p>Most t-SNE implementations follow the optimization technique given by the <a href="http://jmlr.org/papers/v9/vandermaaten08a.html">t-SNE paper</a>: the direction of optimization is basic gradient descent with a momentum term, and an adaptive step size, which requires setting an initial learning rate, <code>epsilon</code>.</p>
-<p>This works well for t-SNE, and it’s fast, but in my experience it can cause divergence when a non t-SNE embedding method is used. For this reason, it’s not the default. If you want to use it, set the <code>opt</code> parameter to <code>&quot;tsne&quot;</code> and the <code>epsilon</code> value for the learning rate:</p>
-<pre class="r"><code>iris_tsne &lt;- sneer(iris, opt = &quot;tsne&quot;, epsilon = 500, scale_type = &quot;m&quot;)</code></pre>
+<p>Most t-SNE implementations follow the optimization technique given by the <a href="http://jmlr.org/papers/v9/vandermaaten08a.html">t-SNE paper</a>: the direction of optimization is basic gradient descent with a momentum term, and an adaptive step size, which requires setting an initial learning rate, <code>eta</code>.</p>
+<p>This works well for t-SNE, and it’s fast, but in my experience it can cause divergence when a non t-SNE embedding method is used. For this reason, it’s not the default. If you want to use it, set the <code>opt</code> parameter to <code>&quot;tsne&quot;</code> and the <code>eta</code> value for the learning rate:</p>
+<pre class="r"><code>iris_tsne &lt;- sneer(iris, opt = &quot;tsne&quot;, eta = 500, scale_type = &quot;m&quot;)</code></pre>
 <p>This form of optimization is usually combined with early exaggeration and random initialization. See the <a href="input-initialization.html">Input Initialization</a> and <a href="output-initialization.html">Output Initialization</a> sections for more details, but for an authentic-ish t-SNE experience, run:</p>
-<pre class="r"><code>iris_tsne &lt;- sneer(iris, opt = &quot;tsne&quot;, epsilon = 100, exaggerate = 4,
+<pre class="r"><code>iris_tsne &lt;- sneer(iris, opt = &quot;tsne&quot;, eta = 100, exaggerate = 4,
                   exaggerate_off_iter = 50, perplexity = 30, init = &quot;r&quot;)</code></pre>
 <p>The default optimizer uses the limited-memory Broyden-Fletcher-Goldfarb-Shanno (L-BFGS) optimizer and is used in the <a href="http://dx.doi.org/10.1016/j.neucom.2012.12.036">JSE paper</a>.</p>
 <pre class="r"><code>s1k_tsne &lt;- sneer(s1k, opt = &quot;L-BFGS&quot;)</code></pre>
@@ -266,8 +266,8 @@ div.tocify {
 <pre class="r"><code>s1k_tsne &lt;- sneer(s1k, opt = &quot;SPEC&quot;) </code></pre>
 <p>The L-BFGS, CG and Spectral Directions methods are all gradient descent methods that rely on a strong Wolfe line search to make progress. An alternative approach using an adaptive step size and a momentum scheme that emulates the Nesterov Accelerated Gradient (NAG) is also available, which is closer to the original t-SNE optimization method in spirit, while being a bit more robust when using other embedding methods.</p>
 <p>A description of the connection between momentum and NAG is given in this <a href="www.jmlr.org/proceedings/papers/v28/sutskever13.pdf">deep learning paper</a>. Additionally, it makes use of <a href="https://arxiv.org/abs/1204.3982">adaptive restart</a>.</p>
-<p>The step size is by the “bold driver” method, for which you can also use the <code>epsilon</code> parameter to set the initial learning rate.</p>
-<pre class="r"><code>iris_tsne &lt;- sneer(iris, epsilon = 10)</code></pre>
+<p>The step size is by the “bold driver” method, for which you can also use the <code>eta</code> parameter to set the initial learning rate.</p>
+<pre class="r"><code>iris_tsne &lt;- sneer(iris, eta = 10)</code></pre>
 <p>This method tends to be a little slower than the <code>&quot;tsne&quot;</code> optimization method, but it gives good results for most combinations of scaling, embedding method and data set.</p>
 <p>But if in doubt, just use the default L-BFGS optimizer.</p>
 <p>Previous: <a href="output-initialization.html">Output Initialization</a>. Next: <a href="embedding-methods.html">Embedding Methods</a>. Up: <a href="index.html">Index</a>.</p>

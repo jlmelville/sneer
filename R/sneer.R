@@ -290,7 +290,7 @@ NULL
 #'  \item \code{"TSNE"} The optimization method used in the original t-SNE
 #'    paper: the Jacobs method for step size selection and a step function
 #'    for the momentum: switching from 0.4 to 0.8 after 250 steps. You may need
-#'    to modify the \code{"epsilon"} parameter to get good results, depending
+#'    to modify the \code{"eta"} parameter to get good results, depending
 #'    on how you have scaled and preprocessed your data, and the embedding
 #'    method used.
 #'  \item \code{"BFGS"} The Broyden-Fletcher-Goldfarb-Shanno (BFGS) method.
@@ -469,7 +469,7 @@ NULL
 #' @param opt Type of optimizer. See 'Details'.
 #' @param alt_opt If \code{TRUE}, then optimize non-coordinates separately from
 #'  coordinates. Applies only if \code{method} is \code{"itsne"} or \code{"dhssne"}.
-#' @param epsilon Learning rate when \code{opt} is set to \code{"TSNE"} and
+#' @param eta Learning rate when \code{opt} is set to \code{"TSNE"} and
 #'  the initial step size for the bold driver and back tracking step search
 #'  methods.
 #' @param max_iter Maximum number of iterations to carry out optimization of
@@ -629,9 +629,9 @@ NULL
 #'
 #'   # Use the standard tSNE optimization method (Jacobs step size method) with
 #'   # step momentum. Range scale the matrix and use an aggressive learning
-#'   # rate (epsilon).
+#'   # rate (eta).
 #'   res <- sneer(iris, scale_type = "m", perplexity = 25, opt = "tsne",
-#'                epsilon = 500)
+#'                eta = 500)
 #'
 #'   # Use the L-BFGS optimization method
 #'   res <- sneer(iris, scale_type = "a", opt = "L-BFGS")
@@ -797,7 +797,7 @@ sneer <- function(df,
                   init = "pca",
                   opt = "L-BFGS",
                   alt_opt = FALSE,
-                  epsilon = 1,
+                  eta = 1,
                   max_iter = 1000,
                   report_every = 50,
                   tol = 1e-4,
@@ -1328,7 +1328,7 @@ sneer <- function(df,
   result
 }
 
-opt_sneer <- function(opt, method, epsilon = 500) {
+opt_sneer <- function(opt, method, eta = 500) {
   if (methods::is(opt, "list")) {
     return(mize_opt(opt))
   }
@@ -1344,7 +1344,7 @@ opt_sneer <- function(opt, method, epsilon = 500) {
   if (opt == "tsne") {
     optimizer <- ctor(
       "DBD",
-      step_up_fun = "+", step_up = 0.2, step_down = 0.8, step0 = epsilon,
+      step_up_fun = "+", step_up = 0.2, step_down = 0.8, step0 = eta,
       mom_type = "classical", mom_schedule = "switch",
       mom_init = 0.4, mom_final = 0.8, mom_switch_iter = 250
     )
@@ -1352,7 +1352,7 @@ opt_sneer <- function(opt, method, epsilon = 500) {
   else if (opt == "nest") {
     optimizer <- ctor(
       "SD", norm_direction = TRUE,
-      line_search = "bold", step0 = epsilon,
+      line_search = "bold", step0 = eta,
       mom_schedule = "nesterov", mom_type = "nesterov",
       nest_convex_approx = FALSE, nest_burn_in = 1,
       use_nest_mu_zero = FALSE, restart = "fn")

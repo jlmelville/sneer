@@ -69,15 +69,15 @@ iris_tsne <- sneer(iris, tol = 0.01) # stops after 200 steps
 Most t-SNE implementations follow the optimization technique given by the 
 [t-SNE paper](http://jmlr.org/papers/v9/vandermaaten08a.html): the direction
 of optimization is basic gradient descent with a momentum term, and an 
-adaptive step size, which requires setting an initial learning rate, `epsilon`.
+adaptive step size, which requires setting an initial learning rate, `eta`.
 
 This works well for t-SNE, and it's fast, but in my experience it can 
 cause divergence when a non t-SNE embedding method is used. For this reason, 
 it's not the default. If you want to use it, set the `opt` parameter to 
-`"tsne"` and the `epsilon` value for the learning rate:
+`"tsne"` and the `eta` value for the learning rate:
 
 ```R
-iris_tsne <- sneer(iris, opt = "tsne", epsilon = 500, scale_type = "m")
+iris_tsne <- sneer(iris, opt = "tsne", eta = 500, scale_type = "m")
 ```
 
 This form of optimization is usually combined with early exaggeration and 
@@ -86,7 +86,7 @@ and [Output Initialization](output-initialization.html) sections for more
 details, but for an authentic-ish t-SNE experience, run:
 
 ```R
-iris_tsne <- sneer(iris, opt = "tsne", epsilon = 100, exaggerate = 4,
+iris_tsne <- sneer(iris, opt = "tsne", eta = 100, exaggerate = 4,
                   exaggerate_off_iter = 50, perplexity = 30, init = "r")
 ```
 
@@ -137,10 +137,10 @@ Additionally, it makes use of
 [adaptive restart](https://arxiv.org/abs/1204.3982). 
 
 The step size is by the "bold driver" method, for which you can also use the 
-`epsilon` parameter to set the initial learning rate.
+`eta` parameter to set the initial learning rate.
 
 ```R
-iris_tsne <- sneer(iris, epsilon = 10)
+iris_tsne <- sneer(iris, eta = 10)
 ```
 
 This method tends to be a little slower than the `"tsne"` optimization method, 
