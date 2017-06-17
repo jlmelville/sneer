@@ -76,8 +76,7 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
     stiffness_fn = function(method, inp, out) {
       jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
                     beta = method$kernel$beta, eps = method$eps)
-    },
-    out_updated_fn = klqz_update
+    }
   )
 }
 
@@ -546,7 +545,8 @@ jse_fg <- function(kappa = 0.5) {
     gr = jse_cost_gr,
     kappa = kappa,
     kappa_inv = 1 / kappa,
-    name = "JS"
+    name = "JS",
+    out_updated_fn = klqz_update
   )
 }
 

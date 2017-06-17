@@ -135,6 +135,9 @@ out_updated <- function(inp, out, method) {
   if (!is.null(method$out_updated_fn)) {
     out <- method$out_updated_fn(inp, out, method)
   }
+  if (!is.null(method$cost$out_updated_fn)) {
+    out <- method$cost$out_updated_fn(inp, out, method)
+  }
   out
 }
 

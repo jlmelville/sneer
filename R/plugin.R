@@ -399,8 +399,7 @@ jse_plugin <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                        verbose = TRUE) {
   lreplace(
     asne_plugin(beta = beta, eps = eps, verbose = verbose),
-    cost = jse_fg(kappa = kappa),
-    out_updated_fn = klqz_update
+    cost = jse_fg(kappa = kappa)
   )
 }
 

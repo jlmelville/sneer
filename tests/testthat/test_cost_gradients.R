@@ -29,7 +29,7 @@ inp <- list(pm = pm)
 out <- list(qm = qm)
 
 expect_cost_fd <- function(cost, inp, out, label, diff = 1e-5, tolerance = 1e-6) {
-  method <- list(cost = cost, eps = .Machine$double.eps)
+  method <- list(cost = cost, eps = .Machine$double.eps, prob_type = "row")
   k_gan <- cost$gr(inp, out, method)
   k_gfd <- cost_gradient_fd(inp, out, method, diff = diff)
   expect_equal(k_gan, k_gfd, label = label,
