@@ -50,7 +50,7 @@ All these arguments can be abbreviated (e.g. to `"m"` instead of `"matrix"`).
 Image data is often treated by range scaling the entire matrix, e.g. using the 
 mnist data set as an example:
 
-```res_mnist <- sneer(mnist, range_scale = "m")```
+```res_mnist <- sneer(mnist, scale_type = "m")```
 
 ## What `sneer` Doesn't Do
 
