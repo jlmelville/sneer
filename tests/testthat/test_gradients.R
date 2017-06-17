@@ -6,6 +6,7 @@ context("Gradients")
 
 inp_df <- iris[1:50, 1:4]
 nr <- nrow(inp_df)
+betas <- seq(1e-3, 1, length.out = nr)
 preprocess <- make_preprocess(range_scale_matrix = TRUE,  verbose = FALSE)
 out_init <- out_from_PCA(verbose = FALSE)
 inp_init <- inp_from_perp(perplexity = 20, verbose = FALSE)
@@ -19,14 +20,6 @@ inp_tms <- function() { inp_from_perps_multi(perplexities = seq(45, 25, length.o
                                 num_scale_iters = 0,
                                 modify_kernel_fn = transfer_kernel_precisions,
                                 verbose = FALSE) }
-
-aw <- function(method) {
-  lreplace(
-    method,
-    inp_updated_fn = nerv_inp_update,
-    out_keep = c("qm", "wm", "d2m", "qcm")
-  )
-}
 
 gfd <- function(embedder, diff = 1e-4) {
   gradient_fd(embedder$inp, embedder$out, embedder$method, diff = diff)$gm
@@ -117,8 +110,8 @@ test_that("Reverse SNE gradients", {
 })
 
 test_that("SNE gradients with asymmetric weights", {
-  expect_grad(aw(asne()), label = "asne-aw", inp_init = inp_aw())
-  expect_grad(aw(rasne()), label = "rasne-aw", inp_init = inp_aw())
+  expect_grad(asne(beta = betas), label = "asne-aw", inp_init = inp_aw())
+  expect_grad(rasne(beta = betas), label = "rasne-aw", inp_init = inp_aw())
 })
 
 test_that("NeRV gradients", {
@@ -164,13 +157,13 @@ test_that("Plugin gradients", {
 })
 
 test_that("Plugin gradients with asymmetric weights", {
-  expect_grad(aw(asne_plugin()), label = "plugin asne-aw", inp_init = inp_aw())
-  expect_grad(aw(rasne_plugin()), label = "plugin rasne-aw", inp_init = inp_aw())
-  expect_grad(aw(ssne_plugin()), label = "plugin ssne-aw", inp_init = inp_aw())
-  expect_grad(aw(nerv_plugin()), label = "plugin nerv-aw", inp_init = inp_aw())
-  expect_grad(aw(snerv_plugin()), label = "plugin snerv-aw", inp_init = inp_aw())
-  expect_grad(aw(jse_plugin()), label = "plugin jse-aw", inp_init = inp_aw())
-  expect_grad(aw(sjse_plugin()), label = "plugin sjse-aw", inp_init = inp_aw())
+  expect_grad(asne_plugin(beta = betas), label = "plugin asne-aw", inp_init = inp_aw())
+  expect_grad(rasne_plugin(beta = betas), label = "plugin rasne-aw", inp_init = inp_aw())
+  expect_grad(ssne_plugin(beta = betas), label = "plugin ssne-aw", inp_init = inp_aw())
+  expect_grad(nerv_plugin(), label = "plugin nerv-aw", inp_init = inp_aw())
+  expect_grad(snerv_plugin(), label = "plugin snerv-aw", inp_init = inp_aw())
+  expect_grad(jse_plugin(beta = betas), label = "plugin jse-aw", inp_init = inp_aw())
+  expect_grad(sjse_plugin(beta = betas), label = "plugin sjse-aw", inp_init = inp_aw())
 })
 
 test_that("Multiscale gradients", {
