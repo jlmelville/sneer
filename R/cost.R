@@ -247,16 +247,12 @@ cost_gradient_fd <- function(inp, out, method, diff = 1e-4) {
       old <- qm[i, j]
       qm[i, j] <- old - diff
       out$qm <- qm
-      if (!is.null(method$out_updated_fn)) {
-        out <- method$out_updated_fn(inp, out, method)
-      }
+      out <- out_updated(inp, out, method)
       cost_back <- calculate_cost(method, inp, out)
 
       qm[i, j] <- old + diff
       out$qm <- qm
-      if (!is.null(method$out_updated_fn)) {
-        out <- method$out_updated_fn(inp, out, method)
-      }
+      out <- out_updated(inp, out, method)
       cost_fwd <- calculate_cost(method, inp, out)
 
       fd <- (cost_fwd - cost_back) / (2 * diff)

@@ -124,10 +124,18 @@ update_out_prob <- function(inp, out, method) {
     out[[keep[i]]] <- res[[keep[i]]]
   }
 
+  out <- out_updated(inp, out, method)
+  list(out = out)
+}
+
+
+# Triggered after update_out
+# Looks for out_updated_fn, e.g. storage of extra data
+out_updated <- function(inp, out, method) {
   if (!is.null(method$out_updated_fn)) {
     out <- method$out_updated_fn(inp, out, method)
   }
-  list(out = out)
+  out
 }
 
 # Update Output Probabilities

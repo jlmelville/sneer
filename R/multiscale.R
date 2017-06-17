@@ -889,9 +889,8 @@ update_out_prob_ms <- function(inp, out, method) {
 
   # average the probability matrices
   out$qm <- Reduce(`+`, out$qms) / length(out$qms)
-  if (!is.null(method$out_updated_fn)) {
-    out <- method$out_updated_fn(inp, out, method)
-  }
+  out <- out_updated(inp, out, method)
+
   list(out = out)
 }
 
