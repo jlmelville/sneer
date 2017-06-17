@@ -201,6 +201,11 @@ The embedding methods available are:
  \item \code{"hssne"} Heavy-tailed Symmetric Stochastic Neighbor Embedding of
   Yang et al (2009).
  \item \code{"nerv"} Neighbor Retrieval Visualizer of Venna et al (2010).
+  \emph{NB}: The original paper suggests setting the output weight function
+  precisions to be equal to those of the input weights. Later papers don't
+  mention this. For consistency with other embedding methods, the default
+  behavior is \emph{not} to transfer the precisions to the output function.
+  To transfer precisions, set \code{prec_scale = "transfer"}.
  \item \code{"jse"} Jensen-Shannon Embedding of Lee at al (2013).
  \item \code{"itsne"} Inhomogeneous t-SNE method of Kitazono et al (2016).
  \item \code{"dhssne"} A "dynamic" version of HSSNE, inspired by the

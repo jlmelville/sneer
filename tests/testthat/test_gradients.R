@@ -115,15 +115,15 @@ test_that("SNE gradients with asymmetric weights", {
 })
 
 test_that("NeRV gradients", {
-  expect_grad(nerv(), label = "nerv", inp_init = inp_aw())
-  expect_grad(snerv(), label = "snerv", inp_init = inp_aw())
-  expect_grad(hsnerv(), label = "hsnerv", inp_init = inp_aw())
+  expect_grad(nerv(beta = betas), label = "nerv", inp_init = inp_aw())
+  expect_grad(snerv(beta = betas), label = "snerv", inp_init = inp_aw())
+  expect_grad(hsnerv(beta = betas), label = "hsnerv", inp_init = inp_aw())
 })
 
 test_that("NeRV gradients with fixed (or no) precision", {
-  expect_grad(unerv(beta = 1), label = "unerv b=1")
-  expect_grad(usnerv(beta = 1), label = "usnerv b=1")
-  expect_grad(uhsnerv(beta = 1), label = "uhsnerv b=1", diff = 1e-4)
+  expect_grad(nerv(beta = 1), label = "unerv b=1")
+  expect_grad(snerv(beta = 1), label = "usnerv b=1")
+  expect_grad(hsnerv(beta = 1), label = "uhsnerv b=1", diff = 1e-4)
   expect_grad(tnerv(), label = "tnerv")
 })
 
@@ -144,12 +144,12 @@ test_that("Plugin gradients", {
   expect_grad(rssne_plugin(), label = "plugin rssne")
   expect_grad(rtsne_plugin(), label = "plugin rtsne")
 
-  expect_grad(unerv_plugin(), label = "plugin unerv")
-  expect_grad(usnerv_plugin(), label = "plugin usnerv")
-  expect_grad(uhsnerv_plugin(), label = "plugin uhsnerv", diff = 1e-4)
+  expect_grad(nerv_plugin(beta = 1), label = "plugin unerv")
+  expect_grad(snerv_plugin(beta = 1), label = "plugin usnerv")
+  expect_grad(hsnerv_plugin(beta = 1), label = "plugin uhsnerv", diff = 1e-4)
   expect_grad(tnerv_plugin(), label = "plugin tnerv")
 
-  expect_grad(nerv_plugin(), label = "plugin nerv")
+  expect_grad(nerv_plugin(beta = betas), label = "plugin nerv")
 
   expect_grad(jse_plugin(), label = "plugin jse")
   expect_grad(sjse_plugin(), label = "plugin sjse")
@@ -157,13 +157,20 @@ test_that("Plugin gradients", {
 })
 
 test_that("Plugin gradients with asymmetric weights", {
-  expect_grad(asne_plugin(beta = betas), label = "plugin asne-aw", inp_init = inp_aw())
-  expect_grad(rasne_plugin(beta = betas), label = "plugin rasne-aw", inp_init = inp_aw())
-  expect_grad(ssne_plugin(beta = betas), label = "plugin ssne-aw", inp_init = inp_aw())
-  expect_grad(nerv_plugin(), label = "plugin nerv-aw", inp_init = inp_aw())
-  expect_grad(snerv_plugin(), label = "plugin snerv-aw", inp_init = inp_aw())
-  expect_grad(jse_plugin(beta = betas), label = "plugin jse-aw", inp_init = inp_aw())
-  expect_grad(sjse_plugin(beta = betas), label = "plugin sjse-aw", inp_init = inp_aw())
+  expect_grad(asne_plugin(beta = betas), label = "plugin asne-aw",
+              inp_init = inp_aw())
+  expect_grad(rasne_plugin(beta = betas), label = "plugin rasne-aw",
+              inp_init = inp_aw())
+  expect_grad(ssne_plugin(beta = betas), label = "plugin ssne-aw",
+              inp_init = inp_aw())
+  expect_grad(nerv_plugin(beta = betas), label = "plugin nerv-aw",
+              inp_init = inp_aw())
+  expect_grad(snerv_plugin(beta = betas), label = "plugin snerv-aw",
+              inp_init = inp_aw())
+  expect_grad(jse_plugin(beta = betas), label = "plugin jse-aw",
+              inp_init = inp_aw())
+  expect_grad(sjse_plugin(beta = betas), label = "plugin sjse-aw",
+              inp_init = inp_aw())
 })
 
 test_that("Multiscale gradients", {
@@ -175,14 +182,14 @@ test_that("Multiscale gradients", {
               inp_init = inp_ms())
   expect_grad(rssne_plugin(verbose = FALSE), label = "plugin ms rssne",
               inp_init = inp_ms())
-  expect_grad(unerv_plugin(verbose = FALSE), label = "plugin ms unerv",
-              inp_init = inp_ms())
-  expect_grad(usnerv_plugin(verbose = FALSE), label = "plugin ms usnerv",
-              inp_init = inp_ms())
-  expect_grad(nerv_plugin(verbose = FALSE), label = "plugin ms nerv",
-              inp_init = inp_ms())
-  expect_grad(snerv_plugin(verbose = FALSE), label = "plugin ms snerv",
-              inp_init = inp_ms())
+  expect_grad(nerv_plugin(beta = 1, verbose = FALSE),
+              label = "plugin ms unerv", inp_init = inp_ms())
+  expect_grad(snerv_plugin(beta = 1, verbose = FALSE),
+              label = "plugin ms usnerv", inp_init = inp_ms())
+  expect_grad(nerv_plugin(beta = betas, verbose = FALSE),
+              label = "plugin ms nerv", inp_init = inp_ms())
+  expect_grad(snerv_plugin(beta = betas, verbose = FALSE),
+              label = "plugin ms snerv", inp_init = inp_ms())
   expect_grad(jse_plugin(verbose = FALSE), label = "plugin ms jse",
               inp_init = inp_ms())
   expect_grad(sjse_plugin(verbose = FALSE), label = "plugin ms sjse",
@@ -195,10 +202,10 @@ test_that("Multiscale gradients", {
               inp_init = inp_ums())
   expect_grad(ssne_plugin(verbose = FALSE), label = "plugin ums ssne",
               inp_init = inp_ums())
-  expect_grad(nerv_plugin(verbose = FALSE), label = "plugin ums nerv",
-              inp_init = inp_ums())
-  expect_grad(snerv_plugin(verbose = FALSE), label = "plugin ums snerv",
-              inp_init = inp_ums())
+  expect_grad(nerv_plugin(beta = betas, verbose = FALSE),
+              label = "plugin ums nerv", inp_init = inp_ums())
+  expect_grad(snerv_plugin(beta = betas, verbose = FALSE),
+              label = "plugin ums snerv", inp_init = inp_ums())
   expect_grad(jse_plugin(verbose = FALSE), label = "plugin ums jse",
               inp_init = inp_ums())
   expect_grad(sjse_plugin(verbose = FALSE), label = "plugin ums sjse",
@@ -209,10 +216,10 @@ test_that("Multiscale gradients", {
               inp_init = inp_tms())
   expect_grad(ssne_plugin(verbose = FALSE), label = "plugin tms ssne",
               inp_init = inp_tms())
-  expect_grad(nerv_plugin(verbose = FALSE), label = "plugin tms nerv",
-              inp_init = inp_tms())
-  expect_grad(snerv_plugin(verbose = FALSE), label = "plugin tms snerv",
-              inp_init = inp_tms())
+  expect_grad(nerv_plugin(beta = betas, verbose = FALSE),
+              label = "plugin tms nerv", inp_init = inp_tms())
+  expect_grad(snerv_plugin(beta = betas, verbose = FALSE),
+              label = "plugin tms snerv", inp_init = inp_tms())
   expect_grad(jse_plugin(verbose = FALSE), label = "plugin tms jse",
               inp_init = inp_tms())
   expect_grad(sjse_plugin(verbose = FALSE), label = "plugin tms sjse",

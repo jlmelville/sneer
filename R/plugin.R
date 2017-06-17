@@ -298,22 +298,21 @@ rtsne_plugin <- function(eps = .Machine$double.eps, verbose = TRUE) {
 # An implementation of NeRV using the plugin gradient.
 #
 # @param lambda Weighting factor controlling the emphasis placed on precision
-#   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1).
+#   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
+#   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
+# @param beta Decay constant of the exponential similarity kernel function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
 # @return An embedding method for use by an embedding function.
-# @seealso \code{nerv} should give equivalent results, but is probably
-# a bit more efficient.
 # @family sneer embedding methods
 # @family sneer probability embedding methods
-nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
-  method <- lreplace(
-    asne_plugin(eps = eps, verbose = verbose),
+nerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+                         verbose = TRUE) {
+  lreplace(
+    asne_plugin(beta = beta, eps = eps, verbose = verbose),
     cost = nerv_fg(lambda = lambda)
   )
-  method <- on_inp_updated(method, nerv_inp_update)$method
-  method
 }
 
 # An implementation of SNeRV using the plugin gradient.
@@ -321,18 +320,17 @@ nerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE)
 # @param lambda Weighting factor controlling the emphasis placed on precision
 #   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1).
 #   Must be a value between 0 and 1.
+# @param beta Decay constant of the exponential similarity kernel function.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
 # @return An embedding method for use by an embedding function.
-# @seealso \code{nerv} should give equivalent results, but is probably
-# a bit more efficient.
 # @family sneer embedding methods
 # @family sneer probability embedding methods
-snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
-                         verbose = TRUE) {
+snerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+                          verbose = TRUE) {
   lreplace(
-    nerv_plugin(lambda = lambda, eps = eps, verbose = verbose),
+    nerv_plugin(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
     prob_type = "joint"
   )
 }
@@ -342,10 +340,11 @@ snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
 # @param lambda Weighting factor controlling the emphasis placed on precision
 #   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). Must be
 #   a value between 0 and 1.
-# @param alpha Tail heaviness. Must be greater than zero. When set to a small
-#   value this method is equivalent to SSNE or SNeRV (depending on the value
-#   of \code{lambda}. When set to one to one, this method behaves like
-#   t-SNE/t-NeRV.
+# @param beta Decay constant of the kernel similarity function. Becomes
+# equivalent to the exponential decay constant as \code{alpha} approaches zero.
+# @param alpha Tail heaviness of the kernel similarity function. Must be
+# greater than zero. When set to a small value this method is equivalent to
+# SSNE. When set to one to one, this method behaves like t-SNE.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -354,11 +353,11 @@ snerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
 # a bit more efficient.
 # @family sneer embedding methods
 # @family sneer probability embedding methods
-hsnerv_plugin <- function(lambda = 0.5, alpha = 0, eps = .Machine$double.eps,
-                          verbose = TRUE) {
+hsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
+                           eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     snerv_plugin(lambda = lambda, eps = eps, verbose = verbose),
-    kernel = heavy_tail_kernel(alpha = alpha)
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 
@@ -380,76 +379,6 @@ tnerv_plugin <- function(lambda = 0.5, eps = .Machine$double.eps,
   lreplace(
     tsne_plugin(eps = eps, verbose = verbose),
     cost = nerv_fg(lambda = lambda)
-  )
-}
-
-# An implementation of UNeRV using the plugin gradient.
-#
-# @param lambda Weighting factor controlling the emphasis placed on precision
-#   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
-# @param beta Decay constant of the exponential similarity kernel function.
-# @param eps Small floating point value used to prevent numerical problems,
-# e.g. in gradients and cost functions.
-# @param verbose If \code{TRUE}, log information about the embedding.
-# @return An embedding method for use by an embedding function.
-# @seealso \code{unerv} should give equivalent results, but is probably
-# a bit more efficient.
-# @family sneer embedding methods
-# @family sneer probability embedding methods
-unerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
-                         verbose = TRUE) {
-  lreplace(
-    asne_plugin(beta = beta, eps = eps, verbose = verbose),
-    cost = nerv_fg(lambda = lambda)
-  )
-}
-
-# An implementation of USNeRV using the plugin gradient.
-#
-# @param lambda Weighting factor controlling the emphasis placed on precision
-#   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1).
-#   Must be a value between 0 and 1.
-# @param beta Decay constant of the exponential similarity kernel function.
-# @param eps Small floating point value used to prevent numerical problems,
-# e.g. in gradients and cost functions.
-# @param verbose If \code{TRUE}, log information about the embedding.
-# @return An embedding method for use by an embedding function.
-# @seealso \code{usnerv} should give equivalent results, but is probably
-# a bit more efficient.
-# @family sneer embedding methods
-# @family sneer probability embedding methods
-usnerv_plugin <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
-                          verbose = TRUE) {
-  lreplace(
-    unerv_plugin(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
-    prob_type = "joint"
-  )
-}
-
-# An implementation of UHSNeRV using the plugin gradient.
-#
-# @param lambda Weighting factor controlling the emphasis placed on precision
-#   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). Must be
-#   a value between 0 and 1.
-# @param beta Decay constant of the kernel similarity function. Becomes
-# equivalent to the exponential decay constant as \code{alpha} approaches zero.
-# @param alpha Tail heaviness of the kernel similarity function. Must be
-# greater than zero. When set to a small value this method is equivalent to
-# SSNE. When set to one to one, this method behaves like t-SNE.
-# @param eps Small floating point value used to prevent numerical problems,
-# e.g. in gradients and cost functions.
-# @param verbose If \code{TRUE}, log information about the embedding.
-# @return An embedding method for use by an embedding function.
-# @seealso \code{uhsnerv} should give equivalent results, but is probably
-# a bit more efficient.
-# @family sneer embedding methods
-# @family sneer probability embedding methods
-uhsnerv_plugin <- function(lambda = 0.5, beta = 1, alpha = 0,
-                           eps = .Machine$double.eps, verbose = TRUE) {
-  lreplace(
-    tnerv_plugin(lambda = lambda, eps = eps, verbose = verbose),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 

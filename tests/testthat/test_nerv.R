@@ -6,7 +6,9 @@ expect_norm_costs <- function(method, expected_norm, info = "",
   method$verbose <- FALSE
   result <- embed_prob(iris[, 1:4], method = method,
                         max_iter = 9,
-                        init_inp = inp_from_perp(verbose = FALSE),
+                        init_inp = inp_from_perp(verbose = FALSE,
+                                                 modify_kernel_fn =
+                                                   transfer_kernel_precisions),
                         init_out = out_from_PCA(verbose = FALSE),
                         preprocess = make_preprocess(verbose = FALSE),
                         reporter = make_reporter(report_every = 1,

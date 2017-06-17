@@ -18,12 +18,12 @@
 # should have been embedded as close neighbors. From this perspective, ASNE
 # is the equivalent of emphasising false positives over false negatives.
 #
-# Additionally, where ASNE uses an exponential function with a parameter set
-# to 1 for all pairs of points for its output weighting function, NeRV uses
-# the parameters calculated from the input probability matrix which can (and
-# do) vary for each observation in the data set. For a more direct compairson
-# with ASNE, use the uniform NeRV method \code{unerv} which uses one parameter
-# for all weight generation in the output.
+# Additionally, where ASNE uses an exponential function with a parameter set to
+# 1 for all pairs of points for its output weighting function, at least in the
+# original paper, NeRV uses the parameters calculated from the input probability
+# matrix which can (and do) vary for each observation in the data set. To
+# get this behavior set the modify_kernel_fn parameter of input initialization
+# to "transfer_kernel_precisions"
 #
 # The parameter associated with the exponential kernel is sometimes referred
 # to as the "precision" in the literature (and in other parts of the help
@@ -52,6 +52,8 @@
 # @param lambda Weighting factor controlling the emphasis placed on precision
 #   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
 #   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
+# @param beta Controls the rate of decay of the exponential similarity kernel
+#  function. Leave at the default value of 1 to compare with SSNE and ASNE.
 # @param eps Small floating point value used to prevent numerical problems,
 #   e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -79,45 +81,7 @@
 # # puts emphasis on precision over recall
 # embed_prob(method = nerv(lambda = 0), ...)
 # }
-nerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
-  method <- lreplace(
-    asne(eps = eps, verbose = verbose),
-    cost = nerv_fg(lambda = lambda),
-    stiffness_fn = function(method, inp, out) {
-      nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
-                     beta = method$kernel$beta, eps = method$eps)
-    },
-    out_updated_fn = klqp_update
-  )
-  method <- on_inp_updated(method, nerv_inp_update)$method
-  method
-}
-
-# NeRV with uniform bandwidth (UNeRV)
-#
-# This method behaves like \code{nerv} in terms of its cost function,
-# but treats the output weighting function like \code{asne} and
-# \code{ssne} by setting the weight function decay parameter
-# \code{beta} to 1. If you want to compare the NeRV cost function with the ASNE
-# cost function directly, UNeRV is a better method to use than NeRV.
-#
-# @param lambda Weighting factor controlling the emphasis placed on precision
-#   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#   1, then the method is equivalent to ASNE. Must be a value between 0 and 1.
-# @param beta Controls the rate of decay of the exponential similarity kernel
-#  function. Leave at the default value of 1 to compare with SSNE and ASNE.
-# @param eps Small floating point value used to prevent numerical problems,
-#   e.g. in gradients and cost functions.
-# @param verbose If \code{TRUE}, log information about the embedding.
-# @return An embedding method for use by an embedding function.
-# @seealso \code{nerv} uses the precisions that generated the input
-# probability as a way to reflect the differences in the local density of
-# points in the input space in the output embedding.
-# The return value of this function should be used with the
-# \code{embed_prob} embedding function.
-# @family sneer embedding methods
-# @family sneer probability embedding methods
-unerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
                   verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
@@ -134,125 +98,10 @@ unerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 #
 # A probability-based embedding method.
 #
-# SNeRV is a "symmetric" variant of \code{nerv}. Rather than use the
-# conditional point-based probabilities of \code{asne}, it uses the
-# joint pair-based probabilities of \code{ssne}. However, it uses a
-# non-uniform exponential kernel in its output space (the decay
-# parameter \code{beta} is allowed to vary per point by using the value
-# calculated from the input data). As a result, there is an extra step required
-# to produce the joint probability output: like the input probability matrix,
-# the joint probabilities are generated from the conditional probabilities by
-# averaging \code{q[i, j]} and \code{q[j, i]}.
-#
-# The probability matrix used in SNeRV:
-#
-# \itemize{
-#  \item{represents one probability distribution, i.e. the grand sum of the
-#  matrix is one.}
-#  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
-#  probabilities are joint probabilities.}
-# }
-#
-# @section Output Data:
-# If used in an embedding, the output data list will contain:
-# \describe{
-#  \item{\code{ym}}{Embedded coordinates.}
-#  \item{\code{qm}}{Joint probability matrix.}
-# }
-# @param lambda Weighting factor controlling the emphasis placed on precision
-#   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
-# @param eps Small floating point value used to prevent numerical problems,
-#   e.g. in gradients and cost functions.
-# @param verbose If \code{TRUE}, log information about the embedding.
-# @return An embedding method for use by an embedding function.
-# @references
-# Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
-# Information retrieval perspective to nonlinear dimensionality reduction for
-# data visualization.
-#
-# @seealso SNeRV uses the \code{nerv_cost} cost function and the
-#   \code{exp_weight} similarity function for converting distances to
-#   probabilities.
-# The return value of this function should be used with the
-#   \code{embed_prob} embedding function.
-# @family sneer embedding methods
-# @family sneer probability embedding methods
-# @examples
-# \dontrun{
-# # default SNeRV settings
-# embed_prob(method = usnerv(lambda = 0.5), ...)
-# }
-snerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
-  snerv_plugin(lambda = lambda, eps = eps)
-}
-
-# Symmetric Neighbor Retrieval Visualizer with uniform bandwidths (USNeRV)
-#
-# A probability-based embedding method.
-#
-# USNeRV is a "symmetric" variant of \code{unerv}. Rather than use the
-# conditional point-based probabilities of \code{asne}, it uses the
-# joint pair-based probabilities of \code{ssne}. It differs from
-# \code{snerv} by only using a uniform kernel decay parameter to generate
-# the output weight matrix.
-#
-# When \code{lambda = 1}, this method is equivalent to SSNE.
-#
-# The probability matrix used in SNeRV:
-#
-# \itemize{
-#  \item{represents one probability distribution, i.e. the grand sum of the
-#  matrix is one.}
-#  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
-#  probabilities are joint probabilities.}
-# }
-#
-# @section Output Data:
-# If used in an embedding, the output data list will contain:
-# \describe{
-#  \item{\code{ym}}{Embedded coordinates.}
-#  \item{\code{qm}}{Joint probability matrix.}
-# }
-# @param lambda Weighting factor controlling the emphasis placed on precision
-#   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
-# @param beta Decay parameter of the exponential similarity kernel
-#  function. The larger the value, the faster the function decreases.
-# @param eps Small floating point value used to prevent numerical problems,
-#   e.g. in gradients and cost functions.
-# @param verbose If \code{TRUE}, log information about the embedding.
-# @return An embedding method for use by an embedding function.
-# @seealso \code{snerv} is a version of this algorithm which relaxes
-# the requirement for uniform precisions in the output weight kernel (at
-# the cost of being somewhat less efficient).
-#
-# The return value of this function should be used with the
-#   \code{embed_prob} embedding function.
-# @family sneer embedding methods
-# @family sneer probability embedding methods
-# @examples
-# \dontrun{
-# # default SNeRV settings
-# embed_prob(method = usnerv(lambda = 0.5), ...)
-#
-# # equivalent to SSNE
-# embed_prob(method = usnerv(lambda = 1), ...)
-#
-# # puts an emphasis on only keeping true neighbors close together
-# # tends to produce a larger number of small, tight clusters
-# embed_prob(method = usnerv(lambda = 0), ...)
-# }
-usnerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
-                   verbose = TRUE) {
-  lreplace(
-    unerv(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
-    stiffness_fn = function(method, inp, out) {
-      usnerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
-                      beta = method$kernel$beta, eps = method$eps)
-    },
-    prob_type = "joint"
-  )
+# SNeRV is a "symmetric" variant of \code{nerv}.
+snerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
+                  verbose = TRUE) {
+  snerv_plugin(lambda = lambda, beta = beta, eps = eps, verbose = verbose)
 }
 
 # Heavy-tailed Symmetric Neighbor Retrieval Visualizer (HSNeRV)
@@ -318,95 +167,10 @@ usnerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 # embed_prob(method = hsnerv(lambda = 0.5, alpha = 1.5e-8), ...)
 #
 # }
-hsnerv <- function(lambda = 0.5, alpha = 0,
+hsnerv <- function(lambda = 0.5, beta = 1, alpha = 0,
                    eps = .Machine$double.eps, verbose = TRUE) {
-  hsnerv_plugin(lambda = lambda, alpha = alpha, eps = eps)
-}
-
-# Heavy-tailed SNeRV with Uniform Kernel Parameters (UHSNeRV)
-#
-# A probability-based embedding method.
-#
-# UHSNeRV is a hybrid of \code{usnerv} and \code{hssne}. It has
-# the \code{lambda} parameter of USNeRV, allowing for the control of precision
-# versus recall, and the \code{alpha} and \code{beta} parameters of HSSNE which
-# give the behavior of SSNE/SNeRV when \code{alpha} is close to zero,
-# and of t-SNE/t-NeRV when \code{alpha = 1}.
-#
-# The probability matrix used in HSNeRV:
-#
-# \itemize{
-#  \item{represents one probability distribution, i.e. the grand sum of the
-#  matrix is one.}
-#  \item{is symmetric, i.e. \code{P[i, j] == P[j, i]} and therefore the
-#  probabilities are joint probabilities.}
-# }
-#
-# @section Output Data:
-# If used in an embedding, the output data list will contain:
-# \describe{
-#  \item{\code{ym}}{Embedded coordinates.}
-#  \item{\code{qm}}{Joint probability matrix based on the weight matrix
-#  \code{wm}.}
-# }
-# @param lambda Weighting factor controlling the emphasis placed on precision
-#   (set \code{lambda} to 0), versus recall (set \code{lambda} to 1). If set to
-#   1, then the method is equivalent to t-SNE. Must be a value between 0 and 1.
-# @param alpha Tail heaviness. Must be greater than zero. When set to a small
-#   value this method is equivalent to SSNE or SNeRV (depending on the value
-#   of \code{lambda}. When set to one to one, this method behaves like
-#   t-SNE/t-NeRV.
-# @param beta Controls the rate of decay of the function. Equivalent to the
-#   exponential decay parameter when \code{alpha} approaches 0.
-# @param eps Small floating point value used to prevent numerical problems,
-#   e.g. in gradients and cost functions.
-# @param verbose If \code{TRUE}, log information about the embedding.
-# @return An embedding method for use by an embedding function.
-# @references
-# Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010).
-# Information retrieval perspective to nonlinear dimensionality reduction for
-# data visualization.
-# \emph{Journal of Machine Learning Research}, \emph{11}, 451-490.
-#
-# Yang, Z., King, I., Xu, Z., & Oja, E. (2009).
-# Heavy-tailed symmetric stochastic neighbor embedding.
-# In \emph{Advances in neural information processing systems} (pp. 2169-2177).
-# @seealso HSNeRV uses the \code{nerv_cost} cost function and the
-#   \code{heavy_tail_weight} similarity function for converting
-#   distances to probabilities.
-#
-# The return value of this function should be used with the
-#   \code{embed_prob} embedding function.
-# @family sneer embedding methods
-# @family sneer probability embedding methods
-# @examples
-# \dontrun{
-# # equivalent to SSNE
-# embed_prob(method = hsnerv(lambda = 1, alpha = 1.5e-8), ...)
-#
-# # equivalent to t-SNE
-# embed_prob(method = hsnerv(lambda = 1, alpha = 1), ...)
-#
-# # equivalent to default SNeRV
-# embed_prob(method = hsnerv(lambda = 0.5, alpha = 1.5e-8), ...)
-#
-# # equivalent to default t-NeRV
-# embed_prob(method = hsnerv(lambda = 0.5, alpha = 1), ...)
-#
-# }
-uhsnerv <- function(lambda = 0.5, alpha = 0, beta = 1,
-                    eps = .Machine$double.eps, verbose = TRUE) {
-  lreplace(
-    usnerv(lambda = lambda, eps = eps, verbose = verbose),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    stiffness_fn = function(method, inp, out) {
-      uhsnerv_stiffness(pm = inp$pm, qm = out$qm, wm = out$wm,
-                       rev_kl = out$rev_kl,
-                       lambda = method$cost$lambda, alpha = method$kernel$alpha,
-                       beta = method$kernel$beta, eps = method$eps)
-    },
-    out_keep = c("qm", "wm")
-  )
+  hsnerv_plugin(lambda = lambda, beta = beta, alpha = alpha,
+                eps = eps, verbose = verbose)
 }
 
 # t-Distributed Neighbor Retrieval Visualizer (t-NeRV)
@@ -710,24 +474,6 @@ transfer_kernel_precisions <- function(inp, out, method) {
   method$kernel$beta <- inp[["beta"]]
   method$kernel <- check_symmetry(method$kernel)
   method$kernel
-}
-
-# NeRV input update function
-#
-# Update function to run when the input data has changed. Unlike most other
-# probability-based embedding methods, NeRV sets the output kernels to have
-# the same parameters as the equivalent input kernels (in the case of NeRV, the
-# exponential parameter).
-#
-# @param inp Input data.
-# @param out Output data.
-# @param method Embedding method.
-# @return List containing the update embedding method, where the kernel beta
-# parameters have been updated to be the same as that for the \code{input}
-# data.
-nerv_inp_update <- function(inp, out, method) {
-  method$kernel <- transfer_kernel_precisions(inp, out, method)
-  list(method = method)
 }
 
 # Updates the Kullback Leibler Divergence.

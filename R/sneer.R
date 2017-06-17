@@ -165,6 +165,11 @@ NULL
 #'  \item \code{"hssne"} Heavy-tailed Symmetric Stochastic Neighbor Embedding of
 #'   Yang et al (2009).
 #'  \item \code{"nerv"} Neighbor Retrieval Visualizer of Venna et al (2010).
+#'   \emph{NB}: The original paper suggests setting the output weight function
+#'   precisions to be equal to those of the input weights. Later papers don't
+#'   mention this. For consistency with other embedding methods, the default
+#'   behavior is \emph{not} to transfer the precisions to the output function.
+#'   To transfer precisions, set \code{prec_scale = "transfer"}.
 #'  \item \code{"jse"} Jensen-Shannon Embedding of Lee at al (2013).
 #'  \item \code{"itsne"} Inhomogeneous t-SNE method of Kitazono et al (2016).
 #'  \item \code{"dhssne"} A "dynamic" version of HSSNE, inspired by the
@@ -849,7 +854,7 @@ sneer <- function(df,
     hasne = function() { hasne_plugin(alpha = alpha) },
     hasne_plugin = function() { hasne_plugin(alpha = alpha) },
     hssne = function() { hssne(alpha = alpha) },
-    nerv = function() { unerv(lambda = lambda) },
+    nerv = function() { nerv(lambda = lambda) },
     jse = function() { jse(kappa = kappa) },
     tasne = function() { tasne() },
     tpsne = function() { tpsne() },
@@ -858,7 +863,7 @@ sneer <- function(df,
     psne_plugin = function() { psne_plugin() },
     hpsne = function() { hpsne_plugin(alpha = alpha) },
     hpsne_plugin = function() { hpsne_plugin(alpha = alpha) },
-    nerv_plugin = function() { unerv_plugin(lambda = lambda) },
+    nerv_plugin = function() { nerv_plugin(lambda = lambda) },
     jse_plugin = function() { jse_plugin(kappa = kappa) },
     asne_plugin = function() { asne_plugin() },
     ssne_plugin = function() { ssne_plugin() },
