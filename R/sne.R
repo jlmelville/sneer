@@ -404,8 +404,7 @@ rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl,
                              beta = method$kernel$beta, eps = method$eps)
-    },
-    out_updated_fn = klqp_update)
+    })
 }
 
 # "Reverse" Symmetric Stochastic Neighbor Embedding (RSSNE)

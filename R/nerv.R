@@ -89,9 +89,7 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
     stiffness_fn = function(method, inp, out) {
       nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
                      beta = method$kernel$beta, eps = method$eps)
-    },
-    out_updated_fn = klqp_update
-  )
+    })
 }
 
 # Symmetric Neighbor Retrieval Visualizer (SNeRV)
@@ -247,9 +245,7 @@ tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     stiffness_fn = function(method, inp, out) {
       tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
                       lambda = method$cost$lambda, eps = method$eps)
-    },
-    out_updated_fn = klqp_update
-  )
+    })
 }
 
 # NeRV Stiffness Function
@@ -407,7 +403,8 @@ reverse_kl_fg <- function() {
   list(
     fn = reverse_kl_cost,
     gr = reverse_kl_cost_gr,
-    name = "Reverse KL"
+    name = "Reverse KL",
+    out_updated_fn = klqp_update
   )
 }
 
@@ -516,6 +513,7 @@ klqp_update <- function(inp, out, method) {
 # @return \code{out} updated with the KL divergence from {\code{inp$pm}} to
 # \code{out$qm}.
 klqp_update_pjoint <- function(inp, out, method) {
+  # FIXME: Unnecessary with plugin gradient
   out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
   out
 }
@@ -535,6 +533,7 @@ klqp_update_pjoint <- function(inp, out, method) {
 # @return \code{out} updated with the KL divergence from {\code{inp$pm}} to
 # \code{out$qm}.
 klqp_update_prow <- function(inp, out, method) {
+  # FIXME: Unnecessary with plugin gradient
   out$rev_kl <- kl_divergence_rows(out$qm, inp$pm, method$eps)
   out
 }
@@ -564,7 +563,8 @@ nerv_fg <- function(lambda = 0.5) {
     fn = fn,
     gr = nerv_cost_gr,
     lambda = lambda,
-    name = "NeRV"
+    name = "NeRV",
+    out_updated_fn = klqp_update
   )
 }
 

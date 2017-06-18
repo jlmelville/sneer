@@ -498,6 +498,7 @@ klqz_update <- function(inp, out, method) {
 # \code{inp$zm}.
 klqz_update_pjoint <- function(inp, out, method) {
   out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
+  # FIXME: Unnecessary with plugin gradient
   out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
   out
 }
@@ -518,6 +519,7 @@ klqz_update_pjoint <- function(inp, out, method) {
 # \code{inp$zm}.
 klqz_update_prow <- function(inp, out, method) {
   out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
+  # FIXME: Unnecessary with plugin gradient
   out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
   out
 }
