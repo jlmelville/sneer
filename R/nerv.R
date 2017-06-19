@@ -86,10 +86,14 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
     cost = nerv_fg(lambda = lambda),
-    stiffness_fn = function(method, inp, out) {
-      nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
-                     beta = method$kernel$beta, eps = method$eps)
-    })
+    stiffness = list(
+      fn = function(method, inp, out) {
+        nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
+                       beta = method$kernel$beta, eps = method$eps)
+      },
+      out_updated_fn = klqp_update
+    )
+  )
 }
 
 # Symmetric Neighbor Retrieval Visualizer (SNeRV)
@@ -242,10 +246,14 @@ tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     tsne(eps = eps, verbose = verbose),
     cost = nerv_fg(lambda = lambda),
-    stiffness_fn = function(method, inp, out) {
-      tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
-                      lambda = method$cost$lambda, eps = method$eps)
-    })
+    stiffness = list(
+      fn = function(method, inp, out) {
+        tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
+                        lambda = method$cost$lambda, eps = method$eps)
+      },
+      out_updated_fn = klqp_update
+    )
+  )
 }
 
 # NeRV Stiffness Function
@@ -513,7 +521,6 @@ klqp_update <- function(inp, out, method) {
 # @return \code{out} updated with the KL divergence from {\code{inp$pm}} to
 # \code{out$qm}.
 klqp_update_pjoint <- function(inp, out, method) {
-  # FIXME: Unnecessary with plugin gradient
   out$rev_kl <- kl_divergence(out$qm, inp$pm, method$eps)
   out
 }
@@ -533,7 +540,6 @@ klqp_update_pjoint <- function(inp, out, method) {
 # @return \code{out} updated with the KL divergence from {\code{inp$pm}} to
 # \code{out$qm}.
 klqp_update_prow <- function(inp, out, method) {
-  # FIXME: Unnecessary with plugin gradient
   out$rev_kl <- kl_divergence_rows(out$qm, inp$pm, method$eps)
   out
 }
@@ -563,8 +569,7 @@ nerv_fg <- function(lambda = 0.5) {
     fn = fn,
     gr = nerv_cost_gr,
     lambda = lambda,
-    name = "NeRV",
-    out_updated_fn = klqp_update
+    name = "NeRV"
   )
 }
 

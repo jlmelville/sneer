@@ -138,6 +138,10 @@ out_updated <- function(inp, out, method) {
   if (!is.null(method$cost$out_updated_fn)) {
     out <- method$cost$out_updated_fn(inp, out, method)
   }
+  if (!is.null(method[["stiffness"]]) &&
+      !is.null(method[["stiffness"]]$out_updated_fn)) {
+    out <- method$stiffness$out_updated_fn(inp, out, method)
+  }
   out
 }
 

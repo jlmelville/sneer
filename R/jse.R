@@ -73,10 +73,13 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
     cost = jse_fg(kappa = kappa),
-    stiffness_fn = function(method, inp, out) {
-      jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
-                    beta = method$kernel$beta, eps = method$eps)
-    }
+    stiffness = list(
+      fn = function(method, inp, out) {
+        jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
+                      beta = method$kernel$beta, eps = method$eps)
+      },
+      out_updated_fn = klqz_update
+    )
   )
 }
 
@@ -141,10 +144,13 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                  verbose = TRUE) {
   lreplace(
     jse(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
-    stiffness_fn = function(method, inp, out) {
-      sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
-                     beta = method$kernel$beta, eps = method$eps)
-    },
+    stiffness = list(
+      fn = function(method, inp, out) {
+        sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
+                       beta = method$kernel$beta, eps = method$eps)
+      },
+      out_updated_fn = klqz_update
+    ),
     prob_type = "joint"
   )
 }
@@ -230,11 +236,14 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
   lreplace(
     sjse(kappa = kappa, eps = eps, verbose = verbose),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    stiffness_fn = function(method, inp, out) {
-      hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz,
-                      kappa = method$cost$kappa, alpha = method$kernel$alpha,
-                      beta = method$kernel$beta, eps = method$eps)
-    },
+    stiffness = list(
+      fn = function(method, inp, out) {
+        hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz,
+                        kappa = method$cost$kappa, alpha = method$kernel$alpha,
+                        beta = method$kernel$beta, eps = method$eps)
+      },
+      out_updated_fn = klqz_update
+    ),
     out_keep = c("qm", "wm")
   )
 }
@@ -484,10 +493,10 @@ klqz_update <- function(inp, out, method) {
 
 # Updates the Kullback Leibler Divergence Q||Z for Joint Probabilities.
 #
-# Calculates and stores the mixture probability Z and calculates the KL
-# divergence from Q (output probabilities) to Z on the output data. Used by
-# those embedding methods where this KL divergence is used to calculate the
-# stiffness matrix in a gradient calculation (e.g. \code{sjse}).
+# Calculates the KL divergence from Q (output probabilities) to Z on the output
+# data. Used by those embedding methods where this KL divergence is used to
+# calculate the stiffness matrix in a gradient calculation (e.g. \code{sjse}).
+# The Z matrix should already have been calculated (see z_update).
 #
 # Only appropriate for embedding methods that use joint probabilities.
 #
@@ -497,18 +506,16 @@ klqz_update <- function(inp, out, method) {
 # @return \code{out} updated with the KL divergence from {\code{out$qm}} to
 # \code{inp$zm}.
 klqz_update_pjoint <- function(inp, out, method) {
-  out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
-  # FIXME: Unnecessary with plugin gradient
   out$kl_qz <- kl_divergence(out$qm, out$zm, method$eps)
   out
 }
 
 # Updates the Kullback Leibler Divergence Q||Z for Row Probabilities.
 #
-# Calculates and stores the mixture probability Z and calculates the KL
-# divergence from Q (output probabilities) to Z on the output data. Used by
-# those embedding methods where this KL divergence is used to calculate the
-# stiffness matrix in a gradient calculation (e.g. \code{jse}).
+# Calculates the KL divergence from Q (output probabilities) to Z on the output
+# data. Used by those embedding methods where this KL divergence is used to
+# calculate the stiffness matrix in a gradient calculation (e.g. \code{jse}).
+# The Z matrix should already have been calculated (see z_update).
 #
 # Only appropriate for embedding methods that use row probabilities.
 #
@@ -518,9 +525,13 @@ klqz_update_pjoint <- function(inp, out, method) {
 # @return \code{out} updated with the KL divergence from {\code{out$qm}} to
 # \code{inp$zm}.
 klqz_update_prow <- function(inp, out, method) {
-  out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
-  # FIXME: Unnecessary with plugin gradient
   out$kl_qz <- kl_divergence_rows(out$qm, out$zm, method$eps)
+  out
+}
+
+# Update the Z miture matrix
+z_update <- function(inp, out, method) {
+  out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
   out
 }
 
@@ -548,7 +559,7 @@ jse_fg <- function(kappa = 0.5) {
     kappa = kappa,
     kappa_inv = 1 / kappa,
     name = "JS",
-    out_updated_fn = klqz_update
+    out_updated_fn = z_update
   )
 }
 
