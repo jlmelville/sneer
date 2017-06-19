@@ -27,9 +27,6 @@
 # @param kernel Similarity kernel for weight generation.
 # @param stiffness_fn Stiffness function appropriate for a plugin.
 # @param update_out_fn Function to run when embedding coordinates are updated.
-# @param inp_updated_fn Optional custom function to run when the input data
-# changes (e.g. if input perplexities have changed).
-#  \code{update_out_fn} runs.
 # @param out_updated_fn Optional custom function to run after
 #  \code{update_out_fn} runs.
 # @param prob_type Type of probability matrix used by the probability matrix,
@@ -51,13 +48,12 @@ plugin <- function(cost = kl_fg(),
                    kernel = exp_kernel(),
                    stiffness_fn = plugin_stiffness,
                    keep = c("qm", "wm", "d2m"),
-                   inp_updated_fn = NULL,
                    out_updated_fn = NULL,
                    after_init_fn = NULL,
                    prob_type = "joint",
                    eps = .Machine$double.eps,
                    verbose = TRUE) {
-  method <- remove_nulls(
+  remove_nulls(
     list(
       cost = cost,
       kernel = kernel,
@@ -70,8 +66,6 @@ plugin <- function(cost = kl_fg(),
       is_plugin = TRUE
     )
   )
-  method <- on_inp_updated(method, inp_updated_fn)$method
-  method
 }
 
 # ASNE Method using Plugin Gradient
