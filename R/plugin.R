@@ -46,7 +46,6 @@
 # @family sneer probability embedding methods
 plugin <- function(cost = kl_fg(),
                    kernel = exp_kernel(),
-                   stiffness_fn = plugin_stiffness,
                    keep = c("qm", "wm", "d2m"),
                    out_updated_fn = NULL,
                    after_init_fn = NULL,
@@ -57,7 +56,7 @@ plugin <- function(cost = kl_fg(),
     list(
       cost = cost,
       kernel = kernel,
-      stiffness_fn = stiffness_fn,
+      stiffness_fn = plugin_stiffness,
       out_updated_fn = out_updated_fn,
       prob_type = prob_type,
       eps = eps,
