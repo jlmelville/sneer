@@ -68,9 +68,9 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   list(
     cost = kl_fg(),
     kernel = exp_kernel(beta = beta),
-    stiffness_fn = function(method, inp, out) {
+    stiffness = list(fn = function(method, inp, out) {
       asne_stiffness(inp$pm, out$qm, beta = method$kernel$beta)
-    },
+    }),
     out_keep = c("qm"),
     prob_type = "row",
     eps = eps,
@@ -130,9 +130,9 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 ssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
-    stiffness_fn = function(method, inp, out) {
+    stiffness = list(fn = function(method, inp, out) {
       ssne_stiffness(inp$pm, out$qm, beta = method$kernel$beta)
-    },
+    }),
     prob_type = "joint")
 }
 
@@ -185,9 +185,9 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     ssne(eps = eps, verbose = verbose),
     kernel = tdist_kernel(),
-    stiffness_fn = function(method, inp, out) {
+    stiffness = list(fn = function(method, inp, out) {
       tsne_stiffness(inp$pm, out$qm, out$wm)
-    },
+    }),
     out_keep = c("qm", "wm")
   )
 }
@@ -238,9 +238,9 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     tsne(eps = eps, verbose = verbose),
-    stiffness_fn = function(method, inp, out) {
+    stiffness = list(fn = function(method, inp, out) {
       tasne_stiffness(inp$pm, out$qm, out$wm)
-    },
+    }),
     prob_type = "row")
 }
 
@@ -349,10 +349,10 @@ hssne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
   lreplace(
     tsne(eps = eps, verbose = verbose),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    stiffness_fn = function(method, inp, out) {
+    stiffness = list(fn = function(method, inp, out) {
       hssne_stiffness(inp$pm, out$qm, out$wm, alpha = method$kernel$alpha,
                       beta = method$kernel$beta)
-    }
+    })
   )
 }
 
@@ -401,10 +401,11 @@ rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
     cost = reverse_kl_fg(),
-    stiffness_fn = function(method, inp, out) {
+    stiffness = list(fn = function(method, inp, out) {
       reverse_asne_stiffness(inp$pm, out$qm, out$rev_kl,
                              beta = method$kernel$beta, eps = method$eps)
     })
+    )
 }
 
 # "Reverse" Symmetric Stochastic Neighbor Embedding (RSSNE)
@@ -450,10 +451,10 @@ rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 rssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     rasne(beta = beta, eps = eps, verbose = verbose),
-    stiffness_fn = function(method, inp, out) {
+    stiffness = list(fn = function(method, inp, out) {
       reverse_ssne_stiffness(inp$pm, out$qm, out$rev_kl,
                              beta = method$kernel$beta, eps = method$eps)
-    },
+    }),
     prob_type = "joint")
 }
 
@@ -501,9 +502,9 @@ rtsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     rssne(eps = eps, verbose = verbose),
     kernel = tdist_kernel(),
-    stiffness_fn = function(method, inp, out) {
+    stiffness = list(fn = function(method, inp, out) {
       reverse_tsne_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
                              eps = method$eps)
-    },
+    }),
     out_keep = c("qm", "wm"))
 }

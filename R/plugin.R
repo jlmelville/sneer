@@ -25,7 +25,6 @@
 #
 # @param cost Cost for this embedding method.
 # @param kernel Similarity kernel for weight generation.
-# @param stiffness_fn Stiffness function appropriate for a plugin.
 # @param update_out_fn Function to run when embedding coordinates are updated.
 # @param out_updated_fn Optional custom function to run after
 #  \code{update_out_fn} runs.
@@ -56,7 +55,7 @@ plugin <- function(cost = kl_fg(),
     list(
       cost = cost,
       kernel = kernel,
-      stiffness_fn = plugin_stiffness,
+      stiffness = list(fn = plugin_stiffness),
       out_updated_fn = out_updated_fn,
       prob_type = prob_type,
       eps = eps,

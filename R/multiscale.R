@@ -186,7 +186,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
         method$orig_kernel <- method$kernel
         method$out_keep <- unique(c(method$out_keep, "wm"))
         method$update_out_fn <- update_out_prob_ms
-        method$stiffness_fn <- plugin_stiffness_ms
+        method$stiffness <- list(fn = plugin_stiffness_ms)
 
         inp$pms <- list()
         inp$betas <- list()
@@ -401,7 +401,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
         method$orig_kernel <- method$kernel
         method$out_keep <- unique(c(method$out_keep, "wm"))
         method$update_out_fn <- update_out_prob_ms
-        method$stiffness_fn <- plugin_stiffness_ms
+        method$stiffness <- list(fn = plugin_stiffness_ms)
       }
 
       while (method$num_scales * step_every <= iter
