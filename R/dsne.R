@@ -523,8 +523,7 @@ exp_gr_param <- function(out) {
 # as part of before_init
 
 dynamize_exp_kernel <- function(method) {
-  lreplace(method,
-  after_init_fn = function(inp, out, method) {
+  method$dyn$after_init_fn <- function(inp, out, method) {
     nr <- nrow(out$ym)
     if (method$dyn$beta == "point" && length(method$kernel$beta) != nr) {
       method$kernel$beta <- rep(method$kernel$beta, nr)
@@ -560,7 +559,10 @@ dynamize_exp_kernel <- function(method) {
     }
 
     list(method = method)
-  },
+  }
+
+
+  lreplace(method,
   extra_gr = function(opt, inp, out, method, iter, extra_par) {
     if (iter < method$opt_iter) {
       return(rep(0, length(extra_par)))
@@ -585,9 +587,7 @@ dynamize_exp_kernel <- function(method) {
 }
 
 dynamize_heavy_tail_kernel <- function(method) {
-
-  lreplace(method,
-  after_init_fn = function(inp, out, method) {
+  method$dyn$after_init_fn <- function(inp, out, method) {
     nr <- nrow(out$ym)
     kernel <- method$kernel
     if (method$dyn$alpha == "point" && length(kernel$alpha) != nr) {
@@ -632,7 +632,10 @@ dynamize_heavy_tail_kernel <- function(method) {
     }
 
     list(method = method)
-  },
+  }
+
+
+  lreplace(method,
   get_extra_par = function(method) {
     heavy_tail_params_xi(method$kernel, method)
   },

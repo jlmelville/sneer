@@ -145,45 +145,46 @@ dynamize_inhomogeneous_kernel <- function(method) {
     method
   }
   else {
-    lreplace(
-      method,
-      after_init_fn = function(inp, out, method) {
-        nr <- nrow(out$ym)
-        if (method$dyn$dof == "point" && length(method$kernel$dof) != nr) {
-          method$kernel$dof <- rep(method$kernel$dof, nr)
-        }
-        method$kernel <- check_symmetry(method$kernel)
+    method$dyn$after_init_fn <- function(inp, out, method) {
+      nr <- nrow(out$ym)
+      if (method$dyn$dof == "point" && length(method$kernel$dof) != nr) {
+        method$kernel$dof <- rep(method$kernel$dof, nr)
+      }
+      method$kernel <- check_symmetry(method$kernel)
 
-        # Leaving method null means we are dynamizing a method manually
-        if (is.null(method$gr_dof)) {
-          if (method$cost$name == "KL") {
-            if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
-              if (method$verbose) {
-                message("Using KL cost + asymmetric kernel parameter gradients")
-              }
-              method$gr_dof <- itsne_cost_gr_param_asymm
-              method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
+      # Leaving method null means we are dynamizing a method manually
+      if (is.null(method$gr_dof)) {
+        if (method$cost$name == "KL") {
+          if (is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)) {
+            if (method$verbose) {
+              message("Using KL cost + asymmetric kernel parameter gradients")
             }
-            else {
-              if (method$verbose) {
-                message("Using KL cost + symmetric kernel parameter gradients")
-              }
-              method$gr_dof <- itsne_cost_gr_param
-              method$out_keep <- unique(c(method$out_keep, "d2m"))
-            }
+            method$gr_dof <- itsne_cost_gr_param_asymm
+            method$out_keep <- unique(c(method$out_keep, "qcm", "d2m"))
           }
           else {
-            # But we can fall back to the plugin gradient which is always safe
             if (method$verbose) {
-              message("Using plugin parameter gradients")
+              message("Using KL cost + symmetric kernel parameter gradients")
             }
-            method$gr_dof <- itsne_cost_gr_param_plugin
-            method$out_keep <- unique(c(method$out_keep, "wm", "d2m"))
+            method$gr_dof <- itsne_cost_gr_param
+            method$out_keep <- unique(c(method$out_keep, "d2m"))
           }
         }
+        else {
+          # But we can fall back to the plugin gradient which is always safe
+          if (method$verbose) {
+            message("Using plugin parameter gradients")
+          }
+          method$gr_dof <- itsne_cost_gr_param_plugin
+          method$out_keep <- unique(c(method$out_keep, "wm", "d2m"))
+        }
+      }
 
-        list(method = method)
-      },
+      list(method = method)
+    }
+
+    lreplace(
+      method,
       get_extra_par = function(method) {
         xi <- method$kernel$dof - method$xi_eps
         xi[xi < 0] <- xi
