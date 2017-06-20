@@ -431,6 +431,18 @@ before_init <- function(method) {
 #   \item \code{method} Updated embedding method.
 #  }
 after_init <- function(inp, out, method) {
+  if (!is.null(method$dyn) && !is.null(method$dyn$after_init_fn)) {
+    result <- method$dyn$after_init_fn(inp, out, method)
+    if (!is.null(result$inp)) {
+      inp <- result$inp
+    }
+    if (!is.null(result$out)) {
+      out <- result$out
+    }
+    if (!is.null(result$method)) {
+      method <- result$method
+    }
+  }
   if (!is.null(method$after_init_fn)) {
     result <- method$after_init_fn(inp, out, method)
     if (!is.null(result$inp)) {
