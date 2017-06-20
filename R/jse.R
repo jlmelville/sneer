@@ -75,8 +75,8 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
     cost = jse_fg(kappa = kappa),
     stiffness = list(
       fn = function(method, inp, out) {
-        jse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
-                      beta = method$kernel$beta, eps = method$eps)
+        jse_stiffness_fn(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
+                         beta = method$kernel$beta, eps = method$eps)
       },
       out_updated_fn = klqz_update
     )
@@ -146,8 +146,8 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
     jse(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
     stiffness = list(
       fn = function(method, inp, out) {
-        sjse_stiffness(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
-                       beta = method$kernel$beta, eps = method$eps)
+        sjse_stiffness_fn(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
+                          beta = method$kernel$beta, eps = method$eps)
       },
       out_updated_fn = klqz_update
     ),
@@ -238,9 +238,10 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
     stiffness = list(
       fn = function(method, inp, out) {
-        hsjse_stiffness(out$qm, out$zm, out$wm, out$kl_qz,
-                        kappa = method$cost$kappa, alpha = method$kernel$alpha,
-                        beta = method$kernel$beta, eps = method$eps)
+        hsjse_stiffness_fn(out$qm, out$zm, out$wm, out$kl_qz,
+                           kappa = method$cost$kappa,
+                           alpha = method$kernel$alpha,
+                           beta = method$kernel$beta, eps = method$eps)
       },
       out_updated_fn = klqz_update
     ),
@@ -260,9 +261,9 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
 # @param beta The precision of the weighting function.
 # @param eps Small floating point value used to avoid numerical problems.
 # @return Stiffness matrix.
-jse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5, beta = 1,
+jse_stiffness_fn <- function(qm, zm, kl_qz, kappa = 0.5, beta = 1,
                           eps = .Machine$double.eps) {
-  reverse_asne_stiffness(zm, qm, kl_qz, beta = beta, eps = eps) / kappa
+  reverse_asne_stiffness_fn(zm, qm, kl_qz, beta = beta, eps = eps) / kappa
 }
 
 # Symmetric JSE Stiffness Function
@@ -277,9 +278,9 @@ jse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5, beta = 1,
 # @param beta The precision of the weighting function.
 # @param eps Small floating point value used to avoid numerical problems.
 # @return Stiffness matrix.
-sjse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5, beta = 1,
+sjse_stiffness_fn <- function(qm, zm, kl_qz, kappa = 0.5, beta = 1,
                           eps = .Machine$double.eps) {
-  reverse_ssne_stiffness(zm, qm, kl_qz, beta = beta, eps = eps) / kappa
+  reverse_ssne_stiffness_fn(zm, qm, kl_qz, beta = beta, eps = eps) / kappa
 }
 
 # HSJSE Stiffness Function
@@ -296,10 +297,10 @@ sjse_stiffness <- function(qm, zm, kl_qz, kappa = 0.5, beta = 1,
 # @param beta The precision of the weighting function.
 # @param eps Small floating point value used to avoid numerical problems.
 # @return Stiffness matrix.
-hsjse_stiffness <- function(qm, zm, wm, kl_qz, kappa = 0.5, alpha = 1.5e-8,
+hsjse_stiffness_fn <- function(qm, zm, wm, kl_qz, kappa = 0.5, alpha = 1.5e-8,
                             beta = 1, eps = .Machine$double.eps) {
-  reverse_hssne_stiffness(zm, qm, wm, kl_qz,
-                          alpha = alpha, beta = beta, eps = eps) / kappa
+  reverse_hssne_stiffness_fn(zm, qm, wm, kl_qz, alpha = alpha, beta = beta,
+                             eps = eps) / kappa
 }
 
 # JSE Cost Function

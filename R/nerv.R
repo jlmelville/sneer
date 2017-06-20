@@ -88,8 +88,9 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
     cost = nerv_fg(lambda = lambda),
     stiffness = list(
       fn = function(method, inp, out) {
-        nerv_stiffness(inp$pm, out$qm, out$rev_kl, lambda = method$cost$lambda,
-                       beta = method$kernel$beta, eps = method$eps)
+        nerv_stiffness_fn(inp$pm, out$qm, out$rev_kl,
+                          lambda = method$cost$lambda,
+                          beta = method$kernel$beta, eps = method$eps)
       },
       out_updated_fn = klqp_update
     )
@@ -248,8 +249,8 @@ tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     cost = nerv_fg(lambda = lambda),
     stiffness = list(
       fn = function(method, inp, out) {
-        tnerv_stiffness(inp$pm, out$qm, out$wm, out$rev_kl,
-                        lambda = method$cost$lambda, eps = method$eps)
+        tnerv_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
+                           lambda = method$cost$lambda, eps = method$eps)
       },
       out_updated_fn = klqp_update
     )
@@ -266,11 +267,11 @@ tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
 # @param beta Decay parameter of the weighting function.
 # @param eps Small floating point value used to avoid numerical problems.
 # @return Stiffness matrix.
-nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5, beta = 1,
-                           eps = .Machine$double.eps) {
-  (lambda * asne_stiffness(pm, qm, beta = beta)) +
-    ((1 - lambda) * reverse_asne_stiffness(pm, qm, rev_kl, beta = beta,
-                                           eps = eps))
+nerv_stiffness_fn <- function(pm, qm, rev_kl, lambda = 0.5, beta = 1,
+                              eps = .Machine$double.eps) {
+  (lambda * asne_stiffness_fn(pm, qm, beta = beta)) +
+    ((1 - lambda) * reverse_asne_stiffness_fn(pm, qm, rev_kl, beta = beta,
+                                              eps = eps))
 }
 
 # USNeRV Stiffness Function
@@ -286,11 +287,11 @@ nerv_stiffness <- function(pm, qm, rev_kl, lambda = 0.5, beta = 1,
 # precision versus recall.
 # @param eps Small floating point value used to avoid numerical problems.
 # @return Stiffness matrix
-usnerv_stiffness <- function(pm, qm, rev_kl, beta = 1, lambda = 0.5,
-                            eps = .Machine$double.eps) {
-  (lambda * ssne_stiffness(pm, qm, beta = beta)) +
-    ((1 - lambda) * reverse_ssne_stiffness(pm, qm, rev_kl, beta = beta,
-                                           eps = eps))
+usnerv_stiffness_fn <- function(pm, qm, rev_kl, beta = 1, lambda = 0.5,
+                                eps = .Machine$double.eps) {
+  (lambda * ssne_stiffness_fn(pm, qm, beta = beta)) +
+    ((1 - lambda) * reverse_ssne_stiffness_fn(pm, qm, rev_kl, beta = beta,
+                                              eps = eps))
 }
 
 # t-NeRV Stiffness Function
@@ -303,10 +304,10 @@ usnerv_stiffness <- function(pm, qm, rev_kl, beta = 1, lambda = 0.5,
 # precision versus recall.
 # @param eps Small floating point value used to avoid numerical problems.
 # @return Stiffness matrix
-tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
-                            eps = .Machine$double.eps) {
-  (lambda * tsne_stiffness(pm, qm, wm)) +
-    ((1 - lambda) * reverse_tsne_stiffness(pm, qm, wm, rev_kl, eps = eps))
+tnerv_stiffness_fn <- function(pm, qm, wm, rev_kl, lambda = 0.5,
+                               eps = .Machine$double.eps) {
+  (lambda * tsne_stiffness_fn(pm, qm, wm)) +
+    ((1 - lambda) * reverse_tsne_stiffness_fn(pm, qm, wm, rev_kl, eps = eps))
 }
 
 # UHSNeRV Stiffness Function
@@ -325,13 +326,13 @@ tnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
 #  the exponential decay parameter when \code{alpha} approaches zero.
 # @param eps Small floating point value used to avoid numerical problems.
 # @return Stiffness matrix.
-uhsnerv_stiffness <- function(pm, qm, wm, rev_kl, lambda = 0.5,
-                             alpha = 1.5e-8, beta = 1,
-                             eps = .Machine$double.eps) {
-  (lambda * hssne_stiffness(pm, qm, wm, alpha = alpha, beta = beta)) +
-    ((1 - lambda) * reverse_hssne_stiffness(pm, qm, wm, rev_kl,
-                                            alpha = alpha, beta = beta,
-                                            eps = eps))
+uhsnerv_stiffness_fn <- function(pm, qm, wm, rev_kl, lambda = 0.5,
+                                 alpha = 1.5e-8, beta = 1,
+                                 eps = .Machine$double.eps) {
+  (lambda * hssne_stiffness_fn(pm, qm, wm, alpha = alpha, beta = beta)) +
+    ((1 - lambda) * reverse_hssne_stiffness_fn(pm, qm, wm, rev_kl,
+                                               alpha = alpha, beta = beta,
+                                               eps = eps))
 }
 
 # Neighbor Retrieval Visualizer (NeRV) Cost Function
