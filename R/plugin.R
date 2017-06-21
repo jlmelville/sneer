@@ -26,12 +26,8 @@
 # @param cost Cost for this embedding method.
 # @param kernel Similarity kernel for weight generation.
 # @param update_out_fn Function to run when embedding coordinates are updated.
-# @param out_updated_fn Optional custom function to run after
-#  \code{update_out_fn} runs.
 # @param prob_type Type of probability matrix used by the probability matrix,
 #  e.g. "joint" or "row".
-# @param after_init_fn Optional function to run after initialization has
-#  occurred.
 # @param eps Small floating point value used to prevent numerical problems,
 # e.g. in gradients and cost functions.
 # @param verbose If \code{TRUE}, log information about the embedding.
@@ -46,8 +42,6 @@
 plugin <- function(cost = kl_fg(),
                    kernel = exp_kernel(),
                    keep = c("qm", "wm", "d2m"),
-                   out_updated_fn = NULL,
-                   after_init_fn = NULL,
                    prob_type = "joint",
                    eps = .Machine$double.eps,
                    verbose = TRUE) {
@@ -55,8 +49,9 @@ plugin <- function(cost = kl_fg(),
     list(
       cost = cost,
       kernel = kernel,
-      stiffness = list(fn = plugin_stiffness),
-      out_updated_fn = out_updated_fn,
+      stiffness = list(
+        fn = plugin_stiffness
+      ),
       prob_type = prob_type,
       eps = eps,
       out_keep = keep,
