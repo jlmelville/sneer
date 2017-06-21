@@ -49,9 +49,7 @@ plugin <- function(cost = kl_fg(),
     list(
       cost = cost,
       kernel = kernel,
-      stiffness = list(
-        fn = plugin_stiffness
-      ),
+      stiffness = plugin_stiffness(),
       prob_type = prob_type,
       eps = eps,
       out_keep = keep,
@@ -434,6 +432,14 @@ hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
   )
 }
 
+# Stiffness Functions -----------------------------------------------------
+
+plugin_stiffness <- function() {
+  list(
+    fn = plugin_stiffness_fn
+  )
+}
+
 # Plugin Stiffness
 #
 # Calculates the Stiffness matrix of an embedding method using the plugin
@@ -443,7 +449,7 @@ hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
 # @param out Output data.
 # @param method Embedding method.
 # @return Stiffness matrix.
-plugin_stiffness <- function(method, inp, out) {
+plugin_stiffness_fn <- function(method, inp, out) {
   prob_type <- method$prob_type
 
   fn_name <- paste0('plugin_stiffness_', prob_type)
