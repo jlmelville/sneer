@@ -24,6 +24,14 @@ asne_stiffness_fn <- function(pm, qm, beta = 1) {
   km + t(km)
 }
 
+asne_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      asne_stiffness_fn(inp$pm, out$qm, beta = method$kernel$beta)
+    }
+  )
+}
+
 # SSNE Stiffness Function
 #
 # The precision parameter \code{beta} is normally left at its default value of
@@ -39,6 +47,14 @@ ssne_stiffness_fn <- function(pm, qm, beta = 1) {
   2 * beta * (pm - qm)
 }
 
+ssne_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      ssne_stiffness_fn(inp$pm, out$qm, beta = method$kernel$beta)
+    }
+  )
+}
+
 # t-SNE Stiffness Function
 #
 # @param pm Input joint probability matrix.
@@ -47,6 +63,14 @@ ssne_stiffness_fn <- function(pm, qm, beta = 1) {
 # @return Stiffness matrix.
 tsne_stiffness_fn <- function(pm, qm, wm) {
   ssne_stiffness_fn(pm, qm, beta = 1) * wm
+}
+
+tsne_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      tsne_stiffness_fn(inp$pm, out$qm, out$wm)
+    }
+  )
 }
 
 # t-ASNE Stiffness Function
@@ -59,6 +83,15 @@ tasne_stiffness_fn <- function(pm, qm, wm) {
   km <- (pm - qm) * wm
   km + t(km)
 }
+
+tasne_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      tasne_stiffness_fn(inp$pm, out$qm, out$wm)
+    }
+  )
+}
+
 
 # HSSNE Stiffness Function
 #
@@ -74,6 +107,15 @@ tasne_stiffness_fn <- function(pm, qm, wm) {
 # @return Stiffness matrix.
 hssne_stiffness_fn <- function(pm, qm, wm, alpha = 1.5e-8, beta = 1) {
   ssne_stiffness_fn(pm, qm, beta = beta) * (wm ^ alpha)
+}
+
+hssne_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      hssne_stiffness_fn(inp$pm, out$qm, out$wm, alpha = method$kernel$alpha,
+                         beta = method$kernel$beta)
+    }
+  )
 }
 
 # "Reverse" ASNE Stiffness Function
@@ -98,6 +140,15 @@ reverse_asne_stiffness_fn <- function(pm, qm, rev_kl, beta = 1,
   km + t(km)
 }
 
+reverse_asne_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      reverse_asne_stiffness_fn(inp$pm, out$qm, out$rev_kl,
+                              beta = method$kernel$beta, eps = method$eps)
+    }
+  )
+}
+
 # "Reverse" SSNE Stiffness Function
 #
 # Uses the exponential weighting function for similarities, but the
@@ -119,6 +170,15 @@ reverse_ssne_stiffness_fn <- function(pm, qm, rev_kl, beta = 1,
   2 * beta * qm * (log((pm + eps) / (qm + eps)) + rev_kl)
 }
 
+reverse_ssne_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      reverse_ssne_stiffness_fn(inp$pm, out$qm, out$rev_kl,
+                                beta = method$kernel$beta, eps = method$eps)
+    }
+  )
+}
+
 # "Reverse" t-SNE Stiffness Function
 #
 # Uses the exponential weighting function for similarities, but the
@@ -133,6 +193,13 @@ reverse_ssne_stiffness_fn <- function(pm, qm, rev_kl, beta = 1,
 reverse_tsne_stiffness_fn <- function(pm, qm, wm, rev_kl,
                                       eps = .Machine$double.eps) {
   reverse_ssne_stiffness_fn(pm, qm, rev_kl, beta = 1, eps) * wm
+}
+
+reverse_tsne_stiffness <- function() {
+  list(fn = function(method, inp, out) {
+    reverse_tsne_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
+                              eps = method$eps)
+  })
 }
 
 # "Reverse" HSSNE Stiffness Function
@@ -155,3 +222,12 @@ reverse_hssne_stiffness_fn <- function(pm, qm, wm, rev_kl, alpha = 1.5e-8,
   reverse_ssne_stiffness_fn(pm, qm, rev_kl, beta = beta, eps) * (wm ^ alpha)
 }
 
+
+reverse_hssne_stiffness <- function() {
+  list(fn = function(method, inp, out) {
+    reverse_hssne_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
+                               alpha = method$kernel$alpha,
+                               beta = method$kernel$beta,
+                               eps = method$eps)
+  })
+}
