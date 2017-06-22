@@ -252,7 +252,8 @@ jse_stiffness <- function() {
       jse_stiffness_fn(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
                        beta = method$kernel$beta, eps = method$eps)
     },
-    out_updated_fn = klqz_update
+    out_updated_fn = klqz_update,
+    name = "JSE"
   )
 }
 
@@ -279,7 +280,8 @@ sjse_stiffness <- function() {
     fn = function(method, inp, out) {
       sjse_stiffness_fn(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
                         beta = method$kernel$beta, eps = method$eps)
-    }
+    },
+    name = "SJSE"
   )
 }
 
@@ -311,7 +313,8 @@ hsjse_stiffness <- function() {
                          kappa = method$cost$kappa,
                          alpha = method$kernel$alpha,
                          beta = method$kernel$beta, eps = method$eps)
-    }
+    },
+    name = "HSJSE"
   )
 }
 

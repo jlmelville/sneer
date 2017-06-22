@@ -28,7 +28,8 @@ asne_stiffness <- function() {
   list(
     fn = function(method, inp, out) {
       asne_stiffness_fn(inp$pm, out$qm, beta = method$kernel$beta)
-    }
+    },
+    name = "ASNE"
   )
 }
 
@@ -51,7 +52,8 @@ ssne_stiffness <- function() {
   list(
     fn = function(method, inp, out) {
       ssne_stiffness_fn(inp$pm, out$qm, beta = method$kernel$beta)
-    }
+    },
+    name = "SSNE"
   )
 }
 
@@ -69,7 +71,8 @@ tsne_stiffness <- function() {
   list(
     fn = function(method, inp, out) {
       tsne_stiffness_fn(inp$pm, out$qm, out$wm)
-    }
+    },
+    name = "t-SNE"
   )
 }
 
@@ -88,7 +91,8 @@ tasne_stiffness <- function() {
   list(
     fn = function(method, inp, out) {
       tasne_stiffness_fn(inp$pm, out$qm, out$wm)
-    }
+    },
+    name = "t-ASNE"
   )
 }
 
@@ -114,7 +118,8 @@ hssne_stiffness <- function() {
     fn = function(method, inp, out) {
       hssne_stiffness_fn(inp$pm, out$qm, out$wm, alpha = method$kernel$alpha,
                          beta = method$kernel$beta)
-    }
+    },
+    name = "HSSNE"
   )
 }
 
@@ -145,7 +150,8 @@ reverse_asne_stiffness <- function() {
     fn = function(method, inp, out) {
       reverse_asne_stiffness_fn(inp$pm, out$qm, out$rev_kl,
                               beta = method$kernel$beta, eps = method$eps)
-    }
+    },
+    name = "rev-ASNE"
   )
 }
 
@@ -175,7 +181,8 @@ reverse_ssne_stiffness <- function() {
     fn = function(method, inp, out) {
       reverse_ssne_stiffness_fn(inp$pm, out$qm, out$rev_kl,
                                 beta = method$kernel$beta, eps = method$eps)
-    }
+    },
+    name = "rev-SSNE"
   )
 }
 
@@ -196,10 +203,13 @@ reverse_tsne_stiffness_fn <- function(pm, qm, wm, rev_kl,
 }
 
 reverse_tsne_stiffness <- function() {
-  list(fn = function(method, inp, out) {
-    reverse_tsne_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
-                              eps = method$eps)
-  })
+  list(
+    fn = function(method, inp, out) {
+      reverse_tsne_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
+                                eps = method$eps)
+    },
+    nmae = "rev-t-SNE"
+  )
 }
 
 # "Reverse" HSSNE Stiffness Function
@@ -224,10 +234,13 @@ reverse_hssne_stiffness_fn <- function(pm, qm, wm, rev_kl, alpha = 1.5e-8,
 
 
 reverse_hssne_stiffness <- function() {
-  list(fn = function(method, inp, out) {
-    reverse_hssne_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
-                               alpha = method$kernel$alpha,
-                               beta = method$kernel$beta,
-                               eps = method$eps)
-  })
+  list(
+    fn = function(method, inp, out) {
+      reverse_hssne_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
+                                 alpha = method$kernel$alpha,
+                                 beta = method$kernel$beta,
+                                 eps = method$eps)
+    },
+    name = "rev-HSSNE"
+  )
 }

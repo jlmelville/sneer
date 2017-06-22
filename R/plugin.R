@@ -436,7 +436,8 @@ hsjse_plugin <- function(kappa = 0.5, beta = 1, alpha = 0,
 
 plugin_stiffness <- function() {
   list(
-    fn = plugin_stiffness_fn
+    fn = plugin_stiffness_fn,
+    name = "Plugin"
   )
 }
 

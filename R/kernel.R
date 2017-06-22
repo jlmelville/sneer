@@ -48,6 +48,11 @@ is_asymmetric_kernel <- function(kernel) {
   attr(kernel$fn, "type") == "asymm"
 }
 
+# TRUE if the kernel is symmetric
+is_symmetric_kernel <- function(kernel) {
+  attr(kernel$fn, "type") == "symm"
+}
+
 # generic dispatch for making a kernel dynamic: should be called by a kernel
 # during before_init
 # See dsne.R and itsne.R for dynamic kernel code
@@ -241,6 +246,7 @@ exp_kernel <- function(beta = 1) {
       kernel
     },
     beta = beta,
+    name = "exp",
     make_dynamic = dynamize_exp_kernel
   )
   check_symmetry(kernel)
@@ -282,7 +288,8 @@ tdist_kernel <- function() {
     fn = fn,
     gr = function(kernel, d2m) {
       tdist_gr(d2m)
-    }
+    },
+    name = "tdist"
   )
 }
 
@@ -337,6 +344,7 @@ heavy_tail_kernel <- function(beta = 1, alpha = 0) {
       }
       kernel
     },
+    name = "heavy",
     make_dynamic = dynamize_heavy_tail_kernel
   )
   kernel <- check_symmetry(kernel)
@@ -392,6 +400,7 @@ itsne_kernel <- function(dof = 1) {
       }
       kernel
     },
+    name = "inhomogeneous",
     make_dynamic = dynamize_inhomogeneous_kernel
   )
   kernel <- check_symmetry(kernel)

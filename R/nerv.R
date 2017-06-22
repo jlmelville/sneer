@@ -268,7 +268,8 @@ nerv_stiffness <- function() {
                         lambda = method$cost$lambda,
                         beta = method$kernel$beta, eps = method$eps)
     },
-    out_updated_fn = klqp_update
+    out_updated_fn = klqp_update,
+    name = "NeRV"
   )
 }
 
@@ -301,7 +302,8 @@ snerv_stiffness <- function() {
                           beta = method$kernel$beta,
                           lambda = method$cost$lambda,
                           eps = method$eps)
-    }
+    },
+    name = "SNeRV"
   )
 }
 
@@ -327,7 +329,8 @@ tnerv_stiffness <- function() {
     fn = function(method, inp, out) {
       tnerv_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
                          lambda = method$cost$lambda, eps = method$eps)
-    }
+    },
+    name = "tNeRV"
   )
 }
 
@@ -365,7 +368,8 @@ hsnerv_stiffness <- function() {
                           alpha = method$kernel$alpha,
                           lambda = method$cost$lambda,
                           eps = method$eps)
-    }
+    },
+    name = "HSNeRV"
   )
 }
 
@@ -446,7 +450,7 @@ reverse_kl_fg <- function() {
   list(
     fn = reverse_kl_cost,
     gr = reverse_kl_cost_gr,
-    name = "Reverse KL",
+    name = "revKL",
     out_updated_fn = klqp_update
   )
 }
