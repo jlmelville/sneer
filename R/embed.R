@@ -431,6 +431,8 @@ before_init <- function(method) {
 #   \item \code{method} Updated embedding method.
 #  }
 after_init <- function(inp, out, method) {
+  method <- optimize_stiffness(method)
+
   if (!is.null(method$dyn) && !is.null(method$dyn$after_init_fn)) {
     result <- method$dyn$after_init_fn(inp, out, method)
     if (!is.null(result$inp)) {
@@ -456,6 +458,113 @@ after_init <- function(inp, out, method) {
     }
   }
   list(inp = inp, out = out, method = method)
+}
+
+# Use a simplified stiffness function routine if one exists for a combination
+# of kernel, cost function and normalization. Otherwise, use the generic plugin
+# formulation. Runs after initialization, because some simplified stiffness
+# routines are dependent on a "symmetric" kernel, which may not be determined
+# until after precisions have been calculated for the input probabilities.
+optimize_stiffness <- function(method) {
+  if (is.null(method$stiffness)) {
+    if (method$cost$name == "KL") {
+      if (method$kernel$name == "exp") {
+        if (method$prob_type == "row") {
+          method$stiffness <- asne_stiffness()
+        }
+        else if (is_effectively_cond(method)) {
+          method$stiffness <- ssne_stiffness()
+        }
+      }
+      else if (method$kernel$name == "tdist") {
+        if (method$prob_type == "row") {
+          method$stiffness <- tasne_stiffness()
+        }
+        else if (is_effectively_cond(method)) {
+          method$stiffness <- tsne_stiffness()
+        }
+      }
+      else if (method$kernel$name == "heavy") {
+        if (is_effectively_cond(method)) {
+          method$stiffness <- hssne_stiffness()
+        }
+      }
+    }
+    else if (method$cost$name == "revKL") {
+      if (method$kernel$name == "exp") {
+        if (method$prob_type == "row") {
+          method$stiffness <- reverse_asne_stiffness()
+        }
+        else if (is_effectively_cond(method)) {
+          method$stiffness <- reverse_ssne_stiffness()
+        }
+      }
+      else if (method$kernel$name == "tdist") {
+        if (is_effectively_cond(method)) {
+          method$stiffness <- reverse_tsne_stiffness()
+        }
+      }
+      else if (method$kernel$name == "heavy") {
+        if (is_effectively_cond(method)) {
+          method$stiffness <- reverse_hssne_stiffness()
+        }
+      }
+    }
+    else if (method$cost$name == "NeRV") {
+      if (method$kernel$name == "exp") {
+        if (method$prob_type == "row") {
+          method$stiffness <- nerv_stiffness()
+        }
+        else if (is_effectively_cond(method)) {
+          method$stiffness <- snerv_stiffness()
+        }
+      }
+      else if (method$kernel$name == "tdist") {
+        if (is_effectively_cond(method)) {
+          method$stiffness <- tnerv_stiffness()
+        }
+      }
+      else if (method$kernel$name == "heavy") {
+        if (is_effectively_cond(method)) {
+          method$stiffness <- hsnerv_stiffness()
+        }
+      }
+    }
+    else if (method$cost$name == "JS") {
+      if (method$kernel$name == "exp") {
+        if (method$prob_type == "row") {
+          method$stiffness <- jse_stiffness()
+        }
+        else if (is_effectively_cond(method)) {
+          method$stiffness <- sjse_stiffness()
+        }
+      }
+      else if (method$kernel$name == "heavy") {
+        if (is_effectively_cond(method)) {
+          method$stiffness <- hsjse_stiffness()
+        }
+      }
+    }
+
+    # If we get here, we've fallen through the various if-blocks: use plugin
+    if (is.null(method$stiffness)) {
+      method$stiffness <- plugin_stiffness()
+    }
+    if (method$verbose) {
+      message("Using '", method$stiffness$name, "' stiffness")
+    }
+  }
+
+  # Unify all 'keep' data
+  keep <- method$out_keep
+  for (name in c('kernel', 'cost', 'stiffness')) {
+    if (!is.null(method[[name]]$keep)) {
+      keep <- unique(c(keep, method[[name]]$keep))
+    }
+  }
+  method$out_keep <- keep
+
+  method
 }
 
 # Embedding Initialziation

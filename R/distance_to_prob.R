@@ -440,3 +440,15 @@ is_joint_out_prob <- function(method) {
     method$out_prob_type == "joint"
   }
 }
+
+# An embedding method is effectively conditional (in terms of output
+# probability) if the output probability is conditional, or if it's joint, but no
+# other transformation is carried out after normalization (e.g. averaging). The
+# latter can occur if using an asymmetric kernel with joint probabilities. Note
+# that this is not a feature of any literature published embedding method!
+# An effectively conditional embedding method can often make use of a simplified
+# gradient expression compared to the generic "plugin" expression.
+is_effectively_cond <- function(method) {
+  method$prob_type == "cond" ||
+    (is_joint_out_prob(method) && is_symmetric_kernel(method$kernel))
+}
