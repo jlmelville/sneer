@@ -851,27 +851,14 @@ sneer <- function(df,
     ssne = function() { ssne() },
     asne = function() { asne() },
     wtsne = function() { importance_weight(tsne()) },
-    hasne = function() { hasne_plugin(alpha = alpha) },
-    hasne_plugin = function() { hasne_plugin(alpha = alpha) },
     hssne = function() { hssne(alpha = alpha) },
     nerv = function() { nerv(lambda = lambda) },
     jse = function() { jse(kappa = kappa) },
     tasne = function() { tasne() },
-    tpsne = function() { tpsne() },
-    tpsne_plugin = function() { tpsne_plugin() },
-    psne = function() { psne_plugin() },
-    psne_plugin = function() { psne_plugin() },
-    hpsne = function() { hpsne_plugin(alpha = alpha) },
-    hpsne_plugin = function() { hpsne_plugin(alpha = alpha) },
-    nerv_plugin = function() { nerv_plugin(lambda = lambda) },
-    jse_plugin = function() { jse_plugin(kappa = kappa) },
-    asne_plugin = function() { asne_plugin() },
-    ssne_plugin = function() { ssne_plugin() },
-    hssne_plugin = function() { hssne_plugin(alpha = alpha) },
     itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter,
                                alt_opt = alt_opt) },
     dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                 alt_opt = alt_opt, verbose = TRUE) }
+                                 alt_opt = alt_opt) }
   )
 
   extra_costs <- NULL
@@ -887,24 +874,9 @@ sneer <- function(df,
                     names(embed_methods)),
              collapse = ", "))
     }
-
-    prec_scale <- match.arg(tolower(prec_scale), c("none", "scale", "transfer"))
-
-    # Need to use plugin method if precisions can be non-uniform
     embed_method <- embed_methods[[method]]()
-    if (prec_scale == "transfer") {
-      if (embed_method$verbose) {
-        message("Using plugin method for prec_scale 'transfer'")
-      }
-      embed_method <- convert_to_plugin(embed_method, method, embed_methods)
-    }
 
     if (!is.null(dyn)) {
-      if ("point" %in% dyn && is_joint_out_prob(embed_method)) {
-        message("Using plugin method for dynamic kernel parameter optimization")
-        embed_method <- convert_to_plugin(embed_method, method, embed_methods)
-      }
-
       embed_method$dynamic_kernel <- TRUE
       embed_method$dyn <- dyn
       embed_method$opt_iter <- kernel_opt_iter
@@ -940,6 +912,8 @@ sneer <- function(df,
     # Allow masters of the dark arts to pass in a method directly
     embed_method <- method
   }
+  embed_method$verbose <- TRUE
+
   preprocess <- make_preprocess()
   if (!is.null(scale_type)) {
     scale_type <- match.arg(tolower(scale_type),
@@ -975,6 +949,7 @@ sneer <- function(df,
       )
     }
 
+    prec_scale <- match.arg(tolower(prec_scale), c("none", "scale", "transfer"))
     modify_kernel_fn <- NULL
     if (prec_scale != "none") {
       if (perp_kernel_fun == "step") {
@@ -1391,15 +1366,3 @@ opt_sneer <- function(opt, method, eta = 500) {
   optimizer
 }
 
-convert_to_plugin <- function(embed_method, method_name, embed_method_names) {
-  if (is.null(embed_method$is_plugin) || !embed_method$is_plugin) {
-    if (!endsWith(method_name, "_plugin")) {
-      new_method <- paste0(method_name, "_plugin")
-    }
-    if (!new_method %in% names(embed_method_names)) {
-      stop("Method '", method_name, "' cannot be converted to plugin method")
-    }
-    embed_method <- embed_method_names[[new_method]]()
-  }
-  embed_method
-}
