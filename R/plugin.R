@@ -41,7 +41,6 @@
 # @family sneer probability embedding methods
 plugin <- function(cost = kl_fg(),
                    kernel = exp_kernel(),
-                   keep = c("qm", "wm", "d2m"),
                    prob_type = "joint",
                    eps = .Machine$double.eps,
                    verbose = TRUE) {
@@ -50,10 +49,9 @@ plugin <- function(cost = kl_fg(),
       cost = cost,
       kernel = kernel,
       prob_type = prob_type,
+      update_out_fn = update_out_prob,
       eps = eps,
-      out_keep = keep,
-      verbose = verbose,
-      is_plugin = TRUE
+      verbose = verbose
     )
   )
 }
@@ -79,8 +77,7 @@ asne_plugin <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
     kernel = exp_kernel(beta = beta),
     eps = eps,
     prob_type = "row",
-    verbose = verbose,
-    keep = c("qm", "wm", "d2m")
+    verbose = verbose
   )
 }
 

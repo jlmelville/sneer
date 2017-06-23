@@ -267,6 +267,7 @@ nerv_stiffness <- function() {
                         beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqp_update,
+    keep = c("qm"),
     name = "NeRV"
   )
 }
@@ -328,6 +329,7 @@ tnerv_stiffness <- function() {
       tnerv_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
                          lambda = method$cost$lambda, eps = method$eps)
     },
+    keep = c("qm", "wm"),
     name = "tNeRV"
   )
 }
@@ -359,7 +361,7 @@ hsnerv_stiffness_fn <- function(pm, qm, wm, rev_kl, lambda = 0.5,
 
 hsnerv_stiffness <- function() {
   lreplace(
-    nerv_stiffness(),
+    tnerv_stiffness(),
     fn = function(method, inp, out) {
       hsnerv_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
                           beta = method$kernel$beta,

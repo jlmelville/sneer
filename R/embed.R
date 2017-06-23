@@ -398,14 +398,11 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
 
 # Pre Initialization
 # Runs before any input or output initialization, but from inside init_embed, so
-# should always be called even if no iterations are run Effectively also a Post
+# should always be called even if no iterations are run. Effectively also a Post
 # Creation hook. Useful if there are functions that could be called during
 # creation but depend on constituents that could get switched out after the
 # "constructor" function is called (e.g. dynamizing a kernel)
 before_init <- function(method) {
-  if (!is.null(method$out_keep) && is.null(method$update_out_fn)) {
-    method$update_out_fn <- update_out_prob
-  }
   if (!is.null(method$dynamic_kernel) && method$dynamic_kernel) {
     method <- make_kernel_dynamic(method)
   }

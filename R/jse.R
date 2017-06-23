@@ -221,8 +221,7 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
                   verbose = TRUE) {
   lreplace(
     sjse(kappa = kappa, eps = eps, verbose = verbose),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    out_keep = c("qm", "wm")
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 
@@ -250,6 +249,7 @@ jse_stiffness <- function() {
                        beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqz_update,
+    keep = c("qm"),
     name = "JSE"
   )
 }
@@ -311,6 +311,7 @@ hsjse_stiffness <- function() {
                          alpha = method$kernel$alpha,
                          beta = method$kernel$beta, eps = method$eps)
     },
+    keep = c("qm", "wm"),
     name = "HSJSE"
   )
 }

@@ -29,7 +29,8 @@ asne_stiffness <- function() {
     fn = function(method, inp, out) {
       asne_stiffness_fn(inp$pm, out$qm, beta = method$kernel$beta)
     },
-    name = "ASNE"
+    name = "ASNE",
+    keep = c("qm")
   )
 }
 
@@ -53,7 +54,8 @@ ssne_stiffness <- function() {
     fn = function(method, inp, out) {
       ssne_stiffness_fn(inp$pm, out$qm, beta = method$kernel$beta)
     },
-    name = "SSNE"
+    name = "SSNE",
+    keep = c("qm")
   )
 }
 
@@ -72,7 +74,8 @@ tsne_stiffness <- function() {
     fn = function(method, inp, out) {
       tsne_stiffness_fn(inp$pm, out$qm, out$wm)
     },
-    name = "t-SNE"
+    name = "t-SNE",
+    keep = c("qm", "wm")
   )
 }
 
@@ -92,7 +95,8 @@ tasne_stiffness <- function() {
     fn = function(method, inp, out) {
       tasne_stiffness_fn(inp$pm, out$qm, out$wm)
     },
-    name = "t-ASNE"
+    name = "t-ASNE",
+    keep = c("qm", "wm")
   )
 }
 
@@ -119,7 +123,8 @@ hssne_stiffness <- function() {
       hssne_stiffness_fn(inp$pm, out$qm, out$wm, alpha = method$kernel$alpha,
                          beta = method$kernel$beta)
     },
-    name = "HSSNE"
+    name = "HSSNE",
+    keep = c("qm", "wm")
   )
 }
 
@@ -151,7 +156,8 @@ reverse_asne_stiffness <- function() {
       reverse_asne_stiffness_fn(inp$pm, out$qm, out$rev_kl,
                               beta = method$kernel$beta, eps = method$eps)
     },
-    name = "rev-ASNE"
+    name = "rev-ASNE",
+    keep = c("qm")
   )
 }
 
@@ -182,7 +188,8 @@ reverse_ssne_stiffness <- function() {
       reverse_ssne_stiffness_fn(inp$pm, out$qm, out$rev_kl,
                                 beta = method$kernel$beta, eps = method$eps)
     },
-    name = "rev-SSNE"
+    name = "rev-SSNE",
+    keep = c("qm")
   )
 }
 
@@ -208,7 +215,8 @@ reverse_tsne_stiffness <- function() {
       reverse_tsne_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
                                 eps = method$eps)
     },
-    name = "rev-t-SNE"
+    name = "rev-t-SNE",
+    keep = c("qm", "wm")
   )
 }
 
@@ -241,6 +249,7 @@ reverse_hssne_stiffness <- function() {
                                  beta = method$kernel$beta,
                                  eps = method$eps)
     },
-    name = "rev-HSSNE"
+    name = "rev-HSSNE",
+    keep = c("qm", "wm")
   )
 }

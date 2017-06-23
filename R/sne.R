@@ -67,8 +67,8 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   list(
     cost = kl_fg(),
     kernel = exp_kernel(beta = beta),
-    out_keep = c("qm"),
     prob_type = "row",
+    update_out_fn = update_out_prob,
     eps = eps,
     verbose = verbose
   )
@@ -177,8 +177,7 @@ ssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     ssne(eps = eps, verbose = verbose),
-    kernel = tdist_kernel(),
-    out_keep = c("qm", "wm")
+    kernel = tdist_kernel()
   )
 }
 
@@ -477,6 +476,6 @@ rssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 rtsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     rssne(eps = eps, verbose = verbose),
-    kernel = tdist_kernel(),
-    out_keep = c("qm", "wm"))
+    kernel = tdist_kernel()
+  )
 }
