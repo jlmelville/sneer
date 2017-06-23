@@ -49,7 +49,6 @@ plugin <- function(cost = kl_fg(),
     list(
       cost = cost,
       kernel = kernel,
-      stiffness = plugin_stiffness(),
       prob_type = prob_type,
       eps = eps,
       out_keep = keep,

@@ -67,7 +67,6 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   list(
     cost = kl_fg(),
     kernel = exp_kernel(beta = beta),
-    stiffness =  asne_stiffness(),
     out_keep = c("qm"),
     prob_type = "row",
     eps = eps,
@@ -127,7 +126,6 @@ asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 ssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
-    stiffness = ssne_stiffness(),
     prob_type = "joint")
 }
 
@@ -180,7 +178,6 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     ssne(eps = eps, verbose = verbose),
     kernel = tdist_kernel(),
-    stiffness = tsne_stiffness(),
     out_keep = c("qm", "wm")
   )
 }
@@ -231,7 +228,6 @@ tsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
 tasne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     tsne(eps = eps, verbose = verbose),
-    stiffness = tasne_stiffness(),
     prob_type = "row")
 }
 
@@ -339,8 +335,7 @@ hssne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
                   verbose = TRUE) {
   lreplace(
     tsne(eps = eps, verbose = verbose),
-    kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    stiffness = hssne_stiffness()
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
   )
 }
 
@@ -388,9 +383,8 @@ hssne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
 rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
-    cost = reverse_kl_fg(),
-    stiffness = reverse_asne_stiffness()
-    )
+    cost = reverse_kl_fg()
+  )
 }
 
 # "Reverse" Symmetric Stochastic Neighbor Embedding (RSSNE)
@@ -436,8 +430,8 @@ rasne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
 rssne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     rasne(beta = beta, eps = eps, verbose = verbose),
-    stiffness = reverse_ssne_stiffness(),
-    prob_type = "joint")
+    prob_type = "joint"
+  )
 }
 
 # "Reverse" t-Distributed Stochastic Neighbor Embedding (RTSNE).
@@ -484,6 +478,5 @@ rtsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     rssne(eps = eps, verbose = verbose),
     kernel = tdist_kernel(),
-    stiffness = reverse_tsne_stiffness(),
     out_keep = c("qm", "wm"))
 }

@@ -13,7 +13,7 @@ embed_with <- function(method, modify_kernel_fn = NULL) {
                                           verbose = FALSE),
              max_iter = 20,
              reporter = make_reporter(verbose = FALSE),
-             export = c("report"),
+             export = c("report", "method"),
              verbose = FALSE,
              opt = mize_bold_nag_adapt())
 }
@@ -22,6 +22,7 @@ expect_plugin_equal <- function(method_name, tolerance = .Machine$double.eps,
                                 modify_kernel_fn = NULL) {
   plugin_name <- paste0(method_name, "_plugin")
   method1 <- get(plugin_name)()
+  method1$stiffness <- plugin_stiffness()
   method1$verbose <- FALSE
 
   method2 <- get(method_name)()
@@ -37,6 +38,10 @@ expect_same_method <- function(method1, method2,
                                modify_kernel_fn = NULL) {
   embed1 <- embed_with(method1, modify_kernel_fn = modify_kernel_fn)
   embed2 <- embed_with(method2, modify_kernel_fn = modify_kernel_fn)
+
+  expect_match(embed1$method$stiffness$name, "Plugin", info = info)
+  expect_true(embed2$method$stiffness$name != "Plugin", info = info)
+
   expect_equal(embed1$cost, embed2$cost, tolerance = tolerance, info = info,
                scale = 1)
 }

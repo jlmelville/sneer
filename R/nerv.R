@@ -85,8 +85,7 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
                   verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
-    cost = nerv_fg(lambda = lambda),
-    stiffness = nerv_stiffness()
+    cost = nerv_fg(lambda = lambda)
   )
 }
 
@@ -239,8 +238,7 @@ hsnerv <- function(lambda = 0.5, beta = 1, alpha = 0,
 tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
   lreplace(
     tsne(eps = eps, verbose = verbose),
-    cost = nerv_fg(lambda = lambda),
-    stiffness = tnerv_stiffness()
+    cost = nerv_fg(lambda = lambda)
   )
 }
 

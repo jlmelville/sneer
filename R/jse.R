@@ -72,8 +72,7 @@ jse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                 verbose = TRUE) {
   lreplace(
     asne(beta = beta, eps = eps, verbose = verbose),
-    cost = jse_fg(kappa = kappa),
-    stiffness = jse_stiffness()
+    cost = jse_fg(kappa = kappa)
   )
 }
 
@@ -138,7 +137,6 @@ sjse <- function(kappa = 0.5, beta = 1, eps = .Machine$double.eps,
                  verbose = TRUE) {
   lreplace(
     jse(kappa = kappa, beta = beta, eps = eps, verbose = verbose),
-    stiffness = sjse_stiffness(),
     prob_type = "joint"
   )
 }
@@ -224,7 +222,6 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
   lreplace(
     sjse(kappa = kappa, eps = eps, verbose = verbose),
     kernel = heavy_tail_kernel(beta = beta, alpha = alpha),
-    stiffness = hsjse_stiffness(),
     out_keep = c("qm", "wm")
   )
 }
