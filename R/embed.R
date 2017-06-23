@@ -431,8 +431,11 @@ before_init <- function(method) {
 #   \item \code{method} Updated embedding method.
 #  }
 after_init <- function(inp, out, method) {
-  method <- optimize_stiffness(method)
 
+  # Dynamic methods can affect the kernel: i.e. inhomogeneous methods enforce it
+  # to be asymmetric even if all parameters are uniform after input
+  # initialization, so this needs to run before we look for simpler stiffness
+  # expressions
   if (!is.null(method$dyn) && !is.null(method$dyn$after_init_fn)) {
     result <- method$dyn$after_init_fn(inp, out, method)
     if (!is.null(result$inp)) {
@@ -445,6 +448,9 @@ after_init <- function(inp, out, method) {
       method <- result$method
     }
   }
+
+  method <- optimize_stiffness(method)
+
   if (!is.null(method$after_init_fn)) {
     result <- method$after_init_fn(inp, out, method)
     if (!is.null(result$inp)) {
