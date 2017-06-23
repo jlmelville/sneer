@@ -528,7 +528,12 @@ dynamize_exp_kernel <- function(method) {
     if (method$dyn$beta == "point" && length(method$kernel$beta) != nr) {
       method$kernel$beta <- rep(method$kernel$beta, nr)
     }
-    method$kernel <- check_symmetry(method$kernel)
+    if (method$dyn$beta == "point") {
+      method$kernel <- set_kernel_asymmetric(method$kernel)
+    }
+    else {
+      method$kernel <- check_symmetry(method$kernel)
+    }
 
     # Leaving method null means we are dynamizing a method manually
     if (is.null(method$gr_beta)) {
@@ -596,7 +601,14 @@ dynamize_heavy_tail_kernel <- function(method) {
     if (method$dyn$beta == "point" && length(kernel$beta) != nr) {
       kernel$beta <- rep(kernel$beta, nr)
     }
-    method$kernel <- check_symmetry(kernel)
+
+    if (method$dyn$beta == "point" || method$dyn$alpha == "point") {
+      kernel <- set_kernel_asymmetric(kernel)
+    }
+    else {
+      kernel <- check_symmetry(kernel)
+    }
+    method$kernel <- kernel
 
     # Leaving method null means we are dynamizing a method manually OR we are
     # using the KL cost and would like to use a slightly more efficient gradient

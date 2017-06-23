@@ -150,7 +150,12 @@ dynamize_inhomogeneous_kernel <- function(method) {
       if (method$dyn$dof == "point" && length(method$kernel$dof) != nr) {
         method$kernel$dof <- rep(method$kernel$dof, nr)
       }
-      method$kernel <- check_symmetry(method$kernel)
+      if (method$dyn$dof == "point") {
+        method$kernel <- set_kernel_asymmetric(method$kernel)
+      }
+      else {
+        method$kernel <- check_symmetry(method$kernel)
+      }
 
       # Leaving method null means we are dynamizing a method manually
       if (is.null(method$gr_dof)) {

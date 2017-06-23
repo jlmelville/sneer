@@ -63,6 +63,15 @@ make_kernel_dynamic <- function(method) {
   method$kernel$make_dynamic(method)
 }
 
+# Forces kernel to be treated as asymmetric, even if it initially has uniform
+# parameters. This is important for dynamic kernels which could start symmetric
+# and become asymmetric during optimization and in doing so invalidate any
+# simplified stiffness expressions.
+set_kernel_asymmetric <- function(kernel) {
+  attr(kernel$fn, "type") <- "asymm"
+  kernel
+}
+
 # Weight Functions --------------------------------------------------------
 
 # Exponential Weighted Similarity
