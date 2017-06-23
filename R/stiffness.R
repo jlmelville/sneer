@@ -208,7 +208,7 @@ reverse_tsne_stiffness <- function() {
       reverse_tsne_stiffness_fn(inp$pm, out$qm, out$wm, out$rev_kl,
                                 eps = method$eps)
     },
-    nmae = "rev-t-SNE"
+    name = "rev-t-SNE"
   )
 }
 
