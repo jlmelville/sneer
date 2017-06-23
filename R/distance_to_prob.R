@@ -437,18 +437,27 @@ is_joint_out_prob <- function(method) {
     method$prob_type == "joint"
   }
   else {
+    # This should probably never happen because it implies we want the input
+    # probabilities to be conditional, but to enforce jointness of the output
+    # if needed
     method$out_prob_type == "joint"
   }
 }
 
-# An embedding method is effectively conditional (in terms of output
-# probability) if the output probability is conditional, or if it's joint, but no
-# other transformation is carried out after normalization (e.g. averaging). The
-# latter can occur if using an asymmetric kernel with joint probabilities. Note
-# that this is not a feature of any literature published embedding method!
-# An effectively conditional embedding method can often make use of a simplified
-# gradient expression compared to the generic "plugin" expression.
-is_effectively_cond <- function(method) {
-  method$prob_type == "cond" ||
-    (is_joint_out_prob(method) && is_symmetric_kernel(method$kernel))
+# An embedding method is fully symmetric if the kernel is symmetric, and the
+# input probability is joint, which implies that the output probability is
+# either also joint or marked as conditional. However, because the kernel is
+# symmetric the output probability is already joint, and hence requires no
+# extra averaging. This means that pi|j = pj|i = pij and likewise for Q and
+# the symmetrized SSNE-like gradient simplifications hold
+is_fully_symmetric_embedding <- function(method) {
+  is_symmetric_kernel(method$kernel) && method$prob_type == "joint"
+}
+
+# The output probability is "enforced joint" if it's marked as being joint, but
+# the kernel is asymmetric. In this case an extra averaging step is needed to
+# convert the weights to joint probabilities. This rules out some simplified
+# stiffness expressions.
+is_enforced_joint_out_prob <- function(method) {
+  is_joint_out_prob(method) && is_asymmetric_kernel(method$kernel)
 }

@@ -475,78 +475,81 @@ optimize_stiffness <- function(method) {
   if (is.null(method$stiffness)) {
     if (method$cost$name == "KL") {
       if (method$kernel$name == "exp") {
-        if (method$prob_type == "row") {
-          method$stiffness <- asne_stiffness()
-        }
-        else if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- ssne_stiffness()
+        }
+        else if (!is_enforced_joint_out_prob(method)) {
+          method$stiffness <- asne_stiffness()
         }
       }
       else if (method$kernel$name == "tdist") {
-        if (method$prob_type == "row") {
-          method$stiffness <- tasne_stiffness()
-        }
-        else if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- tsne_stiffness()
+        }
+        else {
+          # t-dist kernel can never be asymmetric because it has no free
+          # parameters, so for this cost/kernel combination we never need the
+          # plugin stiffness
+          method$stiffness <- tasne_stiffness()
         }
       }
       else if (method$kernel$name == "heavy") {
-        if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- hssne_stiffness()
         }
       }
     }
     else if (method$cost$name == "revKL") {
       if (method$kernel$name == "exp") {
-        if (method$prob_type == "row") {
-          method$stiffness <- reverse_asne_stiffness()
-        }
-        else if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- reverse_ssne_stiffness()
+        }
+        else if (!is_enforced_joint_out_prob(method)) {
+          method$stiffness <- reverse_asne_stiffness()
         }
       }
       else if (method$kernel$name == "tdist") {
-        if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- reverse_tsne_stiffness()
         }
       }
       else if (method$kernel$name == "heavy") {
-        if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- reverse_hssne_stiffness()
         }
       }
     }
     else if (method$cost$name == "NeRV") {
       if (method$kernel$name == "exp") {
-        if (method$prob_type == "row") {
-          method$stiffness <- nerv_stiffness()
-        }
-        else if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- snerv_stiffness()
+        }
+        else if (!is_enforced_joint_out_prob(method)) {
+          method$stiffness <- nerv_stiffness()
         }
       }
       else if (method$kernel$name == "tdist") {
-        if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- tnerv_stiffness()
         }
       }
       else if (method$kernel$name == "heavy") {
-        if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- hsnerv_stiffness()
         }
       }
     }
     else if (method$cost$name == "JS") {
       if (method$kernel$name == "exp") {
-        if (method$prob_type == "row") {
-          method$stiffness <- jse_stiffness()
-        }
-        else if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- sjse_stiffness()
+        }
+        else if (!is_enforced_joint_out_prob(method)) {
+          method$stiffness <- jse_stiffness()
         }
       }
       else if (method$kernel$name == "heavy") {
-        if (is_effectively_cond(method)) {
+        if (is_fully_symmetric_embedding(method)) {
           method$stiffness <- hsjse_stiffness()
         }
       }
