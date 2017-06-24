@@ -14,6 +14,18 @@
 # @name probability_embedding_methods
 # @family sneer probability embedding methods
 
+
+prob_embedder <- function(cost, kernel, prob_type, eps, verbose) {
+  list(
+    cost = cost,
+    kernel = kernel,
+    prob_type = prob_type,
+    update_out_fn = update_out_prob,
+    eps = eps,
+    verbose = verbose
+  )
+}
+
 # Asymmetric Stochastic Neighbor Embedding (ASNE)
 #
 # A probability-based embedding method.
@@ -64,11 +76,10 @@
 # embed_prob(method = asne(), ...)
 # }
 asne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
-  list(
+  prob_embedder(
     cost = kl_fg(),
     kernel = exp_kernel(beta = beta),
     prob_type = "row",
-    update_out_fn = update_out_prob,
     eps = eps,
     verbose = verbose
   )
