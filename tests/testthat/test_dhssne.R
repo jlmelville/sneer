@@ -4,6 +4,7 @@ inp_df <- iris[1:50, 1:4]
 nr <- nrow(inp_df)
 betas <- seq(1e-3, 1, length.out = nr)
 alphas <- c(1e-3, 0.25, 1, 2, 10)
+dofs <- c(1e-3, 0.01, 1, 10, 500)
 
 gradient_fd_xi <- function(res, param_names = c("alpha"), diff = 1e-5,
                            eps = .Machine$double.eps) {
@@ -365,7 +366,7 @@ test_that("DSSNE analytical gradient is correct for single beta", {
 
 # {h,i}t-SNE has no beta parameter so spared some complications
 test_that("ht-SNE analytical gradient is correct for range of dof", {
-  for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
+  for (dof in dofs) {
     res <- embedder(htsne(dof = dof,
                           xi_eps = .Machine$double.eps, verbose = FALSE))
     fd_grad <- gradient_fd_xi(res, param_names = c("dof"))
@@ -376,7 +377,7 @@ test_that("ht-SNE analytical gradient is correct for range of dof", {
 })
 
 test_that("it-SNE analytical gradient is correct for range of dof", {
-  for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
+  for (dof in dofs) {
     res <- embedder(itsne(dof = seq(dof, dof * 2, length.out = nr),
                           xi_eps = .Machine$double.eps, verbose = FALSE))
 
@@ -388,7 +389,7 @@ test_that("it-SNE analytical gradient is correct for range of dof", {
 })
 
 test_that("it-3SNE analytical gradient is correct for range of dof", {
-  for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
+  for (dof in dofs) {
     res <- embedder(it3sne(dof = dof,
                           xi_eps = .Machine$double.eps, verbose = FALSE))
     fd_grad <- gradient_fd_xi_point(res, param_names = c("dof"))
@@ -399,7 +400,7 @@ test_that("it-3SNE analytical gradient is correct for range of dof", {
 })
 
 test_that("it-SSNE analytical gradient is correct for range of dof", {
-  for (dof in c(1e-3, 0.01, 0.1, 1, 10, 100, 500)) {
+  for (dof in dofs) {
     res <- embedder(itssne(dof = seq(dof, dof * 2, length.out = nr),
                           xi_eps = .Machine$double.eps, verbose = FALSE))
 
@@ -430,8 +431,7 @@ test_that("it-SSNE works with generic parameter gradient too", {
 hssne_res <- quick_embed(method = hssne(alpha = 0.5, verbose = FALSE))
 # HPSNE is HSSNE with cond P
 # Q is joint by construction
-hpsne_res <- quick_embed(method = lreplace(hssne_plugin(alpha = 0.5,
-                                                        verbose = FALSE),
+hpsne_res <- quick_embed(method = lreplace(hssne(alpha = 0.5, verbose = FALSE),
                                            prob_type = "cond"))
 asne_res <- quick_embed(method = asne(beta = 0.5, verbose = FALSE))
 tasne_res <- quick_embed(method = tasne(verbose = FALSE))

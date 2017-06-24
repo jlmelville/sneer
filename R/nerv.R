@@ -96,7 +96,10 @@ nerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 # SNeRV is a "symmetric" variant of \code{nerv}.
 snerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
                   verbose = TRUE) {
-  snerv_plugin(lambda = lambda, beta = beta, eps = eps, verbose = verbose)
+  lreplace(
+    nerv(lambda = lambda, beta = beta, eps = eps, verbose = verbose),
+    prob_type = "joint"
+  )
 }
 
 # Heavy-tailed Symmetric Neighbor Retrieval Visualizer (HSNeRV)
@@ -164,8 +167,10 @@ snerv <- function(lambda = 0.5, beta = 1, eps = .Machine$double.eps,
 # }
 hsnerv <- function(lambda = 0.5, beta = 1, alpha = 0,
                    eps = .Machine$double.eps, verbose = TRUE) {
-  hsnerv_plugin(lambda = lambda, beta = beta, alpha = alpha,
-                eps = eps, verbose = verbose)
+  lreplace(
+    snerv(lambda = lambda, eps = eps, verbose = verbose),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
+  )
 }
 
 # t-Distributed Neighbor Retrieval Visualizer (t-NeRV)
@@ -241,6 +246,7 @@ tnerv <- function(lambda = 0.5, eps = .Machine$double.eps, verbose = TRUE) {
     cost = nerv_fg(lambda = lambda)
   )
 }
+
 
 # NeRV Stiffness Function
 #

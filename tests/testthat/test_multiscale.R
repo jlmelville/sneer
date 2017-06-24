@@ -44,7 +44,7 @@ test_that("multiscaling with equal perplexities is the same as single scale", {
 
   ssne_iris_m1 <- embed_prob(
     iris[, 1:4],
-    method = ssne_plugin(verbose = FALSE),
+    method = ssne(verbose = FALSE),
     opt = mize_back_nag_adapt(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = c(25), verbose = FALSE),
@@ -64,7 +64,7 @@ test_that("multiscaling with equal perplexities is the same as single scale", {
   # gives a cost within tolerance
   ssne_iris_m2 <- embed_prob(
     iris[, 1:4],
-    method = ssne_plugin(verbose = FALSE),
+    method = ssne(verbose = FALSE),
     opt = mize_back_nag_adapt(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = c(25, 25.01),
@@ -84,7 +84,7 @@ test_that("multiscaling with equal perplexities is the same as single scale", {
 test_that("multiscaling SSNE with perp scaling", {
   ssne_iris_ms3 <- embed_prob(
     iris[, 1:4],
-    method = ssne_plugin(verbose = FALSE),
+    method = ssne(verbose = FALSE),
     opt = mize_grad_descent(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
@@ -110,7 +110,7 @@ test_that("multiscaling SSNE with perp scaling", {
 test_that("ms SSNE with unit scaling", {
   ssne_iris_ums3 <- embed_prob(
     iris[, 1:4],
-    method = ssne_plugin(verbose = FALSE),
+    method = ssne(verbose = FALSE),
     opt = mize_grad_descent(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
@@ -139,7 +139,7 @@ test_that("ms SSNE with unit scaling", {
 test_that("Can apply multiple scales in one iteration", {
   ssne_iris_ums3_s0 <- embed_prob(
     iris[, 1:4],
-    method = ssne_plugin(verbose = FALSE),
+    method = ssne(verbose = FALSE),
     opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
@@ -163,7 +163,7 @@ test_that("Can apply multiple scales in one iteration", {
 
   ssne_iris_ms3_s0 <- embed_prob(
     iris[, 1:4],
-    method = ssne_plugin(verbose = FALSE),
+    method = ssne(verbose = FALSE),
     opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(75, 25, length.out = 3),
@@ -189,7 +189,7 @@ test_that("Can apply multiple scales in one iteration", {
 test_that("Can combine multiscaling with asymmetric weights", {
   ssne_iris_tms3_s10 <- embed_prob(
     iris[1:10, 1:4],
-    method = ssne_plugin(verbose = FALSE),
+    method = ssne(verbose = FALSE),
     opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(8, 4, length.out = 3),
@@ -225,7 +225,7 @@ test_that("Can combine multiscaling with asymmetric weights", {
   # should be the same
   ssne_iris_tms3_s0 <- embed_prob(
     iris[1:10, 1:4],
-    method = ssne_plugin(verbose = FALSE),
+    method = ssne(verbose = FALSE),
     opt = mize_bfgs(),
     preprocess = make_preprocess(auto_scale = TRUE, verbose = FALSE),
     init_inp = inp_from_perps_multi(perplexities = seq(8, 4, length.out = 3),

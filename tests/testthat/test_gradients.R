@@ -21,6 +21,11 @@ inp_tms <- function() { inp_from_perps_multi(perplexities = seq(45, 25, length.o
                                 modify_kernel_fn = transfer_kernel_precisions,
                                 verbose = FALSE) }
 
+pluginize <- function(method) {
+  method$stiffness <- plugin_stiffness()
+  method
+}
+
 gfd <- function(embedder, diff = 1e-4) {
   gradient_fd(embedder$inp, embedder$out, embedder$method, diff = diff)$gm
 }
@@ -134,121 +139,120 @@ test_that("JSE gradients", {
 })
 
 test_that("Plugin gradients", {
-  expect_grad(asne_plugin(), label = "plugin asne")
-  expect_grad(ssne_plugin(), label = "plugin ssne")
-  expect_grad(tsne_plugin(), label = "plugin tsne")
-  expect_grad(hssne_plugin(), label = "plugin hssne", diff = 1e-4)
-  expect_grad(tasne_plugin(), label = "plugin tasne")
+  expect_grad(pluginize(asne()), label = "plugin asne")
+  expect_grad(pluginize(ssne()), label = "plugin ssne")
+  expect_grad(pluginize(tsne()), label = "plugin tsne")
+  expect_grad(pluginize(hssne()), label = "plugin hssne", diff = 1e-4)
+  expect_grad(pluginize(tasne()), label = "plugin tasne")
 
-  expect_grad(rasne_plugin(), label = "plugin rasne")
-  expect_grad(rssne_plugin(), label = "plugin rssne")
-  expect_grad(rtsne_plugin(), label = "plugin rtsne")
+  expect_grad(pluginize(rasne()), label = "plugin rasne")
+  expect_grad(pluginize(rssne()), label = "plugin rssne")
+  expect_grad(pluginize(rtsne()), label = "plugin rtsne")
 
-  expect_grad(nerv_plugin(beta = 1), label = "plugin unerv")
-  expect_grad(snerv_plugin(beta = 1), label = "plugin usnerv")
-  expect_grad(hsnerv_plugin(beta = 1), label = "plugin uhsnerv", diff = 1e-4)
-  expect_grad(tnerv_plugin(), label = "plugin tnerv")
+  expect_grad(pluginize(nerv(beta = 1)), label = "plugin unerv")
+  expect_grad(pluginize(snerv(beta = 1)), label = "plugin usnerv")
+  expect_grad(pluginize(hsnerv(beta = 1)), label = "plugin uhsnerv",
+              diff = 1e-4)
+  expect_grad(pluginize(tnerv()), label = "plugin tnerv")
 
-  expect_grad(nerv_plugin(beta = betas), label = "plugin nerv")
+  expect_grad(pluginize(nerv(beta = betas)), label = "plugin nerv")
 
-  expect_grad(jse_plugin(), label = "plugin jse")
-  expect_grad(sjse_plugin(), label = "plugin sjse")
-  expect_grad(hsjse_plugin(), label = "plugin hsjse", diff = 1e-4)
+  expect_grad(pluginize(jse()), label = "plugin jse")
+  expect_grad(pluginize(sjse()), label = "plugin sjse")
+  expect_grad(pluginize(hsjse()), label = "plugin hsjse", diff = 1e-4)
 })
 
 test_that("Plugin gradients with asymmetric weights", {
-  expect_grad(asne_plugin(beta = betas), label = "plugin asne-aw",
+  expect_grad(pluginize(asne(beta = betas)), label = "plugin asne-aw",
               inp_init = inp_aw())
-  expect_grad(rasne_plugin(beta = betas), label = "plugin rasne-aw",
+  expect_grad(pluginize(rasne(beta = betas)), label = "plugin rasne-aw",
               inp_init = inp_aw())
-  expect_grad(ssne_plugin(beta = betas), label = "plugin ssne-aw",
+  expect_grad(pluginize(ssne(beta = betas)), label = "plugin ssne-aw",
               inp_init = inp_aw())
-  expect_grad(nerv_plugin(beta = betas), label = "plugin nerv-aw",
+  expect_grad(pluginize(nerv(beta = betas)), label = "plugin nerv-aw",
               inp_init = inp_aw())
-  expect_grad(snerv_plugin(beta = betas), label = "plugin snerv-aw",
+  expect_grad(pluginize(snerv(beta = betas)), label = "plugin snerv-aw",
               inp_init = inp_aw())
-  expect_grad(jse_plugin(beta = betas), label = "plugin jse-aw",
+  expect_grad(pluginize(jse(beta = betas)), label = "plugin jse-aw",
               inp_init = inp_aw())
-  expect_grad(sjse_plugin(beta = betas), label = "plugin sjse-aw",
+  expect_grad(pluginize(sjse(beta = betas)), label = "plugin sjse-aw",
               inp_init = inp_aw())
 })
 
 test_that("Multiscale gradients", {
-  expect_grad(asne_plugin(verbose = FALSE), label = "plugin ms asne",
+  expect_grad(pluginize(asne(verbose = FALSE)), label = "plugin ms asne",
               inp_init = inp_ms())
-  expect_grad(ssne_plugin(verbose = FALSE), label = "plugin ms ssne",
+  expect_grad(pluginize(ssne(verbose = FALSE)), label = "plugin ms ssne",
               inp_init = inp_ms())
-  expect_grad(rasne_plugin(verbose = FALSE), label = "plugin ms rasne",
+  expect_grad(pluginize(rasne(verbose = FALSE)), label = "plugin ms rasne",
               inp_init = inp_ms())
-  expect_grad(rssne_plugin(verbose = FALSE), label = "plugin ms rssne",
+  expect_grad(pluginize(rssne(verbose = FALSE)), label = "plugin ms rssne",
               inp_init = inp_ms())
-  expect_grad(nerv_plugin(beta = 1, verbose = FALSE),
+  expect_grad(pluginize(nerv(beta = 1, verbose = FALSE)),
               label = "plugin ms unerv", inp_init = inp_ms())
-  expect_grad(snerv_plugin(beta = 1, verbose = FALSE),
+  expect_grad(pluginize(snerv(beta = 1, verbose = FALSE)),
               label = "plugin ms usnerv", inp_init = inp_ms())
-  expect_grad(nerv_plugin(beta = betas, verbose = FALSE),
+  expect_grad(pluginize(nerv(beta = betas, verbose = FALSE)),
               label = "plugin ms nerv", inp_init = inp_ms())
-  expect_grad(snerv_plugin(beta = betas, verbose = FALSE),
+  expect_grad(pluginize(snerv(beta = betas, verbose = FALSE)),
               label = "plugin ms snerv", inp_init = inp_ms())
-  expect_grad(jse_plugin(verbose = FALSE), label = "plugin ms jse",
+  expect_grad(pluginize(jse(verbose = FALSE)), label = "plugin ms jse",
               inp_init = inp_ms())
-  expect_grad(sjse_plugin(verbose = FALSE), label = "plugin ms sjse",
+  expect_grad(pluginize(sjse(verbose = FALSE)), label = "plugin ms sjse",
               inp_init = inp_ms())
-  expect_grad(hsjse_plugin(verbose = FALSE), label = "plugin ms hsjse",
-              inp_init = inp_ms())
+  expect_grad(pluginize(hsjse(verbose = FALSE)),
+              label = "plugin ms hsjse", inp_init = inp_ms())
 
   # don't rescale output precisions
-  expect_grad(asne_plugin(verbose = FALSE), label = "plugin ums asne",
+  expect_grad(pluginize(asne(verbose = FALSE)),
+              label = "plugin ums asne",
               inp_init = inp_ums())
-  expect_grad(ssne_plugin(verbose = FALSE), label = "plugin ums ssne",
+  expect_grad(pluginize(ssne(verbose = FALSE)),
+              label = "plugin ums ssne",
               inp_init = inp_ums())
-  expect_grad(nerv_plugin(beta = betas, verbose = FALSE),
+  expect_grad(pluginize(nerv(beta = betas, verbose = FALSE)),
               label = "plugin ums nerv", inp_init = inp_ums())
-  expect_grad(snerv_plugin(beta = betas, verbose = FALSE),
+  expect_grad(pluginize(snerv(beta = betas, verbose = FALSE)),
               label = "plugin ums snerv", inp_init = inp_ums())
-  expect_grad(jse_plugin(verbose = FALSE), label = "plugin ums jse",
+  expect_grad(pluginize(jse(verbose = FALSE)), label = "plugin ums jse",
               inp_init = inp_ums())
-  expect_grad(sjse_plugin(verbose = FALSE), label = "plugin ums sjse",
+  expect_grad(pluginize(sjse(verbose = FALSE)),
+              label = "plugin ums sjse",
               inp_init = inp_ums())
 
   # The ultimate challenge: multiscale and use non-uniform kernel parameters
-  expect_grad(asne_plugin(verbose = FALSE), label = "plugin tms asne",
+  expect_grad(pluginize(asne(verbose = FALSE)),
+              label = "plugin tms asne", inp_init = inp_tms())
+  expect_grad(pluginize(ssne(verbose = FALSE)),
+              label = "plugin tms ssne",
               inp_init = inp_tms())
-  expect_grad(ssne_plugin(verbose = FALSE), label = "plugin tms ssne",
-              inp_init = inp_tms())
-  expect_grad(nerv_plugin(beta = betas, verbose = FALSE),
+  expect_grad(pluginize(nerv(beta = betas, verbose = FALSE)),
               label = "plugin tms nerv", inp_init = inp_tms())
-  expect_grad(snerv_plugin(beta = betas, verbose = FALSE),
+  expect_grad(pluginize(snerv(beta = betas, verbose = FALSE)),
               label = "plugin tms snerv", inp_init = inp_tms())
-  expect_grad(jse_plugin(verbose = FALSE), label = "plugin tms jse",
+  expect_grad(pluginize(jse(verbose = FALSE)), label = "plugin tms jse",
               inp_init = inp_tms())
-  expect_grad(sjse_plugin(verbose = FALSE), label = "plugin tms sjse",
-              inp_init = inp_tms())
-  expect_grad(tpsne_plugin(verbose = FALSE), label = "plugin tms tpsne",
-              inp_init = inp_tms())
+  expect_grad(pluginize(sjse(verbose = FALSE)),
+              label = "plugin tms sjse", inp_init = inp_tms())
+  expect_grad(pluginize(tpsne(verbose = FALSE)),
+              label = "plugin tms tpsne", inp_init = inp_tms())
 })
 
 test_that("importance weighting", {
   expect_grad(importance_weight(ssne()), label = "wssne")
-  expect_grad(importance_weight(ssne_plugin()), label = "plugin wssne")
+  expect_grad(importance_weight(pluginize(ssne())), label = "plugin wssne")
 })
 
 test_that("Dynamic HSSNE gradients", {
   expect_grad(dhssne(alpha = 0.001), label = "dhssne alpha 0.001")
-  expect_grad(dhssne(alpha = 0.5), label = "dhssne alpha 0.5")
-  expect_grad(dhssne(alpha = 1), label = "dhssne alpha 1")
   expect_grad(dhssne(alpha = 1, beta = seq(1e-3, 1, length.out = nr)),
               label = "dhssne alpha 1 beta 0.001:1")
 
   # Semi-symmetric version of the above
-  expect_grad(dh3sne(alpha = 0.001), label = "dh3sne alpha 0.001")
   expect_grad(dh3sne(alpha = 0.5), label = "dh3sne alpha 0.5")
-  expect_grad(dh3sne(alpha = 1), label = "dh3sne alpha 1")
 
   # Pair-wise version of the above
-  expect_grad(dhpsne(alpha = 0.001), label = "dhpsne alpha 0.001")
   expect_grad(dhpsne(alpha = 0.5), label = "dhpsne alpha 0.5")
-  expect_grad(dhpsne(alpha = 1), label = "dhpsne alpha 1")
 
   # Point-wise version
   expect_grad(dhasne(alpha = 1, beta = seq(1e-3, 1, length.out = nr)),
@@ -257,34 +261,16 @@ test_that("Dynamic HSSNE gradients", {
 
 test_that("Dynamic inhomogeneous HSSNE gradients", {
   # iHSSNE fully symmetric
-  expect_grad(ihssne(alpha = seq(0.001, 0.5, length.out = nr)),
-              label = "ihssne alpha 0.001:0.5")
-  expect_grad(ihssne(alpha = seq(0.5, 1, length.out = nr)),
-              label = "ihssne alpha 0.5:1")
-  expect_grad(ihssne(alpha = seq(1, 5, length.out = nr)),
-              label = "ihssne alpha 1:5")
   expect_grad(ihssne(alpha = seq(1, 5, length.out = nr),
                      beta = seq(1e-3, 1, length.out = nr)),
               label = "ihssne alpha 1:5 beta 0.001:1")
 
   # iH3SNE sets input probs as joint and output probs as cond
-  expect_grad(ih3sne(alpha = seq(0.001, 0.5, length.out = nr)),
-              label = "ih3sne alpha 0.001:0.5")
-  expect_grad(ih3sne(alpha = seq(0.5, 1, length.out = nr)),
-              label = "ih3sne alpha 0.5:1")
-  expect_grad(ih3sne(alpha = seq(1, 5, length.out = nr)),
-              label = "ih3sne alpha 1:5")
   expect_grad(ih3sne(alpha = seq(1, 5, length.out = nr),
                      beta = seq(1e-3, 1, length.out = nr)),
               label = "ih3sne alpha 1:5 beta 0.001:1")
 
   # Conditional version of iHSSNE, uses prob_type = "cond" for inp and out
-  expect_grad(ihpsne(alpha = seq(0.001, 0.5, length.out = nr)),
-              label = "ihpsne alpha 0.001:0.5")
-  expect_grad(ihpsne(alpha = seq(0.5, 1, length.out = nr)),
-              label = "ihpsne alpha 0.5:1")
-  expect_grad(ihpsne(alpha = seq(1, 5, length.out = nr)),
-              label = "ihpsne alpha 1:5")
   expect_grad(ihpsne(alpha = seq(1, 5, length.out = nr),
                      beta = seq(1e-3, 1, length.out = nr)),
               label = "ihpsne alpha 1:5 beta 0.001:1")

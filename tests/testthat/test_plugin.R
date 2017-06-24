@@ -20,8 +20,7 @@ embed_with <- function(method, modify_kernel_fn = NULL) {
 
 expect_plugin_equal <- function(method_name, tolerance = .Machine$double.eps,
                                 modify_kernel_fn = NULL) {
-  plugin_name <- paste0(method_name, "_plugin")
-  method1 <- get(plugin_name)()
+  method1 <- get(method_name)()
   method1$stiffness <- plugin_stiffness()
   method1$verbose <- FALSE
 

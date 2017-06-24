@@ -490,3 +490,32 @@ rtsne <- function(eps = .Machine$double.eps, verbose = TRUE) {
     kernel = tdist_kernel()
   )
 }
+
+# "Pairwise" Stochastic Neighbor Embedding (PSNE)
+# Uses pairwise probabilities like PSNE, but doesn't enforce that the
+# input matrix P is joint.
+psne <- function(beta = 1, eps = .Machine$double.eps, verbose = TRUE) {
+  lreplace(
+    ssne(eps = eps, beta = beta, verbose = verbose),
+    prob_type = "cond"
+  )
+}
+
+# Heavy-tailed ASNE.
+hasne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
+                  verbose = TRUE) {
+  lreplace(
+    asne(eps = eps, verbose = verbose),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
+  )
+}
+
+# Heavy-tailed PSNE (SSNE without averaging P)
+hpsne <- function(beta = 1, alpha = 0, eps = .Machine$double.eps,
+                  verbose = TRUE) {
+  lreplace(
+    psne(eps = eps, verbose = verbose),
+    kernel = heavy_tail_kernel(beta = beta, alpha = alpha)
+  )
+}
+

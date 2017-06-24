@@ -159,7 +159,7 @@ ddhssne <- function(beta = 1, alpha = 0, xi_eps = 1e-3,
   }
 
   lreplace(
-    hssne_plugin(beta = beta, alpha = alpha, eps = eps, verbose = verbose),
+    hssne(beta = beta, alpha = alpha, eps = eps, verbose = verbose),
     dynamic_kernel = TRUE,
     dyn = list(alpha = "global", beta = "global"),
     opt_iter = opt_iter,
@@ -201,7 +201,7 @@ dihasne <- function(beta = 1, alpha = 0, opt_iter = 0, switch_iter = opt_iter,
 iasne <- function(beta = 1, eps = .Machine$double.eps, verbose = FALSE,
                   opt_iter = 0, xi_eps = 1e-3, alt_opt = TRUE) {
   lreplace(
-    asne_plugin(beta = beta, eps = eps, verbose = verbose),
+    asne(beta = beta, eps = eps, verbose = verbose),
     dynamic_kernel = TRUE,
     dyn = list(beta = "point"),
     opt_iter = opt_iter,

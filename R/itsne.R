@@ -17,7 +17,7 @@ itsne <- function(dof = 1, opt_iter = 0,
   dof[dof > max_dof] <- max_dof
 
   lreplace(
-    asne_plugin(eps = eps),
+    asne(eps = eps),
     kernel = itsne_kernel(dof = dof),
     dynamic_kernel = TRUE,
     dyn = list(dof = "point"),
