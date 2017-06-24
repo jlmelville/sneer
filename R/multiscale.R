@@ -184,9 +184,8 @@ inp_from_perps_multi <- function(perplexities = NULL,
         })$method
 
         method$orig_kernel <- method$kernel
-        method$out_keep <- unique(c(method$out_keep, "wm"))
         method$update_out_fn <- update_out_prob_ms
-        method$stiffness <- list(fn = plugin_stiffness_ms)
+        method$stiffness <- plugin_stiffness_ms()
 
         inp$pms <- list()
         inp$betas <- list()
@@ -399,9 +398,8 @@ inp_from_perps_multil <- function(perplexities = NULL,
         })$method
 
         method$orig_kernel <- method$kernel
-        method$out_keep <- unique(c(method$out_keep, "wm"))
         method$update_out_fn <- update_out_prob_ms
-        method$stiffness <- list(fn = plugin_stiffness_ms)
+        method$stiffness <- plugin_stiffness_ms()
       }
 
       while (method$num_scales * step_every <= iter
@@ -746,6 +744,15 @@ inp_from_dint_max <- function(perplexities = NULL,
     })
 }
 
+plugin_stiffness_ms <- function() {
+  list(
+    fn = plugin_stiffness_ms_fn,
+    keep = c("qm", "wm"),
+    name = "Multiscale-Plugin"
+  )
+}
+
+
 # Multiscale Plugin Stiffness
 #
 # Calculates the stiffness matrix of an embedding method using the multiscale
@@ -755,7 +762,7 @@ inp_from_dint_max <- function(perplexities = NULL,
 # @param inp Input data.
 # @param out Output data.
 # @return Stiffness matrix.
-plugin_stiffness_ms <- function(method, inp, out) {
+plugin_stiffness_ms_fn <- function(method, inp, out) {
   prob_type <- method$prob_type
   if (is.null(prob_type)) {
     stop("Embedding method must have a prob type")
@@ -870,7 +877,7 @@ plugin_stiffness_ms_pair <- function(method, inp, out, dc_dq, l) {
 #
 # @return List containing updated output data
 update_out_prob_ms <- function(inp, out, method) {
-  out$d2m = coords_to_dist2(out$ym)
+  out$d2m <- coords_to_dist2(out$ym)
 
   out$qms <- list()
   out$wms <- list()
