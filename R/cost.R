@@ -45,6 +45,10 @@ kl_cost <- function(inp, out, method) {
 }
 attr(kl_cost, "sneer_cost_type") <- "prob"
 
+# Decomposes the cost into the sum of n values, where n is the number of points.
+kl_cost_point <- function(inp, out, method) {
+  kl_divergence_point(inp$pm, out$qm, method$eps)
+}
 
 # Kullback-Leibler Divergence
 #
@@ -91,6 +95,13 @@ kl_divergence <- function(pm, qm, eps = .Machine$double.eps) {
 # @return Vector of KL divergences from \code{qm} to \code{pm}.
 kl_divergence_rows <- function(pm, qm, eps = .Machine$double.eps) {
   apply(pm * log((pm + eps) / (qm + eps)), 1, sum)
+}
+
+# Decomposes the divergence into the sum of n values, where n is the number
+# of points.
+kl_divergence_point <- function(pm, qm, eps = .Machine$double.eps) {
+  kl_pair <- pm * log((pm + eps) / (qm + eps))
+  0.5 * (apply(kl_pair, 1, sum) + apply(kl_pair, 2, sum))
 }
 
 # Create Cost Function Normalizer
@@ -193,6 +204,7 @@ kl_fg <- function() {
   list(
     fn = kl_cost,
     gr = kl_cost_gr,
+    point = kl_cost_point,
     name = "KL"
   )
 }

@@ -411,6 +411,8 @@ NULL
 #' For the \code{ret} argument, a vector with one or more of the
 #' following options can be supplied:
 #' \itemize{
+#'  \item \code{"pcost"} The final cost function value, decomposed into n
+#'  contributions, where n is the number of points embedded.
 #'  \item \code{"x"} The input coordinates after scaling and column filtering.
 #'  \item \code{"dx"} The input distance matrix. Calculated if not present.
 #'  \item \code{"dy"} The output distance matrix. Calculated if not present.
@@ -759,10 +761,10 @@ NULL
 #'   # Similarly, for the ROC curve:
 #'   roc <- roc_auc_embed(res$dy, iris$Species)
 #'
-#'   # export degree centrality, input weight function precision parameters,
-#'   # and intrinsic dimensionality
+#'   # export per-point error, degree centrality, input weight function
+#'   # precision parameters and intrinsic dimensionality
 #'   res <- sneer(iris, scale_type = "a", method = "wtsne",
-#'                ret = c("deg", "prec", "dim"))
+#'                ret = c("pcost", "deg", "prec", "dim"))
 #'
 #'   # Plot the embedding as points colored by category, using the rainbow
 #'   # color ramp function:
@@ -776,6 +778,8 @@ NULL
 #'   embed_plot(res$coords, iris$Species, color_scheme = "Dark2")
 #'
 #'   # Visualize embedding colored by various values:
+#'   # Per-point embedding error
+#'   embed_plot(res$coords, x = res$pcost)
 #'   # Degree centrality
 #'   embed_plot(res$coords, x = res$deg)
 #'   # Intrinsic Dimensionality using the PRGn palette
@@ -928,7 +932,7 @@ sneer <- function(df,
   }
 
   ok_rets <- c("x", "dx", "dy", "p", "q", "w", "prec", "dim", "deg", "degs",
-               "v", "dyn", "method")
+               "v", "dyn", "pcost", "method")
   ret <- unique(ret)
   for (r in (ret)) {
     match.arg(tolower(r), ok_rets)
@@ -1230,6 +1234,11 @@ sneer <- function(df,
     switch(r,
       method = {
         result$method <- embed_result$method
+      },
+      pcost = {
+        if (!is.null(embed_result$method$cost$point)) {
+          result$pcost <- embed_result$method$cost$point(inp, out, embed_result$method)
+        }
       },
       x = {
        if (!is.null(inp$xm)) {

@@ -414,6 +414,12 @@ nerv_cost <- function(inp, out, method) {
 }
 attr(nerv_cost, "sneer_cost_type") <- "prob"
 
+# Decompose cost into sum of n contributions
+nerv_cost_point <- function(inp, out, method) {
+  method$cost$lambda * kl_cost_point(inp, out, method) +
+    (1 - method$cost$lambda) * reverse_kl_cost_point(inp, out, method)
+}
+
 
 # Reverse Kullback-Leibler Divergence Cost Function
 #
@@ -441,6 +447,18 @@ reverse_kl_cost <- function(inp, out, method) {
 }
 attr(reverse_kl_cost, "sneer_cost_type") <- "prob"
 
+# Decomposes the cost into the sum of n values, where n is the number
+# of points.
+reverse_kl_cost_point <- function(inp, out, method) {
+  reverse_kl_divergence_point(inp$pm, out$qm, method$eps)
+}
+
+# Decomposes the divergence into the sum of n values, where n is the number
+# of points.
+reverse_kl_divergence_point <- function(pm, qm, eps = .Machine$double.eps) {
+  kl_divergence_point(qm, pm, eps = eps)
+}
+
 # Reverse Kullback Leibler Divergence Cost
 #
 # Cost wrapper factory function.
@@ -456,6 +474,7 @@ reverse_kl_fg <- function() {
   list(
     fn = reverse_kl_cost,
     gr = reverse_kl_cost_gr,
+    point = reverse_kl_cost_point,
     name = "revKL",
     out_updated_fn = klqp_update
   )
@@ -610,6 +629,7 @@ nerv_fg <- function(lambda = 0.5) {
   list(
     fn = nerv_cost,
     gr = nerv_cost_gr,
+    point = nerv_cost_point,
     lambda = lambda,
     name = "NeRV"
   )

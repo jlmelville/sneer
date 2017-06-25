@@ -445,6 +445,8 @@ albeit potentially garish, result.
 For the \code{ret} argument, a vector with one or more of the
 following options can be supplied:
 \itemize{
+ \item \code{"pcost"} The final cost function value, decomposed into n
+ contributions, where n is the number of points embedded.
  \item \code{"x"} The input coordinates after scaling and column filtering.
  \item \code{"dx"} The input distance matrix. Calculated if not present.
  \item \code{"dy"} The output distance matrix. Calculated if not present.
@@ -732,10 +734,10 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
   # Similarly, for the ROC curve:
   roc <- roc_auc_embed(res$dy, iris$Species)
 
-  # export degree centrality, input weight function precision parameters,
-  # and intrinsic dimensionality
+  # export per-point error, degree centrality, input weight function
+  # precision parameters and intrinsic dimensionality
   res <- sneer(iris, scale_type = "a", method = "wtsne",
-               ret = c("deg", "prec", "dim"))
+               ret = c("pcost", "deg", "prec", "dim"))
 
   # Plot the embedding as points colored by category, using the rainbow
   # color ramp function:
@@ -749,6 +751,8 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
   embed_plot(res$coords, iris$Species, color_scheme = "Dark2")
 
   # Visualize embedding colored by various values:
+  # Per-point embedding error
+  embed_plot(res$coords, x = res$pcost)
   # Degree centrality
   embed_plot(res$coords, x = res$deg)
   # Intrinsic Dimensionality using the PRGn palette

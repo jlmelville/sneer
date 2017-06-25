@@ -364,6 +364,10 @@ jse_cost <- function(inp, out, method) {
 attr(jse_cost, "sneer_cost_type") <- "prob"
 attr(jse_cost, "sneer_cost_norm") <- "jse_cost_norm"
 
+jse_cost_point <- function(inp, out, method) {
+  jse_divergence_point(inp$pm, out$qm, out$zm, method$cost$kappa, method$eps)
+}
+
 # Normalized JSE Cost Function
 #
 # A measure of embedding quality between input and output data.
@@ -432,8 +436,17 @@ jse_divergence <- function(pm, qm, zm = NULL, kappa = 0.5,
   if (is.null(zm)) {
     zm <- js_mixture(pm, qm, kappa)
   }
-  (kl_divergence(pm, zm) / (1 - kappa)) +
-    (kl_divergence(qm, zm) / (kappa))
+  (kl_divergence(pm, zm) / (1 - kappa)) + (kl_divergence(qm, zm) / kappa)
+}
+
+# Decompose cost into sum of n contributions
+jse_divergence_point <- function(pm, qm, zm = NULL, kappa = 0.5,
+                                 eps = .Machine$double.eps) {
+  if (is.null(zm)) {
+    zm <- js_mixture(pm, qm, kappa)
+  }
+  (kl_divergence_point(pm, zm) / (1 - kappa)) +
+    (kl_divergence_point(qm, zm) / kappa)
 }
 
 # Jensen-Shannon Mixture Matrix
@@ -572,6 +585,7 @@ jse_fg <- function(kappa = 0.5) {
   list(
     fn = jse_cost,
     gr = jse_cost_gr,
+    point = jse_cost_point,
     kappa = kappa,
     kappa_inv = 1 / kappa,
     name = "JS",

@@ -47,10 +47,21 @@ metric_stress <- function(dxm, dym) {
   sum(upper_tri((dxm - dym) ^ 2))
 }
 
+# Decompose STRESS into sum of n contributions
+metric_stress_point <- function(dxm, dym) {
+  diff <- dxm - dym
+  0.5 * apply(diff * diff, 1, sum)
+}
+
+metric_stress_cost_point <- function(inp, out, method) {
+  metric_stress_point(inp$dm, out$dm)
+}
+
 # Metric Stress fungrad
 metric_stress_fg <- function() {
   list(
     fn = metric_stress_cost,
+    point = metric_stress_cost_point,
     name = "STRESS"
   )
 }
@@ -106,10 +117,21 @@ metric_sstress <- function(dxm, dym) {
   sum(upper_tri((dxm ^ 2 - dym ^ 2) ^ 2))
 }
 
+# Decompose SSTRESS into sum of n contributions
+metric_sstress_point <- function(dxm, dym) {
+  diff <- dxm * dxm - dym * dym
+  0.5 * apply(diff * diff, 1, sum)
+}
+
+metric_sstress_cost_point <- function(inp, out, method) {
+  metric_sstress_point(inp$dm, out$dm)
+}
+
 # Metric Stress fungrad
 metric_sstress_fg <- function() {
   list(
     fn = metric_sstress_cost,
+    point = metric_sstress_cost_point,
     name = "SSTRESS"
   )
 }
@@ -398,6 +420,19 @@ sammon_stress <- function(dxm, dym, eps = .Machine$double.eps) {
   sum(upper_tri((dxm - dym) ^ 2 / (dxm + eps))) / (sum(upper_tri(dxm)) + eps)
 }
 
+# Decompose sammon stress into sum of n contributions
+sammon_stress_point <- function(dxm, dym, eps = .Machine$double.eps) {
+  diff <- dxm - dym
+  num <- (diff * diff) / (dxm + eps)
+  # NB don't need to divide by 2 here because both numerator and denominator
+  # do the double counting and it cancels out
+  apply(num, 1, sum) / sum(dxm)
+}
+
+sammon_stress_cost_point <- function(inp, out, method) {
+  sammon_stress_point(inp$dm, out$dm)
+}
+
 # Unnormalized Sammon Stress
 #
 # A measure of embedding quality between input and output distance data.
@@ -465,6 +500,7 @@ sammon_stress_unnorm <- function(dxm, dym, eps = .Machine$double.eps) {
 sammon_fg <- function() {
   list(
     fn = sammon_stress_cost,
+    point = sammon_stress_cost_point,
     name = "Sammon"
   )
 }
