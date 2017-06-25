@@ -607,13 +607,8 @@ klqp_update_prow <- function(inp, out, method) {
 # @return NeRV cost function and gradient.
 # @family sneer cost wrappers
 nerv_fg <- function(lambda = 0.5) {
-  fn <- function(inp, out, method) {
-    nerv_cost(inp, out, method)
-  }
-  attr(fn, "sneer_cost_type") <- "prob"
-
   list(
-    fn = fn,
+    fn = nerv_cost,
     gr = nerv_cost_gr,
     lambda = lambda,
     name = "NeRV"
