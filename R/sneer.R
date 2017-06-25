@@ -1198,8 +1198,7 @@ sneer <- function(df,
   )
 
   result <- list(coords = embed_result$ym,
-                 cost = embed_result$cost,
-                 method = method)
+                 cost = embed_result$cost)
   if (ndim == 2) {
     colnames(result$coords) <- c("X", "Y")
   }
