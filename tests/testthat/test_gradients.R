@@ -123,6 +123,17 @@ test_that("NeRV gradients", {
   expect_grad(nerv(beta = betas), label = "nerv", inp_init = inp_aw())
   expect_grad(snerv(beta = betas), label = "snerv", inp_init = inp_aw())
   expect_grad(hsnerv(beta = betas), label = "hsnerv", inp_init = inp_aw())
+
+  # test nerv with cond probs
+  expect_grad(embedder(cost = "nerv", kernel = "exp", beta = betas,
+                       normalization = c("joint", "pair")),
+              label = "nerv_jp", inp_init = inp_aw())
+  expect_grad(embedder(cost = "nerv", kernel = "exp", beta = betas,
+                       normalization = "joint"),
+              label = "nerv_j", inp_init = inp_aw())
+  expect_grad(embedder(cost = "nerv", kernel = "exp", beta = betas,
+                       normalization = "pair"),
+              label = "nerv_p", inp_init = inp_aw())
 })
 
 test_that("NeRV gradients with fixed (or no) precision", {
@@ -136,6 +147,17 @@ test_that("JSE gradients", {
   expect_grad(jse(), label = "jse")
   expect_grad(sjse(), label = "sjse")
   expect_grad(hsjse(), label = "hsjse", diff = 1e-4)
+
+  # test jse with cond probs
+  expect_grad(embedder(cost = "JS", kernel = "exp", beta = betas,
+                       normalization = c("joint", "pair")),
+              label = "sjse_jp", inp_init = inp_aw())
+  expect_grad(embedder(cost = "JS", kernel = "exp", beta = betas,
+                       normalization = "joint"),
+              label = "sjse_j", inp_init = inp_aw())
+  expect_grad(embedder(cost = "JS", kernel = "exp", beta = betas,
+                       normalization = "pair"),
+              label = "sjse_p", inp_init = inp_aw())
 })
 
 test_that("Plugin gradients", {

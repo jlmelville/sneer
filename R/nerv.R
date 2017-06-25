@@ -570,6 +570,8 @@ klqp_update_pjoint <- function(inp, out, method) {
   out
 }
 
+klqp_update_pcond <- klqp_update_pjoint
+
 # Updates the Kullback Leibler Divergence for Row Probabilities.
 #
 # Calculates and stores the KL divergence from P (input probabilities) to Q

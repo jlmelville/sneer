@@ -524,6 +524,8 @@ klqz_update_pjoint <- function(inp, out, method) {
   out
 }
 
+klqz_update_pcond <- klqz_update_pjoint
+
 # Updates the Kullback Leibler Divergence Q||Z for Row Probabilities.
 #
 # Calculates the KL divergence from Q (output probabilities) to Z on the output
