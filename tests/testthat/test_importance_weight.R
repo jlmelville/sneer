@@ -16,12 +16,12 @@ do_embed <- function(method, input_weight_fn = exp_weight) {
 
 test_that("wSSNE gives different results to SSNE", {
   ssne_embed <- do_embed(ssne())
-  wssne_embed <- do_embed(importance_weight(ssne()))
+  wssne_embed <- do_embed(imp_weight_method(ssne()))
   expect_equal(ssne_embed$cost, 0.0375, tolerance = 1e-4)
   expect_equal(wssne_embed$cost, 0.0495, tolerance = 1e-4)
   # expect warnings with knn and iris because of identical observations, which
   # means certain perplexity values can't be achieved.
-  knn_wssne_embed <- do_embed(importance_weight(ssne()),
+  knn_wssne_embed <- do_embed(imp_weight_method(ssne()),
                               input_weight_fn = step_weight)
   expect_equal(knn_wssne_embed$cost, 0.099, tolerance = 1e-3)
 
@@ -41,9 +41,9 @@ test_that("wSSNE gives different results to SSNE", {
 test_that("weighting works with row probabilities too", {
   asne_embed <- do_embed(asne())
   expect_equal(asne_embed$cost, 8.74, tolerance = 1e-4)
-  wasne_embed <- do_embed(importance_weight(asne()))
+  wasne_embed <- do_embed(imp_weight_method(asne()))
   expect_equal(wasne_embed$cost, 6.91, tolerance = 1e-3)
-  woasne_embed <- do_embed(importance_weight(asne(),
+  woasne_embed <- do_embed(imp_weight_method(asne(),
                                          centrality_fn = outdegree_centrality))
   expect_equal(woasne_embed$cost, asne_embed$cost, tolerance = 1e-6,
               info = "using outdegree centrality should be equivalent to ASNE")

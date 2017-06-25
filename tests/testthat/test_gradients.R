@@ -239,8 +239,8 @@ test_that("Multiscale gradients", {
 })
 
 test_that("importance weighting", {
-  expect_grad(importance_weight(ssne()), label = "wssne")
-  expect_grad(importance_weight(pluginize(ssne())), label = "plugin wssne")
+  expect_grad(imp_weight_method(ssne()), label = "wssne")
+  expect_grad(imp_weight_method(pluginize(ssne())), label = "plugin wssne")
 })
 
 test_that("Dynamic HSSNE gradients", {

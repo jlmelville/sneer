@@ -117,7 +117,7 @@ degree_centrality <- function(m) {
 # Optimization equivalence of divergences improves neighbor embedding.
 # In \emph{Proceedings of the 31st International Conference on Machine Learning (ICML-14)}
 # (pp. 460-468).
-importance_weight <- function(method, centrality_fn = degree_centrality) {
+imp_weight_method <- function(method, centrality_fn = degree_centrality) {
   method$kernel <- imp_kernel(method$kernel)
   method$centrality_fn <- centrality_fn
   method <- on_inp_updated(method, calculate_importance)$method
