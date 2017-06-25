@@ -890,18 +890,14 @@ sneer <- function(df,
         extra_costs <- c("kruskal_stress")
       }
     }
-    else if (method == "mmds") {
+    else if (method == "mmds" || method == "sammon") {
       perplexity <- NULL
       if (is.null(extra_costs)) {
         extra_costs <- c("kruskal_stress")
       }
-    }
-    else if (method == "sammon") {
-      perplexity <- NULL
-      if (is.null(extra_costs)) {
-        extra_costs <- c("kruskal_stress")
+      if (method == "sammon") {
+        normalize_cost <- FALSE
       }
-      normalize_cost <- FALSE
     }
   }
   else {
