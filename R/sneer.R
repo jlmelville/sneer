@@ -876,15 +876,6 @@ sneer <- function(df,
     }
     embed_method <- embed_methods[[method]]()
 
-    if (!is.null(dyn)) {
-      embed_method$dynamic_kernel <- TRUE
-      embed_method$dyn <- dyn
-      embed_method$opt_iter <- kernel_opt_iter
-      embed_method$switch_iter <- kernel_opt_iter
-      embed_method$xi_eps <- 1e-3
-      embed_method$alt_opt <- alt_opt
-    }
-
     # special casing for different methods
     if (method == "pca") {
       max_iter <- -1
@@ -913,6 +904,15 @@ sneer <- function(df,
     embed_method <- method
   }
   embed_method$verbose <- TRUE
+
+  if (!is.null(dyn)) {
+    embed_method$dynamic_kernel <- TRUE
+    embed_method$dyn <- dyn
+    embed_method$opt_iter <- kernel_opt_iter
+    embed_method$switch_iter <- kernel_opt_iter
+    embed_method$xi_eps <- 1e-3
+    embed_method$alt_opt <- alt_opt
+  }
 
   preprocess <- make_preprocess()
   if (!is.null(scale_type)) {
