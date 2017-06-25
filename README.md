@@ -72,6 +72,7 @@ and its variants ASNE and SSNE.
 * [Multiscale SNE](http://www.sciencedirect.com/science/article/pii/S0925231215003641) (msSNE).
 * [Weighted SNE using degree centrality](http://www.jmlr.org/proceedings/papers/v32/yange14.html) (ws-SSNE).
 * [Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14).
+* Custom embedding methods (see the `embedder` function man page).
 * A variety of optimizations using the [mize](https://github.com/jlmelville/mize) package.
 * The [Spectral Directions](https://arxiv.org/abs/1206.4646)
 optimization method of Vladymyrov and Carreira-Perpiñán, although in a 
