@@ -170,7 +170,9 @@ inp_prob <- function(input_initializer, init_only = TRUE,
       }
       if (inp$dirty) {
         inp$pm <- handle_prob(inp$pm, method)
-
+        if (method$prob_type != "row" && method$verbose) {
+          summarize(inp$pm, "Pnorm")
+        }
         if (call_inp_updated) {
           update_res <- inp_updated(inp, out, method)
           inp <- update_res$inp
