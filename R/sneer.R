@@ -22,7 +22,9 @@
 #' }
 #'
 #' See the documentation for the function for the exact list of methods
-#' and variations.
+#' and variations. If you want to create variations on these methods by
+#' trying different cost functions, weighting functions and normalization
+#' schemes, see the \code{\link{embedder}} function.
 #'
 #' Optimization is carried out with the mize package
 #' (\url{https://github.com/jlmelville/mize}) with the limited memory BFGS.
@@ -175,6 +177,9 @@ NULL
 #'  \item \code{"dhssne"} A "dynamic" version of HSSNE, inspired by the
 #'  inhomogeneous t-SNE Method of Kitazono et al.
 #' }
+#'
+#' Custom embedding methods can also be used, via the \code{\link{embedder}}
+#' function.
 #'
 #' The \code{"dyn"} parameter allows for kernel parameters to be optimized, if
 #' the output kernel is exponential or heavy-tailed, i.e. methods \code{asne},
