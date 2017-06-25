@@ -227,7 +227,7 @@ div.tocify {
 <p>Previous: <a href="optimization.html">Optimization</a>. Next: <a href="reporting.html">Reporting</a>. Up: <a href="index.html">Index</a>.</p>
 <div id="method" class="section level2">
 <h2><code>method</code></h2>
-<p>By default, <code>sneer</code> carries out t-SNE. But other optimization methods are available, which you can access via the <code>method</code> argument. The currently available methods are:</p>
+<p>By default, <code>sneer</code> carries out t-SNE. But other embedding methods are available, which you can access via the <code>method</code> argument. The currently available methods are:</p>
 <div id="principal-component-analysis-pca" class="section level3">
 <h3>Principal Component Analysis (PCA)</h3>
 <p>This is neither a distance-based embedding or a probability-based embedding. It just carries out a Principal Component Analysis of the data set and uses the first two principal components as the final coordinates. It’s exactly the same as when you use the PCA option for <a href="output-initialization.html">Output Initialization</a> but do no further optimization. As a result, this method ignores the <code>init</code> option.</p>
@@ -330,8 +330,7 @@ summary(iris_itsne$dyn$dof)</code></pre>
 <p>You can continue to specify <code>alpha</code> to provide an initial value. Like it-SNE, it makes sense to initialize it to give gaussian-like behavior (so <code>alpha = 0</code>, which makes it like SSNE initially), although maybe because it’s using a single global parameter, DHSSNE seems less sensitive to initialization issues than it-SNE, which needs to optimize multiple parameters.</p>
 <p>The <code>ret</code> and <code>kernel_opt_iter</code> parameters also apply to <code>dhssne</code>.</p>
 <pre class="r"><code># Initialize alpha to 0, don't wait to start optimizing, store optimized alpha
-iris_dhssne &lt;- sneer(iris, method = &quot;dhssne&quot;, alpha = 0,
-                     kernel_opt_iter = 0, ret = c(&quot;dyn&quot;))
+iris_dhssne &lt;- sneer(iris, method = &quot;dhssne&quot;, alpha = 0, kernel_opt_iter = 0, ret = c(&quot;dyn&quot;))
 # Optimized alpha:
 iris_dhssne$dyn$alpha</code></pre>
 <p>I made this method up, so you’re not going to find it in any literature anywhere. But I think it might be useful. There is some extra background material on <a href="dynamic-hssne.html">computing the gradient for DHSSNE</a>, if you’re interested in more details.</p>
@@ -350,8 +349,7 @@ iris_dhssne$dyn$alpha</code></pre>
 <div id="heavy-tailed-kernel" class="section level3">
 <h3>Heavy-tailed Kernel</h3>
 <p>For the heavy-tailed kernel, you must specify one or both of <code>alpha</code> and <code>beta</code>:</p>
-<pre class="r"><code>iris_dyn &lt;- sneer(iris, method = &quot;hssne&quot;, 
-                   dyn = list(alpha = &quot;static&quot;, beta = &quot;point&quot;))</code></pre>
+<pre class="r"><code>iris_dyn &lt;- sneer(iris, method = &quot;hssne&quot;, dyn = list(alpha = &quot;static&quot;, beta = &quot;point&quot;))</code></pre>
 <p>This will work with <code>hssne</code>.</p>
 <p>The acceptable values of the list and their meanings are:</p>
 <ul>
@@ -361,8 +359,7 @@ iris_dhssne$dyn$alpha</code></pre>
 </ul>
 <p>For <code>dhssne</code>, where a single value of <code>alpha</code> is applied to all points, the following two commands are equivalent:</p>
 <pre class="r"><code>iris_dhssne    &lt;- sneer(iris, method = &quot;dhssne&quot;)
-iris_dyn_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, 
-                          dyn = list(alpha = &quot;global&quot;, beta = &quot;static&quot;))</code></pre>
+iris_dyn_hssne &lt;- sneer(iris, method = &quot;hssne&quot;, dyn = list(alpha = &quot;global&quot;, beta = &quot;static&quot;))</code></pre>
 </div>
 <div id="itsne-kernel" class="section level3">
 <h3><code>itsne</code> kernel</h3>
@@ -376,6 +373,85 @@ iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;
 # Keep dof fixed to its input value(s) for the entire embedding (5 in this case)
 iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;static&quot;), dof = 5)</code></pre>
 <p>If you “dynamize” the heavy-tailed, exponential or itsne kernel in this way, you can get to the final optimized values by passing <code>ret = c(&quot;dyn&quot;)</code> to <code>sneer</code> just as described for <code>dhssne</code> and <code>itsne</code> methods above.</p>
+</div>
+</div>
+<div id="the-embedder-function" class="section level2">
+<h2>The <code>embedder</code> function</h2>
+<p>To gain even more control over the type of embedding that is carried out, you can also create a custom embedding method with the <code>embedder</code> function, the return value of which you pass as an argument of the <code>method</code> parameter of the <code>sneer</code> function, instead of a name of a literature method.</p>
+<div id="cost-kernel-and-normalization" class="section level3">
+<h3><code>cost</code>, <code>kernel</code> and <code>normalization</code></h3>
+<p>Almost all of the SNE-style probability-based embedding methods can be created by specifying the following three arguments to <code>embedder</code>:</p>
+<ul>
+<li><code>cost</code>: The cost function, which must be one of:
+<ul>
+<li><code>&quot;KL&quot;</code> The Kullback-Leibler divergence.</li>
+<li><code>&quot;reverse-KL&quot;</code> The “reverse” KL divergence.</li>
+<li><code>&quot;NeRV&quot;</code> The NeRV cost function.</li>
+<li><code>&quot;JS&quot;</code> The Jensen-Shannon divergence, as used in JSE.</li>
+</ul></li>
+<li><code>kernel</code>: The kernel function used to convert squared distances to weights, which must be one of:
+<ul>
+<li><code>&quot;exponential&quot;</code> The exponential function, as used in ASNE and SSNE.</li>
+<li><code>&quot;t-distributed&quot;</code> The t-distribution, as used in t-SNE.</li>
+<li><code>&quot;heavy-tailed&quot;</code> The heavy-tailed function used in HSSNE.</li>
+<li><code>&quot;inhomogeneous&quot;</code> The function used in inhomogeneous t-SNE.</li>
+</ul></li>
+<li><code>normalization</code>: The normalization to be used when converting the weights to probabilities, which must be one of:
+<ul>
+<li><code>&quot;point&quot;</code> Pointwise normalization, as used in ASNE, NeRV and JSE.</li>
+<li><code>&quot;joint&quot;</code> Pairwise normalization followed by averaging (if required), to convert conditional probabilities into joint probabilities, as used in SSNE and t-SNE.</li>
+</ul></li>
+</ul>
+<p>The <code>normalization</code> parameter can actually more complex input, but you don’t need to worry about it most of the time. See the section on <code>joint</code> vs <code>pair</code> normalization below for more details.</p>
+<p>The above values are case insensitive and can be abbreviated. Here’s how to describe t-SNE, NeRV and JSE using <code>embedder</code>:</p>
+<pre class="r"><code># t-SNE
+tsne_embedder &lt;- embedder(cost = &quot;kl&quot;, kernel = &quot;t-dist&quot;, norm = &quot;joint&quot;)
+
+# NeRV
+nerv_embedder &lt;- embedder(cost = &quot;nerv&quot;, kernel = &quot;exp&quot;, norm = &quot;point&quot;)
+
+# JSE
+jse_embedder &lt;- embedder(cost = &quot;JS&quot;, kernel = &quot;exp&quot;, norm = &quot;point&quot;)</code></pre>
+<p>Use these methods with <code>sneer</code>, via the <code>method</code> parameter:</p>
+<pre class="r"><code>tsne &lt;- embedder(cost = &quot;kl&quot;, kernel = &quot;t-dist&quot;, norm = &quot;joint&quot;)
+iris_tsne &lt;- sneer(iris, method = tsne_embedder)</code></pre>
+<p>For the examples above, there’s no reason to use <code>embedder</code>, because it’s entirely equivalent to using <code>method = &quot;tsne&quot;</code> and so on. But as an example of a non-literature method, you could create a “symmetrized” version of JSE by changing the normalization from <code>&quot;point&quot;</code> to <code>&quot;joint&quot;</code>:</p>
+<pre class="r"><code># SJSE
+sjse_embedder &lt;- embedder(cost = &quot;JS&quot;, kernel = &quot;exp&quot;, norm = &quot;joint&quot;)
+iris_sjse &lt;- sneer(iris, method = sjse_embedder)</code></pre>
+</div>
+<div id="importance-weighting" class="section level3">
+<h3>Importance Weighting</h3>
+<p>The importance weighting technique used in the ws-SNE method can be applied to any embedding method by passing <code>importance_weight = TRUE</code>. We can turn SJSE into w-SJSE, for example:</p>
+<pre class="r"><code># w-SJSE
+wsjse_embedder &lt;- embedder(cost = &quot;JS&quot;, kernel = &quot;exp&quot;, norm = &quot;joint&quot;, importance_weight = TRUE)
+iris_wsjse &lt;- sneer(iris, method = wsjse_embedder)</code></pre>
+</div>
+<div id="pair-vs-joint-normalization" class="section level3">
+<h3><code>pair</code> vs <code>joint</code> normalization</h3>
+<p>For most methods, the difference between <code>pair</code> and <code>joint</code> normalization can be ignored: just use <code>joint</code>.</p>
+<p><code>pair</code> normalization creates the probability <span class="math inline">\(p_{ij}\)</span> from the equivalent weight <span class="math inline">\(w_{ij}\)</span>in the following way:</p>
+<p><span class="math display">\[p_{ij} = \frac{w_{ij}}{\sum_k^N \sum_l^N w_{kl}}\]</span></p>
+<p>i.e. we sum over all weights in the data set. <code>joint</code> normalization carries out a further step, by enforcing that the final probabilities are joint by averaging:</p>
+<p><span class="math display">\[\bar{p}_{ij} = \left(p_{ij} + p_{ji}\right) / 2\]</span></p>
+<p>This second step is important when calibrating the input probabilities because the input weight matrix is not symmetric. However, for embedding methods which use pair-wise normalization (SSNE and t-SNE), the output weight matrix <em>is</em> symmetric, so the resulting probabilities are already joint. The extra averaging step is therefore unnecessary and isn’t carried out.</p>
+<p>The situation changes if the output weight matrix is not symmetric. There are several ways a non-symmetric output weight matrix can occur. For example, the original NeRV paper suggests using the input kernel parameters for the output kernel. The it-SNE method allows the kernel parameters to vary per-point. However, both these methods use point-wise normalization, so don’t have to deal with this issue.</p>
+<p>The brave user of <code>embedder</code>, however, may decide they want a pair-wise normalization along with a non-symmetric weight matrix. You have the following options:</p>
+<ul>
+<li><code>norm = &quot;pair&quot;</code>: use pairwise normalization for both the input and output probabilities. . The averaging step won’t be carried out for either the input or output probabilities. However, the t-SNE paper warns that this can cause some points to have very small input probability values. This can lead to some points being outliers due to their being little contribution to the gradient.</li>
+<li><code>norm = &quot;joint&quot;</code>: force both input and output probabilities to be joint probabilities. This is the standard treatement for input probabilities in SSNE and t-SNE, but ends up with an extra averaging step per iteration in the output probabilities, and means the gradient has a less simple expression for some embedding methods, which translates to a longer run time.</li>
+<li><code>norm = c(&quot;joint&quot;, &quot;pair&quot;)</code>: force the input probabilities to be joint, but don’t bother for output probabilities. This is probably the most pragmatic option, because it gives ensures the input probabilities are non-negligible while allowing for the simpler gradient expressions (if it exists).</li>
+<li><code>normalization - c(&quot;pair&quot;, &quot;joint&quot;)</code>: the input probabilities are not averaged, but the output probabilities are. This is an eccentric choice with little to recommend it as far as I can see.</li>
+</ul>
+<p>What you defintely <em>shouldn’t</em> do is mix <code>&quot;point&quot;</code> normalization with <code>&quot;pair&quot;</code> or <code>&quot;joint&quot;</code> normalization. That is an error.</p>
+<p>Finally, remember that this is only something you need to think about if you want to use non-uniform kernel parameters in the output probabilities with pair-wise normalization.</p>
+<p>As an example of where these choices do make a difference, consider the symmetrized version of JSE we created above. If we use the <code>prec_scale = transfer</code> option in <code>sneer</code>, we will now have a kernel with non-uniform parameters and the following embeddings will all give (very slightly) different results:</p>
+<pre class="r"><code>iris_sjse_j &lt;- sneer(iris, prec_scale = &quot;transfer&quot;,  method = embedder(cost = &quot;JS&quot;, kernel = &quot;exp&quot;,
+                                                                       norm = &quot;joint&quot;))
+iris_sjse_p &lt;- sneer(iris, prec_scale = &quot;transfer&quot;,  method = embedder(cost = &quot;JS&quot;, kernel = &quot;exp&quot;, 
+                                                                       norm = &quot;pair&quot;))
+iris_sjse_jp &lt;- sneer(iris, prec_scale = &quot;transfer&quot;, method = embedder(cost = &quot;JS&quot;, kernel = &quot;exp&quot;, 
+                                                                       norm = c(&quot;joint&quot;, &quot;pair&quot;)))</code></pre>
 </div>
 </div>
 <div id="console-log" class="section level2">
