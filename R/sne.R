@@ -15,15 +15,17 @@
 # @family sneer probability embedding methods
 
 
-prob_embedder <- function(cost, kernel, prob_type, eps, verbose) {
-  list(
+prob_embedder <- function(cost, kernel, prob_type, out_prob_type = NULL,
+                          eps = .Machine$double.eps, verbose = TRUE) {
+  remove_nulls(list(
     cost = cost,
     kernel = kernel,
     prob_type = prob_type,
+    out_prob_type = out_prob_type,
     update_out_fn = update_out_prob,
     eps = eps,
     verbose = verbose
-  )
+  ))
 }
 
 # Asymmetric Stochastic Neighbor Embedding (ASNE)
