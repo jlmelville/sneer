@@ -595,10 +595,18 @@ dynamize_heavy_tail_kernel <- function(method) {
   method$dyn$after_init_fn <- function(inp, out, method) {
     nr <- nrow(out$ym)
     kernel <- method$kernel
-    if (method$dyn$alpha == "point" && length(kernel$alpha) != nr) {
+
+    if (is.null(method$dyn$alpha)) {
+      method$dyn$alpha <- "static"
+    }
+    else if (method$dyn$alpha == "point" && length(kernel$alpha) != nr) {
       kernel$alpha <- rep(kernel$alpha, nr)
     }
-    if (method$dyn$beta == "point" && length(kernel$beta) != nr) {
+
+    if (is.null(method$dyn$beta)) {
+      method$dyn$beta <- "static"
+    }
+    else if (method$dyn$beta == "point" && length(kernel$beta) != nr) {
       kernel$beta <- rep(kernel$beta, nr)
     }
 
