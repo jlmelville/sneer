@@ -1303,9 +1303,176 @@ sneer <- function(df,
       }
     )
   }
-
   result
 }
+
+#' Create an Embedding Method
+#'
+#' Creates an embedding method to be used in the \code{\link{sneer}} function,
+#' allowing arbitrary combinations of cost function, kernel and normalization
+#' schemes. Several embedding methods from the literature (e.g. SNE, t-SNE, JSE,
+#' NeRV) can be created.
+#'
+#' The \code{cost} parameter is the cost function to minimize, one of:
+#'
+#' \itemize{
+#' \item \code{"KL"} Kullback-Leibler divergence, as used in the asymmetric
+#' Stochastic Neighbor Embedding (SNE) method (Hinton and Roweis, 2002) and
+#' Symmetric Stochastic Neighbor Embedding (SSNE) method (Cook et al., 2007),
+#' and t-distributed SNE (van der Maaten and Hinton,, 2008).
+#' \item \code{"reverse-KL"} Kullback-Leibler divergence, with the output
+#' probability as the reference distribution. Part of the cost function used in
+#' the Neighbor Retrieval Visualizer (NeRV) method (Venna et al., 2010).
+#' \item \code{"nerv"} Cost function used in the (NeRV) method (Venna et al.,
+#' 2010).
+#' \item \code{"JS"} Jensen-Shannon divergence, as used in the Jensen-Shannon
+#' Embedding (JSE) method (Lee et al., 2013).
+#' }
+#'
+#' The \code{kernel} is a function that transform squared output distances
+#' into weights. Must be one of:
+#'
+#' \itemize{
+#' \item \code{"exponential"} Exponential function as used in the asymmetric
+#' Stochastic Neighbor Embedding (SNE) method (Hinton and Roweis, 2002) and
+#' Symmetric Stochastic Neighbor Embedding (SSNE) method (Cook et al., 2007).
+#' \item \code{"t-distributed"} The t-distribution with one degree of freedom,
+#' as used in t-distributed SNE (van der Maaten and Hinton,, 2008).
+#' \item \code{"heavy-tailed"}. Heavy-tailedness function used in Heavy-tailed
+#' SSNE (Zhang et al. 2009).
+#' \item \code{"inhomogeneous"}. The function used in inhomogeneous t-SNE
+#' (Kitazono et al. 2016).
+#' }
+#'
+#' The \code{normalization} determines how output weights are converted to
+#' probabilities. Must be one of:
+#'
+#' \itemize{
+#'   \item \code{"point"} Point-wise normalization, as used in asymmetric SNE,
+#'   NeRV and JSE.
+#'   \item \code{"pair"} Pair-wise normalization, as used in symmetric SNE,
+#'   and t-distributed SNE.
+#'   \item \code{"joint"} Pair-wise normalization, but enforcing the output
+#'   probabilities to be joint, by averaging the same way as the input
+#'   probabilities. Only differs from \code{"pair"} if the chosen
+#'   \code{"kernel"} has non-uniform parameters.
+#' }
+#'
+#' @param cost The cost function to optimize. See 'Details'. Can be abbreviated.
+#' @param kernel The function used to convert squared distances to weights. See
+#'   'Details'. Can be abbreviated.
+#' @param beta Precision (narrowness) of the \code{"exponential"} and
+#'   \code{"heavy-tailed"} kernels.
+#' @param alpha Heavy tailedness of the \code{"heavy-tailed"} kernel. A value of
+#'   0 makes the kernel behave like \code{"exponential"}, and a value of 1
+#'   behaves like \code{"heavy-tailed"}.
+#' @param dof Degrees of freedom of the \code{"inhomogeneous"} kernel. A value
+#'   of 1 makes the kernel behave like \code{"t-distributed"}, and a value
+#'   approaching approaching infinity behaves like \code{"exponential"}.
+#' @param normalization Weight normalization to carry out. See 'Details'.
+#'   Can be abbreviated.
+#' @param lambda Controls the weighting of the \code{"nerv"} cost function. Must
+#'   take a value between 0 (where it behaves like \code{"reverse-KL"}) and 1
+#'   (where it behaves like \code{"KL"}).
+#' @param kappa Controls the weighting of the \code{"js"} cost function. Must
+#'   take a value between 0 (where it behaves like \code{"KL"}) and 1 (where it
+#'   behaves like \code{"reverse-KL"}).
+#' @param importance_weight If \code{TRUE}, modify the embedder to use the
+#'   importance weighting method (Yang et al. 2014).
+#' @param verbose If \code{TRUE}, log information about the embedding method to
+#'   the console.
+#' @return An embedding method, to be passed as an argment to the \code{method}
+#'   parameter of \code{\link{sneer}}.
+#'
+#' @references Cook, J., Sutskever, I., Mnih, A., & Hinton, G. E. (2007).
+#' Visualizing similarity data with a mixture of maps. In \emph{International
+#' Conference on Artificial Intelligence and Statistics} (pp. 67-74).
+#'
+#' Hinton, G. E., & Roweis, S. T. (2002). Stochastic neighbor embedding. In
+#' \emph{Advances in neural information processing systems} (pp. 833-840).
+#'
+#' Kitazono, J., Grozavu, N., Rogovschi, N., Omori, T., & Ozawa, S. (2016,
+#' October). t-Distributed Stochastic Neighbor Embedding with Inhomogeneous
+#' Degrees of Freedom. In \emph{International Conference on Neural Information
+#' Processing (ICONIP 2016)} (pp. 119-128). Springer International Publishing.
+#'
+#' Lee, J. A., Renard, E., Bernard, G., Dupont, P., & Verleysen, M. (2013). Type
+#' 1 and 2 mixtures of Kullback-Leibler divergences as cost functions in
+#' dimensionality reduction based on similarity preservation.
+#' \emph{Neurocomputing}, \emph{112}, 92-108.
+#'
+#' Van der Maaten, L., & Hinton, G. (2008). Visualizing data using t-SNE.
+#' \emph{Journal of Machine Learning Research}, \emph{9}(2579-2605).
+#'
+#' Venna, J., Peltonen, J., Nybo, K., Aidos, H., & Kaski, S. (2010). Information
+#' retrieval perspective to nonlinear dimensionality reduction for data
+#' visualization. \emph{Journal of Machine Learning Research}, \emph{11},
+#' 451-490.
+#'
+#' Yang, Z., King, I., Xu, Z., & Oja, E. (2009). Heavy-tailed symmetric
+#' stochastic neighbor embedding. In \emph{Advances in neural information
+#' processing systems} (pp. 2169-2177).
+#'
+#' Yang, Z., Peltonen, J., & Kaski, S. (2014). Optimization equivalence of
+#' divergences improves neighbor embedding. In \emph{Proceedings of the 31st
+#' International Conference on Machine Learning (ICML-14)} (pp. 460-468).
+#'
+#' @seealso For literature embedding methods, \code{\link{sneer}} will generate
+#'   the method for you, by passing its name (e.g. \code{method = "tsne"}). This
+#'   function is only strictly necessary for experimentation purposes.
+#'
+#' @examples
+#' # t-SNE
+#' embedder(cost = "kl", kernel = "t-dist", norm = "pair")
+#'
+#' # NeRV
+#' embedder(cost = "nerv", kernel = "exp", norm = "point")
+#'
+#' # JSE
+#' embedder(cost = "JS", kernel = "exp", norm = "point")
+#'
+#' # weighted SSNE
+#' embedder(cost = "kl", kernel = "exp", norm = "pair", importance_weight = TRUE)
+#' @export
+embedder <- function(cost, kernel, kappa = 0.5, lambda = 0.5,
+                     beta = 1, alpha = 0, dof = 1,
+                     normalization = "joint",
+                     importance_weight = FALSE,
+                     verbose = TRUE) {
+  cost <- match.arg(tolower(cost),
+                    c("kl", "revkl", "js", "nerv"))
+  cost <- switch(cost,
+                 kl = kl_fg(),
+                 "reverse-kl" = reverse_kl_fg(),
+                 js = jse_fg(kappa = kappa),
+                 nerv = nerv_fg(lambda = lambda))
+
+  kernel <- match.arg(tolower(kernel),
+                      c("exponential", "heavy-tailed", "inhomogeneous",
+                        "t-distributed"))
+  kernel <- switch(kernel,
+                   exponential = exp_kernel(beta = beta),
+                   "t-distributed" = tdist_kernel(),
+                   "heavy-tailed" = heavy_tail_kernel(beta = beta,
+                                                      alpha = alpha),
+                   inhomogeneous = itsne_kernel(dof = dof))
+
+  normalization <- match.arg(tolower(normalization),
+                             c("point", "pair", "joint"))
+  prob_type <- switch(normalization,
+                      "point" = "row",
+                      "pair" = "cond",
+                      "joint" = "joint")
+
+  embedder <- prob_embedder(cost = cost, kernel = kernel, prob_type = prob_type,
+                            eps = .Machine$double.eps, verbose = verbose)
+
+  if (importance_weight) {
+    embedder <- imp_weight_method(embedder)
+  }
+  embedder
+}
+
 
 opt_sneer <- function(opt, method, eta = 500) {
   if (methods::is(opt, "list")) {
@@ -1364,4 +1531,3 @@ opt_sneer <- function(opt, method, eta = 500) {
 
   optimizer
 }
-

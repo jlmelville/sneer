@@ -2,6 +2,7 @@
 
 export(embed_plot)
 export(embed_plotly)
+export(embedder)
 export(nbr_pres)
 export(pr_auc_embed)
 export(rnx_auc_embed)
