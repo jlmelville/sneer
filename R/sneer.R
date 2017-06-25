@@ -932,7 +932,7 @@ sneer <- function(df,
   }
 
   ok_rets <- c("x", "dx", "dy", "p", "q", "w", "prec", "dim", "deg", "degs",
-               "v", "dyn")
+               "v", "dyn", "method")
   ret <- unique(ret)
   for (r in (ret)) {
     match.arg(tolower(r), ok_rets)
@@ -1228,9 +1228,13 @@ sneer <- function(df,
 
   inp <- embed_result$inp
   out <- embed_result$out
+
   for (r in (ret)) {
     match.arg(tolower(r), ok_rets)
     switch(r,
+      method = {
+        result$method <- embed_result$method
+      },
       x = {
        if (!is.null(inp$xm)) {
          result$x <- inp$xm
