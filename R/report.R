@@ -119,6 +119,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
                           extra_costs = NULL, opt_report = FALSE,
                           out_report = FALSE,
                           show_time = TRUE,
+                          convergence_iter = 0,
                           verbose = TRUE) {
   reporter <- list()
 
@@ -192,23 +193,25 @@ make_reporter <- function(report_every = 100, min_cost = 0,
       utils::flush.console()
     }
 
-    if (cost < min_cost) {
-      if (verbose) {
-        message("minimum cost ", formatC(min_cost), " convergence reached")
+    if (iter >= convergence_iter) {
+      if (cost < min_cost) {
+        if (verbose) {
+          message("minimum cost ", formatC(min_cost), " convergence reached")
+        }
+        result$stop_early <- TRUE
       }
-      result$stop_early <- TRUE
-    }
-    else if (!is.null(reltol) && !is.null(rtol) && rtol < reltol) {
-      if (verbose) {
-        message("relative tolerance ", formatC(reltol), " convergence reached")
+      else if (!is.null(reltol) && !is.null(rtol) && rtol < reltol) {
+        if (verbose) {
+          message("relative tolerance ", formatC(reltol), " convergence reached")
+        }
+        result$stop_early <- TRUE
       }
-      result$stop_early <- TRUE
-    }
-    else if (!is.null(rmsd) && rmsd < disttol) {
-      if (verbose) {
-        message("distance tolerance ", formatC(rmsd), " convergence reached")
+      else if (!is.null(rmsd) && rmsd < disttol) {
+        if (verbose) {
+          message("distance tolerance ", formatC(rmsd), " convergence reached")
+        }
+        result$stop_early <- TRUE
       }
-      result$stop_early <- TRUE
     }
 
     result$cost <- cost
