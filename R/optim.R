@@ -130,6 +130,7 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
                                      step_tol = .Machine$double.eps,
                                      max_iter = Inf)
     opt$mize <- mize
+    opt$restarted_once <- FALSE
   }
 
   if (!is.null(opt$old_cost_dirty) && opt$old_cost_dirty) {
@@ -147,8 +148,21 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
   mize <- opt$mize_module$check_mize_convergence(step_info)
 
   if (mize$is_terminated && mize$terminate$what == "step_tol") {
-    mize$is_terminated <- FALSE
-    mize$terminate <- NULL
+    if (!opt$restarted_once) {
+      mize$is_terminated <- FALSE
+      mize$terminate <- NULL
+      mize <- opt$mize_module$opt_init(mize, par, fg,
+                                       step_tol = .Machine$double.eps,
+                                       max_iter = Inf)
+      # Restarting doesn't count towards convergence during any iterations where
+      # we don't want to stop yet
+      if (iter >= opt$convergence_iter) {
+        opt$restarted_once <- TRUE
+        if (opt$verbose) {
+          message("Restarting optimizer")
+        }
+      }
+    }
   }
 
   opt$mize <- mize
@@ -294,6 +308,8 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
                                      step_tol = .Machine$double.eps,
                                      max_iter = Inf)
     opt$mize <- mize
+    opt$restarted_coord_once <- FALSE
+    opt$restarted_param_once <- FALSE
   }
 
   # Can't reuse any old gradients
@@ -313,8 +329,21 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
   mize <- opt$mize_module$check_mize_convergence(step_info)
 
   if (mize$is_terminated && mize$terminate$what == "step_tol") {
-    mize$is_terminated <- FALSE
-    mize$terminate <- NULL
+    if (!opt$restarted_coord_once) {
+      mize$is_terminated <- FALSE
+      mize$terminate <- NULL
+      mize <- opt$mize_module$opt_init(mize, par, fg_coord,
+                                       step_tol = .Machine$double.eps,
+                                       max_iter = Inf)
+      # Restarting doesn't count towards convergence during any iterations where
+      # we don't want to stop yet
+      if (iter >= opt$convergence_iter) {
+        opt$restarted_coord_once <- TRUE
+        if (opt$verbose) {
+          message("Restarting coord optimizer")
+        }
+      }
+    }
   }
 
 
@@ -385,8 +414,21 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
     mize_alt <- opt$mize_module$check_mize_convergence(step_info)
 
     if (mize_alt$is_terminated && mize_alt$terminate$what == "step_tol") {
-      mize_alt$is_terminated <- FALSE
-      mize_alt$terminate <- NULL
+      if (!opt$restarted_param_once) {
+        mize_alt$is_terminated <- FALSE
+        mize_alt$terminate <- NULL
+        mize_alt <- opt$mize_module$opt_init(mize_alt, par, fg_alt,
+                                         step_tol = .Machine$double.eps,
+                                         max_iter = Inf)
+        # Restarting doesn't count towards convergence during any iterations where
+        # we don't want to stop yet
+        if (iter >= opt$convergence_iter) {
+          opt$restarted_param_once <- TRUE
+          if (opt$verbose) {
+            message("Restarting param optimizer")
+          }
+        }
+      }
     }
 
     opt$mize_alt <- mize_alt

@@ -910,14 +910,21 @@ sneer <- function(df,
   }
   embed_method$verbose <- TRUE
 
+  # Don't check convergence until we've finished exaggeration or
+  # perplexity scaling or until we've started kernel optimization, whichever
+  # is later
+  convergence_iter <- 0
+
   if (!is.null(dyn)) {
     embed_method$dynamic_kernel <- TRUE
     embed_method$dyn <- dyn
     embed_method$opt_iter <- kernel_opt_iter
     embed_method$switch_iter <- kernel_opt_iter
-    embed_method$xi_eps <- 1e-3
+    embed_method$xi_eps <- .Machine$double.eps
     embed_method$alt_opt <- alt_opt
   }
+  convergence_iter <- max(convergence_iter, kernel_opt_iter)
+
 
   preprocess <- make_preprocess()
   if (!is.null(scale_type)) {
@@ -1060,6 +1067,7 @@ sneer <- function(df,
       }
     }
   }
+  convergence_iter <- max(convergence_iter, perp_scale_iter)
 
   if (methods::is(init, "matrix")) {
     init_config <- init
@@ -1163,6 +1171,7 @@ sneer <- function(df,
     tricks <- make_tricks(early_exaggeration(exaggeration = exaggerate,
                                              off_iter = exaggerate_off_iter,
                                              verbose = TRUE))
+    convergence_iter <- max(convergence_iter, exaggerate_off_iter)
   }
 
   # Ensure that if Spectral Direction optimizer is chosen, it can be used with
@@ -1182,6 +1191,7 @@ sneer <- function(df,
     xm <- df[, indexes]
   }
 
+  optimizer$convergence_iter <- convergence_iter
   embed_result <- embed_main(
     xm,
     method = embed_method,
@@ -1195,7 +1205,8 @@ sneer <- function(df,
       report_every = report_every,
       extra_costs = extra_costs,
       plot = embed_plot,
-      reltol = tol
+      reltol = tol,
+      convergence_iter = convergence_iter
     ),
     after_embed = after_embed,
     max_iter = max_iter,
