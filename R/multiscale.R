@@ -143,6 +143,9 @@ inp_from_perps_multi <- function(perplexities = NULL,
                                  verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
+      if (is.null(keep_weights)) {
+        keep_weights <- TRUE
+      }
 
       if (is.null(perplexities)) {
         perplexities <- ms_perps(inp$dm)
@@ -365,6 +368,9 @@ inp_from_perps_multil <- function(perplexities = NULL,
                                  verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
+      if (is.null(keep_weights)) {
+        keep_weights <- TRUE
+      }
 
       if (is.null(perplexities)) {
         perplexities <- ms_perps(inp$dm)
@@ -541,6 +547,9 @@ inp_from_step_perp <- function(perplexities = NULL,
                           verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
+      if (is.null(keep_weights)) {
+        keep_weights <- TRUE
+      }
 
       if (is.null(perplexities)) {
         perplexities <- step_perps(inp$dm)
@@ -694,6 +703,9 @@ inp_from_dint_max <- function(perplexities = NULL,
                               verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
+      if (is.null(keep_weights)) {
+        keep_weights <- TRUE
+      }
 
       if (is.null(perplexities)) {
         perplexities <- ms_perps(inp$dm)
