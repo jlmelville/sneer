@@ -213,6 +213,7 @@ mize_opt <- function(opt_name, verbose = FALSE, ...) {
     optimize_step = mize_opt_step,
     mize_module = mize_module,
     mize = opt,
+    convergence_iter = 0,
     verbose = verbose
   )
 }
@@ -235,6 +236,7 @@ mize_opt_alt <- function(opt_name, verbose = FALSE, ...) {
     mize_module = mize_module,
     mize = opt,
     mize_alt = mize_alt,
+    convergence_iter = 0,
     verbose = verbose
   )
 }

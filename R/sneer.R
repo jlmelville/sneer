@@ -1583,5 +1583,7 @@ opt_sneer <- function(opt, method, eta = 500) {
     stop("Unknown optimization method '", opt, "'")
   }
 
+  optimizer$convergence_iter <- 0
+
   optimizer
 }
