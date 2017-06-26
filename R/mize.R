@@ -7553,7 +7553,14 @@ line_search <- function(ls_fn,
         #message("Wolfe: setting stage updating to eager")
         opt$eager_update <- TRUE
       }
-      list(opt = opt)
+
+      sub_stage$value <- NULL
+      sub_stage$alpha0 <- NULL
+      sub_stage$d0 <- NULL
+      sub_stage$f0 <- NULL
+      sub_stage$df <- NULL
+
+      list(opt = opt, sub_stage = sub_stage)
     },
     calculate = function(opt, stage, sub_stage, par, fg, iter) {
 
