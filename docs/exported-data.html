@@ -242,6 +242,7 @@ div.tocify {
 <p>You can also ask for some other data. Some of it might be useful for diagnostics, debugging, visualization or as input to another algorithm. To get access to it, pass a vector of names to the <code>ret</code> parameter.</p>
 <p>The names you can ask for are:</p>
 <ul>
+<li><code>pcost</code> - The final <code>cost</code>, decomposed into the sum of <em>n</em> values, with <em>n</em> being the number of points. Be aware that these individual components don’t have to be positive, e.g. if the cost function is a divergence. For the <code>pca</code> method, the <code>mmds</code> cost function is used.</li>
 <li><code>x</code> - input coordinates after <a href="preprocessing.html">Preprocessing</a> and column filtering.</li>
 <li><code>dx</code> - input distance matrix. Calculated if not present. Note that this of class <code>matrix</code>, not <code>dist</code>.</li>
 <li><code>dy</code> - output distance matrix. Calculated if not present. Note that this of class <code>matrix</code>, not <code>dist</code>.</li>
@@ -253,9 +254,9 @@ div.tocify {
 <li><code>dyn</code> Dynamically optimized non-coordinate parameters. A list containing sublists, with names corresponding to the names of the parameters optimized. This is avaiable if using <a href="http://dx.doi.org/10.1007/978-3-319-46675-0_14">Inhomogeneous t-SNE</a> (<code>method = &quot;itsne&quot;</code>), where <code>dyn</code> will contain a list <code>dof</code>, which contains the optimized degrees of freedom parameter for each output coordinate. If using <code>method = &quot;dhssne&quot;</code> method, dyn contains a list called <code>alpha</code>, which contains the global alpha optimized alpha value. See the <a href="embedding-methods.html">Embedding Methods</a> for more on DHSSNE.</li>
 </ul>
 <p>For every name you provide, the list returned by <code>sneer</code> will contain an extra item in the list with the same name. If you ask for an item that doesn’t make sense, e.g. a probability matrix from an embedding method that never calculated one, the request is silently ignored. Otherwise, the value will be calculated if possible, e.g. even though degree centrality is only used in ws-SNE, you can ask for it to be returned from any probability-based embedding, because it’s related to the input probabilities, so it can be calculated.</p>
-<pre class="r"><code># return the output distance matrix and the degree centrality in 
-# tsne_iris$dy and tsne_iris$deg, respectively
-tsne_iris &lt;- sneer(iris, ret = c(&quot;dy&quot;, &quot;deg&quot;))
+<pre class="r"><code># return the point-wise cost function, output distance matrix and the degree centrality
+# in tsne_iris$dy and tsne_iris$deg, respectively
+tsne_iris &lt;- sneer(iris, ret = c(&quot;pcost&quot;, &quot;dy&quot;, &quot;deg&quot;))
 
 # returns the output distance matrix in sammon_iris$dy, but no
 # sammon_iris$deg, because that would require the presence of data that

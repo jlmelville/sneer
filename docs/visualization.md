@@ -38,12 +38,13 @@ the standard `graphics::plot` commands that could guarantee the legend would
 be in a sensible place and location for arbitrary numbers of categories and
 category names of arbitrary length. 
 
-Anyway, let's run through some examples. Let's do a quick tsne embedding on
-our old friend the iris dataset, and lets extract the degree centrality of
-each node too so we have something numeric to project onto the plot.
+Anyway, let's run through some examples. Let's do a quick tsne embedding on our
+old friend the iris dataset, and lets extract the degree centrality (`deg`) and 
+embedding error (`pcost`) of each node too so we have something numeric to
+project onto the plot.
 
 ```R
-tsne_iris <- sneer(iris, max_iter = 200, ret = c("deg"))
+tsne_iris <- sneer(iris, max_iter = 200, ret = c("deg", "pcost"))
 ```
 
 ### Default
@@ -173,7 +174,7 @@ Previously, I mentioned that if you pass a data frame rather than a vector to
 the `x` parameter, the function will attempt to do the right thing. What this
 means in practice is:
 
-* it first of all looks for a column of strings, where each member can be
+* first of all, it looks for a column of strings, where each member can be
 interpreted as a color. If it finds one, it will use that for colors. If it 
 finds more than one, it uses the last column it finds.
 * otherwise, if looks for a factor column. If it finds one, it maps that to
@@ -222,17 +223,34 @@ you have a small dataset with short labels.
 
 ### Mapping numeric vectors
 
-You can also map a numeric vector to a point. Choosing a good color scheme is
-very important here, so I recommend the ColorBrewer sequential and diverging 
-schemes. Here's the iris plot, with the degree centrality - a measure of how 
-"important" each point is - projected onto the plot, with the "Blues" 
-sequential color scheme:
+You can also map a numeric vector to a point. For example, if you use return
+the point-wise decomposition of the cost function, `pcost`, you can get a
+sense for which points have been well-embedded. It's important to avoid 
+drawing conclusions about similarity of points based on their embedded 
+proximity if they have a high individual embedding error. 
+
+Choosing a good color scheme is very important here, so I recommend the
+ColorBrewer sequential and diverging schemes. Here's the iris t-SNE
+absolute error plot with the "Blues" sequential color scheme:
+
+![`embed_plot(tsne_iris$coords, abs(tsne_iris$pcost), color_scheme = "Blues")`](embed-plot-pcost-blues.png)
+
+I've use `abs(tsne_iris$pcost)`, because for the Kullback-Leibler divergence,
+the individual point-wise error can be negative or positive. For this example,
+though, I only care about the magnitude of the embedding error. The *setosa*
+class down in the bottom left is very well embedded, the light blue color 
+indicating little contribution to the embedding error. The embedding clearly had
+a bit more trouble where the *virginica* and *versicolor* clusters overlap.
+
+The degree centrality - a measure of how "important" each point is - might also 
+provide some information, although note that it is calculated using the input
+probability only. It's not using the output coordinates or error directly. Once
+again, we'll use the Blues color scheme:
 
 ![`embed_plot(tsne_iris$coords, tsne_iris$deg, color_scheme = "Blues")`](embed-plot-deg-blues.png)
 
 The dark blue points are inside the clusters, with the least important points
-on the edges. Makes sense. Good job, t-SNE (the degree centrality is calculated
-using the input probability only so it's not using the output data directly).
+on the edges. Makes sense. Good job, t-SNE (the degree centrality 
 
 As you can see, sequential schemes highlight large values. If you want to 
 highlight values at both ends of the scale, use a diverging scale, like 
@@ -368,7 +386,7 @@ Then, set `plot_type = "ggplot2"` (or just `"g"`):
 
 ![`tsne_iris <- sneer(iris, plot_type = "ggplot2")`](tsne-iris-ggplot2.png)
 
-Could that be... yes it is. It's a legend at long, long last. This is the big
+Could that be..? Yes it is. It's a legend at long, long last. This is the big
 advantage of using the `ggplot2` plotting during the embedding. It's not
 currently supported by `embed_plot`.
 

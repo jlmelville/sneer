@@ -38,6 +38,10 @@ get access to it, pass a vector of names to the `ret` parameter.
 
 The names you can ask for are:
 
+* `pcost` - The final `cost`, decomposed into the sum of *n* values, with *n* 
+  being the number of points. Be aware that these individual components don't 
+  have to be positive, e.g. if the cost function is a divergence. For the `pca`
+  method, the `mmds` cost function is used.
 * `x` - input coordinates after [Preprocessing](preprocessing.html) and column
   filtering.
 * `dx` - input distance matrix. Calculated if not present. Note that this of 
@@ -83,9 +87,9 @@ ask for it to be returned from any probability-based embedding, because it's
 related to the input probabilities, so it can be calculated.
 
 ```R
-# return the output distance matrix and the degree centrality in 
-# tsne_iris$dy and tsne_iris$deg, respectively
-tsne_iris <- sneer(iris, ret = c("dy", "deg"))
+# return the point-wise cost function, output distance matrix and the degree centrality
+# in tsne_iris$dy and tsne_iris$deg, respectively
+tsne_iris <- sneer(iris, ret = c("pcost", "dy", "deg"))
 
 # returns the output distance matrix in sammon_iris$dy, but no
 # sammon_iris$deg, because that would require the presence of data that
