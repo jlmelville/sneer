@@ -14,10 +14,35 @@
 # @family sneer distance embedding methods
 NULL
 
+dist_embedder <- function(cost, stiffness, eps = .Machine$double.eps) {
+  remove_nulls(list(
+    cost = cost,
+    gradient_fn = dist_gradient,
+    stiffness = stiffness,
+    update_out_fn = update_dist,
+    eps = eps
+  ))
+}
+
+
 # Output update function that only updates distances
 update_dist = function(inp, out, method) {
   out$dm <- distance_matrix(out$ym)
   list(out = out, inp = inp)
+}
+
+
+mmds_stiffness_fn <- function(dxm, dym, eps = .Machine$double.eps) {
+  -2 * (dxm - dym)
+}
+
+mmds_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      mmds_stiffness_fn(inp$dm, out$dm, eps = method$eps)
+    },
+    name = "MMDS"
+  )
 }
 
 # Metric Multi-dimensional Scaling (MDS) Using STRESS Cost Function
@@ -88,20 +113,26 @@ update_dist = function(inp, out, method) {
 # @family sneer embedding methods
 # @family sneer distance embedding methods
 mmds <- function(eps = .Machine$double.eps) {
-  f <- function(dxm, dym, eps = .Machine$double.eps) {
-    -2 * (dxm - dym)
-  }
-
-  list(
+  dist_embedder(
     cost = metric_stress_fg(),
-    gradient_fn = dist_gradient,
-    stiffness_fn = function(method, inp, out) {
-      f(inp$dm, out$dm, eps = method$eps)
-    },
-    update_out_fn = update_dist,
+    stiffness = mmds_stiffness(),
     eps = eps
   )
 }
+
+smmds_stiffness_fn <- function(dxm, dym, eps = .Machine$double.eps) {
+  -4 * dym * (dxm ^ 2 - dym ^ 2)
+}
+
+smmds_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      smmds_stiffness_fn(inp$dm, out$dm, eps = method$eps)
+    },
+    name = "SMMDS"
+  )
+}
+
 
 # Metric Multi-dimensional Scaling (MDS) using SSTRESS Cost Function.
 #
@@ -132,18 +163,24 @@ mmds <- function(eps = .Machine$double.eps) {
 # Artefactual Structure from Least-Squares Multidimensional Scaling.
 # In \emph{Advances in Neural Information Processing Systems} (pp. 913-920).
 smmds <- function(eps = .Machine$double.eps) {
-  f <- function(dxm, dym, eps = .Machine$double.eps) {
-    -4 * dym * (dxm ^ 2 - dym ^ 2)
-  }
-
-  list(
+  dist_embedder(
     cost = metric_sstress_fg(),
-    gradient_fn = dist_gradient,
-    stiffness_fn = function(method, inp, out) {
-      f(inp$dm, out$dm, eps = method$eps)
-    },
-    update_out_fn = update_dist,
+    stiffness = smmds_stiffness(),
     eps = eps
+  )
+}
+
+sammon_stiffness_fn <- function(dxm, dym, sum_rij, eps = .Machine$double.eps) {
+  (-2 * (dxm - dym)) / (dxm + eps) / sum_rij
+}
+
+sammon_stiffness <- function() {
+  list(
+    fn = function(method, inp, out) {
+      sammon_stiffness_fn(inp$dm, out$dm, sum_rij = method$sum_rij,
+                          eps = method$eps)
+    },
+    name = "Sammon"
   )
 }
 
@@ -191,22 +228,9 @@ smmds <- function(eps = .Machine$double.eps) {
 # @family sneer embedding methods
 # @family sneer distance embedding methods
 sammon_map <- function(eps = .Machine$double.eps) {
-  f <- function(dxm, dym, sum_rij, eps = .Machine$double.eps) {
-    (-2 * (dxm - dym)) / (dxm + eps) / sum_rij
-  }
-
-  list(
+  dist_embedder(
     cost = sammon_fg(),
-    gradient_fn = dist_gradient,
-    stiffness_fn = function(method, inp, out) {
-      f(inp$dm, out$dm, sum_rij = method$sum_rij, eps = method$eps)
-    },
-    update_out_fn = update_dist,
-    after_init_fn = function(inp, out, method) {
-      method$sum_rij <- sum(upper_tri(inp$dm)) + eps
-      list(method = method)
-    },
+    stiffness = sammon_stiffness(),
     eps = eps
   )
 }
-
