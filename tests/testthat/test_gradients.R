@@ -26,6 +26,11 @@ pluginize <- function(method) {
   method
 }
 
+distance_pluginize <- function(method) {
+  method$stiffness <- distance_stiffness()
+  method
+}
+
 gfd <- function(embedder, diff = 1e-4) {
   gradient_fd(embedder$inp, embedder$out, embedder$method, diff = diff)$gm
 }
@@ -95,6 +100,13 @@ test_that("Distance gradients", {
   expect_grad(mmds(), inp_init = NULL, label = "mmds")
   expect_grad(smmds(), inp_init = NULL, label = "smmds")
   expect_grad(sammon_map(), inp_init = NULL, label = "sammon")
+})
+
+test_that("Plugin distance gradients", {
+  expect_grad(distance_pluginize(mmds()), inp_init = NULL, label = "plugin mmds")
+  expect_grad(distance_pluginize(smmds()), inp_init = NULL, label = "plugin smmds")
+  expect_grad(distance_pluginize(sammon_map()), inp_init = NULL,
+              label = "plugin sammon")
 })
 
 test_that("SNE gradients", {

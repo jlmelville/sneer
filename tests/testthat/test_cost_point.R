@@ -48,6 +48,18 @@ out <- list(dm = dym, qm = qm)
 
 expect_point_sum <- function(cost, extra_label = "") {
   method = list(eps = .Machine$double.eps, cost = cost)
+  if (!is.null(cost$after_init_fn)) {
+    res <- cost$after_init_fn(inp, out, method)
+    if (!is.null(res$method)) {
+      method <- res$method
+    }
+    if (!is.null(res$inp)) {
+      inp <- res$inp
+    }
+    if (!is.null(res$out)) {
+      out <- res$out
+    }
+  }
   expect_equal(sum(cost$point(inp, out, method)),
                cost$fn(inp, out, method),
                label = paste0(cost$name, " point sum ", extra_label))

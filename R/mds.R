@@ -14,16 +14,15 @@
 # @family sneer distance embedding methods
 NULL
 
+# Create an embedding method which uses distances directly
 dist_embedder <- function(cost, stiffness, eps = .Machine$double.eps) {
   remove_nulls(list(
     cost = cost,
-    gradient_fn = dist_gradient,
     stiffness = stiffness,
     update_out_fn = update_dist,
     eps = eps
   ))
 }
-
 
 # Output update function that only updates distances
 update_dist = function(inp, out, method) {
@@ -32,8 +31,23 @@ update_dist = function(inp, out, method) {
 }
 
 
+# Generic stiffness function for distance-based embedding
+distance_stiffness_fn <- function(method, inp, out) {
+  dc_dd <- method$cost$gr(inp, out, method)
+  dc_dd / out$dm
+}
+
+distance_stiffness <- function() {
+  list(
+    fn = distance_stiffness_fn,
+    name = "distance"
+  )
+}
+
+# MMDS --------------------------------------------------------------------
+
 mmds_stiffness_fn <- function(dxm, dym, eps = .Machine$double.eps) {
-  -2 * (dxm - dym)
+  (dxm - dym) / -dym
 }
 
 mmds_stiffness <- function() {
@@ -120,8 +134,11 @@ mmds <- function(eps = .Machine$double.eps) {
   )
 }
 
+
+# SSTRESS MMDS ------------------------------------------------------------
+
 smmds_stiffness_fn <- function(dxm, dym, eps = .Machine$double.eps) {
-  -4 * dym * (dxm ^ 2 - dym ^ 2)
+  -2 * (dxm * dxm - dym * dym)
 }
 
 smmds_stiffness <- function() {
@@ -170,14 +187,17 @@ smmds <- function(eps = .Machine$double.eps) {
   )
 }
 
-sammon_stiffness_fn <- function(dxm, dym, sum_rij, eps = .Machine$double.eps) {
-  (-2 * (dxm - dym)) / (dxm + eps) / sum_rij
+
+# Sammon ------------------------------------------------------------------
+
+sammon_stiffness_fn <- function(dxm, dym, inv_sum_rij, eps = .Machine$double.eps) {
+  -2 * inv_sum_rij * (dxm - dym) / (dxm * dym + eps)
 }
 
 sammon_stiffness <- function() {
   list(
     fn = function(method, inp, out) {
-      sammon_stiffness_fn(inp$dm, out$dm, sum_rij = method$sum_rij,
+      sammon_stiffness_fn(inp$dm, out$dm, inv_sum_rij = method$inv_sum_rij,
                           eps = method$eps)
     },
     name = "Sammon"

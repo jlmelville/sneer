@@ -28,10 +28,24 @@ qm <- matrix(
 inp <- list(pm = pm)
 out <- list(qm = qm)
 
-expect_cost_fd <- function(cost, inp, out, label, diff = 1e-5, tolerance = 1e-6) {
+expect_cost_fd <- function(cost, inp, out, label, diff = 1e-5, tolerance = 1e-6,
+                           mat_name = "qm") {
   method <- list(cost = cost, eps = .Machine$double.eps, prob_type = "row")
+  if (!is.null(method$cost$after_init_fn)) {
+    res <- method$cost$after_init_fn(inp, out, method)
+    if (!is.null(res$method)) {
+      method <- res$method
+    }
+    if (!is.null(res$inp)) {
+      inp <- res$inp
+    }
+    if (!is.null(res$out)) {
+      out <- res$out
+    }
+  }
+
   k_gan <- cost$gr(inp, out, method)
-  k_gfd <- cost_gradient_fd(inp, out, method, diff = diff)
+  k_gfd <- cost_gradient_fd(inp, out, method, diff = diff, mat_name = mat_name)
   expect_equal(k_gan, k_gfd, label = label,
                expected.label = "finite difference gradient",
                tolerance = tolerance)
@@ -50,4 +64,37 @@ expect_cost_fd(jse_fg(), inp, out, "JSE default", diff = 1e-7)
 # kappa can't actually be set to exactly 0 or 1
 expect_cost_fd(jse_fg(kappa = 0.01), inp, out, "JSE kappa -> 0", diff = 1e-7)
 expect_cost_fd(jse_fg(kappa = 0.99), inp, out, "JSE kappa -> 1", diff = 1e-7)
+})
+
+
+
+test_that("Distance-based cost gradients", {
+  dxm <- matrix(
+    c(
+      0,         0.5212644, 1.0352926, 0.1874560,
+      0.5212644, 0,         0.8208077, 0.3625277,
+      1.0352926, 0.8208077, 0,         1.0030080,
+      0.1874560, 0.3625277, 1.0030080, 0
+    ),
+    nrow = 4,
+    byrow = TRUE
+  )
+
+  dym <- matrix(
+    c(
+      0        , 1.0536639, 1.2548910, 0.1241702,
+      1.0536639, 0        , 1.2891483, 1.7605622,
+      1.2548910, 1.2891483, 0        , 0.6984493,
+      0.1241702, 1.7605622, 0.6984493, 0
+    ),
+    nrow = 4,
+    byrow = TRUE
+  )
+
+  inpd <- list(dm = dxm)
+  outd <- list(dm = dym)
+
+  expect_cost_fd(metric_stress_fg(), inpd, outd, "MMDS", diff = 1e-7, mat_name = "dm")
+  expect_cost_fd(metric_sstress_fg(), inpd, outd, "SMMDS", diff = 1e-7, mat_name = "dm")
+  expect_cost_fd(sammon_fg(), inpd, outd, "Sammon", diff = 1e-7, mat_name = "dm")
 })

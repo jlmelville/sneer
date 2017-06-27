@@ -15,7 +15,24 @@ mds_iris <- embed_dist(iris[, 1:4],
                        export = c("report"), verbose = FALSE, max_iter = 40)
 expect_equal(mds_iris$report$kruskal_stress, 0.03273, tolerance = 1e-4,
              scale = 1)
+
+
+  # nest inside so can compare to mds_iris result
+  test_that("plugin mmds is close to smacof::mds result", {
+    method <- mmds()
+    method$stiffness <- distance_stiffness()
+    plug_mds_iris <- embed_dist(iris[, 1:4],
+                                method = method,
+                                opt = mize_bold_nag_adapt(),
+                                reporter = make_reporter(
+                                  extra_costs = c("kruskal_stress"), verbose = FALSE),
+                                export = c("report"), verbose = FALSE, max_iter = 40)
+    expect_equal(plug_mds_iris$report$kruskal_stress,
+                 mds_iris$report$kruskal_stress)
+  })
 })
+
+
 
 # Compared to:
 # formatC(MASS::sammon(dist(iris[c(1:142, 144:150), 1:4]),

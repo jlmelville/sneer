@@ -1,5 +1,8 @@
 # Cost functions used in distance-based embeddings.
 
+
+# STRESS ------------------------------------------------------------------
+
 # Metric Stress Cost Function (STRESS)
 #
 # A measure of embedding quality between input and output data.
@@ -44,7 +47,8 @@ attr(metric_stress_cost, "sneer_cost_type") <- "dist"
 # @param dym Embedded distance matrix.
 # @return Metric stress.
 metric_stress <- function(dxm, dym) {
-  sum(upper_tri((dxm - dym) ^ 2))
+  diff <- dxm - dym
+  0.5 * sum(diff * diff)
 }
 
 # Decompose STRESS into sum of n contributions
@@ -57,14 +61,22 @@ metric_stress_cost_point <- function(inp, out, method) {
   metric_stress_point(inp$dm, out$dm)
 }
 
+metric_stress_cost_gr <- function(inp, out, method) {
+  -1 * (inp$dm - out$dm)
+}
+
 # Metric Stress fungrad
 metric_stress_fg <- function() {
   list(
     fn = metric_stress_cost,
+    gr = metric_stress_cost_gr,
     point = metric_stress_cost_point,
     name = "STRESS"
   )
 }
+
+
+# SSTRESS -----------------------------------------------------------------
 
 # Squared Distance STRESS Cost Function (SSTRESS)
 #
@@ -92,7 +104,7 @@ metric_stress_fg <- function() {
 # @return Metric stress.
 # @family sneer cost functions
 metric_sstress_cost <- function(inp, out, method) {
-  metric_sstress(inp$dm, out$dm)
+  metric_sstress(inp$d2m, out$dm)
 }
 attr(metric_sstress_cost, "sneer_cost_type") <- "dist"
 
@@ -113,28 +125,206 @@ attr(metric_sstress_cost, "sneer_cost_type") <- "dist"
 # @param dxm Input distance matrix.
 # @param dym Embedded distance matrix.
 # @return Metric stress.
-metric_sstress <- function(dxm, dym) {
-  sum(upper_tri((dxm ^ 2 - dym ^ 2) ^ 2))
+metric_sstress <- function(d2xm, dym) {
+  diff <- d2xm - dym * dym
+  0.5 * sum(diff * diff)
 }
 
 # Decompose SSTRESS into sum of n contributions
-metric_sstress_point <- function(dxm, dym) {
-  diff <- dxm * dxm - dym * dym
+metric_sstress_point <- function(d2xm, dym) {
+  diff <- d2xm - dym * dym
   0.5 * apply(diff * diff, 1, sum)
 }
 
 metric_sstress_cost_point <- function(inp, out, method) {
-  metric_sstress_point(inp$dm, out$dm)
+  metric_sstress_point(inp$d2m, out$dm)
+}
+
+metric_sstress_cost_gr <- function(inp, out, method) {
+  d2xm <- inp$d2m
+  dym <- out$dm
+  -2 * dym * (d2xm - dym * dym)
 }
 
 # Metric Stress fungrad
 metric_sstress_fg <- function() {
   list(
     fn = metric_sstress_cost,
+    gr = metric_sstress_cost_gr,
     point = metric_sstress_cost_point,
-    name = "SSTRESS"
+    name = "SSTRESS",
+    after_init_fn = function(inp, out, method) {
+      inp$d2m <- inp$dm * inp$dm
+      list(inp = inp)
+    }
   )
 }
+
+# Sammon Stress -----------------------------------------------------------
+
+# Sammon Stress Cost Function
+#
+# A measure of embedding quality between input and output distance data.
+#
+# The Sammon stress has a similar form to a normalized STRESS cost
+# function used in metric MDS:
+#
+# \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+# {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
+#
+# where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
+# \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
+#
+# Like the Kruskal stress, the Sammon stress is dimensionless. The main
+# difference is that the individual stresses are weighted by the reciprocal of
+# the input distance. Compared to MDS, this places a greater weight on
+# reproducing short distances over long distances.
+#
+# This cost function requires the following matrices to be defined:
+# \describe{
+#  \item{\code{inp$dm}}{Input distances.}
+#  \item{\code{out$dm}}{Output distances.}
+# }
+#
+# @param inp Input data.
+# @param out Output data.
+# @param method Embedding method.
+# @return Sammon Stress of the input and output distances.
+# @family sneer cost functions
+sammon_stress_cost <- function(inp, out, method) {
+  sammon_stress(inp$dm, out$dm, method$inv_sum_rij, method$eps)
+}
+attr(sammon_stress_cost, "sneer_cost_type") <- "dist"
+
+# Sammon Stress
+#
+# A measure of embedding quality between input and output distance data.
+#
+# The Sammon stress has a similar form to a normalized STRESS cost
+# function used in metric MDS:
+#
+# \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+# {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
+#
+# where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
+# \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
+#
+# Like the Kruskal stress, the Sammon stress is dimensionless. The main
+# difference is that the individual stresses are weighted by the reciprocal of
+# the input distance. Compared to MDS, this places a greater weight on
+# reproducing short distances over long distances.
+#
+# @param dxm Distance matrix.
+# @param dym Distance matrix, must be of the same dimensions as \code{dxm}.
+# @param eps Small floating point value used to avoid numerical problems.
+# @return the Sammon stress between the input and output distances.
+sammon_stress <- function(dxm, dym, inv_sum_rij, eps = .Machine$double.eps) {
+  diff <- dxm - dym
+  num <- (diff * diff) / (dxm + eps)
+  # no need to divide by two because numerator and denominator would need the
+  # correction, so it cancels out
+  inv_sum_rij * sum(num)
+}
+
+# Decompose sammon stress into sum of n contributions
+sammon_stress_point <- function(dxm, dym, inv_sum_rij, eps = .Machine$double.eps) {
+  diff <- dxm - dym
+  num <- (diff * diff) / (dxm + eps)
+  num <- num * inv_sum_rij
+  apply(num, 1, sum)
+}
+
+sammon_stress_cost_point <- function(inp, out, method) {
+  sammon_stress_point(inp$dm, out$dm, method$inv_sum_rij)
+}
+
+sammon_stress_cost_gr <- function(inp, out, method) {
+  dxm <- inp$dm
+  dym <- out$dm
+  -2 * method$inv_sum_rij * ((dxm - dym) / (dxm + method$eps))
+  # gr <-
+  # diag(gr) <- 0
+  # gr
+}
+
+# Unnormalized Sammon Stress
+#
+# A measure of embedding quality between input and output distance data.
+#
+# The Sammon stress is defined as:
+#
+# \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+# {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
+#
+# where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
+# \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
+#
+# Note that the denonimator of the stress only contains input distances, and
+# so is constant with respect to an embedding of a dataset. This version of
+# the function dispenses with that part of the calculation:
+#
+# \deqn{S_{unnorm} = \sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+# {S = sum(((rij-dij)/rij)^2)}
+#
+# This is marginally faster, and is consistent with the analytical gradient
+# calculation in \code{sammon_map}.
+#
+# @param inp Input data.
+# @param out Output data.
+# @param method Embedding method.
+# @return Sammon Stress of the input and output distances.
+# @family sneer cost functions
+sammon_stress_unnorm_cost <- function(inp, out, method) {
+  sammon_stress_unnorm(inp$dm, out$dm, method$eps)
+}
+attr(sammon_stress_unnorm_cost, "sneer_cost_type") <- "dist"
+
+# Unnormalized Sammon Stress
+#
+# A measure of embedding quality between input and output distance data.
+#
+# The Sammon stress is defined as:
+#
+# \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+# {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
+#
+# where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
+# \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
+#
+# Note that the denonimator of the stress only contains input distances, and
+# so is constant with respect to an embedding of a dataset. This version of
+# the function dispenses with that part of the calculation:
+#
+# \deqn{S_{unnorm} = \sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
+# {S = sum(((rij-dij)/rij)^2)}
+#
+# This is marginally faster, and is consistent with the analytical gradient
+# calculation in \code{sammon_map}.
+#
+# @param dxm Distance matrix.
+# @param dym Distance matrix, must be of the same dimensions as \code{dxm}.
+# @param eps Small floating point value used to avoid numerical problems.
+# @return the unnormalized Sammon stress between the input and output
+#  distances.
+sammon_stress_unnorm <- function(dxm, dym, eps = .Machine$double.eps) {
+  sum(upper_tri((dxm - dym) ^ 2 / (dxm + eps)))
+}
+
+# Sammon
+sammon_fg <- function() {
+  list(
+    fn = sammon_stress_cost,
+    gr = sammon_stress_cost_gr,
+    point = sammon_stress_cost_point,
+    name = "Sammon",
+    after_init_fn = function(inp, out, method) {
+      method$inv_sum_rij <- 1 / (sum(inp$dm) + method$eps)
+      list(method = method)
+    }
+  )
+}
+
+# Miscellaneous -----------------------------------------------------------
 
 # STRESS RMSD Cost Function
 #
@@ -360,154 +550,6 @@ mean_relative_error <- function(dxm, dym) {
   sum(upper_tri(abs((dxm - dym) / dxm))) / (0.5 * n * (n - 1))
 }
 
-# Sammon Stress Cost Function
-#
-# A measure of embedding quality between input and output distance data.
-#
-# The Sammon stress has a similar form to a normalized STRESS cost
-# function used in metric MDS:
-#
-# \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
-# {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
-#
-# where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
-# \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
-#
-# Like the Kruskal stress, the Sammon stress is dimensionless. The main
-# difference is that the individual stresses are weighted by the reciprocal of
-# the input distance. Compared to MDS, this places a greater weight on
-# reproducing short distances over long distances.
-#
-# This cost function requires the following matrices to be defined:
-# \describe{
-#  \item{\code{inp$dm}}{Input distances.}
-#  \item{\code{out$dm}}{Output distances.}
-# }
-#
-# @param inp Input data.
-# @param out Output data.
-# @param method Embedding method.
-# @return Sammon Stress of the input and output distances.
-# @family sneer cost functions
-sammon_stress_cost <- function(inp, out, method) {
-  sammon_stress(inp$dm, out$dm, method$eps)
-}
-attr(sammon_stress_cost, "sneer_cost_type") <- "dist"
-
-# Sammon Stress
-#
-# A measure of embedding quality between input and output distance data.
-#
-# The Sammon stress has a similar form to a normalized STRESS cost
-# function used in metric MDS:
-#
-# \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
-# {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
-#
-# where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
-# \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
-#
-# Like the Kruskal stress, the Sammon stress is dimensionless. The main
-# difference is that the individual stresses are weighted by the reciprocal of
-# the input distance. Compared to MDS, this places a greater weight on
-# reproducing short distances over long distances.
-#
-# @param dxm Distance matrix.
-# @param dym Distance matrix, must be of the same dimensions as \code{dxm}.
-# @param eps Small floating point value used to avoid numerical problems.
-# @return the Sammon stress between the input and output distances.
-sammon_stress <- function(dxm, dym, eps = .Machine$double.eps) {
-  sum(upper_tri((dxm - dym) ^ 2 / (dxm + eps))) / (sum(upper_tri(dxm)) + eps)
-}
-
-# Decompose sammon stress into sum of n contributions
-sammon_stress_point <- function(dxm, dym, eps = .Machine$double.eps) {
-  diff <- dxm - dym
-  num <- (diff * diff) / (dxm + eps)
-  # NB don't need to divide by 2 here because both numerator and denominator
-  # do the double counting and it cancels out
-  apply(num, 1, sum) / sum(dxm)
-}
-
-sammon_stress_cost_point <- function(inp, out, method) {
-  sammon_stress_point(inp$dm, out$dm)
-}
-
-# Unnormalized Sammon Stress
-#
-# A measure of embedding quality between input and output distance data.
-#
-# The Sammon stress is defined as:
-#
-# \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
-# {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
-#
-# where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
-# \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
-#
-# Note that the denonimator of the stress only contains input distances, and
-# so is constant with respect to an embedding of a dataset. This version of
-# the function dispenses with that part of the calculation:
-#
-# \deqn{S_{unnorm} = \sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
-# {S = sum(((rij-dij)/rij)^2)}
-#
-# This is marginally faster, and is consistent with the analytical gradient
-# calculation in \code{sammon_map}.
-#
-# @param inp Input data.
-# @param out Output data.
-# @param method Embedding method.
-# @return Sammon Stress of the input and output distances.
-# @family sneer cost functions
-sammon_stress_unnorm_cost <- function(inp, out, method) {
-  sammon_stress_unnorm(inp$dm, out$dm, method$eps)
-}
-attr(sammon_stress_unnorm_cost, "sneer_cost_type") <- "dist"
-
-# Unnormalized Sammon Stress
-#
-# A measure of embedding quality between input and output distance data.
-#
-# The Sammon stress is defined as:
-#
-# \deqn{S = \frac{\sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
-# {\sum_{i<j} r_{ij}}}{S = sum(((rij-dij)/rij)^2)/sum(rij)}
-#
-# where \eqn{r_{ij}}{rij} is the input distance between point \eqn{i} and point
-# \eqn{j} and \eqn{d_{ij}}{dij} is the corresponding output distance.
-#
-# Note that the denonimator of the stress only contains input distances, and
-# so is constant with respect to an embedding of a dataset. This version of
-# the function dispenses with that part of the calculation:
-#
-# \deqn{S_{unnorm} = \sum_{i<j}\frac{(r_{ij} - d_{ij})^2}{r_{ij}}}
-# {S = sum(((rij-dij)/rij)^2)}
-#
-# This is marginally faster, and is consistent with the analytical gradient
-# calculation in \code{sammon_map}.
-#
-# @param dxm Distance matrix.
-# @param dym Distance matrix, must be of the same dimensions as \code{dxm}.
-# @param eps Small floating point value used to avoid numerical problems.
-# @return the unnormalized Sammon stress between the input and output
-#  distances.
-sammon_stress_unnorm <- function(dxm, dym, eps = .Machine$double.eps) {
-  sum(upper_tri((dxm - dym) ^ 2 / (dxm + eps)))
-}
-
-# Sammon
-sammon_fg <- function() {
-  list(
-    fn = sammon_stress_cost,
-    point = sammon_stress_cost_point,
-    name = "Sammon",
-    after_init_fn = function(inp, out, method) {
-      method$sum_rij <- sum(upper_tri(inp$dm)) + method$eps
-      list(method = method)
-    }
-  )
-}
 
 
 # Null Model for Distance Matrices
