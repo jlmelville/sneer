@@ -501,7 +501,11 @@ sammon_fg <- function() {
   list(
     fn = sammon_stress_cost,
     point = sammon_stress_cost_point,
-    name = "Sammon"
+    name = "Sammon",
+    after_init_fn = function(inp, out, method) {
+      method$sum_rij <- sum(upper_tri(inp$dm)) + method$eps
+      list(method = method)
+    }
   )
 }
 
