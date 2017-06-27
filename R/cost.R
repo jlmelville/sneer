@@ -248,22 +248,21 @@ kl_divergence_gr <- function(pm, qm, eps = .Machine$double.eps) {
 # @param method Embedding method.
 # @param diff Step size to take in finite difference calculation.
 # @return Gradient matrix.
-cost_gradient_fd <- function(inp, out, method, diff = 1e-4) {
-  qm <- out$qm
-  nr <- nrow(qm)
-  nc <- ncol(qm)
-
+cost_gradient_fd <- function(inp, out, method, diff = 1e-4, mat_name = "qm") {
+  mm <- out[[mat_name]]
+  nr <- nrow(mm)
+  nc <- ncol(mm)
   grad <- matrix(0, nrow = nr, ncol = nc)
   for (i in 1:nr) {
     for (j in 1:nc) {
-      old <- qm[i, j]
-      qm[i, j] <- old - diff
-      out$qm <- qm
+      old <- mm[i, j]
+      mm[i, j] <- old - diff
+      out[[mat_name]] <- mm
       out <- out_updated(inp, out, method)
       cost_back <- calculate_cost(method, inp, out)
 
-      qm[i, j] <- old + diff
-      out$qm <- qm
+      mm[i, j] <- old + diff
+      out[[mat_name]] <- mm
       out <- out_updated(inp, out, method)
       cost_fwd <- calculate_cost(method, inp, out)
 
