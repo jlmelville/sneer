@@ -991,43 +991,41 @@ $$
 $$
 where
 $$k_{ij} = \frac{\partial C}{\partial d_{ij}}\frac{1}{d_{ij}}$$
-  
 ## Distance-based Costs
 
-Let's run over some distance-based cost functions. To be consistent with
-the probability-based costs I'm going to write them as full double sums:
-
-$$C = \sum_{ij} f\left(r_{ij}, d_{ij}\right)$$
-
-where $r_{ij}$ is the distance in the input space and 
-$f\left(r_{ij}, d_{ij}\right)$ just means some cost function that can be 
-decomposed into a sum of pair-wise contributions. But be aware that the fact
-we're dealing with symmetric distances means that normally you'll see the
-cost function written more like:
+Let's run over some distance-based cost functions. Because we're dealing with 
+symmetric distances means that normally you'll see the cost function written
+like:
 
 $$C = \sum_{i<j} f\left(r_{ij}, d_{ij}\right)$$
 
-i.e. summing over $i<j$ so that only $d_{ij}$ contributes to the cost,
-and not $d_{ji}$ to avoid double counting the same contribution. The gradients
-given below may therefore contain constants a factor of two larger than you'll
-see elsewhere in the literature.
+where $r_{ij}$ is the distance in the input space and $f\left(r_{ij},
+d_{ij}\right)$ just means some cost function that can be decomposed into a sum
+of pair-wise contributions, and summing over $i<j$ so that only $d_{ij}$
+contributes to the cost, and not $d_{ji}$ to avoid double counting the same
+contribution.
+
+To be consistent with the probability-based costs I'm going to write them as
+full double sums and then multiply by half to take care of the double-counting:
+
+$$C = \frac{1}{2} \sum_{ij} f\left(r_{ij}, d_{ij}\right)$$
 
 ### Metric MDS
 
 For a standard metric MDS, the cost for a pair is just the square loss between 
 the input distances $r_{ij}$ and the output distances $d_{ij}$:
 
-$$C = \sum_{ij} \left(r_{ij} - d_{ij}\right)^2$$
+$$C = \frac{1}{2} \sum_{ij} \left(r_{ij} - d_{ij}\right)^2$$
 
-$$\frac{\partial C}{\partial d_{ij}} = -2\left(r_{ij} - d_{ij}\right)$$
+$$\frac{\partial C}{\partial d_{ij}} = -\left(r_{ij} - d_{ij}\right)$$
 
 Plugging this into our expression for $k_{ij}$, we get:
 
-$$k_{ij} = -2\frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}$$
+$$k_{ij} = -\frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}$$
 
 And then the gradient is:
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
-  -4\sum_j \frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}
+  -2\sum_j \frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}
   \left(
    \mathbf{y_i - y_j}
   \right)
@@ -1037,18 +1035,18 @@ $$
 
 The SSTRESS criterion is
 
-$$C = \sum_{ij} \left(r_{ij}^2 - d_{ij}^2\right)^2$$
+$$C = \frac{1}{2} \sum_{ij} \left(r_{ij}^2 - d_{ij}^2\right)^2$$
 and:
 
-$$\frac{\partial C}{\partial d_{ij}} = -4d_{ij}\left(r_{ij}^2 - d_{ij}^2\right)$$
+$$\frac{\partial C}{\partial d_{ij}} = -2d_{ij}\left(r_{ij}^2 - d_{ij}^2\right)$$
 
 The stiffness is therefore:
-$$k_{ij} = -4\left(r_{ij}^2 - d_{ij}^2\right)$$
+$$k_{ij} = -2\left(r_{ij}^2 - d_{ij}^2\right)$$
 
 and the gradient is:
-$$\frac{\partial C}{\partial \mathbf{y_i}} = 
+$$\frac{\partial C}{\partial \mathbf{y_i}}
   =
-  -8\sum_j \left(r_{ij}^2 - d_{ij}^2\right) \left(\mathbf{y_i - y_j}\right)
+  -4\sum_j \left(r_{ij}^2 - d_{ij}^2\right) \left(\mathbf{y_i - y_j}\right)
 $$
 
 There is some interesting discussion of artefactual structure that can result 
@@ -1061,32 +1059,40 @@ Sammon Mapping is very similar to metric MDS, except that it tries to put
 more weight on preserving short distances (and hence local structure), by
 weighting the cost function by $1/r_{ij}$:
 
-$$C = \sum_{ij} \frac{\left(r_{ij} - d_{ij}\right)^2}{r_{ij}}$$
+$$C = \frac{1}{\sum_{ij} r_{ij{}}} \sum_{ij} \frac{\left(r_{ij} - d_{ij}\right)^2}{r_{ij}}$$
+The first term in that expression is a normalization term. There's no factor of
+half in the Sammon Stress when summing over all pairs, because if we were
+correcting for double counting in the second term, we must also do so in the
+denominator of the normalization term. They therefore cancel out.
+
+The derivative is:
+
 $$\frac{\partial C}{\partial d_{ij}} = 
-  -2\frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}}
+   -\frac{2}{\sum_{ij} r_{ij{}}} \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}}
 $$
 
 Therefore:
 
-$$k_{ij} = -2\frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}$$
+$$k_{ij} = -\frac{2}{\sum_{ij} r_{ij{}}} \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}$$
 
 and the gradient is:
 
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
-  -4\sum_j \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}
+  -\frac{4}{\sum_{ij} r_{ij{}}}
+  \sum_j \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}
   \left(
    \mathbf{y_i - y_j}
   \right)
 $$
-
-As a reminder, compared to how the gradient is normally written (e.g. in 
+A cursory examination of this expression, compared to how the gradient is
+normally written (e.g. in 
 [Sammon's original paper](https://dx.doi.org/10.1109/T-C.1969.222678)), the 
-constant term seems twice too big (i.e. you'll normally see a $-2$, not a $-4$), 
-because you wouldn't normally bother to sum over $i > j$. 
+constant term in the numerator of the first part of the expression seems too 
+large by a factor of 2 (i.e. you'll normally see a $-2$, not a $-4$). If you
+bear in mind that:
 
-Additionally, the Sammon error includes a normalization term (the sum of all 
-$1/r_{ij}$), but that's a constant for any configuration, so irrelevant 
-for the purposes of deriving a gradient.
+$$ \frac{4}{\sum_{ij} r_{ij{}}} = \frac{2}{\sum_{i<j} r_{ij{}}}$$
+the gradients are in fact equivalent.
 
 If you've been able to follow along with this, you surely are now practiced 
 enough to derive gradients for more experimental embedding methods. The

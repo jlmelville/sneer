@@ -874,24 +874,21 @@ w_{ij}^{n-1}
 <p><span class="math display">\[
 \frac{\partial C}{\partial \mathbf{y_i}} = 
   2\sum_j k_{ij} \left(\mathbf{y_i - y_j}\right)
-\]</span> where <span class="math display">\[k_{ij} = \frac{\partial C}{\partial d_{ij}}\frac{1}{d_{ij}}\]</span></p>
-</div>
-<div id="distance-based-costs" class="section level2">
-<h2>Distance-based Costs</h2>
-<p>Let’s run over some distance-based cost functions. To be consistent with the probability-based costs I’m going to write them as full double sums:</p>
-<p><span class="math display">\[C = \sum_{ij} f\left(r_{ij}, d_{ij}\right)\]</span></p>
-<p>where <span class="math inline">\(r_{ij}\)</span> is the distance in the input space and <span class="math inline">\(f\left(r_{ij}, d_{ij}\right)\)</span> just means some cost function that can be decomposed into a sum of pair-wise contributions. But be aware that the fact we’re dealing with symmetric distances means that normally you’ll see the cost function written more like:</p>
+\]</span> where <span class="math display">\[k_{ij} = \frac{\partial C}{\partial d_{ij}}\frac{1}{d_{ij}}\]</span> ## Distance-based Costs</p>
+<p>Let’s run over some distance-based cost functions. Because we’re dealing with symmetric distances means that normally you’ll see the cost function written like:</p>
 <p><span class="math display">\[C = \sum_{i&lt;j} f\left(r_{ij}, d_{ij}\right)\]</span></p>
-<p>i.e. summing over <span class="math inline">\(i&lt;j\)</span> so that only <span class="math inline">\(d_{ij}\)</span> contributes to the cost, and not <span class="math inline">\(d_{ji}\)</span> to avoid double counting the same contribution. The gradients given below may therefore contain constants a factor of two larger than you’ll see elsewhere in the literature.</p>
+<p>where <span class="math inline">\(r_{ij}\)</span> is the distance in the input space and <span class="math inline">\(f\left(r_{ij}, d_{ij}\right)\)</span> just means some cost function that can be decomposed into a sum of pair-wise contributions, and summing over <span class="math inline">\(i&lt;j\)</span> so that only <span class="math inline">\(d_{ij}\)</span> contributes to the cost, and not <span class="math inline">\(d_{ji}\)</span> to avoid double counting the same contribution.</p>
+<p>To be consistent with the probability-based costs I’m going to write them as full double sums and then multiply by half to take care of the double-counting:</p>
+<p><span class="math display">\[C = \frac{1}{2} \sum_{ij} f\left(r_{ij}, d_{ij}\right)\]</span></p>
 <div id="metric-mds" class="section level3">
 <h3>Metric MDS</h3>
 <p>For a standard metric MDS, the cost for a pair is just the square loss between the input distances <span class="math inline">\(r_{ij}\)</span> and the output distances <span class="math inline">\(d_{ij}\)</span>:</p>
-<p><span class="math display">\[C = \sum_{ij} \left(r_{ij} - d_{ij}\right)^2\]</span></p>
-<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} = -2\left(r_{ij} - d_{ij}\right)\]</span></p>
+<p><span class="math display">\[C = \frac{1}{2} \sum_{ij} \left(r_{ij} - d_{ij}\right)^2\]</span></p>
+<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} = -\left(r_{ij} - d_{ij}\right)\]</span></p>
 <p>Plugging this into our expression for <span class="math inline">\(k_{ij}\)</span>, we get:</p>
-<p><span class="math display">\[k_{ij} = -2\frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}\]</span></p>
+<p><span class="math display">\[k_{ij} = -\frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}\]</span></p>
 <p>And then the gradient is: <span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
-  -4\sum_j \frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}
+  -2\sum_j \frac{\left(r_{ij} - d_{ij}\right)}{d_{ij}}
   \left(
    \mathbf{y_i - y_j}
   \right)
@@ -900,32 +897,34 @@ w_{ij}^{n-1}
 <div id="sstress" class="section level3">
 <h3>SSTRESS</h3>
 <p>The SSTRESS criterion is</p>
-<p><span class="math display">\[C = \sum_{ij} \left(r_{ij}^2 - d_{ij}^2\right)^2\]</span> and:</p>
-<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} = -4d_{ij}\left(r_{ij}^2 - d_{ij}^2\right)\]</span></p>
-<p>The stiffness is therefore: <span class="math display">\[k_{ij} = -4\left(r_{ij}^2 - d_{ij}^2\right)\]</span></p>
-<p>and the gradient is: <span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
+<p><span class="math display">\[C = \frac{1}{2} \sum_{ij} \left(r_{ij}^2 - d_{ij}^2\right)^2\]</span> and:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} = -2d_{ij}\left(r_{ij}^2 - d_{ij}^2\right)\]</span></p>
+<p>The stiffness is therefore: <span class="math display">\[k_{ij} = -2\left(r_{ij}^2 - d_{ij}^2\right)\]</span></p>
+<p>and the gradient is: <span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}}
   =
-  -8\sum_j \left(r_{ij}^2 - d_{ij}^2\right) \left(\mathbf{y_i - y_j}\right)
+  -4\sum_j \left(r_{ij}^2 - d_{ij}^2\right) \left(\mathbf{y_i - y_j}\right)
 \]</span></p>
 <p>There is some interesting discussion of artefactual structure that can result from the use of the SSTRESS criterion in a paper by <a href="https://papers.nips.cc/paper/2239-artefactual-structure-from-least-squares-multidimensional-scaling">Hughes and Lowe</a>.</p>
 </div>
 <div id="sammon-mapping" class="section level3">
 <h3>Sammon Mapping</h3>
 <p>Sammon Mapping is very similar to metric MDS, except that it tries to put more weight on preserving short distances (and hence local structure), by weighting the cost function by <span class="math inline">\(1/r_{ij}\)</span>:</p>
-<p><span class="math display">\[C = \sum_{ij} \frac{\left(r_{ij} - d_{ij}\right)^2}{r_{ij}}\]</span> <span class="math display">\[\frac{\partial C}{\partial d_{ij}} = 
-  -2\frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}}
+<p><span class="math display">\[C = \frac{1}{\sum_{ij} r_{ij{}}} \sum_{ij} \frac{\left(r_{ij} - d_{ij}\right)^2}{r_{ij}}\]</span> The first term in that expression is a normalization term. There’s no factor of half in the Sammon Stress when summing over all pairs, because if we were correcting for double counting in the second term, we must also do so in the denominator of the normalization term. They therefore cancel out.</p>
+<p>The derivative is:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial d_{ij}} = 
+   -\frac{2}{\sum_{ij} r_{ij{}}} \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}}
 \]</span></p>
 <p>Therefore:</p>
-<p><span class="math display">\[k_{ij} = -2\frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}\]</span></p>
+<p><span class="math display">\[k_{ij} = -\frac{2}{\sum_{ij} r_{ij{}}} \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}\]</span></p>
 <p>and the gradient is:</p>
 <p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
-  -4\sum_j \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}
+  -\frac{4}{\sum_{ij} r_{ij{}}}
+  \sum_j \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}
   \left(
    \mathbf{y_i - y_j}
   \right)
-\]</span></p>
-<p>As a reminder, compared to how the gradient is normally written (e.g. in <a href="https://dx.doi.org/10.1109/T-C.1969.222678">Sammon’s original paper</a>), the constant term seems twice too big (i.e. you’ll normally see a <span class="math inline">\(-2\)</span>, not a <span class="math inline">\(-4\)</span>), because you wouldn’t normally bother to sum over <span class="math inline">\(i &gt; j\)</span>.</p>
-<p>Additionally, the Sammon error includes a normalization term (the sum of all <span class="math inline">\(1/r_{ij}\)</span>), but that’s a constant for any configuration, so irrelevant for the purposes of deriving a gradient.</p>
+\]</span> A cursory examination of this expression, compared to how the gradient is normally written (e.g. in <a href="https://dx.doi.org/10.1109/T-C.1969.222678">Sammon’s original paper</a>), the constant term in the numerator of the first part of the expression seems too large by a factor of 2 (i.e. you’ll normally see a <span class="math inline">\(-2\)</span>, not a <span class="math inline">\(-4\)</span>). If you bear in mind that:</p>
+<p><span class="math display">\[ \frac{4}{\sum_{ij} r_{ij{}}} = \frac{2}{\sum_{i&lt;j} r_{ij{}}}\]</span> the gradients are in fact equivalent.</p>
 <p>If you’ve been able to follow along with this, you surely are now practiced enough to derive gradients for more experimental embedding methods. The next section gives some examples.</p>
 <p>Next: <a href="experimental-gradients.html">Experimental Gradients</a> Up: <a href="index.html">Index</a></p>
 </div>
