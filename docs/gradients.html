@@ -874,7 +874,10 @@ w_{ij}^{n-1}
 <p><span class="math display">\[
 \frac{\partial C}{\partial \mathbf{y_i}} = 
   2\sum_j k_{ij} \left(\mathbf{y_i - y_j}\right)
-\]</span> where <span class="math display">\[k_{ij} = \frac{\partial C}{\partial d_{ij}}\frac{1}{d_{ij}}\]</span> ## Distance-based Costs</p>
+\]</span> where <span class="math display">\[k_{ij} = \frac{\partial C}{\partial d_{ij}}\frac{1}{d_{ij}}\]</span></p>
+</div>
+<div id="distance-based-costs" class="section level2">
+<h2>Distance-based Costs</h2>
 <p>Let’s run over some distance-based cost functions. Because we’re dealing with symmetric distances means that normally you’ll see the cost function written like:</p>
 <p><span class="math display">\[C = \sum_{i&lt;j} f\left(r_{ij}, d_{ij}\right)\]</span></p>
 <p>where <span class="math inline">\(r_{ij}\)</span> is the distance in the input space and <span class="math inline">\(f\left(r_{ij}, d_{ij}\right)\)</span> just means some cost function that can be decomposed into a sum of pair-wise contributions, and summing over <span class="math inline">\(i&lt;j\)</span> so that only <span class="math inline">\(d_{ij}\)</span> contributes to the cost, and not <span class="math inline">\(d_{ji}\)</span> to avoid double counting the same contribution.</p>

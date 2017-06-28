@@ -991,6 +991,7 @@ $$
 $$
 where
 $$k_{ij} = \frac{\partial C}{\partial d_{ij}}\frac{1}{d_{ij}}$$
+
 ## Distance-based Costs
 
 Let's run over some distance-based cost functions. Because we're dealing with 
