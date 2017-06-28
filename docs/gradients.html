@@ -453,7 +453,7 @@ q_{kl}
 \frac{\partial w_{ij}}{\partial f_{ij}}
 \]</span></p>
 <p>This is far as we can get with <span class="math inline">\(k_{ij}\)</span> without choosing a cost and weighting function, but we can simplify the distance part of the expression if we’re prepared to assume that we’re only going to want to use Euclidean distances in the output.</p>
-<p>While there may be some exotic situations where the output distances should be non-Euclidean (a literary analysis of HP Lovecraft perhaps), I’m not aware of any publications that do this. You can safely assume that <span class="math inline">\(d_{ij}\)</span> represent Euclidean distances. In a <span class="math inline">\(K\)</span>-dimensional output space, the distance between point <span class="math inline">\(\mathbf{y_i}\)</span> and point <span class="math inline">\(\mathbf{y_j}\)</span> is:</p>
+<p>While there may be some exotic situations where the output distances should be non-Euclidean (a literary analysis of HP Lovecraft perhaps, or more seriously, the use of <a href="https://arxiv.org/abs/1705.08039">hyperbolic distances to model hierarchical data</a>), the t-SNE literature always has <span class="math inline">\(d_{ij}\)</span> represent Euclidean distances. In a <span class="math inline">\(K\)</span>-dimensional output space, the distance between point <span class="math inline">\(\mathbf{y_i}\)</span> and point <span class="math inline">\(\mathbf{y_j}\)</span> is:</p>
 <p><span class="math display">\[d_{ij} = \left[\sum_l^K\left (y_{il} - y_{jl} \right )^2\right ]^{1/2}\]</span></p>
 <p>and the derivative can be written as:</p>
 <p><span class="math display">\[\frac{\partial d_{ij}}{\partial \mathbf{y_i}} = 

@@ -385,10 +385,12 @@ prepared to assume that we're only going to want to use Euclidean distances
 in the output.
 
 While there may be some exotic situations where the output distances should be
-non-Euclidean (a literary analysis of HP Lovecraft perhaps), I'm not aware of
-any publications that do this. You can safely assume that $d_{ij}$ represent
-Euclidean distances. In a $K$-dimensional output space, the 
-distance between point $\mathbf{y_i}$ and point $\mathbf{y_j}$ is:
+non-Euclidean (a literary analysis of HP Lovecraft perhaps, or more seriously,
+the use of 
+[hyperbolic distances to model hierarchical data](https://arxiv.org/abs/1705.08039)), 
+the t-SNE literature always has $d_{ij}$ represent Euclidean distances. In a
+$K$-dimensional output space, the distance between point $\mathbf{y_i}$ and
+point $\mathbf{y_j}$ is:
 
 $$d_{ij} = \left[\sum_l^K\left (y_{il} - y_{jl} \right )^2\right ]^{1/2}$$
 
