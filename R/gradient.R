@@ -11,10 +11,14 @@ stiffness <- function(method, inp, out) {
 
 # Calculates an embedding gradient where distances are not transformed before
 # weighting (e.g. metric MDS, Sammon map)
+# As luck would have it, this is identical to the squared-distance gradient,
+# because in the distance-based case, the factor of two arises from
+# kij = dc/dij = dc/dji = kji so kji + kij = 2kij and we've accounted for
+# 1/dij in the stiffness expressions.
 dist_gradient <- function(inp, out, method, mat_name = "ym") {
   km <- stiffness(method, inp, out)
-  # account for 1 / D term in gradient
-  gm <- stiff_to_grads(out[[mat_name]], km / (out$dm + method$eps))
+  # multiply K by 2
+  gm <- stiff_to_grads(out[[mat_name]], 2 * km)
   list(km = km, gm = gm)
 }
 
