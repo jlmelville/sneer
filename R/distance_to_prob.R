@@ -176,7 +176,7 @@ update_probs <- function(out, method, d2m = NULL,
                          kernel = method$kernel, prob_type = NULL) {
   if (is.null(d2m)) {
     if (!is.null(method$transform$fn)) {
-      d2m <- method$transform$fn(inp, out, method, d2m)
+      d2m <- method$transform$fn(out, method, d2m)
     }
     else {
       d2m <- sqrt(d2m)
@@ -215,7 +215,7 @@ coords_to_dist2 <- function(xm) {
 # calculated this and pass it as an extra parameter.
 d2_transform <- function() {
   list(
-    fn = function(inp, out, method, d2m) {
+    fn = function(out, method, d2m) {
       if (!is.null(d2m)) {
         d2m
       }
