@@ -172,9 +172,24 @@ out_updated <- function(inp, out, method) {
 #  \item{\code{qcm}}{Conditional Probability Matrix. Non-null only if an
 #  asymmetric kernel is used and the embedding method uses a joint
 #  probability matrix.}
-update_probs <- function(out, method, d2m = coords_to_dist2(out$ym),
+update_probs <- function(out, method, d2m = NULL,
                          kernel = method$kernel, prob_type = NULL) {
-  wm <- dist2_to_weights(d2m, kernel)
+  if (is.null(d2m)) {
+    if (!is.null(method$transform$fn)) {
+      d2m <- method$transform$fn(inp, out, method, d2m)
+    }
+    else {
+      d2m <- sqrt(d2m)
+    }
+  }
+
+  if (!is.null(method$kernel)) {
+    wm <- dist2_to_weights(d2m, kernel)
+  }
+  else {
+    wm <- d2m
+  }
+
   res <- weights_to_probs(wm, method, prob_type)
   list(d2m = d2m, wm = wm, qm = res$pm, qcm = res$pcm)
 }
@@ -193,6 +208,22 @@ coords_to_dist2 <- function(xm) {
   d2m <- -2 * xm %*% t(xm)  # cross product
   d2m <- sweep(d2m, 2, -t(sumsq))  # adds sumsq[j] to D2[i,j]
   sumsq + d2m  # add sumsq[i] to D2[i,j]
+}
+
+# Transform distances by squaring them
+# It's less work to calculate d2 than d, so we probably have already
+# calculated this and pass it as an extra parameter.
+d2_transform <- function() {
+  list(
+    fn = function(inp, out, method, d2m) {
+      if (!is.null(d2m)) {
+        d2m
+      }
+      else {
+        coords_to_dist2(out$ym)
+      }
+    }
+  )
 }
 
 # Create Weight Matrix from Squared Distances

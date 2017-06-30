@@ -23,6 +23,7 @@ prob_embedder <- function(cost, kernel, prob_type, out_prob_type = NULL,
     out_prob_type = out_prob_type,
     update_out_fn = update_out_prob,
     gradient_fn = dist2_gradient,
+    transform = d2_transform(),
     eps = eps,
     verbose = verbose
   ))
