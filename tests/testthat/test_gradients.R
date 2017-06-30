@@ -36,7 +36,7 @@ gfd <- function(embedder, diff = 1e-4) {
 }
 
 gan <- function(embedder) {
-  grad_fn <- sq_dist_gradient
+  grad_fn <- dist2_gradient
   if (!is.null(embedder$method$gradient_fn)) {
     grad_fn <- embedder$method$gradient_fn
   }

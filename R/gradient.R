@@ -24,7 +24,7 @@ dist_gradient <- function(inp, out, method, mat_name = "ym") {
 
 # Calculates an embedding gradient where distances are squared (i.e. SNE-like
 # methods)
-sq_dist_gradient <- function(inp, out, method, mat_name = "ym") {
+dist2_gradient <- function(inp, out, method, mat_name = "ym") {
   km <- stiffness(method, inp, out)
   # multiply K by 2
   gm <- stiff_to_grads(out[[mat_name]], 2 * km)

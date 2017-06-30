@@ -6,7 +6,7 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
     grad_fn <- method$gradient_fn
   }
   else {
-    grad_fn <- sq_dist_gradient
+    grad_fn <- dist2_gradient
   }
 
   if (!is.null(inp$xm)) {
@@ -495,7 +495,7 @@ make_optim_coord_fg <- function(opt, inp, out, method, iter) {
     grad_fn <- method$gradient_fn
   }
   else {
-    grad_fn <- sq_dist_gradient
+    grad_fn <- dist2_gradient
   }
   if (!is.null(inp$xm)) {
     nr <- nrow(inp$xm)
