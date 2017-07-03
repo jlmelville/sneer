@@ -88,7 +88,7 @@ the "crowding problem".
 
 * It's in pure R, so it's slow. 
 * It doesn't implement any of the Barnes-Hut or multipole or related approaches
-to speed up the distance calculations from O(N^2), so it's slow.
+to speed up the distance calculations from O(N<sup>2</sup>), so it's slow.
 * It doesn't work with sparse matrices... so it's slow and it can't work with
 large datasets.
 
