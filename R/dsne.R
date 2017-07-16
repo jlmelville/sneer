@@ -610,6 +610,10 @@ dynamize_heavy_tail_kernel <- function(method) {
       kernel$beta <- rep(kernel$beta, nr)
     }
 
+    if (method$dyn$alpha == "static" && method$dyn$beta == "static") {
+      stop("At least one of alpha and beta must be non-static")
+    }
+
     if (method$dyn$beta == "point" || method$dyn$alpha == "point") {
       kernel <- set_kernel_asymmetric(kernel)
     }
