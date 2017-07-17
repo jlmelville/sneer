@@ -68,8 +68,13 @@ See also the paper by
 . However, distance-based embedding methods such as metric MDS and Sammon 
 mapping can be seen as un-normalized methods, where also no kernel is applied.
 
-If you do want to use `norm = "none"`, be aware that the only `cost` functions
-currently compatible with it are "kl"` and `"square"`.
+If you do want to use `norm = "none"`, be aware that modified `cost` functions 
+will be used if you choose `"kl"`, `"reverse-KL"` or `"NeRV"`, to account for 
+the un-normalized values, using the expression for the Kullback-Leibler
+diverence given by 
+[Cichocki and co-workers](https://dx.doi.org/10.3390/e13010134). For `"JSE"`, 
+cancellation of terms means the normalized and non-normalized expressions are
+identical (although the overall gradient expression is more complex).
 
 The `norm` parameter can actually more complex input, but you don't need to
 worry about it most of the time. See the section on `joint` vs `pair` 
