@@ -1392,9 +1392,7 @@ sneer <- function(df,
 #' be one of:
 #'
 #' \itemize{
-#'   \item \code{"none"} No normalization, as used in metric MDS. Only the
-#'   \code{"square"} and \code{"kl"} \code{cost} functions are compatible with
-#'   this option.
+#'   \item \code{"none"} No normalization, as used in metric MDS.
 #'   \item \code{"point"} Point-wise normalization, as used in asymmetric SNE,
 #'   NeRV and JSE.
 #'   \item \code{"pair"} Pair-wise normalization.
@@ -1565,7 +1563,7 @@ embedder <- function(cost, kernel, transform = "square",
     prob_type <- prob_type[1]
   }
 
-  # Account for un-normalized version of cost functions
+  # Check if we're unnormalized
   is_un_norm <- FALSE
   if (!is.null(out_prob_type)) {
     is_un_norm <- out_prob_type == "un"
@@ -1574,13 +1572,34 @@ embedder <- function(cost, kernel, transform = "square",
     is_un_norm <- prob_type == "un"
   }
 
+  # Account for un-normalized version of cost functions
   if (is_un_norm) {
     if (cost$name == "KL") {
+      if (verbose) {
+        message("Using un-normalized version of KL")
+      }
       cost <- unkl_fg()
     }
-    else if (cost$name != sum2_fg()$name) {
-      stop("Non-normalized embedders can only be used with the ",
-           "'KL' and 'square' cost functions")
+    else if (cost$name == "revKL") {
+      if (verbose) {
+        message("Using un-normalized version of reverse KL")
+      }
+      cost <- reverse_unkl_fg()
+    }
+    else if (cost$name == "NeRV") {
+      if (verbose) {
+        message("Using un-normalized version of NeRV")
+      }
+      cost <- unnerv_fg(lambda = lambda)
+    }
+    else if (cost$name == "JS") {
+      if (verbose) {
+        message("Using un-normalized version of JSE")
+      }
+      # Cancellation of terms makes cost function/gradient the same, but
+      # we can't use the simplified JSE stiffness, so change name to force
+      # plugin gradient
+      cost$name <- "UNJSE"
     }
   }
 
