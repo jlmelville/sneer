@@ -41,6 +41,8 @@ output configuration.
 the output coordinates.
 * [Embedding Methods](embedding-methods.html) - there's a whole family of 
 embedding methods related to t-SNE out there. Let me introduce you.
+* [Advanced Embedding Methods](embedding-methods-advanced.html) - details on 
+`embedder` function.
 * [Reporting](reporting.html) - understanding the logging info during 
 optimization.
 * [Exported Data](exported-data.html) - what data you can expect to be returned
