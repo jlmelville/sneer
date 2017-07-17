@@ -295,3 +295,60 @@ cost_gradient_fd <- function(inp, out, method, diff = 1e-4, mat_name = "qm") {
 calculate_cost <- function(method, inp, out) {
   method$cost$fn(inp, out, method)
 }
+
+
+# Square Loss -------------------------------------------------------------
+
+sum2_cost <- function(inp, out, method) {
+  diff <- inp$pm - out$qm
+  0.5 * sum(diff * diff)
+}
+attr(sum2_cost, "sneer_cost_type") <- "prob"
+
+sum2_fg <- function() {
+  list(
+    fn = sum2_cost,
+    gr = function(inp, out, method) {
+      out$qm - inp$pm
+    },
+    point = function(inp, out, method) {
+      diff <- inp$pm - out$qm
+      0.5 * apply(diff * diff, 1, sum)
+    },
+    name = "sum2"
+  )
+}
+
+
+# Un-normalized KL --------------------------------------------------------
+
+unkl_cost <- function(inp, out, method) {
+  vm <- inp$pm
+  wm <- out$qm
+  eps <- method$eps
+  sum(vm * log((vm + eps) / (wm + eps)) - vm + wm)
+}
+attr(unkl_cost, "sneer_null_matrix") <- "null_model_weight"
+
+null_model_weight <- function(wm) {
+  matrix(1, nrow = nrow(wm), ncol = ncol(wm))
+}
+
+unkl_fg <- function() {
+  list(
+    fn = unkl_cost,
+    gr = function(inp, out, method) {
+      1 - (inp$pm / (out$qm + method$eps))
+    },
+    point = function(inp, out, method) {
+      vm <- inp$pm
+      wm <- out$qm
+      eps <- method$eps
+      apply(vm * log((vm + eps) / (wm + eps)) - vm + wm, 1, sum)
+    },
+    name = "UNKL",
+    keep_weights = TRUE,
+    replace_probs_with_weights = TRUE
+  )
+}
+
