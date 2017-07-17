@@ -150,6 +150,19 @@ make_normalized_cost_fn <- function(cost_fn) {
     return(norm_fn)
   }
 
+  # or use a function that will generate a suitable null "probability" matrix
+  # (qm may in fact be un-normalized weights or distances)
+  norm_mat_fn_name <- attr(cost_fn, "sneer_null_matrix")
+  if (!is.null(norm_mat_fn_name)) {
+    fn <- function(inp, out, method) {
+      cost <- cost_fn(inp, out, method)
+      out$qm <- do.call(norm_mat_fn_name, list(out$qm))
+      null_cost <- cost_fn(inp, out, method)
+      cost / null_cost
+    }
+    return(fn)
+  }
+
   # otherwise, synthesize from the cost type
   cost_type <- attr(cost_fn, "sneer_cost_type")
   if (is.null(cost_type)) {
