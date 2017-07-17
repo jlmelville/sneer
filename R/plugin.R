@@ -21,7 +21,12 @@ plugin_stiffness <- function() {
 # @param method Embedding method.
 # @return Stiffness matrix.
 plugin_stiffness_fn <- function(method, inp, out) {
-  prob_type <- method$prob_type
+  if (!is.null(method$out_prob_type)) {
+    prob_type <- method$out_prob_type
+  }
+  else {
+    prob_type <- method$prob_type
+  }
 
   fn_name <- paste0('plugin_stiffness_', prob_type)
   stiffness_fn <- get(fn_name)
@@ -96,4 +101,11 @@ plugin_stiffness_pair <- function(method, inp, out) {
   dw_df <- method$kernel$gr(method$kernel, out$d2m)
   wm_sum <- sum(out$wm)
   (dc_dq - sum(dc_dq * out$qm)) * (dw_df / wm_sum)
+}
+
+plugin_stiffness_un <- function(method, inp, out) {
+  dc_dw <- method$cost$gr(inp, out, method)
+  dw_df <- method$kernel$gr(method$kernel, out$d2m)
+  km <- (dc_dw * dw_df)
+  km + t(km)
 }

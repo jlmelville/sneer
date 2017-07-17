@@ -121,7 +121,28 @@ update_out_prob <- function(inp, out, method) {
 
   keep <- method$out_keep
   for (i in 1:length(keep)) {
-    out[[keep[i]]] <- res[[keep[i]]]
+    # Special case if we ask to keep distance matrix
+    # By default we create squared distances only and save on a sqrt
+    # unless needed
+    if (keep[[i]] == "dm") {
+      if (is.null(res$dm)) {
+        if (method$transform$name == "d2") {
+          out$dm <- sqrt(res$d2m)
+        }
+        else {
+          out$dm <- sqrt(coords_to_dist2(out$ym))
+        }
+      }
+      else {
+        # In some cases, e.g. if we were doing the no-transform, we have dm to
+        # hand already without extra computation (it's also d2m in that case,
+        # but this is clearer)
+        out$dm <- res$dm
+      }
+    }
+    else {
+      out[[keep[i]]] <- res[[keep[i]]]
+    }
   }
 
   out <- out_updated(inp, out, method)
@@ -174,12 +195,22 @@ out_updated <- function(inp, out, method) {
 #  probability matrix.}
 update_probs <- function(out, method, d2m = NULL,
                          kernel = method$kernel, prob_type = NULL) {
+
+  dm <- NULL
+  # This code block attempts to avoid calculating or storing the distance
+  # matrix unless it's really needed.
   if (is.null(d2m)) {
     if (!is.null(method$transform$fn)) {
-      d2m <- method$transform$fn(out, method, d2m)
+      res <- method$transform$fn(out, method)
+      d2m <- res$fm
+      # In the no-transform case, we calculate fm and dm are the same, so
+      # there's no harm in storing them
+      if (!is.null(res$dm)) {
+        dm <- res$dm
+      }
     }
     else {
-      d2m <- sqrt(d2m)
+      d2m <- coords_to_dist2(out$ym)
     }
   }
 
@@ -191,7 +222,7 @@ update_probs <- function(out, method, d2m = NULL,
   }
 
   res <- weights_to_probs(wm, method, prob_type)
-  list(d2m = d2m, wm = wm, qm = res$pm, qcm = res$pcm)
+  list(d2m = d2m, wm = wm, qm = res$pm, qcm = res$pcm, dm = dm)
 }
 
 # Squared (Euclidean) Distance Matrix
@@ -207,7 +238,9 @@ coords_to_dist2 <- function(xm) {
   sumsq <- apply(xm ^ 2, 1, sum)  # sum of squares of each row of xm
   d2m <- -2 * xm %*% t(xm)  # cross product
   d2m <- sweep(d2m, 2, -t(sumsq))  # adds sumsq[j] to D2[i,j]
-  sumsq + d2m  # add sumsq[i] to D2[i,j]
+  d2m <- sumsq + d2m  # add sumsq[i] to D2[i,j]
+  d2m[d2m < 0] <- 0
+  d2m
 }
 
 # Transform distances by squaring them
@@ -215,14 +248,60 @@ coords_to_dist2 <- function(xm) {
 # calculated this and pass it as an extra parameter.
 d2_transform <- function() {
   list(
-    fn = function(out, method, d2m) {
+    fn = function(out, method, d2m = NULL, mat_name = "ym") {
       if (!is.null(d2m)) {
-        d2m
+        list(fm = d2m)
       }
       else {
-        coords_to_dist2(out$ym)
+        # Safe only if passed out = inp when input is a distance matrix
+        # out$dm is otherwise likely dm from a previous iteration
+        if (is.null(out[[mat_name]])) {
+          list(fm = out$dm * out$dm)
+        }
+        else {
+          list(fm = coords_to_dist2(out[[mat_name]]))
+        }
       }
-    }
+    },
+    gr = function(inp, out, method) {
+      2 * out$dm
+    },
+    name = "d2"
+  )
+}
+
+# No transform.
+# Conceptually does no work as we map directly from D -> F
+# But squared distances are the usual transform in the SNE case and has the
+# advantage of avoiding a sqrt calculation, so raw distances actually has a
+# cost.
+no_transform <- function() {
+  list(
+    # The embedding gradient expression that arises from the use of raw
+    # distances is very likely to need the raw distance explicitly, so store
+    # it separately from the "transformed" matrix in the result.
+    fn = function(out, method, d2m = NULL, mat_name = "ym") {
+      if (!is.null(d2m)) {
+        fm <- sqrt(d2m)
+      }
+      else {
+        # Rarely, out might actually be inp and have dm pre-calculated
+        # Safe only if passed out = inp when input is a distance matrix
+        # out$dm is otherwise likely dm from a previous iteration
+        # If coordinates are present, use them
+        if (is.null(out[[mat_name]])) {
+          fm <- out$dm
+        }
+        else {
+          fm <- sqrt(coords_to_dist2(out[[mat_name]]))
+        }
+      }
+      list(fm = fm, dm = fm)
+    },
+    gr = function(inp, out, method) {
+      1
+    },
+    name = "none"
   )
 }
 
@@ -334,6 +413,10 @@ weights_to_prow <- function(wm) {
 weights_to_pcond <- function(wm) {
   pm <- wm / sum(wm) + .Machine$double.eps
   list(pm = pm)
+}
+
+weights_to_pun <- function(wm) {
+  list(pm = wm)
 }
 
 # Create Joint Probability Matrix from Symmetric Weight Matrix

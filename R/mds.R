@@ -20,7 +20,7 @@ dist_embedder <- function(cost, stiffness, eps = .Machine$double.eps) {
     cost = cost,
     stiffness = stiffness,
     update_out_fn = update_dist,
-    gradient_fn = dist_gradient,
+    gradient = dist_gradient(),
     eps = eps
   ))
 }

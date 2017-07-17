@@ -2,8 +2,8 @@
 
 # Called at every iteration to convert sneer data structures into mize form
 make_optim_fg <- function(opt, inp, out, method, iter) {
-  if (!is.null(method$gradient_fn)) {
-    grad_fn <- method$gradient_fn
+  if (!is.null(method$gradient) && !is.null(method$gradient$fn)) {
+    grad_fn <- method$gradient$fn
   }
   else {
     grad_fn <- dist2_gradient
@@ -137,6 +137,7 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
     mize <- opt$mize_module$opt_clear_cache(mize)
     opt$old_cost_dirty <- FALSE
   }
+
   step_res <- opt$mize_module$opt_step(mize, par, fg)
   mize <- step_res$opt
   step_info <- opt$mize_module$mize_step_summary(mize, step_res$par, fg,
@@ -402,6 +403,7 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
     else {
       stop("No extra parameters for alternating optimization")
     }
+
     mize_alt <- opt$mize_module$opt_clear_cache(mize_alt)
     step_res <- opt$mize_module$opt_step(mize_alt, par, fg_alt)
     mize_alt <- step_res$opt
@@ -491,8 +493,8 @@ make_optim_alt_fg <- function(opt, inp, out, method, iter) {
 }
 
 make_optim_coord_fg <- function(opt, inp, out, method, iter) {
-  if (!is.null(method$gradient_fn)) {
-    grad_fn <- method$gradient_fn
+  if (!is.null(method$gradient) && !is.null(method$gradient$fn)) {
+    grad_fn <- method$gradient$fn
   }
   else {
     grad_fn <- dist2_gradient

@@ -14,16 +14,24 @@
 # @name probability_embedding_methods
 # @family sneer probability embedding methods
 
-prob_embedder <- function(cost, kernel, prob_type, out_prob_type = NULL,
+prob_embedder <- function(cost, kernel, prob_type, transform = d2_transform(),
+                          out_prob_type = NULL,
                           eps = .Machine$double.eps, verbose = TRUE) {
+  if (transform$name == "d2") {
+    gradient <- dist2_gradient()
+  }
+  else {
+    gradient <- generic_gradient()
+  }
+
   remove_nulls(list(
     cost = cost,
     kernel = kernel,
     prob_type = prob_type,
     out_prob_type = out_prob_type,
     update_out_fn = update_out_prob,
-    gradient_fn = dist2_gradient,
-    transform = d2_transform(),
+    gradient = gradient,
+    transform = transform,
     eps = eps,
     verbose = verbose
   ))

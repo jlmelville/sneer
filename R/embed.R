@@ -411,6 +411,51 @@ before_init <- function(method) {
   method
 }
 
+# Cost functions are defined in terms of probabilities. For embedding methods
+# that don't create probabilities, store whatever they do use (e.g. weights or
+# distances) as P.
+promote_input_matrix <- function(inp, method) {
+  if (!is.null(method$replace_probs_with_weights) &&
+      method$replace_probs_with_weights) {
+    if (is.null(inp$wm)) {
+      stop("No input weight matrix available to replace probabilities with")
+    }
+    inp$pm <- inp$wm
+  }
+  else if (is.null(inp$pm)) {
+    if (!is.null(method$prob_type)) {
+      prob_type <- method$prob_type
+    }
+    else {
+      prob_type <- "un"
+    }
+    if (!is.null(inp$wm)) {
+      inp$pm <- weights_to_probs(inp$wm, method, prob_type)$pm
+    }
+    else if (!is.null(inp$d2m)) {
+      inp$pm <- weights_to_probs(inp$d2m, method, prob_type)$pm
+    }
+    else {
+      if (is.null(inp$dm)) {
+        dm <- distance_matrix(inp$xm)
+      }
+      else {
+        dm <- inp$dm
+      }
+      if (!is.null(method$transform)) {
+        fm <- method$transform$fn(inp, method, mat_name = "xm")$fm
+        inp$pm <- weights_to_probs(fm, method, prob_type)$pm
+      }
+      else {
+        inp$pm <- weights_to_probs(dm, method, prob_type)$pm
+      }
+    }
+  }
+
+  inp
+}
+
+
 # Post Initialization
 #
 # Function called after input and output data have been initialized. Useful for
@@ -444,7 +489,10 @@ after_init <- function(inp, out, method) {
     }
   }
 
+  inp <- promote_input_matrix(inp, method)
+
   method <- optimize_stiffness(method)
+  method <- create_keep(method)
 
   if (!is.null(method$after_init_fn)) {
     result <- method$after_init_fn(inp, out, method)
@@ -576,15 +624,18 @@ optimize_stiffness <- function(method) {
     }
   }
 
-  # Unify all 'keep' data
+  method
+}
+
+# Unify all 'keep' data
+create_keep <- function(method) {
   keep <- method$out_keep
-  for (name in c('kernel', 'cost', 'stiffness')) {
-    if (!is.null(method[[name]]$keep)) {
+  for (name in c('kernel', 'cost', 'stiffness', 'gradient')) {
+    if (!is.null(method[[name]]) && !is.null(method[[name]]$keep)) {
       keep <- unique(c(keep, method[[name]]$keep))
     }
   }
   method$out_keep <- keep
-
   method
 }
 

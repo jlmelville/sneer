@@ -907,6 +907,9 @@ sneer <- function(df,
   else {
     # Allow masters of the dark arts to pass in a method directly
     embed_method <- method
+    if (method$kernel$name == "none") {
+      perplexity <- NULL
+    }
   }
   embed_method$verbose <- TRUE
 
@@ -1349,7 +1352,16 @@ sneer <- function(df,
 #' Embedding (JSE) method (Lee et al., 2013).
 #' }
 #'
-#' The \code{kernel} is a function that transform squared output distances
+#' The \code{transform} will carry out a transformation on the distances. One
+#' of:
+#' \itemize{
+#' \item code{"none"} No transformation. As used in distance-based embeddings
+#' such as metric MDS.
+#' \item code{"square"} Square the distances. As used in probablity-based
+#' embeddings (e.g. t-SNE).
+#' }
+#'
+#' The \code{kernel} is a function to convert the transformed output distances
 #' into weights. Must be one of:
 #'
 #' \itemize{
@@ -1364,10 +1376,13 @@ sneer <- function(df,
 #' (Kitazono et al. 2016).
 #' }
 #'
-#' The \code{normalization} determines how weights are converted to
-#' probabilities. Must be one of:
+#' The \code{norm} determines how weights are converted to probabilities. Must
+#' be one of:
 #'
 #' \itemize{
+#'   \item \code{"none"} No normalization, as used in metric MDS. Only the
+#'   \code{"square"} and \code{"kl"} \code{cost} functions are compatible with
+#'   this option.
 #'   \item \code{"point"} Point-wise normalization, as used in asymmetric SNE,
 #'   NeRV and JSE.
 #'   \item \code{"pair"} Pair-wise normalization.
@@ -1384,6 +1399,8 @@ sneer <- function(df,
 #' @param cost The cost function to optimize. See 'Details'. Can be abbreviated.
 #' @param kernel The function used to convert squared distances to weights. See
 #'   'Details'. Can be abbreviated.
+#' @param transform Transformation to apply to distances before applying
+#'   \code{kernel}. See 'Details'. Can be abbreviated.
 #' @param beta Precision (narrowness) of the \code{"exponential"} and
 #'   \code{"heavy-tailed"} kernels.
 #' @param alpha Heavy tailedness of the \code{"heavy-tailed"} kernel. A value of
@@ -1392,8 +1409,8 @@ sneer <- function(df,
 #' @param dof Degrees of freedom of the \code{"inhomogeneous"} kernel. A value
 #'   of 1 makes the kernel behave like \code{"t-distributed"}, and a value
 #'   approaching approaching infinity behaves like \code{"exponential"}.
-#' @param norm Weight normalization to carry out. See 'Details'.
-#'   Can be abbreviated.
+#' @param norm Weight normalization to carry out. See 'Details'. Can be
+#'   abbreviated.
 #' @param lambda Controls the weighting of the \code{"nerv"} cost function. Must
 #'   take a value between 0 (where it behaves like \code{"reverse-KL"}) and 1
 #'   (where it behaves like \code{"KL"}).
@@ -1461,44 +1478,68 @@ sneer <- function(df,
 #' # are not. This only has an effect if the kernel parameters are set to be
 #' # non-uniform.
 #' embedder(cost = "kl", kernel = "exp", norm = c("joint", "pair"))
+#'
+#' # MDS
+#' embedder(cost = "square", transform = "none", kernel = "none", norm = "none")
+#'
+#' # un-normalized version of t-SNE
+#' embedder(cost = "kl", kernel = "t-dist", norm = "none")
+#'
 #' \dontrun{
 #' # Pass result of calling embedder to the sneer function's method parameter
 #' sneer(iris, method = embedder(cost = "kl", kernel = "t-dist", norm = "joint"))
 #' }
 #' @export
-embedder <- function(cost, kernel, kappa = 0.5, lambda = 0.5,
-                     beta = 1, alpha = 0, dof = 1,
+embedder <- function(cost, kernel, transform = "square",
+                     kappa = 0.5, lambda = 0.5,
+                     beta = 1, alpha = 0, dof = 10,
                      norm = "joint",
                      importance_weight = FALSE,
                      verbose = TRUE) {
   cost <- match.arg(tolower(cost),
-                    c("kl", "revkl", "js", "nerv"))
+                    c("kl", "revkl", "js", "nerv", "square"))
   cost <- switch(cost,
                  kl = kl_fg(),
                  "reverse-kl" = reverse_kl_fg(),
                  js = jse_fg(kappa = kappa),
-                 nerv = nerv_fg(lambda = lambda))
+                 nerv = nerv_fg(lambda = lambda),
+                 square = sum2_fg())
 
   kernel <- match.arg(tolower(kernel),
                       c("exponential", "heavy-tailed", "inhomogeneous",
-                        "t-distributed"))
+                        "t-distributed", "none"))
   kernel <- switch(kernel,
                    exponential = exp_kernel(beta = beta),
                    "t-distributed" = tdist_kernel(),
                    "heavy-tailed" = heavy_tail_kernel(beta = beta,
                                                       alpha = alpha),
-                   inhomogeneous = itsne_kernel(dof = dof))
+                   inhomogeneous = itsne_kernel(dof = dof),
+                   none = no_kernel())
 
+  transform <- match.arg(tolower(transform),
+                         c("none", "square"))
+  transform <- switch(transform,
+                      square = d2_transform(),
+                      none = no_transform() )
 
   if (length(norm) > 2) {
     stop("Normalization must contain one or two values only")
   }
 
+  # If we have a kernel but are not using probabilities, swap to row-based
+  # probabilities in the input space for calibration
+  if (length(norm) == 1 && norm == "none" && kernel$name != "none") {
+    norm <- c("point", "none")
+    cost$keep_weights <- TRUE
+    cost$replace_probs_with_weights <- TRUE
+  }
+
   prob_type <- c()
   out_prob_type <- NULL
   for (n in norm) {
-    n <- match.arg(tolower(n), c("point", "pair", "joint"))
+    n <- match.arg(tolower(n), c("none", "point", "pair", "joint"))
     prob_type <- c(prob_type, switch(n,
+                                     "none" = "un",
                                      "point" = "row",
                                      "pair" = "cond",
                                      "joint" = "joint"))
@@ -1512,12 +1553,39 @@ embedder <- function(cost, kernel, kappa = 0.5, lambda = 0.5,
     prob_type <- prob_type[1]
   }
 
-  embedder <- prob_embedder(cost = cost, kernel = kernel, prob_type = prob_type,
+  # Account for un-normalized version of cost functions
+  is_un_norm <- FALSE
+  if (!is.null(out_prob_type)) {
+    is_un_norm <- out_prob_type == "un"
+  }
+  else {
+    is_un_norm <- prob_type == "un"
+  }
+
+  if (is_un_norm) {
+    if (cost$name == "KL") {
+      cost <- unkl_fg()
+    }
+    else if (cost$name != sum2_fg()$name) {
+      stop("Non-normalized embedders can only be used with the ",
+           "'KL' and 'square' cost functions")
+    }
+  }
+
+  embedder <- prob_embedder(cost = cost, kernel = kernel, transform = transform,
+                            prob_type = prob_type,
                             out_prob_type = out_prob_type,
                             eps = .Machine$double.eps, verbose = verbose)
 
   if (importance_weight) {
     embedder <- imp_weight_method(embedder)
+  }
+  if (!is.null(embedder$cost$keep_weights) && embedder$cost$keep_weights) {
+    embedder$keep_inp_weights <- TRUE
+  }
+  if (!is.null(embedder$cost$replace_probs_with_weights) &&
+      embedder$cost$replace_probs_with_weights) {
+    embedder$replace_probs_with_weights <- TRUE
   }
   embedder
 }

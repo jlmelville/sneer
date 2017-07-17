@@ -2,11 +2,13 @@
 
 stiffness <- function(method, inp, out) {
   if (!is.null(method[["stiffness"]])) {
-    method$stiffness$fn(method, inp, out)
+    km <- method$stiffness$fn(method, inp, out)
   }
   else {
-    method$stiffness_fn(method, inp, out)
+    km <- method$stiffness_fn(method, inp, out)
   }
+  diag(km) <- 0
+  km
 }
 
 # Calculates an embedding gradient where distances are not transformed before
@@ -15,36 +17,51 @@ stiffness <- function(method, inp, out) {
 # because in the distance-based case, the factor of two arises from
 # kij = dc/dij = dc/dji = kji so kji + kij = 2kij and we've accounted for
 # 1/dij in the stiffness expressions.
-dist_gradient <- function(inp, out, method, mat_name = "ym") {
-  km <- stiffness(method, inp, out)
-  # multiply K by 2
-  gm <- stiff_to_grads(out[[mat_name]], 2 * km)
-  list(km = km, gm = gm)
+dist_gradient <- function() {
+  list(
+    fn = function(inp, out, method, mat_name = "ym") {
+      km <- stiffness(method, inp, out)
+      # multiply K by 2
+      gm <- stiff_to_grads(out[[mat_name]], 2 * km)
+      list(km = km, gm = gm)
+    },
+    name = "dist"
+  )
 }
 
 # Calculates an embedding gradient where distances are squared (i.e. SNE-like
 # methods)
-dist2_gradient <- function(inp, out, method, mat_name = "ym") {
-  km <- stiffness(method, inp, out)
-  # multiply K by 2
-  gm <- stiff_to_grads(out[[mat_name]], 2 * km)
-  list(km = km, gm = gm)
+dist2_gradient <- function() {
+   list(
+     fn = function(inp, out, method, mat_name = "ym") {
+        km <- stiffness(method, inp, out)
+        # multiply K by 2
+        gm <- stiff_to_grads(out[[mat_name]], 2 * km)
+        list(km = km, gm = gm)
+    },
+    name = "dist2"
+   )
 }
-
 # Calculates an embedding gradient for methods with a defined transformation
-# step (assumes square distances if not present)
-generic_gradient <- function(inp, out, method, mat_name = "ym") {
-  if (!is.null(method$transform)) {
-    df_dd <- method$transform$gr(inp, out, method) / (out$dm + method$eps)
-  }
-  else {
-    # assume default square distance tranform
-    # f = dm^2 => df/dd = 2*dm, dm cancels with 1/dm
-    df_dd <- 2
-  }
-  km <- stiffness(method, inp, out)
-  gm <- stiff_to_grads(out[[mat_name]], km * df_dd)
-  list(km = km, gm = gm)
+# step
+# NB Better to use a specific gradient function for e.g. squared distance
+generic_gradient <- function() {
+  list(
+    fn = function(inp, out, method, mat_name = "ym") {
+      if (!is.null(method$transform)) {
+        df_dd <- method$transform$gr(inp, out, method) / (out$dm + method$eps)
+      }
+      else {
+        df_dd <- 1
+      }
+
+      km <- stiffness(method, inp, out)
+      gm <- stiff_to_grads(out[[mat_name]], km * df_dd)
+      list(km = km, gm = gm)
+    },
+    name = "generic",
+    keep = c("dm")
+  )
 }
 
 # Gradient Matrix from Stiffness Matrix
