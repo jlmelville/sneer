@@ -104,7 +104,8 @@ metric_stress_fg <- function() {
 # @return Metric stress.
 # @family sneer cost functions
 metric_sstress_cost <- function(inp, out, method) {
-  metric_sstress(inp$d2m, out$dm)
+  # passing d2m and dm is NOT a typo
+  metric_sstress(d2xm = inp$d2m, dym = out$dm)
 }
 attr(metric_sstress_cost, "sneer_cost_type") <- "dist"
 
