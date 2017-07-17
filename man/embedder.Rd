@@ -4,14 +4,18 @@
 \alias{embedder}
 \title{Create an Embedding Method}
 \usage{
-embedder(cost, kernel, kappa = 0.5, lambda = 0.5, beta = 1, alpha = 0,
-  dof = 1, norm = "joint", importance_weight = FALSE, verbose = TRUE)
+embedder(cost, kernel, transform = "square", kappa = 0.5, lambda = 0.5,
+  beta = 1, alpha = 0, dof = 10, norm = "joint",
+  importance_weight = FALSE, verbose = TRUE)
 }
 \arguments{
 \item{cost}{The cost function to optimize. See 'Details'. Can be abbreviated.}
 
 \item{kernel}{The function used to convert squared distances to weights. See
 'Details'. Can be abbreviated.}
+
+\item{transform}{Transformation to apply to distances before applying
+\code{kernel}. See 'Details'. Can be abbreviated.}
 
 \item{kappa}{Controls the weighting of the \code{"js"} cost function. Must
 take a value between 0 (where it behaves like \code{"KL"}) and 1 (where it
@@ -32,8 +36,8 @@ behaves like \code{"heavy-tailed"}.}
 of 1 makes the kernel behave like \code{"t-distributed"}, and a value
 approaching approaching infinity behaves like \code{"exponential"}.}
 
-\item{norm}{Weight normalization to carry out. See 'Details'.
-Can be abbreviated.}
+\item{norm}{Weight normalization to carry out. See 'Details'. Can be
+abbreviated.}
 
 \item{importance_weight}{If \code{TRUE}, modify the embedder to use the
 importance weighting method (Yang et al. 2014).}
@@ -68,7 +72,16 @@ the Neighbor Retrieval Visualizer (NeRV) method (Venna et al., 2010).
 Embedding (JSE) method (Lee et al., 2013).
 }
 
-The \code{kernel} is a function that transform squared output distances
+The \code{transform} will carry out a transformation on the distances. One
+of:
+\itemize{
+\item code{"none"} No transformation. As used in distance-based embeddings
+such as metric MDS.
+\item code{"square"} Square the distances. As used in probablity-based
+embeddings (e.g. t-SNE).
+}
+
+The \code{kernel} is a function to convert the transformed output distances
 into weights. Must be one of:
 
 \itemize{
@@ -83,10 +96,13 @@ SSNE (Zhang et al. 2009).
 (Kitazono et al. 2016).
 }
 
-The \code{normalization} determines how weights are converted to
-probabilities. Must be one of:
+The \code{norm} determines how weights are converted to probabilities. Must
+be one of:
 
 \itemize{
+  \item \code{"none"} No normalization, as used in metric MDS. Only the
+  \code{"square"} and \code{"kl"} \code{cost} functions are compatible with
+  this option.
   \item \code{"point"} Point-wise normalization, as used in asymmetric SNE,
   NeRV and JSE.
   \item \code{"pair"} Pair-wise normalization.
@@ -117,6 +133,13 @@ embedder(cost = "kl", kernel = "exp", norm = "joint", importance_weight = TRUE)
 # are not. This only has an effect if the kernel parameters are set to be
 # non-uniform.
 embedder(cost = "kl", kernel = "exp", norm = c("joint", "pair"))
+
+# MDS
+embedder(cost = "square", transform = "none", kernel = "none", norm = "none")
+
+# un-normalized version of t-SNE
+embedder(cost = "kl", kernel = "t-dist", norm = "none")
+
 \dontrun{
 # Pass result of calling embedder to the sneer function's method parameter
 sneer(iris, method = embedder(cost = "kl", kernel = "t-dist", norm = "joint"))
