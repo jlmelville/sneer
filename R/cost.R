@@ -322,17 +322,18 @@ sum2_fg <- function() {
 
 # Un-normalized KL --------------------------------------------------------
 
-unkl_cost <- function(inp, out, method) {
-  vm <- inp$pm
-  wm <- out$qm
-  eps <- method$eps
-  sum(vm * log((vm + eps) / (wm + eps)) - vm + wm)
-}
-attr(unkl_cost, "sneer_null_matrix") <- "null_model_weight"
-
 null_model_weight <- function(wm) {
   matrix(1, nrow = nrow(wm), ncol = ncol(wm))
 }
+
+unkl_divergence <- function(vm, wm, eps = .Machine$double.eps) {
+  sum(vm * log((vm + eps) / (wm + eps)) - vm + wm)
+}
+
+unkl_cost <- function(inp, out, method) {
+  unkl_divergence(inp$pm, out$qm, method$eps)
+}
+attr(unkl_cost, "sneer_null_matrix") <- "null_model_weight"
 
 unkl_fg <- function() {
   list(
@@ -352,3 +353,60 @@ unkl_fg <- function() {
   )
 }
 
+
+# Reverse Un-normalized KL ------------------------------------------------
+
+reverse_unkl_cost <- function(inp, out, method) {
+  unkl_divergence(out$qm, inp$pm, method$eps)
+}
+attr(reverse_unkl_cost, "sneer_null_matrix") <- "null_model_weight"
+
+reverse_unkl_fg <- function() {
+  list(
+    fn = reverse_unkl_cost,
+    gr = function(inp, out, method) {
+      log(out$qm / (inp$pm + method$eps))
+    },
+    point = function(inp, out, method) {
+      vm <- out$qm
+      wm <- inp$pm
+      eps <- method$eps
+      apply(vm * log((vm + eps) / (wm + eps)) - vm + wm, 1, sum)
+    },
+    name = "revUNKL",
+    keep_weights = TRUE,
+    replace_probs_with_weights = TRUE
+  )
+}
+
+# Un-normalized NeRV ------------------------------------------------------
+
+unnerv_cost <- function(inp, out, method) {
+  method$cost$lambda * unkl_cost(inp, out, method) +
+    (1 - method$cost$lambda) * reverse_unkl_cost(inp, out, method)
+}
+attr(unnerv_cost, "sneer_null_matrix") <- "null_model_weight"
+
+unnerv_fg <- function(lambda = 0.5) {
+
+  unkl <- unkl_fg()
+  revunkl <- reverse_unkl_fg()
+
+  list(
+    fn = unnerv_cost,
+    gr = function(inp, out, method) {
+      method$cost$lambda * unkl$gr(inp, out, method) +
+        (1 - method$cost$lambda) * revunkl$gr(inp, out, method)
+    },
+    point = function(inp, out, method) {
+      method$cost$lambda * unkl$point(inp, out, method) +
+        (1 - method$cost$lambda) * revunkl$point(inp, out, method)
+    },
+    lambda = lambda,
+    name = "revNeRV",
+    keep_weights = TRUE,
+    replace_probs_with_weights = TRUE
+  )
+}
+
+# NB un-normalized JSE expression simplifies to normalized version

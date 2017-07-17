@@ -1355,7 +1355,7 @@ sneer <- function(df,
 #' Stochastic Neighbor Embedding (SNE) method (Hinton and Roweis, 2002) and
 #' Symmetric Stochastic Neighbor Embedding (SSNE) method (Cook et al., 2007),
 #' and t-distributed SNE (van der Maaten and Hinton,, 2008).
-#' \item \code{"reverse-KL"} Kullback-Leibler divergence, with the output
+#' \item \code{"revKL"} Kullback-Leibler divergence, with the output
 #' probability as the reference distribution. Part of the cost function used in
 #' the Neighbor Retrieval Visualizer (NeRV) method (Venna et al., 2010).
 #' \item \code{"nerv"} Cost function used in the (NeRV) method (Venna et al.,
@@ -1424,11 +1424,11 @@ sneer <- function(df,
 #' @param norm Weight normalization to carry out. See 'Details'. Can be
 #'   abbreviated.
 #' @param lambda Controls the weighting of the \code{"nerv"} cost function. Must
-#'   take a value between 0 (where it behaves like \code{"reverse-KL"}) and 1
+#'   take a value between 0 (where it behaves like \code{"revKL"}) and 1
 #'   (where it behaves like \code{"KL"}).
 #' @param kappa Controls the weighting of the \code{"js"} cost function. Must
 #'   take a value between 0 (where it behaves like \code{"KL"}) and 1 (where it
-#'   behaves like \code{"reverse-KL"}).
+#'   behaves like \code{"revKL"}).
 #' @param importance_weight If \code{TRUE}, modify the embedder to use the
 #'   importance weighting method (Yang et al. 2014).
 #' @param verbose If \code{TRUE}, log information about the embedding method to
@@ -1512,7 +1512,7 @@ embedder <- function(cost, kernel, transform = "square",
                     c("kl", "revkl", "js", "nerv", "square"))
   cost <- switch(cost,
                  kl = kl_fg(),
-                 "reverse-kl" = reverse_kl_fg(),
+                 "revkl" = reverse_kl_fg(),
                  js = jse_fg(kappa = kappa),
                  nerv = nerv_fg(lambda = lambda),
                  square = sum2_fg())

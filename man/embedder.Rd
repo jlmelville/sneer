@@ -19,10 +19,10 @@ embedder(cost, kernel, transform = "square", kappa = 0.5, lambda = 0.5,
 
 \item{kappa}{Controls the weighting of the \code{"js"} cost function. Must
 take a value between 0 (where it behaves like \code{"KL"}) and 1 (where it
-behaves like \code{"reverse-KL"}).}
+behaves like \code{"revKL"}).}
 
 \item{lambda}{Controls the weighting of the \code{"nerv"} cost function. Must
-take a value between 0 (where it behaves like \code{"reverse-KL"}) and 1
+take a value between 0 (where it behaves like \code{"revKL"}) and 1
 (where it behaves like \code{"KL"}).}
 
 \item{beta}{Precision (narrowness) of the \code{"exponential"} and
@@ -63,7 +63,7 @@ The \code{cost} parameter is the cost function to minimize, one of:
 Stochastic Neighbor Embedding (SNE) method (Hinton and Roweis, 2002) and
 Symmetric Stochastic Neighbor Embedding (SSNE) method (Cook et al., 2007),
 and t-distributed SNE (van der Maaten and Hinton,, 2008).
-\item \code{"reverse-KL"} Kullback-Leibler divergence, with the output
+\item \code{"revKL"} Kullback-Leibler divergence, with the output
 probability as the reference distribution. Part of the cost function used in
 the Neighbor Retrieval Visualizer (NeRV) method (Venna et al., 2010).
 \item \code{"nerv"} Cost function used in the (NeRV) method (Venna et al.,
