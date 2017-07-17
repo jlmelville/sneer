@@ -1529,6 +1529,10 @@ embedder <- function(cost, kernel, kappa = 0.5, lambda = 0.5,
 
 
 opt_sneer <- function(opt, method, eta = 500) {
+  if (methods::is(opt, "function")) {
+    return(opt())
+  }
+
   if (methods::is(opt, "list")) {
     return(mize_opt(opt))
   }
