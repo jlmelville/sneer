@@ -100,9 +100,7 @@ The \code{norm} determines how weights are converted to probabilities. Must
 be one of:
 
 \itemize{
-  \item \code{"none"} No normalization, as used in metric MDS. Only the
-  \code{"square"} and \code{"kl"} \code{cost} functions are compatible with
-  this option.
+  \item \code{"none"} No normalization, as used in metric MDS.
   \item \code{"point"} Point-wise normalization, as used in asymmetric SNE,
   NeRV and JSE.
   \item \code{"pair"} Pair-wise normalization.
