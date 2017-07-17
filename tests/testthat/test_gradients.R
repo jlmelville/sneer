@@ -366,6 +366,12 @@ test_that("un-normalized embedders", {
 
   expect_grad(embedder(cost = "kl", kernel = "exp", transform = "square",
                        norm = "none"), label = "UNASNE")
+  expect_grad(embedder(cost = "revKL", kernel = "exp", transform = "square",
+                       norm = "none"), label = "UNrASNE")
+  expect_grad(embedder(cost = "nerv", kernel = "exp", transform = "square",
+                       norm = "none"), label = "UNNeRV")
+  expect_grad(embedder(cost = "js", kernel = "exp", transform = "square",
+                       norm = "none"), label = "UNJSE")
 })
 
 test_that("normalized distance embedders", {
