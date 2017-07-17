@@ -415,3 +415,23 @@ itsne_kernel <- function(dof = 1) {
   kernel <- check_symmetry(kernel)
   kernel
 }
+
+identity_weight <- function(d2m) {
+  d2m
+}
+attr(identity_weight, "type") <- "symm"
+
+no_kernel <- function() {
+  fn <- function(kernel, d2m) {
+    identity_weight(d2m)
+  }
+  attr(fn, "type") <- "symm"
+
+  list(
+    fn = fn,
+    gr = function(kernel, d2m) {
+      1
+    },
+    name = "none"
+  )
+}
