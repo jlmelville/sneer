@@ -1885,7 +1885,7 @@ list_hooks <- function(opt) {
 # \item{\code{gr}}. The gradient of the function. Takes a vector of parameters
 # and returns a vector with the same length as the input parameter vector.
 # \item{\code{fg}}. Optional function which calculates the function and
-# gradient in thesame routine. Takes a vector of parameters and returns a list
+# gradient in the same routine. Takes a vector of parameters and returns a list
 # containing the function result as \code{fn} and the gradient result as
 # \code{gr}.
 # }
@@ -2167,13 +2167,13 @@ list_hooks <- function(opt) {
 #   \code{par} an iteration, \code{step_tol} will not be triggered.
 # }
 #
-# Convergence is checked between specific interations. How often is determined
+# Convergence is checked between specific iterations. How often is determined
 # by the \code{check_conv_every} parameter, which specifies the number of
 # iterations between each check. By default, this is set for every iteration.
 #
 # Be aware that if \code{abs_tol} or \code{rel_tol} are non-\code{NULL}, this
 # requires the function to have been evaluated at the current position at the
-# end of each iteration. If the function at that  position hasn't been
+# end of each iteration. If the function at that position has not been
 # calculated, it will be calculated and will contribute to the total reported
 # in the \code{counts} list in the return value. The calculated function value
 # is cached for use by the optimizer in the next iteration, so if the optimizer
@@ -2201,7 +2201,7 @@ list_hooks <- function(opt) {
 # non-finite (i.e. \code{Inf} or \code{NaN}) gradient or function value.
 # Some, but not all, line-searches will try to recover from the latter, by
 # reducing the step size, but a non-finite gradient calculation during the
-# gradient descent portion of opimization is considered catastrosphic by mizer,
+# gradient descent portion of optimization is considered catastrophic by mize,
 # and it will give up. Termination under non-finite gradient or function
 # conditions will result in \code{terminate$what} being \code{"gr_inf"} or
 # \code{"fn_inf"} respectively. Unlike the convergence criteria, the
@@ -2214,7 +2214,7 @@ list_hooks <- function(opt) {
 # of parameters requires a function evaluation at the end of each iteration,
 # which only happens if either the optimization method calculates it as part
 # of its own operation or if a convergence check is being carried out during
-# this iteration. Therefore, if your method doesn't carry out function
+# this iteration. Therefore, if your method does not carry out function
 # evaluations and \code{check_conv_every} is set to be so large that no
 # convergence calculation is carried out before \code{max_iter} is reached,
 # then the returned value of \code{par} is the last value encountered.
@@ -3153,7 +3153,7 @@ make_mize <- function(method = "L-BFGS",
 #
 #@param opt Optimizer, created by \code{\link{make_mize}}.
 #@param par Vector of initial values for the function to be optimized over.
-#@param fg Function and gradient list. See the documentaion of
+#@param fg Function and gradient list. See the documentation of
 #  \code{\link{mize}}.
 #@return Result of the current optimization step, a list with components:
 #  \itemize{
@@ -3299,7 +3299,7 @@ mize_step <- function(opt, par, fg) {
 #
 # @param opt Optimizer, created by \code{\link{make_mize}}.
 # @param par Vector of initial values for the function to be optimized over.
-# @param fg Function and gradient list. See the documentaion of
+# @param fg Function and gradient list. See the documentation of
 #   \code{\link{mize}}.
 # @param max_iter (Optional). Maximum number of iterations. See the
 #   'Convergence' section of \code{\link{mize}} for details.
@@ -3396,12 +3396,12 @@ mize_init <- function(opt, par, fg,
 #  \code{\link{mize_step}}.
 #@param par Vector of parameters at the end of the iteration, from return value
 #  of \code{\link{mize_step}}.
-#@param fg Function and gradient list. See the documentaion of
+#@param fg Function and gradient list. See the documentation of
 #  \code{\link{mize}}.
 #@param par_old (Optional). Vector of parameters at the end of the previous
 #  iteration. Used to calculate step size.
 #@param calc_fn (Optional). If \code{TRUE}, force calculation of function if
-#  not already cached in \code{opt}, even if it wouldn't be needed for
+#  not already cached in \code{opt}, even if it would not be needed for
 #  convergence checking.
 #@return A list with the following items: \itemize{
 #
@@ -3543,7 +3543,7 @@ mize_step_summary <- function(opt, par, fg, par_old = NULL, calc_fn = NULL) {
 # Check Optimization Convergence
 #
 # Updates the optimizer with information about convergence or termination,
-# signalling if the optimization process should stop.
+# signaling if the optimization process should stop.
 #
 # On returning from this function, the updated value of \code{opt} will
 # contain: \itemize{
@@ -3834,7 +3834,7 @@ attr(require_update_old_init, 'name') <- 'update_old_init'
 # 286-307.
 # @seealso This code is based on a translation of the original MINPACK code
 #  for Matlab by
-#  \href{https://www.cs.umd.edu/users/oleary/software/}{Dianne O'Leary}.
+#  \href{http://www.cs.umd.edu/users/oleary/software/}{Dianne O'Leary}.
 more_thuente <- function(c1 = 1e-4, c2 = 0.1, max_fn = Inf, eps = 1e-6,
                          approx_armijo = FALSE,
                          strong_curvature = TRUE,
@@ -4666,7 +4666,7 @@ cstep <-  function(stepx, stepy, step, brackt, stpmin, stpmax,
 
 # This is the actual Nesterov Accelerated Gradient scheme, rather than
 # the version discussed by Sutskever and popular in the deep learning community,
-# although that is also available in Mizer.
+# although that is also available in Mize.
 #
 # NAG can be considered to be an optimization consisting of:
 # 1. A steepest descent step;
@@ -7756,8 +7756,9 @@ find_finite <- function(phi, alpha, min_alpha = 0, max_fn = 20) {
   list(step = step, nfn = nfn, ok = ok)
 }
 
+# Is the function and directional derivative a sane value?
 step_is_finite <- function(step) {
-  is.finite(step$f) && is.finite(step$df)
+  is.finite(step$f) && is.finite(step$d)
 }
 
 
