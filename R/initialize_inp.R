@@ -104,12 +104,7 @@ inp_from_perp <- function(perplexity = 30,
                           input_weight_fn = exp_weight,
                           modify_kernel_fn = NULL,
                           keep_all_results = TRUE,
-                          keep_weights = FALSE,
                           verbose = TRUE) {
-  if (is.null(keep_weights)) {
-    keep_weights <- FALSE
-  }
-
   inp_prob(
     function(inp, method, opt, iter, out) {
       if (!is.null(modify_kernel_fn)) {
@@ -118,6 +113,9 @@ inp_from_perp <- function(perplexity = 30,
           list(method = method)
         })$method
       }
+
+      keep_weights <- !is.null(method$keep_inp_weights) &&
+        method$keep_inp_weights
 
       inp <- single_perplexity(inp, perplexity = perplexity,
                         input_weight_fn = input_weight_fn,
@@ -214,6 +212,7 @@ single_perplexity <- function(inp, perplexity = 30,
   else {
     inp$pm <- d_to_p_result$pm
   }
+
   inp$perp <- perplexity
   inp$dirty <- TRUE
   list(inp = inp)

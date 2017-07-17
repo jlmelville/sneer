@@ -139,13 +139,11 @@ inp_from_perps_multi <- function(perplexities = NULL,
                                  input_weight_fn = exp_weight,
                                  num_scale_iters = NULL,
                                  modify_kernel_fn = scale_prec_to_perp,
-                                 keep_weights = FALSE,
                                  verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
-      if (is.null(keep_weights)) {
-        keep_weights <- TRUE
-      }
+      keep_weights <- !is.null(method$keep_inp_weights) &&
+        method$keep_inp_weights
 
       if (is.null(perplexities)) {
         perplexities <- ms_perps(inp$dm)
@@ -364,13 +362,11 @@ inp_from_perps_multil <- function(perplexities = NULL,
                                  input_weight_fn = exp_weight,
                                  num_scale_iters = NULL,
                                  modify_kernel_fn = scale_prec_to_perp,
-                                 keep_weights = FALSE,
                                  verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
-      if (is.null(keep_weights)) {
-        keep_weights <- TRUE
-      }
+      keep_weights <- !is.null(method$keep_inp_weights) &&
+        method$keep_inp_weights
 
       if (is.null(perplexities)) {
         perplexities <- ms_perps(inp$dm)
@@ -543,13 +539,11 @@ inp_from_step_perp <- function(perplexities = NULL,
                           input_weight_fn = exp_weight,
                           num_scale_iters = 20,
                           modify_kernel_fn = scale_prec_to_perp,
-                          keep_weights = FALSE,
                           verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
-      if (is.null(keep_weights)) {
-        keep_weights <- TRUE
-      }
+      keep_weights <- !is.null(method$keep_inp_weights) &&
+        method$keep_inp_weights
 
       if (is.null(perplexities)) {
         perplexities <- step_perps(inp$dm)
@@ -699,13 +693,11 @@ scale_prec_to_perp <- function(inp, out, method) {
 inp_from_dint_max <- function(perplexities = NULL,
                               input_weight_fn = exp_weight,
                               modify_kernel_fn = NULL,
-                              keep_weights = FALSE,
                               verbose = TRUE) {
   inp_prob(
     function(inp, method, opt, iter, out) {
-      if (is.null(keep_weights)) {
-        keep_weights <- TRUE
-      }
+      keep_weights <- !is.null(method$keep_inp_weights) &&
+        method$keep_inp_weights
 
       if (is.null(perplexities)) {
         perplexities <- ms_perps(inp$dm)

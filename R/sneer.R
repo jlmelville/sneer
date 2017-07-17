@@ -1001,8 +1001,7 @@ sneer <- function(df,
                  init_inp <- inp_from_dint_max(
                    perplexities = perplexity,
                    modify_kernel_fn = modify_kernel_fn,
-                   input_weight_fn = weight_fn,
-                   keep_weights = embed_method$keep_inp_weights)
+                   input_weight_fn = weight_fn)
                },
                multi = {
                  if (length(perplexity) == 1) {
@@ -1012,8 +1011,7 @@ sneer <- function(df,
                    perplexities = perplexity,
                    num_scale_iters = perp_scale_iter,
                    modify_kernel_fn = modify_kernel_fn,
-                   input_weight_fn = weight_fn,
-                   keep_weights = embed_method$keep_inp_weights)
+                   input_weight_fn = weight_fn)
                },
                multil = {
                  if (length(perplexity) == 1) {
@@ -1023,8 +1021,7 @@ sneer <- function(df,
                    perplexities = perplexity,
                    num_scale_iters = perp_scale_iter,
                    modify_kernel_fn = modify_kernel_fn,
-                   input_weight_fn = weight_fn,
-                   keep_weights = embed_method$keep_inp_weights
+                   input_weight_fn = weight_fn
                    )
                },
                step = {
@@ -1035,7 +1032,6 @@ sneer <- function(df,
                    perplexities = perplexity,
                    num_scale_iters = perp_scale_iter,
                    modify_kernel_fn = modify_kernel_fn,
-                   keep_weights = embed_method$keep_inp_weights,
                    input_weight_fn = weight_fn)
                }
         )
@@ -1057,8 +1053,7 @@ sneer <- function(df,
           init_inp <- inp_from_perp(
             perplexity = perplexity,
             modify_kernel_fn = modify_kernel_fn,
-            input_weight_fn = weight_fn,
-            keep_weights = embed_method$keep_inp_weights)
+            input_weight_fn = weight_fn)
         }
         else {
           stop("Must provide 'perp_scale' argument if using multiple perplexity ",

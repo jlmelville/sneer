@@ -251,8 +251,6 @@ iembed <- function(method,
                    preprocess = make_preprocess(range_scale_matrix = TRUE,
                                    verbose = FALSE),
                    init_inp = inp_from_perp(perplexity = 20,
-                                            keep_weights =
-                                              method$keep_inp_weights,
                                             verbose = FALSE),
                    init_out = out_from_PCA(verbose = FALSE),
                    opt = mize_grad_descent()
