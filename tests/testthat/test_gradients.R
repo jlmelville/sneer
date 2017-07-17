@@ -36,11 +36,11 @@ gfd <- function(embedder, diff = 1e-4) {
 }
 
 gan <- function(embedder) {
-  grad_fn <- dist2_gradient
-  if (!is.null(embedder$method$gradient_fn)) {
-    grad_fn <- embedder$method$gradient_fn
+  grad <- dist2_gradient()
+  if (!is.null(embedder$method$gradient)) {
+    grad <- embedder$method$gradient
   }
-  grad_fn(embedder$inp, embedder$out, embedder$method)$gm
+  grad$fn(embedder$inp, embedder$out, embedder$method)$gm
 }
 
 # useful for interactive examination of analytical gradients only, diff param is
@@ -94,6 +94,35 @@ expect_grad <- function(method,
   expect_equal(grad_an, grad_fd, tolerance = tolerance, scale = scale,
                label = label, info = info,
                expected.label = "finite difference gradient")
+}
+
+expect_grad_equal <- function(method1, method2,
+                           label = "",
+                           info = label,
+                           inp_init = inp_from_perp(perplexity = 20,
+                                                    verbose = FALSE),
+                           diff = 1e-5,
+                           tolerance = 1e-6,
+                           scale = 1,
+                           inp_df = iris[1:50, 1:4]) {
+
+  embedder1 <- init_embed(inp_df, method1,
+                         preprocess = preprocess,
+                         init_inp = inp_init,
+                         init_out = out_init,
+                         opt = mize_grad_descent())
+  grad_an1 <- gan(embedder1)
+
+  embedder2 <- init_embed(inp_df, method2,
+                          preprocess = preprocess,
+                          init_inp = inp_init,
+                          init_out = out_init,
+                          opt = mize_grad_descent())
+  grad_an2 <- gan(embedder2)
+
+  expect_equal(grad_an1, grad_an2, tolerance = tolerance, scale = scale,
+               label = label, info = info,
+               expected.label = "analytical gradients")
 }
 
 test_that("Distance gradients", {
@@ -322,4 +351,30 @@ test_that("inhomogeneous t-SNE gradients", {
               label = "itsne dof 1:10")
   expect_grad(itsne(dof = seq(10, 1000, length.out = nr)),
               label = "itsne dof 10:1000")
+})
+
+test_that("un-normalized embedders", {
+  mmds_embedder <- embedder(cost = "square", kernel = "none",
+                            transform = "none", norm = "none")
+  expect_grad(mmds_embedder, inp_init = NULL, label = "embedder MMDS")
+  expect_grad_equal(mmds_embedder, mmds(), inp_init = NULL,
+                    label = "mmds equivalence")
+  smmds_embedder <- embedder(cost = "square", kernel = "none",
+                             transform = "square", norm = "none")
+  expect_grad(smmds_embedder, inp_init = NULL, label = "SMMDS")
+  expect_grad(smmds_embedder, smmds(), inp_init = NULL, label = "SMMDS")
+
+  expect_grad(embedder(cost = "kl", kernel = "exp", transform = "square",
+                       norm = "none"), label = "UNASNE")
+})
+
+test_that("normalized distance embedders", {
+  expect_grad(embedder(cost = "square", kernel = "none", transform = "none",
+             norm = "point"), label = "point-norm MMDS")
+  expect_grad(embedder(cost = "square", kernel = "none", transform = "none",
+                       norm = "pair"), label = "pair-norm MMDS")
+  expect_grad(embedder(cost = "square", kernel = "none", transform = "none",
+                       norm = "pair"), label = "point-norm SMMDS")
+  expect_grad(embedder(cost = "square", kernel = "none", transform = "square",
+                       norm = "pair"), label = "pair-norm SMMDS")
 })

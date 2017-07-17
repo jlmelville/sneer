@@ -18,7 +18,7 @@ expect_equal(mds_iris$report$kruskal_stress, 0.03273, tolerance = 1e-4,
 
 
   # nest inside so can compare to mds_iris result
-  test_that("plugin mmds is close to smacof::mds result", {
+  test_that("plugin mmds is close to non-plugin mmds result", {
     method <- mmds()
     method$stiffness <- distance_stiffness()
     plug_mds_iris <- embed_dist(iris[, 1:4],
@@ -28,6 +28,19 @@ expect_equal(mds_iris$report$kruskal_stress, 0.03273, tolerance = 1e-4,
                                   extra_costs = c("kruskal_stress"), verbose = FALSE),
                                 export = c("report"), verbose = FALSE, max_iter = 40)
     expect_equal(plug_mds_iris$report$kruskal_stress,
+                 mds_iris$report$kruskal_stress)
+  })
+
+  test_that("embedder mmds is close to mmds result", {
+    method <- embedder(cost = "square", kernel = "none", transform = "none",
+                       norm = "none")
+    embedder_mds_iris <- embed_dist(iris[, 1:4],
+                                method = method,
+                                opt = mize_bold_nag_adapt(),
+                                reporter = make_reporter(
+                                  extra_costs = c("kruskal_stress"), verbose = FALSE),
+                                export = c("report"), verbose = FALSE, max_iter = 40)
+    expect_equal(embedder_mds_iris$report$kruskal_stress,
                  mds_iris$report$kruskal_stress)
   })
 })
@@ -66,4 +79,13 @@ smds_iris <- embed_dist(iris[, 1:4],
                        export = c("report"), verbose = FALSE, max_iter = 30)
 expect_equal(smds_iris$report$kruskal_stress, 0.0364, tolerance = 1e-4,
              scale = 1)
+
+  test_that("embedder SMMDS", {
+    smds_embedder_iris <- sneer(iris, method = embedder(
+      cost = "square", kernel = "none", transform = "square", norm = "none"),
+      opt = mize_bold_nag_adapt, max_iter = 30)
+
+    expect_equal(smds_embedder_iris$cost, smds_iris$cost)
+  })
 })
+
