@@ -66,6 +66,8 @@ expect_cost_fd(jse_fg(kappa = 0.01), inp, out, "JSE kappa -> 0", diff = 1e-7)
 expect_cost_fd(jse_fg(kappa = 0.99), inp, out, "JSE kappa -> 1", diff = 1e-7)
 expect_cost_fd(sum2_fg(), inp, out, "square loss")
 expect_cost_fd(unkl_fg(), inp, out, "Unnormalized KL")
+expect_cost_fd(reverse_unkl_fg(), inp, out, "Unnormalized reverse KL")
+expect_cost_fd(unnerv_fg(lambda = 0.5), inp, out, "Unnormalized NeRV")
 })
 
 
