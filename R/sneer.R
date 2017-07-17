@@ -192,9 +192,14 @@ NULL
 #'   exponential.)
 #'   \item For the heavy-tailed kernel, \code{"alpha"} (the heavy-tailedness),
 #'   and \code{"beta"} (analogous to the precision of the exponential).
+#'   \item \code{alt_opt} If \code{TRUE}, then optimize non-coordinates
+#'   separately from coordinates.
+#'   \item \code{"kernel_opt_iter"} Wait this number of iterations before
+#'   beginning to optimize non-coordinate parameters.
 #' }
 #'
-#' The values of the list items should be one of:
+#' The values of the list \code{"beta"} and \code{"alpha"} items should be one
+#' of:
 #'
 #' \itemize{
 #'   \item \code{"global"} The parameter is the same for every point.
@@ -210,7 +215,9 @@ NULL
 #' kernel). It's an error to specify all parameters as \code{"static"}.
 #'
 #' The methods \code{"dhssne"} and \code{"itsne"} already use dynamic kernel
-#' optimization and don't require any further specification.
+#' optimization and don't require any further specification, but specifying the
+#' \code{alt_opt} and \code{kernel_opt_iter} list members will affect their
+#' behavior.
 #'
 #' The following scaling options can be applied via the \code{scale_type}
 #' parameter:
@@ -454,9 +461,6 @@ NULL
 #' \code{"itsne"}. A value of 1 gives initial behavior like t-ASNE, and values
 #' approaching infinity behave like ASNE.
 #' @param dyn List containing kernel parameters to be optimized. See "Details".
-#' @param kernel_opt_iter Wait this number of iterations before beginning to
-#' optimize non-coordinate parameters. Used by the \code{method}s \code{"itsne"}
-#' and \code{"dhssne"} only.
 #' @param lambda NeRV parameter. Used only if the method is \code{"nerv"}.
 #' @param kappa JSE parameter. Used only if the method is \code{"jse"}.
 #' @param scale_type Type of scaling to carry out on the input data. See
@@ -479,8 +483,6 @@ NULL
 #'  Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.
 #' @param init Type of initialization of the output coordinates. See 'Details'.
 #' @param opt Type of optimizer. See 'Details'.
-#' @param alt_opt If \code{TRUE}, then optimize non-coordinates separately from
-#'  coordinates. Applies only if \code{method} is \code{"itsne"} or \code{"dhssne"}.
 #' @param eta Learning rate when \code{opt} is set to \code{"TSNE"} and
 #'  the initial step size for the bold driver and back tracking step search
 #'  methods.
@@ -688,14 +690,6 @@ NULL
 #'   # Setting it to 1 is equivalent to TSNE, so 1.1 is a bit of an extra push:
 #'   res <- sneer(iris, scale_type = "a", method = "hssne", alpha = 1.1)
 #'
-#'   # it-SNE has a similar degree of freedom parameter to HSSNE's alpha, but
-#'   # applies independently to each point and is optimized as part of the
-#'   # embedding.
-#'   # Setting dof chooses the initial value (1 is like t-SNE, large values
-#'   # approach ASNE)
-#'   # kernel_opt_iter sets how many iterations with just coordinate
-#'   # optimization before including dof optimization too.
-#'   res <- sneer(iris, method = "itsne", dof = 10, kernel_opt_iter = 50)
 #'
 #'   # DHSSNE is a "dynamic" extension to HSSNE which will modify alpha from
 #'   # its starting point, similar to how it-SNE works (except there's
@@ -716,6 +710,16 @@ NULL
 #'   # Allow both alpha and beta in the heavy-tailed function to vary per-point:
 #'   res <- sneer(iris, method = "hssne",
 #'                dyn = list(alpha = "point", beta = "point"))
+#'
+#'   # it-SNE has a similar degree of freedom parameter to HSSNE's alpha, but
+#'   # applies independently to each point and is optimized as part of the
+#'   # embedding.
+#'   # Setting dof chooses the initial value (1 is like t-SNE, large values
+#'   # approach ASNE)
+#'   # kernel_opt_iter sets how many iterations with just coordinate
+#'   # optimization before including dof optimization too.
+#'   res <- sneer(iris, method = "itsne", dof = 10,
+#'                dyn = list(kernel_opt_iter = 50))
 #'
 #'   # wTSNE treats the input probability like a graph where the probabilities
 #'   # are weighted edges and adds extra repulsion to nodes with higher degrees
@@ -800,7 +804,6 @@ sneer <- function(df,
                   alpha = 0.5,
                   dof = 10,
                   dyn = c(),
-                  kernel_opt_iter = 50,
                   lambda = 0.5,
                   kappa = 0.5,
                   scale_type = "none",
@@ -810,7 +813,6 @@ sneer <- function(df,
                   prec_scale = "none",
                   init = "pca",
                   opt = "L-BFGS",
-                  alt_opt = FALSE,
                   eta = 1,
                   max_iter = 1000,
                   report_every = 50,
@@ -846,8 +848,18 @@ sneer <- function(df,
   if (any(dof < 0)) {
     stop("dof must be non-negative")
   }
-  if (kernel_opt_iter < 0) {
-    stop("kernel_opt_iter must be non-negative")
+
+  kernel_opt_iter <- 50
+  if (!is.null(dyn) && (!is.null(dyn$kernel_opt_iter))) {
+    kernel_opt_iter <- dyn$kernel_opt_iter
+    if (kernel_opt_iter < 0) {
+      stop("kernel_opt_iter must be non-negative")
+    }
+  }
+
+  alt_opt <- TRUE
+  if (!is.null(dyn) && (!is.null(dyn$alt_opt))) {
+    alt_opt <- dyn$alt_opt
   }
 
   normalize_cost <- TRUE

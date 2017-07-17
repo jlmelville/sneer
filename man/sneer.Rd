@@ -8,16 +8,16 @@
 \title{sneer: Stochastic Neighbor Embedding Experiments in R.}
 \usage{
 sneer(df, indexes = NULL, ndim = 2, method = "tsne", alpha = 0.5,
-  dof = 10, dyn = c(), kernel_opt_iter = 50, lambda = 0.5,
-  kappa = 0.5, scale_type = "none", perplexity = 32,
-  perp_scale = "single", perp_scale_iter = NULL, perp_kernel_fun = "exp",
-  prec_scale = "none", init = "pca", opt = "L-BFGS", alt_opt = FALSE,
-  eta = 1, max_iter = 1000, report_every = 50, tol = 1e-04,
-  exaggerate = NULL, exaggerate_off_iter = 50, plot_type = "plot",
-  colors = NULL, color_name = NULL, labels = NULL, label_name = NULL,
-  label_chars = NULL, point_size = 1, plot_labels = FALSE,
-  color_scheme = grDevices::rainbow, equal_axes = FALSE, legend = TRUE,
-  legend_rows = NULL, quality_measures = NULL, ret = c())
+  dof = 10, dyn = c(), lambda = 0.5, kappa = 0.5, scale_type = "none",
+  perplexity = 32, perp_scale = "single", perp_scale_iter = NULL,
+  perp_kernel_fun = "exp", prec_scale = "none", init = "pca",
+  opt = "L-BFGS", eta = 1, max_iter = 1000, report_every = 50,
+  tol = 1e-04, exaggerate = NULL, exaggerate_off_iter = 50,
+  plot_type = "plot", colors = NULL, color_name = NULL, labels = NULL,
+  label_name = NULL, label_chars = NULL, point_size = 1,
+  plot_labels = FALSE, color_scheme = grDevices::rainbow,
+  equal_axes = FALSE, legend = TRUE, legend_rows = NULL,
+  quality_measures = NULL, ret = c())
 }
 \arguments{
 \item{df}{Data frame or distance matrix (as dist object) to embed.}
@@ -39,10 +39,6 @@ value of the parameter.}
 approaching infinity behave like ASNE.}
 
 \item{dyn}{List containing kernel parameters to be optimized. See "Details".}
-
-\item{kernel_opt_iter}{Wait this number of iterations before beginning to
-optimize non-coordinate parameters. Used by the \code{method}s \code{"itsne"}
-and \code{"dhssne"} only.}
 
 \item{lambda}{NeRV parameter. Used only if the method is \code{"nerv"}.}
 
@@ -75,9 +71,6 @@ Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.}
 \item{init}{Type of initialization of the output coordinates. See 'Details'.}
 
 \item{opt}{Type of optimizer. See 'Details'.}
-
-\item{alt_opt}{If \code{TRUE}, then optimize non-coordinates separately from
-coordinates. Applies only if \code{method} is \code{"itsne"} or \code{"dhssne"}.}
 
 \item{eta}{Learning rate when \code{opt} is set to \code{"TSNE"} and
 the initial step size for the bold driver and back tracking step search
@@ -226,9 +219,14 @@ should be a list consisting of the following names:
   exponential.)
   \item For the heavy-tailed kernel, \code{"alpha"} (the heavy-tailedness),
   and \code{"beta"} (analogous to the precision of the exponential).
+  \item \code{alt_opt} If \code{TRUE}, then optimize non-coordinates
+  separately from coordinates.
+  \item \code{"kernel_opt_iter"} Wait this number of iterations before
+  beginning to optimize non-coordinate parameters.
 }
 
-The values of the list items should be one of:
+The values of the list \code{"beta"} and \code{"alpha"} items should be one
+of:
 
 \itemize{
   \item \code{"global"} The parameter is the same for every point.
@@ -244,7 +242,9 @@ them optimized (e.g. you may only want to optimize alpha in the heavy-tailed
 kernel). It's an error to specify all parameters as \code{"static"}.
 
 The methods \code{"dhssne"} and \code{"itsne"} already use dynamic kernel
-optimization and don't require any further specification.
+optimization and don't require any further specification, but specifying the
+\code{alt_opt} and \code{kernel_opt_iter} list members will affect their
+behavior.
 
 The following scaling options can be applied via the \code{scale_type}
 parameter:
@@ -661,14 +661,6 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
   # Setting it to 1 is equivalent to TSNE, so 1.1 is a bit of an extra push:
   res <- sneer(iris, scale_type = "a", method = "hssne", alpha = 1.1)
 
-  # it-SNE has a similar degree of freedom parameter to HSSNE's alpha, but
-  # applies independently to each point and is optimized as part of the
-  # embedding.
-  # Setting dof chooses the initial value (1 is like t-SNE, large values
-  # approach ASNE)
-  # kernel_opt_iter sets how many iterations with just coordinate
-  # optimization before including dof optimization too.
-  res <- sneer(iris, method = "itsne", dof = 10, kernel_opt_iter = 50)
 
   # DHSSNE is a "dynamic" extension to HSSNE which will modify alpha from
   # its starting point, similar to how it-SNE works (except there's
@@ -689,6 +681,16 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
   # Allow both alpha and beta in the heavy-tailed function to vary per-point:
   res <- sneer(iris, method = "hssne",
                dyn = list(alpha = "point", beta = "point"))
+
+  # it-SNE has a similar degree of freedom parameter to HSSNE's alpha, but
+  # applies independently to each point and is optimized as part of the
+  # embedding.
+  # Setting dof chooses the initial value (1 is like t-SNE, large values
+  # approach ASNE)
+  # kernel_opt_iter sets how many iterations with just coordinate
+  # optimization before including dof optimization too.
+  res <- sneer(iris, method = "itsne", dof = 10,
+               dyn = list(kernel_opt_iter = 50))
 
   # wTSNE treats the input probability like a graph where the probabilities
   # are weighted edges and adds extra repulsion to nodes with higher degrees

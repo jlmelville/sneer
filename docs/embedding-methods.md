@@ -246,20 +246,6 @@ It's probably better to initialize the `dof` parameters to a larger value,
 gradients are initially large for all points. Otherwise you run the risk of
 outlying points losing their gradients and not moving.
 
-The authors also suggest not starting the optimization of `dof` immediately.
-Their procedure is the usual t-SNE optimization process of starting from
-a small random, normal distribution, using early exaggeration, continuing to
-optimize just the coordinates, and then adding optimization of `dof`. When
-to start optimizing `dof` is controlled by the `kernel_opt_iter` parameter,
-which by default is `50` iterations (if you were using early exaggeration, is 
-the default iteration number at which that stops). You may not have to wait
-as long (or at all) if you are initializing from a non-random configuration.
-
-```R
-# Start optimizing dof straight away
-iris_itsne <- sneer(iris, method = "itsne", kernel_opt_iter = 0)
-```
-
 If you are curious about what the values of `dof` end up as, you can ask for
 the extra parameters to be exported:
 
@@ -269,7 +255,9 @@ iris_itsne <- sneer(iris, method = "itsne", ret = c("dyn"))
 summary(iris_itsne$dyn$dof)
 ```
 
-See the [Exported Data](exported-data.html) for more on exporting.
+See the [Exported Data](exported-data.html) for more on exporting. Some extra
+control over the optimization can be had by using the `dyn` parameter. See its
+section below.
 
 Because you are mixing both coordinates and the `dof` parameter for optimizing,
 I strongly suggest you stick with a standard optimizer (like the default L-BFGS)
@@ -300,11 +288,11 @@ which makes it like SSNE initially), although maybe because it's using a single
 global parameter, DHSSNE seems less sensitive to initialization issues than 
 it-SNE, which needs to optimize multiple parameters.
 
-The `ret` and `kernel_opt_iter` parameters also apply to `dhssne`. 
+The `ret` parameter also apply to `dhssne`. 
 
 ```R
-# Initialize alpha to 0, don't wait to start optimizing, store optimized alpha
-iris_dhssne <- sneer(iris, method = "dhssne", alpha = 0, kernel_opt_iter = 0, ret = c("dyn"))
+# Initialize alpha to 0, store optimized alpha
+iris_dhssne <- sneer(iris, method = "dhssne", alpha = 0, ret = c("dyn"))
 # Optimized alpha:
 iris_dhssne$dyn$alpha
 ```
@@ -313,6 +301,9 @@ I made this method up, so you're not going to find it in any literature
 anywhere. But I think it might be useful. There is some extra background
 material on [computing the gradient for DHSSNE](dynamic-hssne.html), if you're 
 interested in more details.
+
+Like `itsne`, you can gain a little extra control over this method with the 
+`dyn` parameter, which is described next.
 
 ## `dyn`
 
@@ -392,6 +383,41 @@ iris_itsne <- sneer(iris, method = "itsne", dyn = list(dof = "static"), dof = 5)
 If you "dynamize" the heavy-tailed, exponential or itsne kernel in this way, you
 can get to the final optimized values by passing `ret = c("dyn")` to `sneer` 
 just as described for `dhssne` and `itsne` methods above.
+
+### `kernel_opt_iter`
+
+The itsne authors also suggest not starting the optimization of `dof` 
+immediately. Their procedure is the usual t-SNE optimization process of starting
+from a small random, normal distribution, using early exaggeration, continuing
+to optimize just the coordinates, and then adding optimization of `dof`. 
+
+When to start optimizing kernel parameters is controlled by the 
+`kernel_opt_iter` member of the `dyn` list, and if not specified, is `50` 
+iterations by default (if you were using early exaggeration, is the default
+iteration number at which that stops). You may not have to wait as long (or at
+all) if you are initializing from a non-random configuration.
+
+```R
+# Start optimizing dof straight away
+iris_itsne <- sneer(iris, method = "itsne", dyn = list(kernel_opt_iter = 0))
+```
+
+### `alt_opt`
+
+The itsne paper doesn't say if the kernel parameters are optimized separately 
+from the coordinates or together in one big vector. By default, `sneer` uses two
+separate optimizers, but with the configuration specified by the `opt` parameter
+in both cases. The coordinates are optimized first, and then the kernel
+parameters, using the newly optimized coordinate data where needed for the
+gradient. If you would rather optimize them together, set `alt_opt = FALSE`:
+
+```R
+# Optimize dof parameters jointly with coordinates
+iris_itsne <- sneer(iris, method = "itsne", dyn = list(alt_opt = FALSE))
+```
+
+I don't yet have enough experience to say which way provides more robust 
+results.
 
 ## The `embedder` method
 

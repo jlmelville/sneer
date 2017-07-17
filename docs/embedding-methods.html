@@ -312,14 +312,11 @@ iris_jse &lt;- sneer(iris, method = &quot;jse&quot;, kappa = 0) # ASNE</code></p
 <pre class="r"><code>iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dof = 1) # initial t-distribution
 iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dof = 1e3) # initial Gaussian</code></pre>
 <p>It’s probably better to initialize the <code>dof</code> parameters to a larger value, (the authors suggest <code>dof = 10</code>, which is the default) to ensure that the gradients are initially large for all points. Otherwise you run the risk of outlying points losing their gradients and not moving.</p>
-<p>The authors also suggest not starting the optimization of <code>dof</code> immediately. Their procedure is the usual t-SNE optimization process of starting from a small random, normal distribution, using early exaggeration, continuing to optimize just the coordinates, and then adding optimization of <code>dof</code>. When to start optimizing <code>dof</code> is controlled by the <code>kernel_opt_iter</code> parameter, which by default is <code>50</code> iterations (if you were using early exaggeration, is the default iteration number at which that stops). You may not have to wait as long (or at all) if you are initializing from a non-random configuration.</p>
-<pre class="r"><code># Start optimizing dof straight away
-iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, kernel_opt_iter = 0)</code></pre>
 <p>If you are curious about what the values of <code>dof</code> end up as, you can ask for the extra parameters to be exported:</p>
 <pre class="r"><code>iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, ret = c(&quot;dyn&quot;))
 # Results are in a vector called dof, itself part of the dyn list
 summary(iris_itsne$dyn$dof)</code></pre>
-<p>See the <a href="exported-data.html">Exported Data</a> for more on exporting.</p>
+<p>See the <a href="exported-data.html">Exported Data</a> for more on exporting. Some extra control over the optimization can be had by using the <code>dyn</code> parameter. See its section below.</p>
 <p>Because you are mixing both coordinates and the <code>dof</code> parameter for optimizing, I strongly suggest you stick with a standard optimizer (like the default L-BFGS) when using inhomogeneous t-SNE. Adding these extra parameters does also slow down convergence.</p>
 <p>Finally, a minor point on nomenclature: like JSE and NerV, it-SNE uses a point-wise, rather than a pair-wise normalization approach. The embedding is therefore more closely related to ASNE and t-ASNE than t-SNE, despite the name. If you don’t like the results you see with it-SNE compared with t-SNE, you may want to compare with <code>method = &quot;asne&quot;</code> and <code>method = &quot;tasne&quot;</code>.</p>
 </div>
@@ -328,12 +325,13 @@ summary(iris_itsne$dyn$dof)</code></pre>
 <p>The similarities between HSSNE and it-SNE inspired me to create the obvious extension to HSSNE: instead of having to choose a fixed version of HSSNE’s <code>alpha</code> parameter, optimize it directly. Because the value of <code>alpha</code> fluctuates throughout the optimization, I call this “dynamic” HSSNE.</p>
 <p>Two reasons to choose between DHSSNE and it-SNE are that DHSSNE provides a dynamic generalization between SSNE and t-SNE, whereas it-SNE generalizes ASNE and t-ASNE; and DHSSNE only optimizes a single global parameter. This makes it less flexible, but it might make convergence a bit easier.</p>
 <p>You can continue to specify <code>alpha</code> to provide an initial value. Like it-SNE, it makes sense to initialize it to give gaussian-like behavior (so <code>alpha = 0</code>, which makes it like SSNE initially), although maybe because it’s using a single global parameter, DHSSNE seems less sensitive to initialization issues than it-SNE, which needs to optimize multiple parameters.</p>
-<p>The <code>ret</code> and <code>kernel_opt_iter</code> parameters also apply to <code>dhssne</code>.</p>
-<pre class="r"><code># Initialize alpha to 0, don't wait to start optimizing, store optimized alpha
-iris_dhssne &lt;- sneer(iris, method = &quot;dhssne&quot;, alpha = 0, kernel_opt_iter = 0, ret = c(&quot;dyn&quot;))
+<p>The <code>ret</code> parameter also apply to <code>dhssne</code>.</p>
+<pre class="r"><code># Initialize alpha to 0, store optimized alpha
+iris_dhssne &lt;- sneer(iris, method = &quot;dhssne&quot;, alpha = 0, ret = c(&quot;dyn&quot;))
 # Optimized alpha:
 iris_dhssne$dyn$alpha</code></pre>
 <p>I made this method up, so you’re not going to find it in any literature anywhere. But I think it might be useful. There is some extra background material on <a href="dynamic-hssne.html">computing the gradient for DHSSNE</a>, if you’re interested in more details.</p>
+<p>Like <code>itsne</code>, you can gain a little extra control over this method with the <code>dyn</code> parameter, which is described next.</p>
 </div>
 </div>
 <div id="dyn" class="section level2">
@@ -373,6 +371,20 @@ iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;
 # Keep dof fixed to its input value(s) for the entire embedding (5 in this case)
 iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(dof = &quot;static&quot;), dof = 5)</code></pre>
 <p>If you “dynamize” the heavy-tailed, exponential or itsne kernel in this way, you can get to the final optimized values by passing <code>ret = c(&quot;dyn&quot;)</code> to <code>sneer</code> just as described for <code>dhssne</code> and <code>itsne</code> methods above.</p>
+</div>
+<div id="kernel_opt_iter" class="section level3">
+<h3><code>kernel_opt_iter</code></h3>
+<p>The itsne authors also suggest not starting the optimization of <code>dof</code> immediately. Their procedure is the usual t-SNE optimization process of starting from a small random, normal distribution, using early exaggeration, continuing to optimize just the coordinates, and then adding optimization of <code>dof</code>.</p>
+<p>When to start optimizing kernel parameters is controlled by the <code>kernel_opt_iter</code> member of the <code>dyn</code> list, and if not specified, is <code>50</code> iterations by default (if you were using early exaggeration, is the default iteration number at which that stops). You may not have to wait as long (or at all) if you are initializing from a non-random configuration.</p>
+<pre class="r"><code># Start optimizing dof straight away
+iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(kernel_opt_iter = 0))</code></pre>
+</div>
+<div id="alt_opt" class="section level3">
+<h3><code>alt_opt</code></h3>
+<p>The itsne paper doesn’t say if the kernel parameters are optimized separately from the coordinates or together in one big vector. By default, <code>sneer</code> uses two separate optimizers, but with the configuration specified by the <code>opt</code> parameter in both cases. The coordinates are optimized first, and then the kernel parameters, using the newly optimized coordinate data where needed for the gradient. If you would rather optimize them together, set <code>alt_opt = FALSE</code>:</p>
+<pre class="r"><code># Optimize dof parameters jointly with coordinates
+iris_itsne &lt;- sneer(iris, method = &quot;itsne&quot;, dyn = list(alt_opt = FALSE))</code></pre>
+<p>I don’t yet have enough experience to say which way provides more robust results.</p>
 </div>
 </div>
 <div id="the-embedder-method" class="section level2">
