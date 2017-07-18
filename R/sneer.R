@@ -1312,13 +1312,13 @@ sneer <- function(df,
           result$deg  <- inp$deg
         }
         else {
-          if (!is.null(inp$pm)) {
+          if (!is.null(inp$pm) && !is.null(inp$perp)) {
             result$deg <- centrality(inp, embed_result$method)
           }
         }
       },
       degs = {
-        if (!is.null(inp$pm)) {
+        if (!is.null(inp$pm) && !is.null(inp$perp)) {
           deg_res <- centralities(inp, embed_result$method)
           result$deg <- deg_res$deg
           result$indeg <- deg_res$indeg
@@ -1326,7 +1326,9 @@ sneer <- function(df,
         }
       },
       v = {
-        result$v <- inp$wm
+        if (!is.null(inp$wm)) {
+          result$v <- inp$wm
+        }
       },
       dyn = {
         if (!is.null(embed_result$method$export_extra_par)) {
