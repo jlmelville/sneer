@@ -932,7 +932,12 @@ sneer <- function(df,
 
   if (!is.null(dyn)) {
     embed_method$dynamic_kernel <- TRUE
-    embed_method$dyn <- dyn
+    if (is.null(embed_method$dyn)) {
+      embed_method$dyn <- dyn
+    }
+    else {
+      embed_method$dyn <- lconcat(embed_method$dyn, dyn)
+    }
     embed_method$opt_iter <- kernel_opt_iter
     embed_method$switch_iter <- kernel_opt_iter
     embed_method$xi_eps <- .Machine$double.eps

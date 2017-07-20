@@ -179,6 +179,25 @@ lreplace <- function(l, ...) {
   l
 }
 
+# Concatenate Lists With Replacement
+#
+# Concatenates lists, where any duplicate names are resolved by values from
+# later lists replacing those from earlier lists.
+#
+# @param ... lists
+# @return Concatenated lists, without duplicate names.
+# @examples
+# \dontrun{
+# x <- list(a = 1, b = 2, c = 3)
+# y <- list(b = 4, d = 5)
+# z <- list(a = 6, b = 8, e = 7)
+# lconcat(x, y, z) == list(a = 6, b = 8, c = 3, d = 5, e = 7)
+# }
+lconcat <- function(...) {
+  varargs <- list(...)
+  Reduce(modifyList, varargs)
+}
+
 # Looks at all the columns in a data frame, returning the name of the last
 # column which is a factor or NULL if there are no factors present.
 last_factor_column_name <- function(df) {
