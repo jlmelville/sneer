@@ -937,9 +937,9 @@ sneer <- function(df,
     embed_method$switch_iter <- kernel_opt_iter
     embed_method$xi_eps <- .Machine$double.eps
     embed_method$alt_opt <- alt_opt
-  }
-  convergence_iter <- max(convergence_iter, kernel_opt_iter)
 
+    convergence_iter <- max(convergence_iter, kernel_opt_iter)
+  }
 
   preprocess <- make_preprocess()
   if (!is.null(scale_type)) {
@@ -1027,6 +1027,7 @@ sneer <- function(df,
                    num_scale_iters = perp_scale_iter,
                    modify_kernel_fn = modify_kernel_fn,
                    input_weight_fn = weight_fn)
+                 convergence_iter <- max(convergence_iter, perp_scale_iter)
                },
                multil = {
                  if (length(perplexity) == 1) {
@@ -1038,6 +1039,7 @@ sneer <- function(df,
                    modify_kernel_fn = modify_kernel_fn,
                    input_weight_fn = weight_fn
                    )
+                 convergence_iter <- max(convergence_iter, perp_scale_iter)
                },
                step = {
                  if (length(perplexity) == 1) {
@@ -1048,6 +1050,7 @@ sneer <- function(df,
                    num_scale_iters = perp_scale_iter,
                    modify_kernel_fn = modify_kernel_fn,
                    input_weight_fn = weight_fn)
+                 convergence_iter <- max(convergence_iter, perp_scale_iter)
                }
         )
       }
@@ -1077,7 +1080,6 @@ sneer <- function(df,
       }
     }
   }
-  convergence_iter <- max(convergence_iter, perp_scale_iter)
 
   if (methods::is(init, "matrix")) {
     init_config <- init
@@ -1202,6 +1204,7 @@ sneer <- function(df,
   }
 
   optimizer$convergence_iter <- convergence_iter
+
   embed_result <- embed_main(
     xm,
     method = embed_method,
