@@ -138,6 +138,9 @@ itsne_cost_gr_param_asymm <- function(opt, inp, out, method, iter, extra_par) {
 # should be called by make_kernel_dynamic, delegating to kernel$make_dynamic
 # as part of before_init
 dynamize_inhomogeneous_kernel <- function(method) {
+  if (is.null(method$dyn$dof)) {
+    method$dyn$dof <- "global"
+  }
   if (method$dyn$dof == "static") {
     if (method$verbose) {
       message("Kernel parameters are all marked as 'static', no optimization")
