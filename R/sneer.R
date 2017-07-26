@@ -959,7 +959,7 @@ sneer <- function(df,
   }
 
   ok_rets <- c("x", "dx", "dy", "p", "q", "w", "prec", "dim", "deg", "degs",
-               "v", "dyn", "pcost", "method")
+               "v", "dyn", "pcost", "method", "perp")
   ret <- unique(ret)
   for (r in (ret)) {
     match.arg(tolower(r), ok_rets)
@@ -1344,6 +1344,11 @@ sneer <- function(df,
         }
         else if (!is.null(embed_result$method$get_extra_par)) {
           result$dyn <- embed_result$method$get_extra_par(embed_result$method)
+        }
+      },
+      perp = {
+        if (!is.null(inp$perp)) {
+          result$perp <- inp$perp
         }
       }
     )
