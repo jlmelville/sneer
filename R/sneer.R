@@ -932,7 +932,7 @@ sneer <- function(df,
 
   if (!is.null(dyn)) {
     embed_method$dynamic_kernel <- TRUE
-    if (is.null(embed_method$dyn)) {
+    if (is.null(embed_method[["dyn"]])) {
       embed_method$dyn <- dyn
     }
     else {
