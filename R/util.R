@@ -195,7 +195,7 @@ lreplace <- function(l, ...) {
 # }
 lconcat <- function(...) {
   varargs <- list(...)
-  Reduce(modifyList, varargs)
+  Reduce(utils::modifyList, varargs)
 }
 
 # Looks at all the columns in a data frame, returning the name of the last
