@@ -59,25 +59,25 @@ NeRV) can be created.
 The \code{cost} parameter is the cost function to minimize, one of:
 
 \itemize{
-\item \code{"KL"} Kullback-Leibler divergence, as used in the asymmetric
+\item \code{"KL"}. Kullback-Leibler divergence, as used in the asymmetric
 Stochastic Neighbor Embedding (SNE) method (Hinton and Roweis, 2002) and
 Symmetric Stochastic Neighbor Embedding (SSNE) method (Cook et al., 2007),
 and t-distributed SNE (van der Maaten and Hinton,, 2008).
-\item \code{"revKL"} Kullback-Leibler divergence, with the output
+\item \code{"revKL"}. Kullback-Leibler divergence, with the output
 probability as the reference distribution. Part of the cost function used in
 the Neighbor Retrieval Visualizer (NeRV) method (Venna et al., 2010).
-\item \code{"nerv"} Cost function used in the (NeRV) method (Venna et al.,
+\item \code{"nerv"}. Cost function used in the (NeRV) method (Venna et al.,
 2010).
-\item \code{"JS"} Jensen-Shannon divergence, as used in the Jensen-Shannon
+\item \code{"JS"}. Jensen-Shannon divergence, as used in the Jensen-Shannon
 Embedding (JSE) method (Lee et al., 2013).
 }
 
 The \code{transform} will carry out a transformation on the distances. One
 of:
 \itemize{
-\item code{"none"} No transformation. As used in distance-based embeddings
+\item \code{"none"}. No transformation. As used in distance-based embeddings
 such as metric MDS.
-\item code{"square"} Square the distances. As used in probablity-based
+\item \code{"square"}. Square the distances. As used in probablity-based
 embeddings (e.g. t-SNE).
 }
 
@@ -85,10 +85,10 @@ The \code{kernel} is a function to convert the transformed output distances
 into weights. Must be one of:
 
 \itemize{
-\item \code{"exponential"} Exponential function as used in the asymmetric
+\item \code{"exponential"}. Exponential function as used in the asymmetric
 Stochastic Neighbor Embedding (SNE) method (Hinton and Roweis, 2002) and
 Symmetric Stochastic Neighbor Embedding (SSNE) method (Cook et al., 2007).
-\item \code{"t-distributed"} The t-distribution with one degree of freedom,
+\item \code{"t-distributed"}. The t-distribution with one degree of freedom,
 as used in t-distributed SNE (van der Maaten and Hinton,, 2008).
 \item \code{"heavy-tailed"}. Heavy-tailedness function used in Heavy-tailed
 SSNE (Zhang et al. 2009).
@@ -100,11 +100,11 @@ The \code{norm} determines how weights are converted to probabilities. Must
 be one of:
 
 \itemize{
-  \item \code{"none"} No normalization, as used in metric MDS.
-  \item \code{"point"} Point-wise normalization, as used in asymmetric SNE,
+  \item \code{"none"}. No normalization, as used in metric MDS.
+  \item \code{"point"}. Point-wise normalization, as used in asymmetric SNE,
   NeRV and JSE.
-  \item \code{"pair"} Pair-wise normalization.
-  \item \code{"joint"} Pair-wise normalization, plus enforcing the
+  \item \code{"pair"}. Pair-wise normalization.
+  \item \code{"joint"}. Pair-wise normalization, plus enforcing the
   probabilities to be joint by averaging, as used in symmetric SNE and
   t-distributed SNE. Output probabilities will only be averaged if the
   \code{kernel} has non-uniform parameters.
