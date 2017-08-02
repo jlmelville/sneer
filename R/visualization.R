@@ -420,7 +420,7 @@ color_helper_df <- function(df,
   color_name <- last_color_column_name(df)
   if (!is.null(color_name)) {
     if (verbose) {
-      message("Found color column ", color_name)
+      message("Found color column '", color_name, "'")
     }
     colors <- df[[color_name]]
   }
@@ -430,7 +430,7 @@ color_helper_df <- function(df,
     label_name <- last_factor_column_name(df)
     if (!is.null(label_name)) {
       if (verbose) {
-        message("Found a factor ", label_name, " for mapping to colors")
+        message("Found a factor ;", label_name, "' for mapping to colors")
       }
       labels <- df[[label_name]]
       colors <- factor_to_colors(labels, color_scheme = color_scheme)
