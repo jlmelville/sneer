@@ -31,3 +31,19 @@ test_that("distribution of intrinsic dimensionality is ok", {
   expect_equal(mean(presult_exp$dim), 0.9939, tolerance = 1e-3)
   expect_equal(max(presult_exp$dim), 2.657, tolerance = 1e-3)
 })
+
+
+test_that("manual per-point perplexity", {
+  # perplexity 3
+  iris10_u3 <- sneer(iris[1:10, ], ret = c("p"), perplexity = 3, method = "asne",
+                     max_iter = 0, plot_type = NULL)
+  # perplexity 5
+  iris10_u5 <- sneer(iris[1:10, ], ret = c("p"), perplexity = 5, method = "asne",
+                     max_iter = 0, plot_type = NULL)
+  # 1-5 have perplexity 3, 6-10 have perplexity 5
+  iris10_u35 <- sneer(iris[1:10, ], ret = c("p"),
+                      perplexity = c(rep(3, 5), rep(5, 5)), method = "asne",
+                      max_iter = 0, plot_type = NULL)
+  expect_equal(iris10_u35$p[1:5, ], iris10_u3$p[1:5, ])
+  expect_equal(iris10_u35$p[6:10, ], iris10_u5$p[6:10, ])
+})

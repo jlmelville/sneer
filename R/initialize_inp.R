@@ -196,7 +196,7 @@ single_perplexity <- function(inp, perplexity = 30,
                               keep_all_results = TRUE,
                               keep_weights = FALSE,
                               verbose = TRUE) {
-  if (verbose) {
+  if (verbose && length(perplexity) == 1) {
     message("Parameter search for perplexity = ", formatC(perplexity))
   }
   d_to_p_result <- d_to_p_perp_bisect(dm = inp$dm, perplexity = perplexity,

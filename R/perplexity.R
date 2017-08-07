@@ -97,6 +97,10 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-5,
                                verbose = TRUE) {
   d2m <- dm ^ 2
   n <- nrow(d2m)
+  if (length(perplexity) > 1 && length(perplexity) != n) {
+    stop("Perplexity search: multiple perplexities provided, ",
+         "but not of length ", n)
+  }
 
   pm <- matrix(0, n, n)
   beta <- rep(1, n)
@@ -108,7 +112,14 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-5,
 
   for (i in 1:n) {
     d2mi <- d2m[i, , drop = FALSE]
-    result <- find_beta(d2mi = d2mi, i = i, perplexity = perplexity,
+    if (length(perplexity) == 1) {
+      perp_i <- perplexity
+    }
+    else {
+      perp_i <- perplexity[i]
+    }
+
+    result <- find_beta(d2mi = d2mi, i = i, perplexity = perp_i,
                         beta_init = beta[i], weight_fn = weight_fn, tol = tol,
                         max_iters = max_iters, keep_weights = keep_weights)
     pm[i,] <- result$pr
@@ -128,8 +139,13 @@ d_to_p_perp_bisect <- function(dm, perplexity = 15, weight_fn, tol = 1e-5,
     summarize(pm, "P")
     summarize(dims, "dims")
     if (num_failures > 0) {
-      warning(paste0(num_failures, " failures to find the target perplexity ",
+      if (length(perplexity > 1)) {
+        warning(paste0(num_failures, " failures to find the target perplexity"))
+      }
+      else {
+        warning(paste0(num_failures, " failures to find the target perplexity ",
                      formatC(perplexity)))
+      }
     }
   }
   res <- list(pm = pm, beta = beta, dims = dims)

@@ -1061,14 +1061,15 @@ sneer <- function(df,
       }
       else {
         # no perplexity scaling asked for
+        if (methods::is(df, "dist")) {
+          # length = (nr * (nr + 1)) / 2; solve for nr by quadratic equation
+          nr <- (1 + sqrt(1 + (8 * length(df)))) / 2
+        }
+        else {
+          nr <- nrow(df)
+        }
+
         if (length(perplexity) == 1) {
-          if (methods::is(df, "dist")) {
-            # length = (nr * (nr + 1)) / 2; solve for nr by quadratic equation
-            nr <- (1 + sqrt(1 + (8 * length(df)))) / 2
-          }
-          else {
-            nr <- nrow(df)
-          }
           if (perplexity >= nr) {
             perplexity <- nr / 4
             message("Setting perplexity to ", perplexity)
@@ -1079,8 +1080,14 @@ sneer <- function(df,
             input_weight_fn = weight_fn)
         }
         else {
-          stop("Must provide 'perp_scale' argument if using multiple perplexity ",
-               "values")
+          if (length(perplexity) != nr) {
+            stop("Must provide 'perp_scale' argument if using multiple ",
+                 "perplexity values")
+          }
+          init_inp <- inp_from_perp(
+            perplexity = perplexity,
+            modify_kernel_fn = modify_kernel_fn,
+            input_weight_fn = weight_fn)
         }
       }
     }
