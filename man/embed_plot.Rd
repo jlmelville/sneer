@@ -6,7 +6,7 @@
 \usage{
 embed_plot(coords, x = NULL, colors = NULL,
   color_scheme = grDevices::rainbow, num_colors = 15, limits = NULL,
-  top = NULL, cex = 1, text = NULL, equal_axes = FALSE)
+  top = NULL, cex = 1, title = NULL, text = NULL, equal_axes = FALSE)
 }
 \arguments{
 \item{coords}{Matrix of embedded coordinates, with as many rows as
@@ -33,6 +33,8 @@ displayed, corresponding to those with the highest values in \code{vec},
 after sorting by decreasing order.}
 
 \item{cex}{Size of the points. Ignored if \code{text} is provided.}
+
+\item{title}{Title for the plot.}
 
 \item{text}{Vector of label text to display instead of a point. If the labels
 are long or the data set is large, this is unlikely to be very legible, but

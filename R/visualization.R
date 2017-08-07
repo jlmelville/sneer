@@ -47,6 +47,7 @@
 #' @param text Vector of label text to display instead of a point. If the labels
 #'  are long or the data set is large, this is unlikely to be very legible, but
 #'  is occasionally useful.
+#' @param title Title for the plot.
 #' @param equal_axes If \code{TRUE}, the X and Y axes are set to have the
 #'  same extents.
 #' @note Use of this function with ColorBrewer qualitative palette names
@@ -90,7 +91,8 @@
 embed_plot <- function(coords, x = NULL, colors = NULL,
                        color_scheme = grDevices::rainbow,
                        num_colors = 15, limits = NULL, top = NULL,
-                       cex = 1, text = NULL, equal_axes = FALSE) {
+                       cex = 1, title = NULL, text = NULL,
+                       equal_axes = FALSE) {
 
   if (is.null(colors)) {
     if (!is.null(x)) {
@@ -111,12 +113,13 @@ embed_plot <- function(coords, x = NULL, colors = NULL,
 
   if (!is.null(text)) {
     graphics::plot(coords, type = 'n', xlim = lims, ylim = lims,
-                   xlab = 'X', ylab = 'Y')
+                   xlab = 'X', ylab = 'Y', main = title)
     graphics::text(coords, labels = text, cex = cex, col = colors)
   }
   else {
     graphics::plot(coords, pch = 20, cex = cex, col = colors,
-                   xlim = lims, ylim = lims, xlab = 'X', ylab = 'Y')
+                   xlim = lims, ylim = lims, xlab = 'X', ylab = 'Y',
+                   main = title)
   }
 }
 
