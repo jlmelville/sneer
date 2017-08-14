@@ -1539,10 +1539,11 @@ embedder <- function(cost, kernel, transform = "square",
 
   kernel <- match.arg(tolower(kernel),
                       c("exponential", "heavy-tailed", "inhomogeneous",
-                        "t-distributed", "none"))
+                        "tdistributed", "t-distributed", "none"))
   kernel <- switch(kernel,
                    exponential = exp_kernel(beta = beta),
                    "t-distributed" = tdist_kernel(),
+                   "tdistributed" = tdist_kernel(),
                    "heavy-tailed" = heavy_tail_kernel(beta = beta,
                                                       alpha = alpha),
                    inhomogeneous = itsne_kernel(dof = dof),
