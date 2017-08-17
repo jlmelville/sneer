@@ -107,9 +107,8 @@ over-engineered as I want.
 I have some other packages that create or download datasets often used in 
 SNE-related research: 
 
-* [Simulation, Olivetti and Frey Faces](https://github.com/jlmelville/snedata) 
+* [Simulation, MNIST Digit, Olivetti and Frey Faces](https://github.com/jlmelville/snedata) 
 * [COIL-20](https://github.com/jlmelville/coil20) 
-* [MNIST Digit](https://github.com/jlmelville/mnist)
 * [mize](https://github.com/jlmelville/mize), the optimization package
 
 ## Acknowledgements
