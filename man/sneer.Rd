@@ -149,7 +149,7 @@ be printed to screen after embedding and retained in the list that is
 returned from this function.}
 
 \item{ret}{Vector of names of extra data to return from the embedding. See
-'Details',}
+'Details'.}
 }
 \value{
 List with the following elements:
@@ -160,7 +160,7 @@ List with the following elements:
 \item \code{norm_cost} \code{cost}, normalized so that a perfect embedding
  gives a value of 0 and one where all the distances were equal would have
  a value of 1.
-\item \code{method} String giving the method used for the embedding.
+\item \code{iter} Iteration number when embedding terminated.
 }
 Additional elements will be in the list if \code{ret} or
 \code{quality_measures} are non-empty.

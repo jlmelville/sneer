@@ -391,7 +391,7 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
   for (obj_name in export) {
     out[[obj_name]] <- get(obj_name)
   }
-
+  out$iter <- iter
   out
 }
 
