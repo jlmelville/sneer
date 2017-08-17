@@ -1570,15 +1570,20 @@ embedder <- function(cost, kernel, transform = "square",
   prob_type <- c()
   out_prob_type <- NULL
   for (n in norm) {
-    n <- match.arg(tolower(n), c("none", "point", "pair", "joint"))
+    n <- match.arg(tolower(n), c("none", "point", "pair", "joint", "avpoint"))
     prob_type <- c(prob_type, switch(n,
                                      "none" = "un",
                                      "point" = "row",
+                                     "avpoint" = "avrow",
                                      "pair" = "cond",
                                      "joint" = "joint"))
   }
 
-  if (any(prob_type == "point") && !all(prob_type == "point")) {
+  if (length(prob_type) == 2 && prob_type[2] == "avpoint") {
+    stop("Output normalization cannot be 'avpoint'")
+  }
+
+  if (any(prob_type == "point") && !all(prob_type %in% c("point", "avpoint"))) {
     stop("Can't mix point with non-point normalization")
   }
   if (length(prob_type) == 2) {

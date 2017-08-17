@@ -486,6 +486,22 @@ prow_to_pjoint <- function(prow) {
   symmetrize_matrix(prow_to_pcond(prow))
 }
 
+# Renormalize Row Probability Matrix
+#
+# Convert row probability matrix to a joint probability then back to row.
+#
+# Given a row probability matrix (elements of each row are non-negative and
+# sum to one), this function scales each element by such that the elements of
+# the entire matrix sum to one, and that the matrix is symmetric, i.e.
+# \code{p[i, j] = p[j, i]}. Then it converts back to a row probability matrix
+# but normalizing with respect to each row sum.
+#
+# This attempts to borrow the idea of averaging pi|j and pj|i but still keeping
+# the row-based matrices of point-based normalization.
+prow_to_pavrow <- function(prow) {
+  weights_to_prow(prow_to_pjoint(prow))$pm
+}
+
 # Symmetric Matrix from Square Matrix
 #
 # The matrix is symmetrized by setting \code{pm[i, j]} and \code{pm[j, i]} to
