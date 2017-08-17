@@ -10,7 +10,8 @@
 #'
 #' The neighborhood preservation can vary between 0 (no neighbors in common)
 #' and 1 (perfect preservation). However, random performance gives an
-#' approximate value of k / (k - 1), where k is the size of the neighborhood.
+#' approximate value of k / n, where k is the size of the neighborhood and is
+#' the number of observations or items in the dataset.
 #'
 #' @note This is not a very efficient way to calculate the preservation if you
 #'  want to calculate the value for multiple values of \code{k}. For more
@@ -255,7 +256,8 @@ k_smallest_ind <- function(x, k) {
 # @param k The size of the shared neighborhood
 # @return Vector of the indexes of the elements which are among both the
 # \code{k}-smallest values of \code{di} and the \code{k}-smallest
-# values of \code{dj}.
+# values of \code{dj}. If there aren't exactly k values (i.e. because of ties),
+# more than k results will be returned.
 k_shared_nbrs_ind <- function(di, dj, k) {
   nindi <- k_smallest_ind(di, k)
   nindj <- k_smallest_ind(dj, k)
@@ -271,7 +273,7 @@ k_shared_nbrs_ind <- function(di, dj, k) {
 #
 # The neighborhood preservation can vary between 0 (no neighbors in common)
 # and 1 (perfect preservation). However, random performance gives an
-# approximate value of K / K - 1.
+# approximate value of K / N, where N is the number of distances.
 #
 # @param di Vector of distances.
 # @param dj Vector of distances.
@@ -279,8 +281,5 @@ k_shared_nbrs_ind <- function(di, dj, k) {
 # @return The number of shared neighbors in the equivalent neighbor lists of
 # \code{di} and \code{dj}.
 nbr_pres_i <- function(di, dj, k) {
-  length(k_shared_nbrs_ind(di, dj, k)) / k
+  base::min(k, length(k_shared_nbrs_ind(di, dj, k))) / k
 }
-
-
-
