@@ -558,6 +558,8 @@ klqz_update_prow <- function(inp, out, method) {
   out
 }
 
+klqz_update_pavrow <- klqz_update_prow
+
 # Update the Z miture matrix
 z_update <- function(inp, out, method) {
   out$zm <- js_mixture(inp$pm, out$qm, method$cost$kappa)
