@@ -118,7 +118,8 @@ nbr25 <- nbr_pres(iris_tsne$dx, iris_tsne$dy, k = 25) # returns a vector
 
 You will get back a vector containing the preservation for each point. 
 It ranges from `0` (no neighbors in common) to `1` (all neighbors the same). 
-With random performance, you'd expect a value around `k / (k - 1)`.
+With random performance, you'd expect a value around `k / n`, with `n` being
+the number of observations in the data set.
 
 ## `rnx_auc_embed`
 
