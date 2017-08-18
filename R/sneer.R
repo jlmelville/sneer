@@ -1706,6 +1706,13 @@ opt_sneer <- function(opt, method, eta = 500) {
       "CG", c1 = 1e-4, c2 = 0.1,
       step0 = "rasmussen", step_next_init = "slope ratio")
   }
+  else if (opt == "sd") {
+    optimizer <- ctor(
+      "SD", c1 = 1e-4, c2 = 0.1,
+      abs_tol = 0, rel_tol = 0, step_tol = NULL,
+      step_next_init = "quad", line_search = "mt",
+      step0 = "ras")
+  }
   else {
     stop("Unknown optimization method '", opt, "'")
   }
