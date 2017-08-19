@@ -127,7 +127,7 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
 
   if (iter == 0) {
     mize <- opt$mize_module$opt_init(mize, par, fg,
-                                     step_tol = .Machine$double.eps,
+                                     step_tol = sqrt(.Machine$double.eps),
                                      max_iter = Inf)
     opt$mize <- mize
     opt$restarted_once <- FALSE
@@ -138,56 +138,55 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
     opt$old_cost_dirty <- FALSE
   }
 
-  step_res <- opt$mize_module$opt_step(mize, par, fg)
-  mize <- step_res$opt
-  step_info <- opt$mize_module$mize_step_summary(mize, step_res$par, fg,
-                                                 par_old = par)
-  # message("nf = ", step_info$nf, " ng = ", step_info$ng
-  #         , " f = ", formatC(step_info$f)
-  #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
+  if (!is.null(opt$do_opt_step) && !opt$do_opt_step) {
+    restart_res <- restart_if_possible(opt, inp, iter, mize, par, fg,
+                                       is_before_step = TRUE)
+    opt <- restart_res$opt
+    mize <- restart_res$mize
+  }
 
-  mize <- opt$mize_module$check_mize_convergence(step_info)
+  if (is.null(opt$do_opt_step) || opt$do_opt_step) {
+    step_res <- opt$mize_module$opt_step(mize, par, fg)
+    mize <- step_res$opt
+    step_info <- opt$mize_module$mize_step_summary(mize, step_res$par, fg,
+                                                   par_old = par)
+    # message("iter = ", iter, " nf = ", step_info$nf, " ng = ", step_info$ng
+    #         , " f = ", formatC(step_info$f)
+    #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
+    mize <- opt$mize_module$check_mize_convergence(step_info)
 
-  if (mize$is_terminated && mize$terminate$what == "step_tol") {
-    if (!opt$restarted_once) {
-      mize$is_terminated <- FALSE
-      mize$terminate <- NULL
-      mize <- opt$mize_module$opt_init(mize, par, fg,
-                                       step_tol = .Machine$double.eps,
-                                       max_iter = Inf)
-      # Restarting doesn't count towards convergence during any iterations where
-      # we don't want to stop yet
-      if (iter >= opt$convergence_iter) {
-        opt$restarted_once <- TRUE
-        if (opt$verbose) {
-          message("Restarting optimizer")
-        }
-      }
+    if (mize$is_terminated && mize$terminate$what == "step_tol") {
+      restart_res <- restart_if_possible(opt, inp, iter, mize, par, fg,
+                                         is_before_step = FALSE)
+      opt <- restart_res$opt
+      mize <- restart_res$mize
     }
+
+    par <- step_res$par
+
+    if (!is.null(inp$xm)) {
+      nr <- nrow(inp$xm)
+    }
+    else {
+      nr <- nrow(inp$dm)
+    }
+    dout <- out$dim
+
+    # remove extra parameters that were pushed (and update method)
+    if (!is.null(method$set_extra_par)) {
+      extra_par <- par[(dout * nr + 1):length(par)]
+      par <- par[1:(dout * nr)]
+      method <- method$set_extra_par(method, extra_par)
+    }
+
+    # convert y coord par into sneer form
+    res <- par_to_out(par, opt, inp, out, method, nr)
+    out <- res$out
+    inp <- res$inp
   }
 
   opt$mize <- mize
-  par <- step_res$par
 
-  if (!is.null(inp$xm)) {
-    nr <- nrow(inp$xm)
-  }
-  else {
-    nr <- nrow(inp$dm)
-  }
-  dout <- out$dim
-
-  # remove extra parameters that were pushed (and update method)
-  if (!is.null(method$set_extra_par)) {
-    extra_par <- par[(dout * nr + 1):length(par)]
-    par <- par[1:(dout * nr)]
-    method <- method$set_extra_par(method, extra_par)
-  }
-
-  # convert y coord par into sneer form
-  res <- par_to_out(par, opt, inp, out, method, nr)
-  out <- res$out
-  inp <- res$inp
   if (opt$mize$is_terminated) {
     if (opt$verbose) {
       message("Optimizer reports termination due to: ", opt$mize$terminate$what)
@@ -317,52 +316,52 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
 
   # Can't reuse any old gradients
   mize <- opt$mize_module$opt_clear_cache(mize)
-
   opt$old_cost_dirty <- FALSE
 
 
-  step_res <- opt$mize_module$opt_step(mize, par, fg_coord)
-  mize <- step_res$opt
-  step_info <- opt$mize_module$mize_step_summary(mize, step_res$par, fg_coord,
-                                                 par_old = par)
-  # message("coord nf = ", step_info$nf, " ng = ", step_info$ng
-  #         , " f = ", formatC(step_info$f)
-  #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
+  ###
+  # Optimize Coords
+  ###
+  if (!is.null(opt$do_opt_step) && !opt$do_opt_step) {
+    restart_res <- restart_if_possible(opt, inp, iter, mize, par, fg_coord,
+                                       is_before_step = TRUE)
+    opt <- restart_res$opt
+    mize <- restart_res$mize
+  }
 
-  mize <- opt$mize_module$check_mize_convergence(step_info)
+  if (is.null(opt$do_opt_step) || opt$do_opt_step) {
+    step_res <- opt$mize_module$opt_step(mize, par, fg_coord)
+    mize <- step_res$opt
+    step_info <- opt$mize_module$mize_step_summary(mize, step_res$par, fg_coord,
+                                                   par_old = par)
+    # message("coord nf = ", step_info$nf, " ng = ", step_info$ng
+    #         , " f = ", formatC(step_info$f)
+    #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
 
-  if (mize$is_terminated && mize$terminate$what == "step_tol") {
-    if (!opt$restarted_coord_once) {
-      mize$is_terminated <- FALSE
-      mize$terminate <- NULL
-      mize <- opt$mize_module$opt_init(mize, par, fg_coord,
-                                       step_tol = .Machine$double.eps,
-                                       max_iter = Inf)
-      # Restarting doesn't count towards convergence during any iterations where
-      # we don't want to stop yet
-      if (iter >= opt$convergence_iter) {
-        opt$restarted_coord_once <- TRUE
-        if (opt$verbose) {
-          message("Restarting coord optimizer")
-        }
-      }
+    mize <- opt$mize_module$check_mize_convergence(step_info)
+
+    if (mize$is_terminated && mize$terminate$what == "step_tol") {
+      restart_res <- restart_if_possible(opt, inp, iter, mize, par, fg_coord,
+                                         is_before_step = FALSE)
+      opt <- restart_res$opt
+      mize <- restart_res$mize
     }
+
+    par <- step_res$par
+
+    if (!is.null(inp$xm)) {
+      nr <- nrow(inp$xm)
+    }
+    else {
+      nr <- nrow(inp$dm)
+    }
+    # convert y coord par into sneer form
+    res <- par_to_out(par, opt, inp, out, method, nr)
+    out <- res$out
+    inp <- res$inp
   }
-
-
   opt$mize <- mize
-  par <- step_res$par
 
-  if (!is.null(inp$xm)) {
-    nr <- nrow(inp$xm)
-  }
-  else {
-    nr <- nrow(inp$dm)
-  }
-  # convert y coord par into sneer form
-  res <- par_to_out(par, opt, inp, out, method, nr)
-  out <- res$out
-  inp <- res$inp
   if (opt$mize$is_terminated) {
     if (opt$verbose) {
       message("Optimizer reports termination due to: ", opt$mize$terminate$what)
@@ -370,7 +369,10 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
     opt$stop_early <- TRUE
   }
 
+
+  ####
   # Optimize parameters
+  ####
   do_init <- FALSE
   if (!is.null(method$opt_iter) && method$opt_iter == iter) {
     do_init <- TRUE
@@ -396,6 +398,12 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
     do_opt_alt <- TRUE
   }
 
+  # If we are refraining from bothering with coordinate optimization on this
+  # iteration also don't do parameter optimization
+  if (!is.null(opt$do_opt_step) && !opt$do_opt_step) {
+    do_opt_alt <- FALSE
+  }
+
   if (do_opt_alt) {
     if (!is.null(method$get_extra_par)) {
       par <- method$get_extra_par(method)
@@ -415,24 +423,15 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
     #         , " f = ", formatC(step_info$f)
     #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
 
+    # Lack of progress in parameter optimization is not cause for stopping
+    # embedding: just always restart
     mize_alt <- opt$mize_module$check_mize_convergence(step_info)
-
     if (mize_alt$is_terminated && mize_alt$terminate$what == "step_tol") {
-      if (!opt$restarted_param_once) {
-        mize_alt$is_terminated <- FALSE
-        mize_alt$terminate <- NULL
-        mize_alt <- opt$mize_module$opt_init(mize_alt, par, fg_alt,
-                                         step_tol = .Machine$double.eps,
-                                         max_iter = Inf)
-        # Restarting doesn't count towards convergence during any iterations where
-        # we don't want to stop yet
-        if (iter >= opt$convergence_iter) {
-          opt$restarted_param_once <- TRUE
-          if (opt$verbose) {
-            message("Restarting param optimizer")
-          }
-        }
-      }
+      mize_alt$is_terminated <- FALSE
+      mize_alt$terminate <- NULL
+      mize_alt <- opt$mize_module$opt_init(mize_alt, par, fg_alt,
+                                       step_tol = sqrt(.Machine$double.eps),
+                                       max_iter = Inf)
     }
 
     opt$mize_alt <- mize_alt
@@ -440,6 +439,7 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
 
     method <- method$set_extra_par(method, par)
   }
+
   list(opt = opt, inp = inp, out = out, method = method, iter = iter)
 }
 
@@ -532,4 +532,68 @@ make_optim_coord_fg <- function(opt, inp, out, method, iter) {
   )
 
   res
+}
+
+# Generally, we allow sneer to restart once during optimization. After that,
+# if the optimizer stops making progress (step size <~ 1e-8), we stop optimizing
+# and end the embedding early.
+# However, sometimes we will want to ignore any early convergence because we
+# have temporarily changed some parameterized state that isn't being directly
+# optimized: e.g. we are in the middle of multiscaling or stepping through
+# perplexity, doing early exaggeration or going to optimize kernel parameters.
+# During these periods we want to allow as many restarts as needed when that
+# "indirect" state changes, but also
+# to skip pointless optimization steps if we know we are
+restart_if_possible <- function(opt, inp, iter, mize, par, fg, is_before_step) {
+  if (!opt$restarted_once) {
+    mize$is_terminated <- FALSE
+    mize$terminate <- NULL
+
+    worth_restarting <- FALSE
+    if (!is.null(inp$updated_iter)) {
+      if (is.null(opt$restart_iter)) {
+        opt$restart_iter <- 0
+      }
+      worth_restarting <- inp$updated_iter > opt$restart_iter
+    }
+    if (worth_restarting) {
+      mize <- opt$mize_module$opt_init(mize, par, fg,
+                                       step_tol = sqrt(.Machine$double.eps),
+                                       max_iter = Inf)
+      # Restarting doesn't count towards convergence during any iterations where
+      # we don't want to stop yet
+      # If we are restarting *before* this iteration's optimization step
+      # then we are restarting because of convergence during a pre-termination
+      # iteration: e.g. we converged during early exaggeration and this is the
+      # first iteration where early exaggeration is off. This restart shouldn't
+      # count as the final restart.
+      # Otherwise, we are checking *after* this iteration's optimization step
+      # and a restart that occurs on the first non-termination iteration should
+      # count as a final restart, e.g. this could be as early as iteration 0 if
+      # we aren't doing any pre-convergence stuff.
+      if (is_before_step) {
+        is_final_restart <- iter > opt$convergence_iter
+      }
+      else {
+        is_final_restart <- iter >= opt$convergence_iter
+      }
+      if (is_final_restart) {
+        opt$restarted_once <- TRUE
+        if (opt$verbose) {
+          message("Restarting optimizer one last time at iter ", iter)
+        }
+      }
+      else {
+        if (opt$verbose) {
+          message("Restarting optimizer at iter ", iter)
+        }
+      }
+      opt$restart_iter <- iter
+      opt$do_opt_step <- TRUE
+    }
+    else {
+      opt$do_opt_step <- FALSE
+    }
+  }
+  list(opt = opt, mize = mize)
 }
