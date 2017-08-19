@@ -172,7 +172,7 @@ inp_prob <- function(input_initializer, init_only = TRUE,
           summarize(inp$pm, "Pnorm")
         }
         if (call_inp_updated) {
-          update_res <- inp_updated(inp, out, method)
+          update_res <- inp_updated(inp, out, method, iter)
           inp <- update_res$inp
           out <- update_res$out
           method <- update_res$method
@@ -238,7 +238,7 @@ single_perplexity <- function(inp, perplexity = 30,
 # \item{inp}{Updated input data.}
 # \item{out}{Updated output data.}
 # \item{method}{Updated embedding method.}
-inp_updated <- function(inp, out, method) {
+inp_updated <- function(inp, out, method, iter) {
   if (!is.null(method$num_inp_updated_fn)) {
     for (i in 1:method$num_inp_updated_fn) {
       if (!is.null(method$inp_updated_fns[[i]])) {
@@ -255,6 +255,7 @@ inp_updated <- function(inp, out, method) {
       }
     }
   }
+  inp$updated_iter <- iter
   list(inp = inp, out = out, method = method)
 }
 

@@ -257,7 +257,7 @@ inp_from_perps_multi <- function(perplexities = NULL,
 
         # because P can change more than once per iteration, we handle calling
         # inp_updated manually
-        update_res <- inp_updated(inp, out, method)
+        update_res <- inp_updated(inp, out, method, iter)
         inp <- update_res$inp
         out <- update_res$out
         method <- update_res$method
@@ -446,7 +446,7 @@ inp_from_perps_multil <- function(perplexities = NULL,
 
         # because P can change more than once per iteration, we handle calling
         # inp_updated manually
-        update_res <- inp_updated(inp, out, method)
+        update_res <- inp_updated(inp, out, method, iter)
         inp <- update_res$inp
         out <- update_res$out
         method <- update_res$method
@@ -593,7 +593,7 @@ inp_from_step_perp <- function(perplexities = NULL,
 
         # because P can change more than once per iteration, we handle calling
         # inp_updated manually
-        update_res <- inp_updated(inp, out, method)
+        update_res <- inp_updated(inp, out, method, iter)
         inp <- update_res$inp
         out <- update_res$out
         method <- update_res$method

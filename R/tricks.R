@@ -124,7 +124,7 @@ early_exaggeration <- function(exaggeration = 4, off_iter = 50,
     }
 
     if (dirty) {
-      upd_res <- inp_updated(inp, out, method)
+      upd_res <- inp_updated(inp, out, method, iter)
       inp <- upd_res$inp
       out <- upd_res$out
       method <- upd_res$method
