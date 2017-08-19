@@ -66,10 +66,14 @@ iris_tsne <- sneer(iris, tol = 0.01) # stops after 200 steps
 
 ## `opt`
 
+### t-SNE (Delta-Bar-Delta)
+
 Most t-SNE implementations follow the optimization technique given by the 
 [t-SNE paper](http://jmlr.org/papers/v9/vandermaaten08a.html): the direction
 of optimization is basic gradient descent with a momentum term, and an 
 adaptive step size, which requires setting an initial learning rate, `eta`.
+This is a variant of the "Delta-Bar-Delta"" method originally used for training
+neural networks.
 
 This works well for t-SNE, and it's fast, but in my experience it can 
 cause divergence when a non t-SNE embedding method is used. For this reason, 
@@ -90,6 +94,8 @@ iris_tsne <- sneer(iris, opt = "tsne", eta = 100, exaggerate = 4,
                   exaggerate_off_iter = 50, perplexity = 30, init = "r")
 ```
 
+### L-BFGS
+
 The default optimizer uses the limited-memory Broyden-Fletcher-Goldfarb-Shanno
 (L-BFGS) optimizer and is used in the 
 [JSE paper](http://dx.doi.org/10.1016/j.neucom.2012.12.036). 
@@ -97,6 +103,8 @@ The default optimizer uses the limited-memory Broyden-Fletcher-Goldfarb-Shanno
 ```R
 s1k_tsne <- sneer(s1k, opt = "L-BFGS")
 ```
+
+### Conjugate Gradient
 
 If you want to try using the conjugate gradient optimization method (which is 
 the method used in the [NeRV](http://www.jmlr.org/papers/v11/venna10a.html) 
@@ -107,6 +115,8 @@ s1k_tsne <- sneer(s1k, opt = "CG")
 ```
 In case you are curious, the specific flavor of CG used is the Polak-Ribiere
 update with restart (sometimes called 'PR+').
+
+### Spectral Directions
 
 The [Spectral Directions](https://arxiv.org/abs/1206.4646) optimizer is 
 specially crafted for certain neighbor embedding functions, including t-SNE.
@@ -124,6 +134,8 @@ massive difference.
 s1k_tsne <- sneer(s1k, opt = "SPEC") 
 ```
 
+### Nesterov Momentum
+
 The L-BFGS, CG and Spectral Directions methods are all gradient descent methods
 that rely on a strong Wolfe line search to make progress. An alternative 
 approach using an adaptive step size and a momentum scheme that emulates
@@ -140,7 +152,7 @@ The step size is by the "bold driver" method, for which you can also use the
 `eta` parameter to set the initial learning rate.
 
 ```R
-iris_tsne <- sneer(iris, eta = 10)
+iris_tsne <- sneer(iris, eta = 10, opt = "nest")
 ```
 
 This method tends to be a little slower than the `"tsne"` optimization method, 
@@ -148,5 +160,19 @@ but it gives good results for most combinations of scaling, embedding method
 and data set.
 
 But if in doubt, just use the default L-BFGS optimizer.
+
+## Caveat with Early Exaggeration
+
+If you use early exaggeration with a optimizer like L-BFGS or CG which use line
+searches, you should turn down the `exaggerate_off_iter` to something like `5` 
+at the most. The default value is intended for use with `opt = "tsne"`, 
+which only carries out one gradient evaluation per iteration. Methods using line
+searches can make multiple gradient evaluations per iteration, and tend to make
+much larger steps per iteration. This makes it quite easy for the optimizer to
+converge at the exaggeration stage. Sneer knows not to stop at this point,
+but this will result in the optimizer making little progress while it is 
+fruitlessly forced to continue optimizing. This will result in very slow 
+progress and lots of wasted time calculating gradients until early exaggeration
+turns off.
 
 Previous: [Output Initialization](output-initialization.html). Next: [Embedding Methods](embedding-methods.html). Up: [Index](index.html).
