@@ -856,6 +856,13 @@ sneer <- function(df,
       stop("kernel_opt_iter must be non-negative")
     }
   }
+  xi_eps <- 0.001
+  if (!is.null(dyn) && (!is.null(dyn$xi_eps))) {
+    xi_eps <- dyn$xi_eps
+    if (xi_eps < 0) {
+      stop("xi_eps must be non-negative")
+    }
+  }
 
   alt_opt <- TRUE
   if (!is.null(dyn) && (!is.null(dyn$alt_opt))) {
@@ -877,9 +884,9 @@ sneer <- function(df,
     jse = function() { jse(kappa = kappa) },
     tasne = function() { tasne() },
     itsne = function() { itsne(dof = dof, opt_iter = kernel_opt_iter,
-                               alt_opt = alt_opt) },
+                               alt_opt = alt_opt, xi_eps = xi_eps) },
     dhssne = function() { dhssne(alpha = alpha, opt_iter = kernel_opt_iter,
-                                 alt_opt = alt_opt) }
+                                 alt_opt = alt_opt, xi_eps = xi_eps) }
   )
 
   extra_costs <- NULL
@@ -940,7 +947,7 @@ sneer <- function(df,
     }
     embed_method$opt_iter <- kernel_opt_iter
     embed_method$switch_iter <- kernel_opt_iter
-    embed_method$xi_eps <- .Machine$double.eps
+    embed_method$xi_eps <- xi_eps
     embed_method$alt_opt <- alt_opt
 
     convergence_iter <- max(convergence_iter, kernel_opt_iter)
