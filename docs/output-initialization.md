@@ -66,9 +66,33 @@ good results for most data sets without the hassle of having to repeat the
 embedding multiple times.
 
 PCA is not always better than a random initialization and if the scores plot
-results in some distance points, these will have a hard time having any 
+results in some distant points, these will have a hard time having any 
 meaningful gradient associated with them, at least with methods like t-SNE. But
 it's always worth trying first.
+
+### Scaled PCA
+
+Large distances are bad news for SNE-family gradients: squared distances 
+combined with an exponential kernel in particular can easily lead to numeric
+underflow and a weight matrix made up of all zeros. And there's no reason that 
+PCA on unscaled input data can't result in large distances. I have experienced
+this problem first hand with multiple datasets initialized with PCA.
+
+The scaled PCA initialization attempts to solve this problem, by rescaling the 
+PCA output so that the standard deviations of the scores vectors are suitably 
+small. `sneer` uses a value of `1e-4`, just like the Gaussian random 
+initialization, but with the added bonus of being deterministic without relying 
+on setting a specific random seed (which doesn't work across different
+architectures anyway).
+
+Best of both worlds? You be the judge. This is not the default initialization,
+because I have not seen this form of initialization anywhere in the literature.
+But I recommend it highly if you won't be scaling or otherwise pre-processing
+your input data.
+
+```R
+s1k_tsne <- sneer(s1k, init = "spca")
+```
 
 ### Existing Coordinates
 

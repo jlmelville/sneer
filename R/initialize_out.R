@@ -166,6 +166,39 @@ out_from_runif <- function(k = 2, min = 0, max = 1, verbose = TRUE) {
   })
 }
 
+# Initialize Output Coordinates from Scaled PCA
+#
+# Output initialization function.
+#
+# The first \code{k} scores of the PCA of the input coordinates are used to
+# initialize the \code{k} dimensions of the embedded coordinates. Input
+# coordinates are centered but not scaled before the PCA is carried out.
+# Each score column is then scaled to the specified standard deviation.
+#
+# This method allows for a deterministic initialization like standard PCA,
+# but with the initial distances guaranteed to be small, similar to the
+# suggested random initialization used in t-SNE. This also prevents problems
+# with very large squared distances leading to zero weights.
+#
+# @param k Number of output dimensions. For 2D visualization this is always 2.
+# @param sd Standard deviation each score vector will be scaled to.
+# @param verbose If \code{TRUE}, log information about the initialization.
+out_from_scaled_PCA <- function(k = 2, sd = 1e-4, verbose = TRUE) {
+  init_out(function(inp, out) {
+    if (is.null(inp$xm)) {
+      message("PCA: Calculating ", k,
+              " scores by classical MDS on distance matrix")
+      x <- stats::as.dist(inp$dm)
+    }
+    else {
+      x <- inp$xm
+    }
+    out$ym <- scores_matrix(x, ncol = k, verbose = verbose)
+    out$ym <- scale(out$ym, scale = apply(out$ym, 2, stats::sd) / sd)
+    out
+  })
+}
+
 # Output Initializer Wrapper
 #
 # Wrapper function to creates the input data list and runs the specific

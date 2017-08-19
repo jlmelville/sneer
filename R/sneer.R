@@ -1098,13 +1098,15 @@ sneer <- function(df,
     init <- "matrix"
   }
   init <- match.arg(tolower(init),
-                    c("pca", "random", "uniform", "matrix"))
+                    c("pca", "random", "uniform", "matrix", "spca"))
 
   init_out <- switch(init,
                      pca = out_from_PCA(k = ndim),
+                     spca = out_from_scaled_PCA(k = ndim),
                      random = out_from_rnorm(k = ndim),
                      uniform = out_from_runif(k = ndim),
-                     matrix = out_from_matrix(init_config = init_config, k = ndim)
+                     matrix = out_from_matrix(init_config = init_config,
+                                              k = ndim)
   )
 
   embed_plot <- NULL
