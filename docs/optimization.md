@@ -161,18 +161,42 @@ and data set.
 
 But if in doubt, just use the default L-BFGS optimizer.
 
-## Caveat with Early Exaggeration
+## Convergence
 
-If you use early exaggeration with a optimizer like L-BFGS or CG which use line
-searches, you should turn down the `exaggerate_off_iter` to something like `5` 
-at the most. The default value is intended for use with `opt = "tsne"`, 
-which only carries out one gradient evaluation per iteration. Methods using line
-searches can make multiple gradient evaluations per iteration, and tend to make
-much larger steps per iteration. This makes it quite easy for the optimizer to
-converge at the exaggeration stage. Sneer knows not to stop at this point,
-but this will result in the optimizer making little progress while it is 
-fruitlessly forced to continue optimizing. This will result in very slow 
-progress and lots of wasted time calculating gradients until early exaggeration
-turns off.
+Under normal circumstances, the optimizer tracks its progress, and may decide
+to stop early if not much is happening (i.e. the step size it takes becomes
+very small). This is designed to save time between the embedding-specific 
+convergence checks sneer does (see the [Reporting](reporting.html) section for
+more). Normally, sneer will force the optimizer to restart once if it detects
+progress has stalled, before calling a halt to proceedings.
+
+Normally, this is what we want, but sometimes we know that things are going to
+change at some point later in the embedding: e.g. early embedding will turn off
+or the perplexity is going to change (see 
+[Input Initialization](input-initialization.html)), or the embedding method 
+will start optimizing the kernel parameters 
+(see [Embedding Methods](embedding-methods.html)). Having the entire embedding
+give up because the optimizer has reached a plateau at this point is 
+undesirable.
+
+When sneer detects that a future iteration will make a change of this sort,
+it will not stop the embedding early if the optimizer converges. Instead, it
+will do nothing on each iteration until a change occurs.
+
+You shouldn't have to worry about this behavior. But it's worth being aware that
+if you are using early exaggeration with a optimizer like L-BFGS or CG which use
+line searches, I suggest turning down the `exaggerate_off_iter` to something
+between `5` to `10`.
+
+The default value is intended for use with `opt = "tsne"`, which only carries
+out one gradient evaluation per iteration. Methods using line searches can make
+multiple gradient evaluations per iteration, and tend to make much larger steps
+per iteration. This makes it quite easy for the optimizer to converge during the
+exaggeration stage. If this happens around iteration 5, and the exaggeration
+doesn't turn off until iteration 50, then sneer does nothing for 45 iterations.
+This isn't that big a deal, unless for some reason you have set the maximum
+number of iterations to something like 55. In that case, you'd only be getting 5
+non-exaggerated iterations, rather than the 50 you'd get if you turn off the
+exaggeration at a more suitable iteration.
 
 Previous: [Output Initialization](output-initialization.html). Next: [Embedding Methods](embedding-methods.html). Up: [Index](index.html).
