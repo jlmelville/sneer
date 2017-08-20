@@ -785,7 +785,7 @@ scores_qplot <- function(df, pca_indexes = NULL, label_name = NULL,
 scatterqplot <- function(df, x, y, label_name = NULL, labels = NULL, size = 1,
                          color_scheme = "Set1", x_label = "x", y_label = "y",
                          legend = TRUE, legend_rows = NULL,
-                         equal_axes = FALSE) {
+                         equal_axes = FALSE, title = NULL) {
   if (!requireNamespace("ggplot2", quietly = TRUE, warn.conflicts = FALSE)) {
     stop("scatterqplot function requires 'ggplot2' package")
   }
@@ -838,6 +838,9 @@ scatterqplot <- function(df, x, y, label_name = NULL, labels = NULL, size = 1,
                    panel.background = ggplot2::element_blank()) +
     ggplot2::labs(x = x_label, y = y_label)
 
+  if (!is.null(title)) {
+    score_plot <- score_plot + ggplot2::ggtitle(title)
+  }
 
   if (!is.null(legend_rows)) {
     score_plot <- score_plot +
@@ -916,8 +919,8 @@ make_plot <- function(x,
                                         cex = cex,
                                         show_labels = show_labels,
                                         equal_axes = equal_axes)
-  function(out) {
-    embedding_plot(out[[mat_name]])
+  function(out, title = NULL) {
+    embedding_plot(out[[mat_name]], title = title)
   }
 }
 
@@ -975,9 +978,9 @@ make_embedding_plot <- function(x,
     }
   }
 
-  function(ym) {
+  function(ym, title = NULL) {
     embed_plot(ym, colors = colors, cex = cex, text = text,
-               equal_axes = equal_axes)
+               equal_axes = equal_axes, title = title)
   }
 }
 
@@ -1065,8 +1068,8 @@ make_qplot <- function(df, label_name = "Label", labels = NULL, mat_name = "ym",
                                          legend_rows = legend_rows,
                                          equal_axes = equal_axes)
 
-  function(out) {
-      embedding_plot(out[[mat_name]])
+  function(out, title = NULL) {
+      embedding_plot(out[[mat_name]], title = title)
   }
 }
 
@@ -1138,14 +1141,14 @@ make_embedding_qplot <- function(df, label_name = "Label", labels = NULL,
     stop("make_embedding_qplot function requires 'RColorBrewer' package")
   }
 
-  function(ym) {
+  function(ym, title) {
     colnames(ym) <- NULL
     scatterqplot(df, x = ym[, 1], y = ym[, 2], label_name = label_name,
                  labels = labels,
                  size = size, color_scheme = color_scheme,
                  x_label = "X", y_label = "Y",
                  legend = legend, legend_rows = legend_rows,
-                 equal_axes = equal_axes)
+                 equal_axes = equal_axes, title = title)
   }
 }
 

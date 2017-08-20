@@ -236,7 +236,7 @@ make_reporter <- function(report_every = 100, min_cost = 0,
 
   if (!is.null(plot)) {
     reporter$plot_embedding <- function(iter, inp, out, method, opt, result) {
-      plot(out)
+      plot(out, title = paste0("iter: ", iter, " cost: ", formatC(result$cost)))
       result
     }
   }
