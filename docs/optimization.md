@@ -76,22 +76,29 @@ This is a variant of the "Delta-Bar-Delta"" method originally used for training
 neural networks.
 
 This works well for t-SNE, and it's fast, but in my experience it can 
-cause divergence when a non t-SNE embedding method is used. For this reason, 
-it's not the default. If you want to use it, set the `opt` parameter to 
-`"tsne"` and the `eta` value for the learning rate:
+cause divergence when a non t-SNE embedding method is used or your input data 
+is not well scaled. For this reason, it's not the default. 
+
+If you want to use it, set the `opt` parameter to `"tsne"` and the `eta` value 
+for the learning rate:
 
 ```R
-iris_tsne <- sneer(iris, opt = "tsne", eta = 500, scale_type = "m")
+iris_tsne <- sneer(iris, opt = "tsne", eta = 500, scale_type = "matrix")
 ```
 
-This form of optimization is usually combined with early exaggeration and 
-random initialization. See the [Input Initialization](input-initialization.html)
-and [Output Initialization](output-initialization.html) sections for more 
-details, but for an authentic-ish t-SNE experience, run:
+As the above example indicates, you should also scale the input data. See the
+[Preprocessing](preprocessing.html) for your options, but I recommend 
+`scale_type = "matrix"` or `scale_type = "norm"`.
+
+t-SNE optimization is usually combined with early exaggeration and random
+initialization. See the [Input Initialization](input-initialization.html) and
+[Output Initialization](output-initialization.html) sections for more details,
+but for an authentic-ish t-SNE experience, run:
 
 ```R
-iris_tsne <- sneer(iris, opt = "tsne", eta = 100, exaggerate = 4,
-                  exaggerate_off_iter = 50, perplexity = 30, init = "r")
+iris_tsne <- sneer(iris, opt = "tsne", eta = 100, exaggerate = 4, 
+                   scale_type = "norm", exaggerate_off_iter = 100, 
+                   perplexity = 30, init = "r")
 ```
 
 ### L-BFGS
