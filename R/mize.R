@@ -2912,7 +2912,7 @@ make_mize <- function(method = "L-BFGS",
     step_type <- delta_bar_delta(epsilon = eps_init,
                                  kappa = step_up, kappa_fun = step_up_fun,
                                  phi = step_down, theta = dbd_weight,
-                                 use_momentum = is.null(mom_schedule))
+                                 use_momentum = !is.null(mom_schedule))
   }
   else {
     if (method %in% c("newton", "phess", "bfgs", "l-bfgs")) {
