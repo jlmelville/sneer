@@ -1694,7 +1694,7 @@ opt_sneer <- function(opt, method, eta = 500) {
       "DBD",
       step_up_fun = "+", step_up = 0.2, step_down = 0.8, step0 = eta,
       mom_type = "classical", mom_schedule = "switch",
-      mom_init = 0.4, mom_final = 0.8, mom_switch_iter = 250
+      mom_init = 0.5, mom_final = 0.8, mom_switch_iter = 250
     )
   }
   else if (opt == "nest") {
