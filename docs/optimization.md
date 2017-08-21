@@ -96,10 +96,22 @@ initialization. See the [Input Initialization](input-initialization.html) and
 but for an authentic-ish t-SNE experience, run:
 
 ```R
-iris_tsne <- sneer(iris, opt = "tsne", eta = 100, exaggerate = 4, 
+iris_tsne <- sneer(iris, opt = "tsne", eta = 500, exaggerate = 4, 
                    scale_type = "norm", exaggerate_off_iter = 100, 
                    perplexity = 30, init = "r")
 ```
+
+For larger datasets (although you almost certainly aren't using a larger 
+dataset with sneer!) try:
+
+```R
+iris_tsne <- sneer(iris, opt = "tsne", eta = 200, exaggerate = 12, 
+                   scale_type = "norm", exaggerate_off_iter = 250, 
+                   perplexity = 50, init = "r")
+```
+
+
+
 
 ### L-BFGS
 

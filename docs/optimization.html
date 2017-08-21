@@ -258,9 +258,13 @@ div.tocify {
 <pre class="r"><code>iris_tsne &lt;- sneer(iris, opt = &quot;tsne&quot;, eta = 500, scale_type = &quot;matrix&quot;)</code></pre>
 <p>As the above example indicates, you should also scale the input data. See the <a href="preprocessing.html">Preprocessing</a> for your options, but I recommend <code>scale_type = &quot;matrix&quot;</code> or <code>scale_type = &quot;norm&quot;</code>.</p>
 <p>t-SNE optimization is usually combined with early exaggeration and random initialization. See the <a href="input-initialization.html">Input Initialization</a> and <a href="output-initialization.html">Output Initialization</a> sections for more details, but for an authentic-ish t-SNE experience, run:</p>
-<pre class="r"><code>iris_tsne &lt;- sneer(iris, opt = &quot;tsne&quot;, eta = 100, exaggerate = 4, 
+<pre class="r"><code>iris_tsne &lt;- sneer(iris, opt = &quot;tsne&quot;, eta = 500, exaggerate = 4, 
                    scale_type = &quot;norm&quot;, exaggerate_off_iter = 100, 
                    perplexity = 30, init = &quot;r&quot;)</code></pre>
+<p>For larger datasets (although you almost certainly aren’t using a larger dataset with sneer!) try:</p>
+<pre class="r"><code>iris_tsne &lt;- sneer(iris, opt = &quot;tsne&quot;, eta = 200, exaggerate = 12, 
+                   scale_type = &quot;norm&quot;, exaggerate_off_iter = 250, 
+                   perplexity = 50, init = &quot;r&quot;)</code></pre>
 </div>
 <div id="l-bfgs" class="section level3">
 <h3>L-BFGS</h3>

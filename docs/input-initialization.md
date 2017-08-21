@@ -237,15 +237,17 @@ normally `4`, but the
 [Barnes-Hut t-SNE paper](http://www.jmlr.org/papers/v15/vandermaaten14a.html) 
 suggests that for larger data sets, a value of `12` is more appropriate. The
 scaling will be turned off at the iteration number given by
-`exaggerate_off_iter`. This is normally `50` or `100` when used with the 
-standard t-SNE optimization methods. However, if you are using a more standard
+`exaggerate_off_iter`. This is normally `100` when used with the 
+standard t-SNE optimization methods, although if you are using a larger 
+exaggeration due to a larger dataset than may want to turn off exaggeration 
+later as well - e.g. `250`. However, if you are using a more standard
 optimization method such as conjugate gradient or L-BFGS (and you probably 
 should), you should set this value to something a *lot* lower. I recommend a 
 value between `3` and `5`. For more details, see the 
-[optimization](optimization.html) page.
+[optimization](optimization.html) page. 
 
 ```R
-s1k_tsne <- sneer(s1k, exaggerate = 4, exaggerate_off_iter = 3)
+s1k_tsne <- sneer(s1k, exaggerate = 4, exaggerate_off_iter = 5)
 ```
 
 The effect of the exaggeration is to encourage tight, widely-spaced clusters,
