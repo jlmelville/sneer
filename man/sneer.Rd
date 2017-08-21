@@ -465,6 +465,9 @@ following options can be supplied:
  which were optimized. Only used if the \code{"dyn"} input parameter was
  non-\code{NULL}, in which case the values of the parameters specified
  are returned.
+ \item \code{"costs"} A matrix containing the costs and iteration at which
+ they were calculated, as reported during the optimization. The number of
+ these results is controlled by the \code{report_every} parameter.
 }
 
 The \code{color_scheme} parameter is used to set the color scheme for the

@@ -438,6 +438,9 @@ NULL
 #'  which were optimized. Only used if the \code{"dyn"} input parameter was
 #'  non-\code{NULL}, in which case the values of the parameters specified
 #'  are returned.
+#'  \item \code{"costs"} A matrix containing the costs and iteration at which
+#'  they were calculated, as reported during the optimization. The number of
+#'  these results is controlled by the \code{report_every} parameter.
 #' }
 #'
 #' The \code{color_scheme} parameter is used to set the color scheme for the
@@ -969,7 +972,7 @@ sneer <- function(df,
   }
 
   ok_rets <- c("x", "dx", "dy", "p", "q", "w", "prec", "dim", "deg", "degs",
-               "v", "dyn", "pcost", "method", "perp")
+               "v", "dyn", "pcost", "method", "perp", "costs")
   ret <- unique(ret)
   for (r in (ret)) {
     match.arg(tolower(r), ok_rets)
@@ -1238,6 +1241,7 @@ sneer <- function(df,
     init_out = init_out,
     tricks = tricks,
     reporter = make_reporter(
+      keep_costs = "costs" %in% ret,
       normalize_cost = normalize_cost,
       report_every = report_every,
       extra_costs = extra_costs,
@@ -1369,6 +1373,11 @@ sneer <- function(df,
       perp = {
         if (!is.null(inp$perp)) {
           result$perp <- inp$perp
+        }
+      },
+      costs = {
+        if (!is.null(embed_result$report$costs)) {
+          result$costs <- embed_result$report$costs
         }
       }
     )

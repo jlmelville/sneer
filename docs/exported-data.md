@@ -29,6 +29,7 @@ following:
   See the [Reporting](reporting.html) section for more on this.
 * `norm_cost` - the normalized version of `cost`. Again, see the 
   [Reporting](reporting.html) section for more.
+* `iter` - the iteration number at which the embedding stopped.
 
 ## `ret`
 
@@ -77,6 +78,8 @@ The names you can ask for are:
   If using `method = "dhssne"` method, dyn contains a list called `alpha`,
   which contains the global alpha optimized alpha value. See the 
   [Embedding Methods](embedding-methods.html) for more on DHSSNE.
+* `costs` All the costs which were logged to screen during the optimization, as
+  a matrix, with the iteration number in the first column.
 
 For every name you provide, the list returned by `sneer` will contain an extra
 item in the list with the same name. If you ask for an item that doesn't make
