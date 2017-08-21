@@ -79,9 +79,13 @@ make_optim_fg <- function(opt, inp, out, method, iter) {
 # @param inp Input data.
 # @param method Embedding method.
 # @param nrow Number of rows in the sneer output matrix.
-# @return Output data with coordinates converted from \code{par}.
+# @return Output data with coordinates converted from \code{par} and recentered.
 par_to_out <- function(par, opt, inp, out, method, nrow) {
   dim(par) <- c(nrow, length(par) / nrow)
+
+  # Recenter the coordinates
+  par <- sweep(par, 2, colMeans(par))
+
   res <- set_solution(inp, par, method, mat_name = opt$mat_name, out = out)
   out <- res$out
   out$dirty <- TRUE
