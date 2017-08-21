@@ -30,6 +30,14 @@ following:
 * `norm_cost` - the normalized version of `cost`. Again, see the 
   [Reporting](reporting.html) section for more.
 * `iter` - the iteration number at which the embedding stopped.
+* `nf` - the number of cost function evaluations.
+* `ng` - the number of cost gradient evaluations.
+
+`nf` and `ng` only count the function and gradient values with respect to the
+error in the coordinates. Extra function and gradient evaluations made as part
+of optimizing "dynamic" parameters are not included here. See the 
+[Embedding Methods](embedding-methods.html) section for details on which methods
+are (or can be made) dynamic in this way.
 
 ## `ret`
 

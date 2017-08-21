@@ -391,6 +391,14 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
   for (obj_name in export) {
     out[[obj_name]] <- get(obj_name)
   }
+
+  out$counts <- list()
+  if (!is.null(opt$nf)) {
+    out$counts$nf <- opt$nf
+  }
+  if (!is.null(opt$ng)) {
+    out$counts$ng <- opt$ng
+  }
   out$iter <- iter
   out
 }

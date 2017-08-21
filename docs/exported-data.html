@@ -236,7 +236,10 @@ div.tocify {
 <li><code>cost</code> - the final cost associated with the output configuration in <code>coords</code>. See the <a href="reporting.html">Reporting</a> section for more on this.</li>
 <li><code>norm_cost</code> - the normalized version of <code>cost</code>. Again, see the <a href="reporting.html">Reporting</a> section for more.</li>
 <li><code>iter</code> - the iteration number at which the embedding stopped.</li>
+<li><code>nf</code> - the number of cost function evaluations.</li>
+<li><code>ng</code> - the number of cost gradient evaluations.</li>
 </ul>
+<p><code>nf</code> and <code>ng</code> only count the function and gradient values with respect to the error in the coordinates. Extra function and gradient evaluations made as part of optimizing “dynamic” parameters are not included here. See the <a href="embedding-methods.html">Embedding Methods</a> section for details on which methods are (or can be made) dynamic in this way.</p>
 </div>
 <div id="ret" class="section level2">
 <h2><code>ret</code></h2>

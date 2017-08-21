@@ -468,6 +468,12 @@ following options can be supplied:
  \item \code{"costs"} A matrix containing the costs and iteration at which
  they were calculated, as reported during the optimization. The number of
  these results is controlled by the \code{report_every} parameter.
+ \item \code{"nf"} The number of cost function evaluations carried out
+ during the optimization. This does not include any evaluations required
+ if "dynamic" parameters were optimized.
+ \item \code{"ng"} The number of cost gradient evaluations carried out
+ during the optimization. This does not include any evaluations required
+ if "dynamic" parameters were optimized.
 }
 
 The \code{color_scheme} parameter is used to set the color scheme for the

@@ -158,6 +158,8 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
     #         , " f = ", formatC(step_info$f)
     #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
     mize <- opt$mize_module$check_mize_convergence(step_info)
+    opt$nf <- step_info$nf
+    opt$ng <- step_info$ng
 
     if (mize$is_terminated && mize$terminate$what == "step_tol") {
       restart_res <- restart_if_possible(opt, inp, iter, mize, par, fg,
@@ -218,7 +220,9 @@ mize_opt <- function(opt_name, verbose = FALSE, ...) {
     mize_module = mize_module,
     mize = opt,
     convergence_iter = 0,
-    verbose = verbose
+    verbose = verbose,
+    nf = 0,
+    ng = 0
   )
 }
 
@@ -342,6 +346,8 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
     #         , " step = ", step_info$step, " alpha = ", step_info$alpha)
 
     mize <- opt$mize_module$check_mize_convergence(step_info)
+    opt$nf <- step_info$nf
+    opt$ng <- step_info$ng
 
     if (mize$is_terminated && mize$terminate$what == "step_tol") {
       restart_res <- restart_if_possible(opt, inp, iter, mize, par, fg_coord,
