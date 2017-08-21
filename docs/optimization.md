@@ -48,6 +48,21 @@ their relative distances and growing tighter. You then have to spend more time
 panning and zooming than you would otherwise. So don't be afraid to crank down
 `max_iter`.
 
+## `max_fn`, `max_gr`, `max_fg`
+
+During one iteration, depending on the type of optimizer being used, multiple
+gradient and function evaluations may be made. As these evaluations take up
+most of the computational time, you may prefer to restrict the number of these
+evaluations, rather than the iterations. You can specify any of a maximum number
+of function evaluations (`max_fn`), gradient evaluations (`max_gr`) or the sum
+of function and gradient evaluations (`max_fg`).
+
+These parameters only constrain the maximum number of evaluations for the 
+gradient of the error associated with the coordinates. If you are using 
+a "dynamic" kernel optimization, gradient evaluations relative to the kernel
+parameters do not count towards this total. See 
+[Embedding Methods](embedding-methods.html) for more on these "dynamic" methods.
+
 ## `tol`
 
 Another way to stop the embedding early is to adjust the tolerance parameter,

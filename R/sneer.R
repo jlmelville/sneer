@@ -497,8 +497,15 @@ NULL
 #' @param eta Learning rate when \code{opt} is set to \code{"TSNE"} and
 #'  the initial step size for the bold driver and back tracking step search
 #'  methods.
-#' @param max_iter Maximum number of iterations to carry out optimization of
-#'  the embedding. Ignored if the \code{method} is \code{"pca"}.
+#' @param max_iter Maximum number of iterations to carry out during the
+#'  embedding. Ignored if the \code{method} is \code{"pca"}.
+#' @param max_fn Maximum number of cost function evaluations to carry out
+#'  during the embedding. Ignored if the \code{method} is \code{"pca"}.
+#' @param max_gr Maximum number of cost function evaluations to carry out
+#'  during the embedding. Ignored if the \code{method} is \code{"pca"}.
+#' @param max_fg Maximum number of the total of the cost function and gradient
+#'  evaluations to carry out during the embedding. Ignored if the \code{method}
+#'  is \code{"pca"}.
 #' @param report_every Frequency (in terms of iteration number) with which to
 #'  update plot and report the cost function.
 #' @param tol Tolerance for comparing cost change (calculated according to the
@@ -826,6 +833,9 @@ sneer <- function(df,
                   opt = "L-BFGS",
                   eta = 1,
                   max_iter = 1000,
+                  max_fn = Inf,
+                  max_gr = Inf,
+                  max_fg = Inf,
                   report_every = 50,
                   tol = 1e-4,
                   exaggerate = NULL,
@@ -1227,7 +1237,8 @@ sneer <- function(df,
          "probability-based embedding methods that use symmetric input ",
          "probabilities (e.g. t-SNE), not '", method, "'")
   }
-  optimizer <- opt_sneer(opt, embed_method)
+  optimizer <- opt_sneer(opt, embed_method,
+                         max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
 
   if (methods::is(df, "dist")) {
     xm <- df
@@ -1687,7 +1698,8 @@ embedder <- function(cost, kernel, transform = "square",
 }
 
 
-opt_sneer <- function(opt, method, eta = 500) {
+opt_sneer <- function(opt, method, eta = 500,
+                      max_fn = Inf, max_gr = Inf, max_fg = Inf) {
   if (methods::is(opt, "function")) {
     return(opt())
   }
@@ -1709,7 +1721,8 @@ opt_sneer <- function(opt, method, eta = 500) {
       "DBD",
       step_up_fun = "+", step_up = 0.2, step_down = 0.8, step0 = eta,
       mom_type = "classical", mom_schedule = "switch",
-      mom_init = 0.5, mom_final = 0.8, mom_switch_iter = 250
+      mom_init = 0.5, mom_final = 0.8, mom_switch_iter = 250,
+      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg
     )
   }
   else if (opt == "nest") {
@@ -1718,34 +1731,40 @@ opt_sneer <- function(opt, method, eta = 500) {
       line_search = "bold", step0 = eta,
       mom_schedule = "nesterov", mom_type = "nesterov",
       nest_convex_approx = FALSE, nest_burn_in = 1,
-      use_nest_mu_zero = FALSE, restart = "fn")
+      use_nest_mu_zero = FALSE, restart = "fn",
+      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
   }
   else if (opt == "l-bfgs") {
     optimizer <- ctor(
       "L-BFGS", c1 = 1e-4, c2 = 0.1,
       step_next_init = "quad", line_search = "mt",
-      step0 = "ras")
+      step0 = "ras",
+      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
   }
   else if (opt == "bfgs") {
     optimizer <- ctor(
       "BFGS", c1 = 1e-4, c2 = 0.9,
-      step0 = "scipy", step_next_init = "quad")
+      step0 = "scipy", step_next_init = "quad",
+      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
   }
   else if (opt == "spec") {
     optimizer <- ctor(
       "PHESS", c1 = 1e-4, c2 = 0.9,
-      step0 = "scipy", step_next_init = "quad", try_newton_step = TRUE)
+      step0 = "scipy", step_next_init = "quad", try_newton_step = TRUE,
+      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
   }
   else if (opt == "cg") {
     optimizer <- ctor(
       "CG", c1 = 1e-4, c2 = 0.1,
-      step0 = "rasmussen", step_next_init = "slope ratio")
+      step0 = "rasmussen", step_next_init = "slope ratio",
+      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
   }
   else if (opt == "sd") {
     optimizer <- ctor(
       "SD", c1 = 1e-4, c2 = 0.1,
       step_next_init = "quad", line_search = "mt",
-      step0 = "ras")
+      step0 = "ras",
+      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
   }
   else {
     stop("Unknown optimization method '", opt, "'")

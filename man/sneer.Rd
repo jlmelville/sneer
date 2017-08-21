@@ -11,13 +11,13 @@ sneer(df, indexes = NULL, ndim = 2, method = "tsne", alpha = 0.5,
   dof = 10, dyn = c(), lambda = 0.5, kappa = 0.5, scale_type = "none",
   perplexity = 32, perp_scale = "single", perp_scale_iter = NULL,
   perp_kernel_fun = "exp", prec_scale = "none", init = "pca",
-  opt = "L-BFGS", eta = 1, max_iter = 1000, report_every = 50,
-  tol = 1e-04, exaggerate = NULL, exaggerate_off_iter = 100,
-  plot_type = "plot", colors = NULL, color_name = NULL, labels = NULL,
-  label_name = NULL, label_chars = NULL, point_size = 1,
-  plot_labels = FALSE, color_scheme = grDevices::rainbow,
-  equal_axes = FALSE, legend = TRUE, legend_rows = NULL,
-  quality_measures = NULL, ret = c())
+  opt = "L-BFGS", eta = 1, max_iter = 1000, max_fn = Inf,
+  max_gr = Inf, max_fg = Inf, report_every = 50, tol = 1e-04,
+  exaggerate = NULL, exaggerate_off_iter = 100, plot_type = "plot",
+  colors = NULL, color_name = NULL, labels = NULL, label_name = NULL,
+  label_chars = NULL, point_size = 1, plot_labels = FALSE,
+  color_scheme = grDevices::rainbow, equal_axes = FALSE, legend = TRUE,
+  legend_rows = NULL, quality_measures = NULL, ret = c())
 }
 \arguments{
 \item{df}{Data frame or distance matrix (as dist object) to embed.}
@@ -76,8 +76,18 @@ Can't be used if \code{perp_kernel_fun} is set to \code{"step"}.}
 the initial step size for the bold driver and back tracking step search
 methods.}
 
-\item{max_iter}{Maximum number of iterations to carry out optimization of
-the embedding. Ignored if the \code{method} is \code{"pca"}.}
+\item{max_iter}{Maximum number of iterations to carry out during the
+embedding. Ignored if the \code{method} is \code{"pca"}.}
+
+\item{max_fn}{Maximum number of cost function evaluations to carry out
+during the embedding. Ignored if the \code{method} is \code{"pca"}.}
+
+\item{max_gr}{Maximum number of cost function evaluations to carry out
+during the embedding. Ignored if the \code{method} is \code{"pca"}.}
+
+\item{max_fg}{Maximum number of the total of the cost function and gradient
+evaluations to carry out during the embedding. Ignored if the \code{method}
+is \code{"pca"}.}
 
 \item{report_every}{Frequency (in terms of iteration number) with which to
 update plot and report the cost function.}

@@ -132,7 +132,10 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
   if (iter == 0) {
     mize <- opt$mize_module$opt_init(mize, par, fg,
                                      step_tol = sqrt(.Machine$double.eps),
-                                     max_iter = Inf)
+                                     max_iter = Inf,
+                                     max_fn = opt$max_fn,
+                                     max_gr = opt$max_gr,
+                                     max_fg = opt$max_fg)
     opt$mize <- mize
     opt$restarted_once <- FALSE
   }
@@ -203,7 +206,11 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
   list(opt = opt, inp = inp, out = out, method = method, iter = iter)
 }
 
-mize_opt <- function(opt_name, verbose = FALSE, ...) {
+mize_opt <- function(opt_name,
+                     max_fn = Inf,
+                     max_gr = Inf,
+                     max_fg = Inf,
+                     verbose = FALSE, ...) {
   mize_module <- mize()
 
   if (class(opt_name) == "list") {
@@ -222,11 +229,18 @@ mize_opt <- function(opt_name, verbose = FALSE, ...) {
     convergence_iter = 0,
     verbose = verbose,
     nf = 0,
-    ng = 0
+    ng = 0,
+    max_fn = max_fn,
+    max_gr = max_gr,
+    max_fg = max_fg
   )
 }
 
-mize_opt_alt <- function(opt_name, verbose = FALSE, ...) {
+mize_opt_alt <- function(opt_name,
+                         max_fn = Inf,
+                         max_gr = Inf,
+                         max_fg = Inf,
+                         verbose = FALSE, ...) {
   mize_module <- mize()
 
   if (class(opt_name) == "list") {
@@ -245,6 +259,11 @@ mize_opt_alt <- function(opt_name, verbose = FALSE, ...) {
     mize = opt,
     mize_alt = mize_alt,
     convergence_iter = 0,
+    nf = 0,
+    ng = 0,
+    max_fn = max_fn,
+    max_gr = max_gr,
+    max_fg = max_fg,
     verbose = verbose
   )
 }
@@ -316,7 +335,10 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
   if (iter == 0) {
     mize <- opt$mize_module$opt_init(mize, par, fg_coord,
                                      step_tol = sqrt(.Machine$double.eps),
-                                     max_iter = Inf)
+                                     max_iter = Inf,
+                                     max_fn = opt$max_fn,
+                                     max_gr = opt$max_gr,
+                                     max_fg = opt$max_fg)
     opt$mize <- mize
     opt$restarted_once <- FALSE
   }
@@ -574,7 +596,10 @@ restart_if_possible <- function(opt, inp, iter, mize, par, fg, is_before_step) {
     if (worth_restarting) {
       mize <- opt$mize_module$opt_init(mize, par, fg,
                                        step_tol = sqrt(.Machine$double.eps),
-                                       max_iter = Inf)
+                                       max_iter = Inf,
+                                       max_fn = opt$max_fn,
+                                       max_gr = opt$max_gr,
+                                       max_fg = opt$max_fg)
       # Restarting doesn't count towards convergence during any iterations where
       # we don't want to stop yet
       # If we are restarting *before* this iteration's optimization step
