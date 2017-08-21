@@ -311,11 +311,10 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
   mize_alt <- opt$mize_alt
   if (iter == 0) {
     mize <- opt$mize_module$opt_init(mize, par, fg_coord,
-                                     step_tol = .Machine$double.eps,
+                                     step_tol = sqrt(.Machine$double.eps),
                                      max_iter = Inf)
     opt$mize <- mize
-    opt$restarted_coord_once <- FALSE
-    opt$restarted_param_once <- FALSE
+    opt$restarted_once <- FALSE
   }
 
   # Can't reuse any old gradients
@@ -387,7 +386,7 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
 
   if (do_init) {
     mize_alt <- opt$mize_module$opt_init(mize_alt, par, fg_alt,
-                                         step_tol = .Machine$double.eps,
+                                         step_tol = sqrt(.Machine$double.eps),
                                          max_iter = Inf)
     opt$mize_alt <- mize_alt
   }
@@ -546,8 +545,14 @@ make_optim_coord_fg <- function(opt, inp, out, method, iter) {
 # optimized: e.g. we are in the middle of multiscaling or stepping through
 # perplexity, doing early exaggeration or going to optimize kernel parameters.
 # During these periods we want to allow as many restarts as needed when that
-# "indirect" state changes, but also
-# to skip pointless optimization steps if we know we are
+# "indirect" state changes, but also to skip pointless optimization steps if
+# we know we aren't going to make progress.
+# is_before_step is a flag that checks whether we are attempting to restart
+# before this iteration's optimization step or after. If before, and we are now
+# at the first iteration where early stopping could happen, we don't want to
+# count this restart as our one restart attempt, because whatever happened to
+# cause the optimization to stall occurred during the pre-convergence
+# iterations.
 restart_if_possible <- function(opt, inp, iter, mize, par, fg, is_before_step) {
   if (!opt$restarted_once) {
     mize$is_terminated <- FALSE
