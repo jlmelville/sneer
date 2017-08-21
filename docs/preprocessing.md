@@ -38,12 +38,16 @@ it filters in this way.
 By default, no scaling is applied to the input data. By providing an argument
 to `scale_type` you can scale the data in the following way:
 
+* `"none"` No scaling.
 * `"auto"` Autoscales the data: each column is centered so that is has a mean of 
 zero and then scaled so that its variance is 1.
 * `"range"` Range scales each column of data: each column is scaled so that the 
 values in each column have a range from 0 to 1.
 * `"matrix"` Range scales the entire matrix: like range scaling, except the 
 entire matrix is treated like one big column.
+* `"normalize"` Normalize the matrix by first range scaling it as in the
+`"matrix"` option, and then centering each columns so the column means are all
+zero.
 
 All these arguments can be abbreviated (e.g. to `"m"` instead of `"matrix"`).
 

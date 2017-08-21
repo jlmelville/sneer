@@ -63,6 +63,7 @@
 # }
 make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
                             rmin = 0, rmax = 1, auto_scale = FALSE,
+                            normalize = FALSE,
                             whiten = FALSE, zwhiten = FALSE, whiten_dims = 30,
                             scale_distances = FALSE,
                             verbose = TRUE) {
@@ -103,6 +104,15 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
         message("Range scaling columns in (", rmin, ", ", rmax, ")")
       }
       range_scale(xm, rmin = rmin, rmax = rmax)
+    }
+  }
+
+  if (normalize) {
+    preprocess$normalize <- function(xm) {
+      if (verbose) {
+        message("Normalizing by range scaling matrix then centering columns")
+      }
+      normalize_matrix(xm)
     }
   }
 
@@ -197,6 +207,13 @@ range_scale <- function(xm, rmin = 0, rmax = 1) {
   xm <- sweep(xm, 2, rrange / xrange, "*")
   sweep(xm, 2, rmin, "+")
 }
+
+# Normalize the matrix by range scaling the entire matrix between (0, 1), then
+# centering each column.
+normalize_matrix <- function(xm) {
+  scale(range_scale_matrix(xm), scale = FALSE)
+}
+
 
 # Data Whitening
 #

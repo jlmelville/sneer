@@ -250,12 +250,14 @@ The following scaling options can be applied via the \code{scale_type}
 parameter:
 \itemize{
  \item \code{"none"} Do nothing. The default.
- \item \code{"matrix"} Range scale the entire data so that the maximum value is
-  1 and the minimum 0.
+ \item \code{"matrix"} Range scale the entire data so that the maximum value
+ is 1 and the minimum 0.
  \item \code{"range"} Range scale each column that the maximum value in each
   column is 1 and the minimum 0.
  \item \code{"auto"} Scale each column so that its mean is 0 and variance is
   1.
+ \item \code{"normalize"} Range scale the entire matrix (as in
+ \code{"matrix"}), and then center each column so that each column mean is 0.
 }
 These arguments can be abbreviated. Default is to do no scaling. Zero
 variance columns will be removed even if no preprocessing is carried out.
