@@ -61,6 +61,16 @@ function of some kind (e.g. a random walk or a path around a circle or some
 other parametric function) and the progression of the color gives some clue
 about location.
 
+You can also omit the "$coords" bit when passing the result of `sneer` to
+`embed_plot`:
+
+```R
+embed_plot(tsne_iris$coords)
+
+# Same as the above, less typing
+embed_plot(tsne_iris)
+```
+
 ### Explicit `colors`
 
 If you just want everything to be one color, pass that to the `colors` 

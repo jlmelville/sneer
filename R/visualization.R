@@ -28,7 +28,8 @@
 #' in the \code{grDevices} package (e.g. by running the \code{?rainbow} command).
 #'
 #' @param coords Matrix of embedded coordinates, with as many rows as
-#'  observations, and 2 columns.
+#'  observations, and 2 columns; or the return value of running
+#'  \code{\link{sneer}}.
 #' @param x Either a data frame or a column that can be used to derive a
 #'  suitable vector of colors. Ignored if \code{colors} is provided.
 #' @param colors Vector containing colors for each coordinate.
@@ -64,6 +65,9 @@
 #' # rainbow color scheme
 #' embed_plot(pca_iris$coords, x = iris$Species, color_scheme = rainbow)
 #'
+#' # same as above, save typing '$coords' each time
+#' embed_plot(pca_iris, iris$Species, color_scheme = rainbow)
+#'
 #' # topo.colors scheme
 #' embed_plot(pca_iris$coords, x = iris$Species, color_scheme = topo.colors)
 #'
@@ -93,6 +97,9 @@ embed_plot <- function(coords, x = NULL, colors = NULL,
                        num_colors = 15, limits = NULL, top = NULL,
                        cex = 1, title = NULL, text = NULL,
                        equal_axes = FALSE) {
+  if (methods::is(coords, "list") && !is.null(coords$coords)) {
+    coords <- coords$coords
+  }
 
   if (is.null(colors)) {
     if (!is.null(x)) {
@@ -153,7 +160,8 @@ embed_plot <- function(coords, x = NULL, colors = NULL,
 #' in the \code{grDevices} package (e.g. by running the \code{?rainbow} command).
 #'
 #' @param coords Matrix of embedded coordinates, with as many rows as
-#'  observations, and 2 columns.
+#'  observations, and 2 columns; or the return value of running
+#'  \code{\link{sneer}}.
 #' @param x Either a data frame or a column that can be used to derive a
 #'  suitable vector of colors. Ignored if \code{colors} is provided.
 #' @param colors Vector containing colors for each coordinate.
@@ -181,6 +189,9 @@ embed_plot <- function(coords, x = NULL, colors = NULL,
 #' # rainbow color scheme
 #' embed_plotly(pca_iris$coords, iris$Species, color_scheme = rainbow)
 #'
+#' # same as above, save typing '$coords' each time
+#' embed_plotly(pca_iris, iris$Species, color_scheme = rainbow)
+#'
 #' # topo.colors scheme
 #' embed_plotly(pca_iris$coords, iris$Species, color_scheme = topo.colors)
 #'
@@ -206,6 +217,10 @@ embed_plotly <- function(coords, x = NULL, colors = NULL,
                          cex = 1, text = NULL, equal_axes = FALSE) {
   if (!requireNamespace("plotly", quietly = TRUE, warn.conflicts = FALSE)) {
     stop("embed_plotly function requires 'plotly' package")
+  }
+
+  if (methods::is(coords, "list") && !is.null(coords$coords)) {
+    coords <- coords$coords
   }
 
   if (!is.null(text)) {

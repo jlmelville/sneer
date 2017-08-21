@@ -10,7 +10,8 @@ embed_plotly(coords, x = NULL, colors = NULL,
 }
 \arguments{
 \item{coords}{Matrix of embedded coordinates, with as many rows as
-observations, and 2 columns.}
+observations, and 2 columns; or the return value of running
+\code{\link{sneer}}.}
 
 \item{x}{Either a data frame or a column that can be used to derive a
 suitable vector of colors. Ignored if \code{colors} is provided.}
@@ -74,6 +75,9 @@ pca_iris <- sneer(iris, method = "pca", scale_type = "a", ret = c("dy"))
 # Visualize the resulting embedding, colored by iris species, using the
 # rainbow color scheme
 embed_plotly(pca_iris$coords, iris$Species, color_scheme = rainbow)
+
+# same as above, save typing '$coords' each time
+embed_plotly(pca_iris, iris$Species, color_scheme = rainbow)
 
 # topo.colors scheme
 embed_plotly(pca_iris$coords, iris$Species, color_scheme = topo.colors)
