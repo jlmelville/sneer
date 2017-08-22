@@ -131,7 +131,7 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
 
   if (iter == 0) {
     mize <- opt$mize_module$opt_init(mize, par, fg,
-                                     step_tol = sqrt(.Machine$double.eps),
+                                     step_tol = opt$step_tol,
                                      max_iter = Inf,
                                      max_fn = opt$max_fn,
                                      max_gr = opt$max_gr,
@@ -232,7 +232,8 @@ mize_opt <- function(opt_name,
     ng = 0,
     max_fn = max_fn,
     max_gr = max_gr,
-    max_fg = max_fg
+    max_fg = max_fg,
+    step_tol = sqrt(.Machine$double.eps)
   )
 }
 
@@ -264,6 +265,7 @@ mize_opt_alt <- function(opt_name,
     max_fn = max_fn,
     max_gr = max_gr,
     max_fg = max_fg,
+    step_tol = sqrt(.Machine$double.eps),
     verbose = verbose
   )
 }
@@ -334,7 +336,7 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
   mize_alt <- opt$mize_alt
   if (iter == 0) {
     mize <- opt$mize_module$opt_init(mize, par, fg_coord,
-                                     step_tol = sqrt(.Machine$double.eps),
+                                     step_tol = opt$step_tol,
                                      max_iter = Inf,
                                      max_fn = opt$max_fn,
                                      max_gr = opt$max_gr,
@@ -414,7 +416,7 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
 
   if (do_init) {
     mize_alt <- opt$mize_module$opt_init(mize_alt, par, fg_alt,
-                                         step_tol = sqrt(.Machine$double.eps),
+                                         step_tol = opt$step_tol,
                                          max_iter = Inf)
     opt$mize_alt <- mize_alt
   }
@@ -461,7 +463,7 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
       mize_alt$is_terminated <- FALSE
       mize_alt$terminate <- NULL
       mize_alt <- opt$mize_module$opt_init(mize_alt, par, fg_alt,
-                                       step_tol = sqrt(.Machine$double.eps),
+                                       step_tol = opt$step_tol,
                                        max_iter = Inf)
     }
 
@@ -595,7 +597,7 @@ restart_if_possible <- function(opt, inp, iter, mize, par, fg, is_before_step) {
     }
     if (worth_restarting) {
       mize <- opt$mize_module$opt_init(mize, par, fg,
-                                       step_tol = sqrt(.Machine$double.eps),
+                                       step_tol = opt$step_tol,
                                        max_iter = Inf,
                                        max_fn = opt$max_fn,
                                        max_gr = opt$max_gr,
