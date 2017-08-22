@@ -399,6 +399,14 @@ embed_main <- function(xm, method, init_inp, init_out, opt, max_iter = 1000,
   if (!is.null(opt$ng)) {
     out$counts$ng <- opt$ng
   }
+
+  if (!is.null(opt$nf_alt)) {
+    out$counts$nf_alt <- opt$nf_alt
+  }
+  if (!is.null(opt$ng_alt)) {
+    out$counts$ng_alt <- opt$ng_alt
+  }
+
   out$iter <- iter
   out
 }

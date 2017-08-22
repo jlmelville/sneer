@@ -471,19 +471,26 @@ following options can be supplied:
  meaningless if not using the default exponential \code{perp_kernel_fun}.
  \item \code{"deg"} Degree centrality of the input probability. Calculated
  if not present.
- \item \code{"dyn"} "Dynamic" parameters, i.e. any non-coordinate parameters
- which were optimized. Only used if the \code{"dyn"} input parameter was
- non-\code{NULL}, in which case the values of the parameters specified
- are returned.
+ \item \code{"dyn"} A list of "dynamic" parameters, i.e. any non-coordinate
+ parameters which were optimized. Only used if the \code{"dyn"} input
+ parameter was non-\code{NULL}. The list will contain the value of the
+ optimized parameters. If the \code{"alt_opt"} flag was set in the
+ \code{"dyn"} input list, then this return list will also contain the number
+ of cost function and gradient evaluations associated with the optimization
+ of the parameters, as \code{"nf"} and \code{"ng"}, respectively.
  \item \code{"costs"} A matrix containing the costs and iteration at which
  they were calculated, as reported during the optimization. The number of
  these results is controlled by the \code{report_every} parameter.
  \item \code{"nf"} The number of cost function evaluations carried out
- during the optimization. This does not include any evaluations required
- if "dynamic" parameters were optimized.
+ during the optimization. If "dynamic" parameters were used and optimized
+ separately from coordinates, then this count does not include any
+ contribution from the parameter optimization. Those counts can be found in
+ the \code{"dyn"} return list.
  \item \code{"ng"} The number of cost gradient evaluations carried out
- during the optimization. This does not include any evaluations required
- if "dynamic" parameters were optimized.
+ during the optimization. If "dynamic" parameters were used and optimized
+ separately from coordinates, then this count does not include any
+ contribution from the parameter optimization. Those counts can be found in
+ the \code{"dyn"} return list.
 }
 
 The \code{color_scheme} parameter is used to set the color scheme for the

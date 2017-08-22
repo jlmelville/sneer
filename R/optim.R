@@ -451,6 +451,8 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
     step_info <- opt$mize_module$mize_step_summary(mize_alt, step_res$par,
                                                    fg_alt,
                                                    par_old = par)
+    opt$nf_alt <- step_info$nf
+    opt$ng_alt <- step_info$ng
     # message("iter = ", iter,
     #   " param nf = ", step_info$nf, " ng = ", step_info$ng
     #         , " f = ", formatC(step_info$f)

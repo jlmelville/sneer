@@ -33,11 +33,13 @@ following:
 * `nf` - the number of cost function evaluations.
 * `ng` - the number of cost gradient evaluations.
 
-`nf` and `ng` only count the function and gradient values with respect to the
-error in the coordinates. Extra function and gradient evaluations made as part
-of optimizing "dynamic" parameters are not included here. See the 
-[Embedding Methods](embedding-methods.html) section for details on which methods
-are (or can be made) dynamic in this way.
+`nf` and `ng` only count the function and gradient values with respect to the 
+error in the coordinates. Extra function and gradient evaluations made as part 
+of optimizing "dynamic" parameters, if they were optimized separately from the 
+coordinates (i.e. you set `alt_opt = TRUE`), are not included here. See the 
+[Embedding Methods](embedding-methods.html) section for details on which 
+methods are (or can be made) dynamic in this way. See the section on the `dyn`
+return value below to get these separate function and gradient counts.
 
 ## `ret`
 
@@ -79,13 +81,17 @@ The names you can ask for are:
   `method = "wssne"`).
 * `dyn` Dynamically optimized non-coordinate parameters. A list containing 
   sublists, with names corresponding to the names of the parameters optimized. 
-  This is avaiable if using 
+  This is available if using you used the `dyn` input variable to make an 
+  embedding method "dynamic", or if you selected  
   [Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14)
-  (`method = "itsne"`), where `dyn` will contain a list `dof`, which contains
-  the optimized degrees of freedom parameter for each output coordinate.
-  If using `method = "dhssne"` method, dyn contains a list called `alpha`,
-  which contains the global alpha optimized alpha value. See the 
-  [Embedding Methods](embedding-methods.html) for more on DHSSNE.
+  (`method = "itsne"`), or DHSSNE (`method = "dhssne"`). For it-SNE, `dyn` will
+  contain a list of `dof`, which contains the optimized degrees of freedom
+  parameter for each output coordinate. If using `method = "dhssne"` method, dyn
+  contains a list called `alpha`, which contains the optimized global alpha
+  value. See the [Embedding Methods](embedding-methods.html) for more. If the 
+  parameters were optimized separately from the coordinates, then this list will
+  also contain the number of function and gradient evaluations used for
+  parameter optimization under `nf` and `ng`, respectively.
 * `costs` All the costs which were logged to screen during the optimization, as
   a matrix, with the iteration number in the first column.
 
