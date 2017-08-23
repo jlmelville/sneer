@@ -194,6 +194,12 @@ make_reporter <- function(report_every = 100, min_cost = 0,
     }
 
     if (iter >= convergence_iter) {
+      if (!is.null(result$cost) && cost > result$cost) {
+        if (verbose) {
+          message("cost increased, solution diverging")
+        }
+        result$stop_early <- TRUE
+      }
       if (cost < min_cost) {
         if (verbose) {
           message("minimum cost ", formatC(min_cost), " convergence reached")
