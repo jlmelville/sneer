@@ -595,7 +595,7 @@ divergence by also considering the cost when $q_{ij}$ is the "reference"
 probability distribution:
 
 $$C = D_{KL}(Q||P) = \sum_{ij} q_{ij}\ln\left(\frac{q_{ij}}{p_{ij}}\right)$$
-$$\frac{\partial C}{\partial q_{ij}} = \ln\left(\frac{p_{ij}}{q_{ij}}\right) + 1$$
+$$\frac{\partial C}{\partial q_{ij}} = \ln\left(\frac{q_{ij}}{p_{ij}}\right) + 1$$
 
 ### Jensen-Shannon Divergence
 
