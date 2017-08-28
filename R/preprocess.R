@@ -65,8 +65,30 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
                             rmin = 0, rmax = 1, auto_scale = FALSE,
                             normalize = FALSE,
                             whiten = FALSE, zwhiten = FALSE, whiten_dims = 30,
-                            scale_distances = FALSE,
+                            scale_distances = FALSE, scale_list = NULL,
                             verbose = TRUE) {
+
+  if (is.null(scale_list)) {
+    if (auto_scale) {
+      scale_list <- list(col = "sd")
+    }
+    else if (range_scale_matrix) {
+      scale_list <- list(mat = "range")
+    }
+    else if (range_scale) {
+      scale_list <- list(col = "range")
+    }
+    else if (normalize) {
+      scale_list <- list(mat = "range", col = "center")
+    }
+    else if (whiten) {
+      scale_list <- list(col = "whiten")
+    }
+    else if (zwhiten) {
+      scale_list <- list(col = "zca")
+    }
+  }
+
   preprocess <- list()
 
   preprocess$filter_zero_var_cols <- function(xm) {
@@ -80,59 +102,104 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
     xm
   }
 
-  if (auto_scale) {
-    preprocess$auto_scale <- function(xm) {
-      if (verbose) {
-        message("Auto scaling")
-      }
-      scale(xm)
-    }
-  }
+  for (name in names(scale_list)) {
+    if (name == "col") {
+      scale_type <- scale_list[[name]]
 
-  if (range_scale_matrix) {
-    preprocess$range_scale_matrix <- function(xm) {
-      if (verbose) {
-        message("Range scaling matrix in (", rmin, ", ", rmax, ")")
+      if (scale_type == "sd" || scale_type == "auto") {
+        preprocess$col_sd <- function(xm) {
+          if (verbose) {
+            message("Centering and scaling columns to sd = 1")
+          }
+          scale(xm)
+        }
       }
-      range_scale_matrix(xm, rmin = rmin, rmax = rmax)
+      else if (scale_type == "center") {
+        preprocess$col_center <- function(xm) {
+          if (verbose) {
+            message("Centering columns to mean = 0")
+          }
+          scale(xm, scale = FALSE)
+        }
+      }
+      else if (scale_type == "max") {
+        preprocess$col_max <- function(xm) {
+          if (verbose) {
+            message("Scaling columns by abs max")
+          }
+          col_max_abs <- apply(xm, 2, function(x) { max(abs(x)) })
+          sweep(xm, 2, col_max_abs, "/")
+        }
+      }
+      else if (scale_type == "range") {
+        preprocess$col_range <- function(xm) {
+          if (verbose) {
+            message("Range scaling columns to (0, 1)")
+          }
+          range_scale_columns(xm)
+        }
+      }
+      else if (scale_type == "whiten") {
+        preprocess$whiten <- function(xm) {
+          whiten_dims <- min(dim(xm))
+          if (verbose) {
+            message("PCA whitening with ", whiten_dims, " components")
+          }
+          whiten(xm, ncomp = whiten_dims)
+        }
+      }
+      else if (scale_type == "zca") {
+        preprocess$zwhiten <- function(xm) {
+          whiten_dims <- min(dim(xm))
+          if (verbose) {
+            message("ZCA Whitening with ", whiten_dims, " components")
+          }
+          whiten(xm, ncomp = whiten_dims, zca = TRUE)
+        }
+      }
+      else {
+        stop("Unknown column scaling '", scale_type, "'")
+      }
     }
-  }
+    else {
+      # matrix scaling
+      scale_type <- scale_list[[name]]
 
-  if (range_scale) {
-    preprocess$range_scale <- function(xm) {
-      if (verbose) {
-        message("Range scaling columns in (", rmin, ", ", rmax, ")")
+      if (scale_type == "sd") {
+        preprocess$mat_sd <- function(xm) {
+          if (verbose) {
+            message("Centering and scaling matrix to sd = 1")
+          }
+          (xm - mean(xm)) / sd(xm)
+        }
       }
-      range_scale(xm, rmin = rmin, rmax = rmax)
-    }
-  }
-
-  if (normalize) {
-    preprocess$normalize <- function(xm) {
-      if (verbose) {
-        message("Normalizing by range scaling matrix then centering columns")
+      else if (scale_type == "center") {
+        preprocess$mat_center <- function(xm) {
+          if (verbose) {
+            message("Centering matrix to mean = 0")
+          }
+          xm - mean(xm)
+        }
       }
-      normalize_matrix(xm)
-    }
-  }
-
-  if (whiten) {
-    preprocess$whiten <- function(xm) {
-      whiten_dims <- min(whiten_dims, ncol(xm))
-      if (verbose) {
-        message("PCA whitening with ", whiten_dims, " components")
+      else if (scale_type == "max") {
+        preprocess$mat_max <- function(xm) {
+          if (verbose) {
+            message("Scaling matrix by abs max")
+          }
+          xm / abs(max(xm))
+        }
       }
-      whiten(xm, ncomp = whiten_dims)
-    }
-  }
-
-  if (zwhiten) {
-    preprocess$zwhiten <- function(xm) {
-      whiten_dims <- min(whiten_dims, ncol(xm))
-      if (verbose) {
-        message("ZCA Whitening with ", whiten_dims, " components")
+      else if (scale_type == "range") {
+        preprocess$mat_range <- function(xm) {
+          if (verbose) {
+            message("Range scaling matrix to (0, 1)")
+          }
+          xm <- range_scale_matrix(xm)
+        }
       }
-      whiten(xm, ncomp = whiten_dims, zca = TRUE)
+      else {
+        stop("Unknown matrix scaling '", scale_type, "'")
+      }
     }
   }
 
@@ -169,6 +236,153 @@ make_preprocess <- function(range_scale_matrix = FALSE, range_scale = FALSE,
   }
 }
 
+# make_preprocess_l <- function(scaling, scale_distances = FALSE, verbose = TRUE) {
+#   preprocess <- list()
+#
+#   preprocess$filter_zero_var_cols <- function(xm) {
+#     old_ncols <- ncol(xm)
+#     xm <- varfilter(xm)
+#     new_ncols <- ncol(xm)
+#     if (verbose) {
+#       message("Filtered ", old_ncols - new_ncols, " columns, ",
+#               new_ncols, " remaining")
+#     }
+#     xm
+#   }
+#
+#   for (name in names(scaling)) {
+#     if (name == "col") {
+#       scale_type <- scaling[[name]]
+#
+#       if (scale_type == "sd" || scale_type == "auto") {
+#         preprocess$col_sd <- function(xm) {
+#           if (verbose) {
+#             message("Centering and scaling columns to sd = 1")
+#           }
+#           scale(xm)
+#         }
+#       }
+#       else if (scale_type == "center") {
+#         preprocess$col_center <- function(xm) {
+#           if (verbose) {
+#             message("Centering columns to mean = 0")
+#           }
+#           scale(xm, scale = FALSE)
+#         }
+#       }
+#       else if (scale_type == "max") {
+#         preprocess$col_max <- function(xm) {
+#           if (verbose) {
+#             message("Scaling columns by abs max")
+#           }
+#           col_max_abs <- apply(xm, 2, function(x) { max(abs(x)) })
+#           sweep(xm, 2, col_max_abs, "/")
+#         }
+#       }
+#       else if (scale_type == "range") {
+#         preprocess$col_range <- function(xm) {
+#           if (verbose) {
+#             message("Range scaling columns to (0, 1)")
+#           }
+#           range_scale_columns(xm)
+#         }
+#       }
+#       else if (scale_type == "whiten") {
+#         preprocess$whiten <- function(xm) {
+#           whiten_dims <- min(dim(xm))
+#           if (verbose) {
+#             message("PCA whitening with ", whiten_dims, " components")
+#           }
+#           whiten(xm, ncomp = whiten_dims)
+#         }
+#       }
+#       else if (scale_type == "zca") {
+#         preprocess$zwhiten <- function(xm) {
+#           whiten_dims <- min(dim(xm))
+#           if (verbose) {
+#             message("ZCA Whitening with ", whiten_dims, " components")
+#           }
+#           whiten(xm, ncomp = whiten_dims, zca = TRUE)
+#         }
+#       }
+#       else {
+#         stop("Unknown column scaling '", scale_type, "'")
+#       }
+#     }
+#     else {
+#       # matrix scaling
+#       scale_type <- scaling[[name]]
+#
+#       if (scale_type == "sd") {
+#         preprocess$mat_sd <- function(xm) {
+#           if (verbose) {
+#             message("Centering and scaling matrix to sd = 1")
+#           }
+#           (xm - mean(xm)) / sd(xm)
+#         }
+#       }
+#       else if (scale_type == "center") {
+#         preprocess$mat_center <- function(xm) {
+#           if (verbose) {
+#             message("Centering matrix to mean = 0")
+#           }
+#           xm - mean(xm)
+#         }
+#       }
+#       else if (scale_type == "max") {
+#         preprocess$mat_max <- function(xm) {
+#           if (verbose) {
+#             message("Scaling matrix by abs max")
+#           }
+#           xm / abs(max(xm))
+#         }
+#       }
+#       else if (scale_type == "range") {
+#         preprocess$mat_range <- function(xm) {
+#           if (verbose) {
+#             message("Range scaling matrix to (0, 1)")
+#           }
+#           xm <- range_scale_matrix(xm)
+#         }
+#       }
+#       else {
+#         stop("Unknown matrix scaling '", scale_type, "'")
+#       }
+#     }
+#   }
+#
+#   preprocess_dm <- list()
+#   if (scale_distances) {
+#     preprocess_dm$scale_distances <- function(dm) {
+#       dm <- scale_distances(dm)
+#     }
+#   }
+#
+#   function(xm) {
+#     if (!methods::is(xm, "dist")) {
+#       xm <- as.matrix(xm)
+#       for (name in names(preprocess)) {
+#         xm <- preprocess[[name]](xm)
+#       }
+#     }
+#
+#     if (methods::is(xm, "dist")) {
+#       dm <- as.matrix(xm)
+#     } else {
+#       dm <- distance_matrix(xm)
+#     }
+#     for (name in names(preprocess_dm)) {
+#       dm <- preprocess_dm[[name]](dm)
+#     }
+#
+#     utils::flush.console()
+#     result <- list(dm = dm, dirty = TRUE)
+#     if (!methods::is(xm, "dist")) {
+#       result$xm <- xm
+#     }
+#     result
+#   }
+# }
 
 # Range Scale Matrix
 #
@@ -214,6 +428,25 @@ normalize_matrix <- function(xm) {
   scale(range_scale_matrix(xm), scale = FALSE)
 }
 
+center_columns <- function(xm) {
+  sweep(xm, 2, colSums(xm))
+}
+
+sd_scale_columns <- function(xm) {
+  scale(xm)
+}
+
+range_scale_columns <- function(xm, rmin = 0, rmax = 1) {
+  xmin <- apply(xm, 2, min)
+
+  xmax <- apply(xm, 2, max)
+  xrange <- xmax - xmin
+  rrange <- rmax - rmin
+
+  xm <- sweep(xm, 2, xmin)
+  xm <- sweep(xm, 2, rrange / xrange, "*")
+  sweep(xm, 2, rmin, "+")
+}
 
 # Data Whitening
 #
