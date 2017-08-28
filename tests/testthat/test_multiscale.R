@@ -91,6 +91,7 @@ test_that("multiscaling SSNE with perp scaling", {
                                     num_scale_iters = 10, verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+                             convergence_iter = 10,
                              verbose = FALSE),
     max_iter = 14,
     export = c("report", "method")
@@ -119,6 +120,7 @@ test_that("ms SSNE with unit scaling", {
                                     verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+                             convergence_iter = 10,
                              verbose = FALSE, reltol = NULL),
     max_iter = 14,
     export = c("report", "method")
@@ -148,6 +150,7 @@ test_that("Can apply multiple scales in one iteration", {
                                     verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 1,
+                             convergence_iter = 10,
                              verbose = FALSE),
     max_iter = 9,
     export = c("report", "method")
@@ -199,6 +202,7 @@ test_that("Can combine multiscaling with asymmetric weights", {
                                     verbose = FALSE),
     init_out = out_from_PCA(verbose = FALSE),
     reporter = make_reporter(keep_costs = TRUE, report_every = 2,
+                             convergence_iter = 6,
                              verbose = FALSE),
     max_iter = 10,
     export = c("report", "method")
