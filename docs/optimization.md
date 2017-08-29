@@ -103,7 +103,7 @@ iris_tsne <- sneer(iris, opt = "tsne", eta = 500, scale_type = "matrix")
 
 As the above example indicates, you should also scale the input data. See the
 [Preprocessing](preprocessing.html) for your options, but I recommend 
-`scale_type = "matrix"` or `scale_type = "norm"`.
+`scale_type = "matrix"` or `scale_type = "tsne"`.
 
 t-SNE optimization is usually combined with early exaggeration and random
 initialization. See the [Input Initialization](input-initialization.html) and
@@ -112,7 +112,7 @@ but for an authentic-ish t-SNE experience, run:
 
 ```R
 iris_tsne <- sneer(iris, opt = "tsne", eta = 500, exaggerate = 4, 
-                   scale_type = "norm", exaggerate_off_iter = 100, 
+                   scale_type = "tsne", exaggerate_off_iter = 100, 
                    perplexity = 30, init = "r")
 ```
 
@@ -121,12 +121,9 @@ dataset with sneer!) try:
 
 ```R
 iris_tsne <- sneer(iris, opt = "tsne", eta = 200, exaggerate = 12, 
-                   scale_type = "norm", exaggerate_off_iter = 250, 
+                   scale_type = "tsne", exaggerate_off_iter = 250, 
                    perplexity = 50, init = "r")
 ```
-
-
-
 
 ### L-BFGS
 

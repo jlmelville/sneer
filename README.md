@@ -35,7 +35,9 @@ res <- sneer(iris)
 
 # sneer does t-SNE, looks for numeric columns and a factor column to color 
 # points with automatically, and does tSNE by default, but you can get specific:
-res <- sneer(iris[, 1:4], label = iris$Species, method = "tsne", 
+res <- sneer(iris[, 1:4], labels = iris$Species, method = "tsne", 
+             scale_type = "tsne", opt = "tsne", init = "r", 
+             exaggerate = 4, exaggerate_off_iter = 100,
              perplexity = 25)
 ```
 

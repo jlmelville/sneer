@@ -80,7 +80,7 @@ More information on ColorBrewer is available at its website,
 \examples{
 \dontrun{
 # Embed with PCA
-pca_iris <- sneer(iris, method = "pca", scale_type = "a", ret = c("dy"))
+pca_iris <- sneer(iris, method = "pca", ret = c("dy"))
 # Visualize the resulting embedding, colored by iris species, using the
 # rainbow color scheme
 embed_plot(pca_iris$coords, x = iris$Species, color_scheme = rainbow)
@@ -102,8 +102,7 @@ embed_plot(pca_iris$coords, x = iris, color_scheme = "Dark2")
 # long (or the dataset is large)
 embed_plot(pca_iris$coords, x = iris$Species, cex = 0.5, text = iris$Species)
 
-tsne_iris <- sneer(iris, method = "tsne", scale_type = "a",
-                   ret = c("dx", "dy", "deg"))
+tsne_iris <- sneer(iris, method = "tsne", ret = c("dx", "dy", "deg"))
 # how well is the 32 nearest neighborhood preserved for each point?
 nbr_pres_32 <- nbr_pres(tsne_iris$dx, tsne_iris$dy, 32)
 # visualize preservation, use absolute scale of 0-1 for colors.

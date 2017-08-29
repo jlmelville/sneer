@@ -19,8 +19,8 @@ test_that("auto scaling", {
   expect_equal(unname(apply(iris_as$xm, 2, sd)), rep(1, 4))
 })
 
-test_that("normalize", {
-  iris_ns <- make_preprocess(normalize = TRUE, verbose = FALSE)(iris[, -5])
+test_that("tsne-scaling", {
+  iris_ns <- make_preprocess(tsne = TRUE, verbose = FALSE)(iris[, -5])
   expect_equal(unname(apply(iris_ns$xm, 2, mean)), rep(0, 4))
 
   # the relative standard deviations are preserved
@@ -77,7 +77,7 @@ test_that("matrix max scaling", {
 
 test_that("range scale m then center c", {
   scaled <- make_preprocess(scale_list = list(mat = "range", col = "center"),
-                            verbose = FALSE)(iris[ , -5])
+                            verbose = FALSE)(iris[, -5])
   expect_equal(unname(apply(scaled$xm, 2, mean)), rep(0, 4))
 
   # the relative standard deviations are preserved

@@ -240,10 +240,10 @@ div.tocify {
 <p>By default, no scaling is applied to the input data. By providing an argument to <code>scale_type</code> you can scale the data in the following way:</p>
 <ul>
 <li><code>&quot;none&quot;</code> No scaling.</li>
-<li><code>&quot;auto&quot;</code> Autoscales the data: each column is centered so that is has a mean of zero and then scaled so that its variance is 1.</li>
+<li><code>&quot;sd&quot;</code> Each column is centered so that is has a mean of zero and then scaled so that its variance is 1. I’ve seen this called “autoscaling” in chemical and biological data analysis, but I’ve not seen it referred to that way in other fields. Nonetheless, you may also refer to it by <code>&quot;auto&quot;</code> as well.</li>
 <li><code>&quot;range&quot;</code> Range scales each column of data: each column is scaled so that the values in each column have a range from 0 to 1.</li>
 <li><code>&quot;matrix&quot;</code> Range scales the entire matrix: like range scaling, except the entire matrix is treated like one big column.</li>
-<li><code>&quot;normalize&quot;</code> Normalize the matrix by first range scaling it as in the <code>&quot;matrix&quot;</code> option, and then centering each columns so the column means are all zero.</li>
+<li><code>&quot;tsne&quot;</code> Columns are centered and then each element divided by the absolute maximum value, so that all elements range from a bit less than -1 to 1, or -1 to a bit less than 1, depending on whether the maximum value was negative or positive. This is the scaling carried out in Barnes-Hut t-SNE.</li>
 </ul>
 <p>All these arguments can be abbreviated (e.g. to <code>&quot;m&quot;</code> instead of <code>&quot;matrix&quot;</code>).</p>
 <p>Image data is often treated by range scaling the entire matrix, e.g. using the mnist data set as an example:</p>

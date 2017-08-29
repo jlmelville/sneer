@@ -264,10 +264,11 @@ parameter:
  is 1 and the minimum 0.
  \item \code{"range"} Range scale each column that the maximum value in each
   column is 1 and the minimum 0.
- \item \code{"auto"} Scale each column so that its mean is 0 and variance is
-  1.
- \item \code{"normalize"} Range scale the entire matrix (as in
- \code{"matrix"}), and then center each column so that each column mean is 0.
+ \item \code{"sd"} Scale each column so that its mean is 0 and standard
+ deviation is 1.
+ \item \code{"tsne"} Center each column, then scale each element by the
+ absolute maximum element value. This is the scaling carried out in
+ Barnes-Hut t-SNE.
 }
 These arguments can be abbreviated. Default is to do no scaling. Zero
 variance columns will be removed even if no preprocessing is carried out.
@@ -574,12 +575,12 @@ for more details.
 \examples{
 \dontrun{
 # Do t-SNE on the iris dataset, scaling columns to zero mean and
-# unit variance.
-res <- sneer(iris, scale_type = "a")
+# unit standard deviation.
+res <- sneer(iris, scale_type = "sd")
 
 # Use the weighted TSNE variant and export the input and output distance
 # matrices.
-res <- sneer(iris, scale_type = "a", method = "wtsne", ret = c("dx", "dy"))
+res <- sneer(iris, scale_type = "sd", method = "wtsne", ret = c("dx", "dy"))
 
 # calculate the 32-nearest neighbor preservation for each observation
 # 0 means no neighbors preserved, 1 means all of them
@@ -613,32 +614,32 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
   res <- sneer(dist(iris[1:4]), method = "pca", labels = iris$Species)
 
   # scale columns so each one has mean 0 and variance 1
-  res <- sneer(iris, method = "pca", scale_type = "a")
+  res <- sneer(iris, method = "pca", scale_type = "sd")
   # full species name on plot is cluttered, so just use the first two
   # letters and half size
-  res <- sneer(iris, method = "pca", scale_type = "a", label_chars = 2,
+  res <- sneer(iris, method = "pca", scale_type = "sd", label_chars = 2,
                point_size = 0.5)
 
   library(ggplot2)
   library(RColorBrewer)
   # Use ggplot2 and RColorBrewer palettes for the plot
-  res <- sneer(iris, method = "pca", scale_type = "a", plot_type = "g")
+  res <- sneer(iris, method = "pca", scale_type = "sd", plot_type = "g")
   # Use a different ColorBrewer palette, bigger points, and range scale each
   # column
   res <- sneer(iris, method = "pca", scale_type = "r", plot_type = "g",
                color_scheme = "Dark2", point_size = 2)
 
   # metric MDS starting from the PCA
-  res <- sneer(iris, method = "mmds", scale_type = "a", init = "p")
+  res <- sneer(iris, method = "mmds", scale_type = "sd", init = "p")
   # Sammon map starting from random distribution
-  res <- sneer(iris, method = "sammon", scale_type = "a", init = "r")
+  res <- sneer(iris, method = "sammon", scale_type = "sd", init = "r")
 
   # TSNE with a perplexity of 32, initialize from PCA
-  res <- sneer(iris, method = "tsne", scale_type = "a", init = "p",
+  res <- sneer(iris, method = "tsne", scale_type = "sd", init = "p",
                perplexity = 32)
   # default settings are to use TSNE with perplexity 32 and initialization
   # from PCA so the following is the equivalent of the above
-  res <- sneer(iris, scale_type = "a")
+  res <- sneer(iris, scale_type = "sd")
 
   # Use the standard tSNE optimization method (Jacobs step size method) with
   # step momentum. Range scale the matrix and use an aggressive learning
@@ -647,47 +648,47 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
                eta = 500)
 
   # Use the L-BFGS optimization method
-  res <- sneer(iris, scale_type = "a", opt = "L-BFGS")
+  res <- sneer(iris, scale_type = "sd", opt = "L-BFGS")
   # Use the Spectral Directions method
-  res <- sneer(iris, scale_type = "a", opt = "SPEC")
+  res <- sneer(iris, scale_type = "sd", opt = "SPEC")
 
   # Use Conjugate Gradient
-  res <- sneer(iris, scale_type = "a", opt = "CG")
+  res <- sneer(iris, scale_type = "sd", opt = "CG")
 
   # NeRV method, starting at a more global perplexity and slowly stepping
   # towards a value of 32 (might help avoid local optima)
-  res <- sneer(iris, scale_type = "a", method = "nerv", perp_scale = "step")
+  res <- sneer(iris, scale_type = "sd", method = "nerv", perp_scale = "step")
 
   # NeRV method has a lambda parameter - closer to 1 it gets, the more it
   # tries to avoid false positives (close points in the map that aren't close
   # in the input space):
-  res <- sneer(iris, scale_type = "a", method = "nerv", perp_scale = "step",
+  res <- sneer(iris, scale_type = "sd", method = "nerv", perp_scale = "step",
                lambda = 1)
 
   # Original NeRV paper transferred input exponential similarity kernel
   # precisions to the output kernel, and initialized from a uniform random
   # distribution
-  res <- sneer(iris, scale_type = "a", method = "nerv", perp_scale = "step",
+  res <- sneer(iris, scale_type = "sd", method = "nerv", perp_scale = "step",
                lambda = 1, prec_scale = "t", init = "u")
 
   # Like NeRV, the JSE method also has a controllable parameter that goes
   # between 0 and 1, called kappa. It gives similar results to NeRV at 0 and
   # 1 but unfortunately the opposite way round! The following gives similar
   # results to the NeRV embedding above:
-  res <- sneer(iris, scale_type = "a", method = "jse", perp_scale = "step",
+  res <- sneer(iris, scale_type = "sd", method = "jse", perp_scale = "step",
                kappa = 0)
 
   # Rather than step perplexities, use multiscaling to combine and average
   # probabilities across multiple perplexities. Output kernel precisions
   # can be scaled based on the perplexity value (compare to NeRV example
   # which transferred the precision directly from the input kernel)
-  res <- sneer(iris, scale_type = "a", method = "jse", perp_scale = "multi",
+  res <- sneer(iris, scale_type = "sd", method = "jse", perp_scale = "multi",
                prec_scale = "s")
 
   # HSSNE has a controllable parameter, alpha, that lets you control how
   # much extra space to give points compared to the input distances.
   # Setting it to 1 is equivalent to TSNE, so 1.1 is a bit of an extra push:
-  res <- sneer(iris, scale_type = "a", method = "hssne", alpha = 1.1)
+  res <- sneer(iris, scale_type = "sd", method = "hssne", alpha = 1.1)
 
 
   # DHSSNE is a "dynamic" extension to HSSNE which will modify alpha from
@@ -722,18 +723,18 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
 
   # wTSNE treats the input probability like a graph where the probabilities
   # are weighted edges and adds extra repulsion to nodes with higher degrees
-  res <- sneer(iris, scale_type = "a", method = "wtsne")
+  res <- sneer(iris, scale_type = "sd", method = "wtsne")
 
   # can use a step-function input kernel to make input probability more like
   # a k-nearest neighbor graph (but note that we don't take advantage of the
   # sparsity for performance purposes, sadly)
-  res <- sneer(iris, scale_type = "a", method = "wtsne",
+  res <- sneer(iris, scale_type = "sd", method = "wtsne",
                perp_kernel_fun = "step")
 
   # Some quality measures are available to quantify embeddings
   # The area under the RNX curve measures whether neighbors in the input
   # are still neighors in the output space
-  res <- sneer(iris, scale_type = "a", method = "wtsne",
+  res <- sneer(iris, scale_type = "sd", method = "wtsne",
                quality_measures =  c("rnxauc"))
 
   # Create a 5D gaussian with its own column specifying colors to use
@@ -751,12 +752,12 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
   # All these techniques can be slow (scale with the square of the number of
   # observations).
   library(PRROC)
-  res <- sneer(iris, scale_type = "a", method = "wtsne",
+  res <- sneer(iris, scale_type = "sd", method = "wtsne",
                quality_measures =  c("rnx", "roc", "pr"))
 
   # export the distance matrices and do whatever quality measures we
   # want at our leisure
-  res <- sneer(iris, scale_type = "a", method = "wtsne", ret = c("dx", "dy"))
+  res <- sneer(iris, scale_type = "sd", method = "wtsne", ret = c("dx", "dy"))
 
   # Calculate the Area Under the Precision Recall Curve for the embedding
   pr <- pr_auc_embed(res$dy, iris$Species)
@@ -766,7 +767,7 @@ embed_plot(res$coords, x = pres32, color_scheme = "Blues")
 
   # export per-point error, degree centrality, input weight function
   # precision parameters and intrinsic dimensionality
-  res <- sneer(iris, scale_type = "a", method = "wtsne",
+  res <- sneer(iris, scale_type = "sd", method = "wtsne",
                ret = c("pcost", "deg", "prec", "dim"))
 
   # Plot the embedding as points colored by category, using the rainbow
