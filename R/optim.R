@@ -595,7 +595,11 @@ restart_if_possible <- function(opt, inp, iter, mize, par, fg, is_before_step) {
       if (is.null(opt$restart_iter)) {
         opt$restart_iter <- 0
       }
-      worth_restarting <- inp$updated_iter > opt$restart_iter
+      # worth restarting if something has changed in the input probabilities
+      # or we're in the part of the iteration where we early convergence isn't
+      # a problem, but we've not restarted yet
+      worth_restarting <- (inp$updated_iter > opt$restart_iter) ||
+                          (iter > opt$convergence_iter && opt$restart_iter == 0)
     }
     if (worth_restarting) {
       mize <- opt$mize_module$opt_init(mize, par, fg,
