@@ -1722,69 +1722,72 @@ opt_sneer <- function(opt, method, eta = 500,
   }
 
   if (methods::is(opt, "list")) {
-    return(mize_opt(opt))
-  }
-
-  opt <- tolower(opt)
-  if (!is.null(method$alt_opt) && method$alt_opt) {
-    ctor <- mize_opt_alt
+    opt_name <- opt$method
+    opt$method <- NULL
+    optimizer <- do.call(mize_opt, c(list(opt_name = opt_name), opt))
   }
   else {
-    ctor <- mize_opt
-  }
+    opt <- tolower(opt)
+    if (!is.null(method$alt_opt) && method$alt_opt) {
+      ctor <- mize_opt_alt
+    }
+    else {
+      ctor <- mize_opt
+    }
 
-  if (opt == "tsne") {
-    optimizer <- ctor(
-      "DBD",
-      step_up_fun = "+", step_up = 0.2, step_down = 0.8, step0 = eta,
-      mom_type = "classical", mom_schedule = "switch",
-      mom_init = 0.5, mom_final = 0.8, mom_switch_iter = 250,
-      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg
-    )
-  }
-  else if (opt == "nest") {
-    optimizer <- ctor(
-      "SD", norm_direction = TRUE,
-      line_search = "bold", step0 = eta,
-      mom_schedule = "nesterov", mom_type = "nesterov",
-      nest_convex_approx = FALSE, nest_burn_in = 1,
-      use_nest_mu_zero = FALSE, restart = "fn",
-      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
-  }
-  else if (opt == "l-bfgs") {
-    optimizer <- ctor(
-      "L-BFGS", c1 = 1e-4, c2 = 0.1,
-      step_next_init = "quad", line_search = "mt",
-      step0 = "ras",
-      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
-  }
-  else if (opt == "bfgs") {
-    optimizer <- ctor(
-      "BFGS", c1 = 1e-4, c2 = 0.9,
-      step0 = "scipy", step_next_init = "quad",
-      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
-  }
-  else if (opt == "spec") {
-    optimizer <- ctor(
-      "PHESS", c1 = 1e-4, c2 = 0.9,
-      step0 = "scipy", step_next_init = "quad", try_newton_step = TRUE,
-      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
-  }
-  else if (opt == "cg") {
-    optimizer <- ctor(
-      "CG", c1 = 1e-4, c2 = 0.1,
-      step0 = "rasmussen", step_next_init = "slope ratio",
-      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
-  }
-  else if (opt == "sd") {
-    optimizer <- ctor(
-      "SD", c1 = 1e-4, c2 = 0.1,
-      step_next_init = "quad", line_search = "mt",
-      step0 = "ras",
-      max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
-  }
-  else {
-    stop("Unknown optimization method '", opt, "'")
+    if (opt == "tsne") {
+      optimizer <- ctor(
+        "DBD",
+        step_up_fun = "+", step_up = 0.2, step_down = 0.8, step0 = eta,
+        mom_type = "classical", mom_schedule = "switch",
+        mom_init = 0.5, mom_final = 0.8, mom_switch_iter = 250,
+        max_fn = max_fn, max_gr = max_gr, max_fg = max_fg
+      )
+    }
+    else if (opt == "nest") {
+      optimizer <- ctor(
+        "SD", norm_direction = TRUE,
+        line_search = "bold", step0 = eta,
+        mom_schedule = "nesterov", mom_type = "nesterov",
+        nest_convex_approx = FALSE, nest_burn_in = 1,
+        use_nest_mu_zero = FALSE, restart = "fn",
+        max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
+    }
+    else if (opt == "l-bfgs") {
+      optimizer <- ctor(
+        "L-BFGS", c1 = 1e-4, c2 = 0.1,
+        step_next_init = "quad", line_search = "mt",
+        step0 = "ras",
+        max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
+    }
+    else if (opt == "bfgs") {
+      optimizer <- ctor(
+        "BFGS", c1 = 1e-4, c2 = 0.9,
+        step0 = "scipy", step_next_init = "quad",
+        max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
+    }
+    else if (opt == "spec") {
+      optimizer <- ctor(
+        "PHESS", c1 = 1e-4, c2 = 0.9,
+        step0 = "scipy", step_next_init = "quad", try_newton_step = TRUE,
+        max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
+    }
+    else if (opt == "cg") {
+      optimizer <- ctor(
+        "CG", c1 = 1e-4, c2 = 0.1,
+        step0 = "rasmussen", step_next_init = "slope ratio",
+        max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
+    }
+    else if (opt == "sd") {
+      optimizer <- ctor(
+        "SD", c1 = 1e-4, c2 = 0.1,
+        step_next_init = "quad", line_search = "mt",
+        step0 = "ras",
+        max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
+    }
+    else {
+      stop("Unknown optimization method '", opt, "'")
+    }
   }
 
   optimizer$convergence_iter <- 0
