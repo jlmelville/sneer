@@ -210,6 +210,7 @@ mize_opt <- function(opt_name,
                      max_fn = Inf,
                      max_gr = Inf,
                      max_fg = Inf,
+                     step_tol = sqrt(.Machine$double.eps),
                      verbose = FALSE, ...) {
   mize_module <- mize()
 
@@ -233,7 +234,7 @@ mize_opt <- function(opt_name,
     max_fn = max_fn,
     max_gr = max_gr,
     max_fg = max_fg,
-    step_tol = sqrt(.Machine$double.eps)
+    step_tol = step_tol
   )
 }
 
@@ -241,6 +242,7 @@ mize_opt_alt <- function(opt_name,
                          max_fn = Inf,
                          max_gr = Inf,
                          max_fg = Inf,
+                         step_tol = sqrt(.Machine$double.eps),
                          verbose = FALSE, ...) {
   mize_module <- mize()
 
@@ -265,7 +267,7 @@ mize_opt_alt <- function(opt_name,
     max_fn = max_fn,
     max_gr = max_gr,
     max_fg = max_fg,
-    step_tol = sqrt(.Machine$double.eps),
+    step_tol = step_tol,
     verbose = verbose
   )
 }
