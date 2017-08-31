@@ -109,28 +109,17 @@ test_that("characterize TPSNE", {
 })
 
 test_that("tsne with Jacobs opt", {
-  tsne_iris_jacobs <- embed_prob(iris[, 1:4],
-                                 method = tsne(verbose = FALSE),
-                                 init_inp = inp_from_perp(
-                                   perplexity = 25,
-                                   input_weight_fn = sqrt_exp_weight,
-                                   verbose = FALSE),
-                                 preprocess = make_preprocess(
-                                   range_scale_matrix = TRUE,
-                                   verbose = FALSE),
-                                 max_iter = 10,
-                                 opt = mize_opt("DBD", step_up = 0.2,
-                                                 step_up_fun = "+",
-                                                 step_down = 0.8),
-                                 verbose = FALSE,
-                                 reporter = make_reporter(report_every = 1,
-                                                          keep_costs = TRUE,
-                                                          verbose = FALSE),
-                                 export = c("report"))
-  jacobs_costs <- tsne_iris_jacobs$report$costs[,"cost"]
-  expect_equal(jacobs_costs,  c(1.598, 1.594, 1.589, 1.584, 1.577, 1.57, 1.562,
-                                1.553, 1.543, 1.532, 1.52),
-               tolerance = 5e-4, scale = 1, label = "tsne with Jacobs opt costs")
+  tsne_iris_jacobs <- sneer(iris, perplexity = 25, scale_type = "m",
+                            max_iter = 10,
+                            opt = list(method = "DBD", step_up = 0.2,
+                                       step_up_fun = "+", step_down = 0.8),
+                            report_every = 1, ret = c("costs"),
+                            perp_kernel_fun = "sqrt", plot_type = NULL)
+  expect_equal(tsne_iris_jacobs$costs[, "cost"],
+               c(1.598, 1.594, 1.589, 1.584, 1.577, 1.57, 1.562, 1.553, 1.543,
+                 1.532, 1.52),
+               tolerance = 5e-4, scale = 1,
+               label = "tsne with Jacobs opt costs")
 })
 
 
