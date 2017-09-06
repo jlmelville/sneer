@@ -433,14 +433,33 @@ cg_restart <- function(g_new, g_old, nu = 0.1) {
 # The Broyden Fletcher Goldfarb Shanno method
 # scale_inverse - if TRUE, scale the inverse Hessian approximation on the first
 #   step.
-bfgs_direction <- function(eps =  .Machine$double.eps,
+bfgs_direction <- function(eps = .Machine$double.eps,
                            scale_inverse = FALSE) {
   make_direction(list(
     eps = eps,
     init = function(opt, stage, sub_stage, par, fg, iter) {
       n <- length(par)
       sub_stage$value <- rep(0, n)
-      sub_stage$hm <- diag(1, n)
+      if (!is.null(fg$hs)) {
+        bm <- fg$hs(par)
+        # we need an approximation to the inverse of the Hessian, H, not B
+        # If the Hessian is provided, rather than invert it, we'll take the
+        # diagonal only, so that the inverse is just 1/diag
+        if (class(bm) == "matrix") {
+          # We allow hs to return only the diagonal of the Hessian, so
+          # we check here if we have a full-fat matrix take the diagonal of the
+          # matrix
+          bm <- diag(bm)
+        }
+
+        # invert
+        hm <- 1 / (bm + eps)
+        hm <- diag(hm)
+        sub_stage$hm <- hm
+      }
+      else {
+        sub_stage$hm <- diag(1, n)
+      }
 
       opt$cache$gr_curr <- NULL
       opt$cache$gr_old <- NULL
@@ -450,10 +469,7 @@ bfgs_direction <- function(eps =  .Machine$double.eps,
     calculate = function(opt, stage, sub_stage, par, fg, iter) {
       gm <- opt$cache$gr_curr
       gm_old <- opt$cache$gr_old
-      if (is.null(gm_old)) {
-        pm <- -gm
-      }
-      else {
+      if (!is.null(gm_old)) {
         sm <- opt$cache$update_old
         hm <- sub_stage$hm
 
@@ -475,14 +491,14 @@ bfgs_direction <- function(eps =  .Machine$double.eps,
         irys <- im - rho * outer(ym, sm)
 
         sub_stage$hm <- (irsy %*% (hm %*% irys)) + rss
-
-        pm <- as.vector(-sub_stage$hm %*% gm)
-
-        descent <- dot(gm, pm)
-        if (descent >= 0) {
-          pm <- -gm
-        }
       }
+      pm <- as.vector(-sub_stage$hm %*% gm)
+
+      descent <- dot(gm, pm)
+      if (descent >= 0) {
+        pm <- -gm
+      }
+
       sub_stage$value <- pm
       list(sub_stage = sub_stage)
     }
@@ -490,6 +506,123 @@ bfgs_direction <- function(eps =  .Machine$double.eps,
   ))
 }
 
+
+bfgs_update <- function(hm, sm, ym, eps) {
+  rho <- 1 / (dot(ym, sm) + eps)
+  im <- diag(1, nrow(hm))
+
+  rss <- rho * outer(sm, sm)
+  irsy <- im - rho * outer(sm, ym)
+  irys <- im - rho * outer(ym, sm)
+
+  (irsy %*% (hm %*% irys)) + rss
+}
+
+# SR1 ---------------------------------------------------------------------
+
+# The Symmetric-Rank-1 Update. See section 6.2 of Nocedal and Wright.
+# A Broyden-class Quasi Newton method, like BFGS, but using a rank-1 matrix
+# to update the inverse Hessian approximation (i.e. the outer product of a
+# vector).
+# The good news: SR1 updates are sometimes better approximations to the Hessian
+#  than BFGS (according to Nocedal and Wright).
+# The bad news: SR1 updates can contain a division by zero.
+# The less-bad news: we can detect this and use the last Hessian approximation
+#  in these cases.
+# The bad news 2: SR1 updates are not guaranteed to result in a positive
+#  definite Hessian, i.e. you won't always get a descent direction. As a result,
+#  Nocedal & Wright suggest using it with a trust-region approach rather than
+#  line search. Here we simply replace the SR1 update with the BFGS version to
+#  ensure a descent direction.
+sr1_direction <- function(eps = .Machine$double.eps,
+                          scale_inverse = FALSE, skip_bad_update = TRUE,
+                          tol = 1e-8, try_bfgs = TRUE) {
+  make_direction(list(
+    eps = eps,
+    init = function(opt, stage, sub_stage, par, fg, iter) {
+      n <- length(par)
+      sub_stage$value <- rep(0, n)
+      if (!is.null(fg$hs)) {
+        # we need an approximation to the inverse of the Hessian
+        # If the Hessian is provided, rather than invert it, we'll take the
+        # diagonal only, so that the inverse is just 1/diag
+        inv_hess <- 1 / (fg$hs(par) + eps)
+        # convert to a vector, discarding off diagonal elements
+        if (class(inv_hess) == "matrix") {
+          inv_hess <- diag(inv_hess)
+        }
+        # convert to matrix (can also provide vector as hs)
+        sub_stage$hm <- diag(inv_hess)
+      }
+      else {
+        sub_stage$hm <- diag(1, n)
+      }
+
+      opt$cache$gr_curr <- NULL
+      opt$cache$gr_old <- NULL
+
+      list(opt = opt, sub_stage = sub_stage)
+    },
+    calculate = function(opt, stage, sub_stage, par, fg, iter) {
+      gm <- opt$cache$gr_curr
+      gm_old <- opt$cache$gr_old
+      if (!is.null(gm_old)) {
+        sm <- opt$cache$update_old
+        hm <- sub_stage$hm
+
+        ym <- gm - gm_old
+
+        if (iter == 2 && scale_inverse) {
+          # Nocedal suggests this heuristic for scaling the first
+          # approximation in Chapter 6 Section "Implementation" for BFGS
+          # Also used in the definition of L-BFGS
+          gamma <- dot(sm, ym) / dot(ym, ym)
+          hm <- gamma * hm
+        }
+
+        shy <- as.vector(sm - hm %*% ym)
+        up_den <- dot(shy, ym)
+
+        # Skip rule based on 6.26 in Nocedal & Wright
+        # Their version uses strict < rather than <=, but we want to catch
+        # the case where one of shy or ym is exactly zero
+        if (skip_bad_update && abs(up_den) <= tol * norm2(shy) * norm2(ym)) {
+          # message("SR1: skipping bad update")
+          sub_stage$hm <- hm
+        }
+        else {
+          sub_stage$hm <- hm + outer(shy, shy) / up_den
+        }
+      }
+      pm <- as.vector(-sub_stage$hm %*% gm)
+
+      descent <- dot(gm, pm)
+      if (descent >= 0) {
+        if (try_bfgs) {
+          # message("SR1 iter ", iter, " not a descent direction, trying BFGS")
+          hm_bfgs <- bfgs_update(hm, sm, ym, sub_stage$eps)
+          pm <- as.vector(-hm_bfgs %*% gm)
+          descent <- dot(gm, pm)
+          if (descent >= 0) {
+            # This should never happen: BFGS H should always be pd.
+            pm <- -gm
+          }
+          else {
+            # Only store the BFGS H for next iteration if it's a descent
+            sub_stage$hm <- hm_bfgs
+          }
+        }
+        else {
+          pm <- -gm
+        }
+      }
+
+      sub_stage$value <- pm
+      list(sub_stage = sub_stage)
+    }
+    , depends = c("gradient_old", "update_old")
+  ))
+}
 
 # L-BFGS ------------------------------------------------------------------
 
@@ -618,7 +751,7 @@ newton_direction <- function() {
         # FP Brissette, M Khalili, R Leconte, Journal of Hydrology, 2007,
         # Efficient stochastic generation of multi-site synthetic precipitation data
         # https://www.etsmtl.ca/getattachment/Unites-de-recherche/Drame/Publications/Brissette_al07---JH.pdf
-        # Rebonato, R., & JÃ¤ckel, P. (2011).
+        # Rebonato, R., & Jaeckel, P. (2011).
         # The most general methodology to create a valid correlation matrix for risk management and option pricing purposes.
         # doi 10.21314/JOR.2000.023
         # Also O(N^3)
@@ -687,6 +820,8 @@ upper_solve <- function(um, bm) {
 # Given the upper triangular cholesky decomposition of the hessian (or an
 # approximation), U, and the gradient vector, g, solve Up = -g
 hessian_solve <- function(um, gm) {
+  # This monkeying with dimensions is a tiny hack for the case of a repeated
+  # block diagonal Hessian, so that you only need to provide the N x N block.
   nucol <- ncol(um)
   ngcol <- length(gm) / nucol
   dim(gm) <- c(nucol, ngcol)
@@ -1902,10 +2037,19 @@ list_hooks <- function(opt) {
 #   and returns a scalar.
 # \item{\code{gr}}. The gradient of the function. Takes a vector of parameters
 # and returns a vector with the same length as the input parameter vector.
-# \item{\code{fg}}. Optional function which calculates the function and
+# \item{\code{fg}}. (Optional) function which calculates the function and
 # gradient in the same routine. Takes a vector of parameters and returns a list
 # containing the function result as \code{fn} and the gradient result as
 # \code{gr}.
+# \item{\code{hs}}. (Optional) Hessian of the function. Takes a vector of
+# parameters and returns a square matrix with dimensions the same as the length
+# of the input vector, containing the second derivatives. Only required to be
+# present if using the \code{"NEWTON"} method. If present, it will be used
+# during initialization for the \code{"BFGS"} and \code{"SR1"} quasi-Newton
+# methods (otherwise, they will use the identity matrix). The quasi-Newton
+# methods are implemented using the inverse of the Hessian, and rather than
+# directly invert the provided Hessian matrix, will use the inverse of the
+# diagonal of the provided Hessian only.
 # }
 #
 # The \code{fg} function is optional, but for some methods (e.g. line search
@@ -1923,6 +2067,14 @@ list_hooks <- function(opt) {
 # method. This stores an approximation to the inverse of the Hessian of the
 # function being minimized, which requires storage proportional to the
 # square of the length of \code{par}, so is unsuitable for large problems.
+# \item \code{"SR1"} is the Symmetric Rank 1 quasi-Newton method, incorporating
+# the safeguard given by Nocedal and Wright. Even with the safeguard, the SR1
+# method is not guaranteed to produce a descent direction. If this happens, the
+# BFGS update is used for that iteration instead. Note that I have not done any
+# research into the theoretical justification for combining BFGS with SR1 like
+# this, but empirically (comparing to BFGS results with the datasets in the
+# funconstrain package \url{https://github.com/jlmelville/funconstrain}), it
+# works competitively with BFGS, particularly with a loose line search.
 # \item \code{"L-BFGS"} is the Limited memory Broyden-Fletcher-Goldfarb-Shanno
 # quasi-Newton method. This does not store the inverse Hessian approximation
 # directly and so can scale to larger-sized problems than \code{"BFGS"}. The
@@ -2823,7 +2975,7 @@ make_mize <- function(method = "L-BFGS",
   # Gradient Descent Direction configuration
   dir_type <- NULL
   method <- match.arg(tolower(method), c("sd", "newton", "phess", "cg", "bfgs",
-                                "l-bfgs", "nag", "momentum", "dbd"))
+                                "sr1", "l-bfgs", "nag", "momentum", "dbd"))
   switch(method,
     sd = {
       dir_type <- sd_direction(normalize = norm_direction)
@@ -2860,6 +3012,12 @@ make_mize <- function(method = "L-BFGS",
     },
     bfgs = {
       dir_type <- bfgs_direction(scale_inverse = scale_hess)
+      if (is.null(try_newton_step)) {
+        try_newton_step <- TRUE
+      }
+    },
+    sr1 = {
+      dir_type <- sr1_direction(scale_inverse = scale_hess)
       if (is.null(try_newton_step)) {
         try_newton_step <- TRUE
       }

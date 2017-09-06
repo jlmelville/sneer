@@ -108,7 +108,8 @@ mat_to_par <- function(mat) {
 mize_opt_step <- function(opt, method, inp, out, iter) {
 
   fg <- make_optim_fg(opt, inp, out, method, iter)
-  if ((iter == 0 && toupper(opt$name) == "PHESS") || toupper(opt$name) == "NEWTON") {
+  if ((iter == 0 && toupper(opt$name) == "PHESS") ||
+      toupper(opt$name) == "NEWTON") {
     # Using Newton is super pointless with standard spectral direction
     # Get the same Hessian approximation at every iteration
     # D+
@@ -117,8 +118,14 @@ mize_opt_step <- function(opt, method, inp, out, iter) {
     lm <- dm - inp$pm
     # enforce positive definiteness by adding a small number
     mu <- min(lm[lm > 0]) * 1e-10
-    # Cholesky decomposition of graph Laplacian
-    fg$hs <- function(par) { 4 * (lm + mu) }
+    spec_dir <- 4 * (lm + mu)
+
+    # The Spectral Direction is the positive part of the Hessian, 4L+.
+    # mize stores the gradient as a vector, so the Hessian should be a dN x dN
+    # block diagonal matrix, with this block repeated d times (d being the
+    # output dimension), but shamefully, mize has a hack inside the hessian solve
+    # code to recognize when the Hessian is too small for exactly this case.
+    fg$hs <- function(par) { spec_dir }
   }
 
   par <- mat_to_par(out$ym)
@@ -319,7 +326,8 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
   fg_coord <- make_optim_coord_fg(opt, inp, out, method, iter)
   fg_alt <- make_optim_alt_fg(opt, inp, out, method, iter)
 
-  if ((iter == 0 && toupper(opt$name) == "PHESS") || toupper(opt$name) == "NEWTON") {
+  if ((iter == 0 && toupper(opt$name) == "PHESS") ||
+      toupper(opt$name) == "NEWTON") {
     # Using Newton is super pointless with standard spectral direction
     # Get the same Hessian approximation at every iteration
     # D+
@@ -328,8 +336,14 @@ mize_opt_alt_step <- function(opt, method, inp, out, iter) {
     lm <- dm - inp$pm
     # enforce positive definiteness by adding a small number
     mu <- min(lm[lm > 0]) * 1e-10
-    # Cholesky decomposition of graph Laplacian
-    fg_coord$hs <- function(par) { 4 * (lm + mu) }
+    spec_dir <- 4 * (lm + mu)
+
+    # The Spectral Direction is the positive part of the Hessian, 4L+.
+    # mize stores the gradient as a vector, so the Hessian should be a dN x dN
+    # block diagonal matrix, with this block repeated d times (d being the
+    # output dimension), but shamefully, mize has a hack inside the hessian solve
+    # code to recognize when the Hessian is too small for exactly this case.
+    fg_coord$hs <- function(par) { spec_dir }
   }
 
   par <- mat_to_par(out$ym)

@@ -1756,20 +1756,28 @@ opt_sneer <- function(opt, method, eta = 500,
     else if (opt == "l-bfgs") {
       optimizer <- ctor(
         "L-BFGS", c1 = 1e-4, c2 = 0.9,
-        step_next_init = "quad", line_search = "mt",
-        step0 = "ras",
+        line_search = "mt", step0 = "ras", step_next_init = "quad",
         max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
     }
     else if (opt == "bfgs") {
       optimizer <- ctor(
         "BFGS", c1 = 1e-4, c2 = 0.9,
-        step0 = "scipy", step_next_init = "quad",
+        line_search = "mt", step0 = "ras", step_next_init = "quad",
+        scale_hess = TRUE,
+        max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
+    }
+    else if (opt == "sr1") {
+      optimizer <- ctor(
+        "SR1", c1 = 1e-4, c2 = 0.9,
+        line_search = "mt", step0 = "ras", step_next_init = "quad",
+        scale_hess = TRUE,
         max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
     }
     else if (opt == "spec") {
       optimizer <- ctor(
         "PHESS", c1 = 1e-4, c2 = 0.9,
-        step0 = "scipy", step_next_init = "quad", try_newton_step = TRUE,
+        line_search = "mt", step0 = "ras", step_next_init = "quad",
+        try_newton_step = TRUE,
         max_fn = max_fn, max_gr = max_gr, max_fg = max_fg)
     }
     else if (opt == "cg") {
