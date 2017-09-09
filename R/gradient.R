@@ -75,7 +75,7 @@ stiff_to_grads <- function(ym, km) {
   gm <- matrix(0, nrow(ym), ncol(ym))
   for (i in 1:nrow(ym)) {
     disp <- sweep(-ym, 2, -ym[i, ]) #  matrix of y_ik - y_jk
-    gm[i, ] <- apply(disp * km[, i], 2, sum) # row is sum_j (km_ji * disp)
+    gm[i, ] <- colSums(disp * km[, i]) # row is sum_j (km_ji * disp)
   }
   gm
 }
