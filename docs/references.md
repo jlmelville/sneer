@@ -139,7 +139,7 @@ Fun fact: just noticed that this is the only paper on the list where
 
 ## Optimization
 
-### Jacobs Method for Adaptive Step Size
+### Delta-Bar-Delta
 
 Jacobs, R. A. (1988).
 Increased rates of convergence through learning rate adaptation.
@@ -152,6 +152,20 @@ Shocking: An approach to stabilize backprop training with greedy adaptive learni
 In *1998 IEEE International Joint Conference on Neural Networks Proceedings.*
 (Vol. 3, pp. 2218-2223). IEEE.
 https://dx.doi.org/10.1109/IJCNN.1998.687205
+
+### Early Exaggeration
+
+Linderman, G. C., & Steinerberger, S. (2017). 
+Clustering with t-SNE, provably. 
+*arXiv preprint* *arXiv*:1706.02582.
+https://arxiv.org/abs/1706.02582
+
+Suggests that the early exaggeration phase of t-SNE optimization effectively 
+carries out spectral clustering. Based on this relationship, the authors also 
+suggest that using standard  gradient descent (no momentum and a fixed learning
+rate of 1), and a much larger exaggeration factor of *n* / 10, where *n* is the
+number of points in the dataset, may be more effective than the usual early
+exaggeration settings.
 
 ### Spectral Directions
 
