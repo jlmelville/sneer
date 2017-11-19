@@ -1062,7 +1062,7 @@ Sammon Mapping is very similar to metric MDS, except that it tries to put
 more weight on preserving short distances (and hence local structure), by
 weighting the cost function by $1/r_{ij}$:
 
-$$C = \frac{1}{\sum_{ij} r_{ij{}}} \sum_{ij} \frac{\left(r_{ij} - d_{ij}\right)^2}{r_{ij}}$$
+$$C = \frac{1}{\sum_{ij} r_{ij}} \sum_{ij} \frac{\left(r_{ij} - d_{ij}\right)^2}{r_{ij}}$$
 The first term in that expression is a normalization term. There's no factor of
 half in the Sammon Stress when summing over all pairs, because if we were
 correcting for double counting in the second term, we must also do so in the
@@ -1071,17 +1071,17 @@ denominator of the normalization term. They therefore cancel out.
 The derivative is:
 
 $$\frac{\partial C}{\partial d_{ij}} = 
-   -\frac{2}{\sum_{ij} r_{ij{}}} \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}}
+   -\frac{2}{\sum_{ij} r_{ij}} \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}}
 $$
 
 Therefore:
 
-$$k_{ij} = -\frac{2}{\sum_{ij} r_{ij{}}} \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}$$
+$$k_{ij} = -\frac{2}{\sum_{ij} r_{ij}} \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}$$
 
 and the gradient is:
 
 $$\frac{\partial C}{\partial \mathbf{y_i}} = 
-  -\frac{4}{\sum_{ij} r_{ij{}}}
+  -\frac{4}{\sum_{ij} r_{ij}}
   \sum_j \frac{\left(r_{ij} - d_{ij}\right)}{r_{ij}d_{ij}}
   \left(
    \mathbf{y_i - y_j}
@@ -1094,7 +1094,7 @@ constant term in the numerator of the first part of the expression seems too
 large by a factor of 2 (i.e. you'll normally see a $-2$, not a $-4$). If you
 bear in mind that:
 
-$$ \frac{4}{\sum_{ij} r_{ij{}}} = \frac{2}{\sum_{i<j} r_{ij{}}}$$
+$$ \frac{4}{\sum_{ij} r_{ij}} = \frac{2}{\sum_{i<j} r_{ij}}$$
 the gradients are in fact equivalent.
 
 If you've been able to follow along with this, you surely are now practiced 

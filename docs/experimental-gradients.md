@@ -73,11 +73,13 @@ $$
 
 Without any probabilities involved, we can go straight to defining:
 
-$$k_{ij} = \frac{\partial C}{\partial w_{ij}}
-\frac{\partial w_{ij}}{\partial f_{ij}}$$
+$$
+k_{ij} = \frac{\partial C}{\partial w_{ij}}
+\frac{\partial w_{ij}}{\partial f_{ij}}
+$$
 
 The generalized divergences are defined in terms of the output weights, 
-$w_{ij}$ and the input weights, which I've not had to come up with a symbol 
+$w_{ij}$ and the input weights, for which I've not had to come up with a symbol 
 before now. Let's call them $v_{ij}$. The generalized Kullback Leibler 
 divergence (also known as the I-divergence, and apparently used in non-negative
 matrix factorization) and its derivative with respect to the output weights is:
@@ -85,11 +87,94 @@ matrix factorization) and its derivative with respect to the output weights is:
 $$C_{ij} = v_{ij}\ln\left(\frac{v_{ij}}{w_{ij}}\right) - v_{ij} + w_{ij}$$
 $$\frac{\partial C}{\partial w_{ij}} = 1 - \frac{v_{ij}}{w_{ij}}$$
 
-I'm not aware of any embedding algorithms that define their cost function in 
-this way, although the 
+I'm not aware of any embedding algorithms that define their cost function with 
+the un-normalized KL divergence, although the 
 [ws-SNE paper](http://jmlr.org/proceedings/papers/v32/yange14.html) shows that 
 [elastic embedding](http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf)
 can be considered a variant of this.
+
+### Elastic Embedding
+
+The elastic embedding cost function is:
+
+$$
+C = 
+\sum_{ij} v_{ij}^{+} d_{ij}^{2} + 
+\lambda \sum_{ij} v_{ij}^{-} \exp\left(-d_{ij}^{2}\right)
+$$
+where the positive and negative weights are:
+
+$$
+v_{ij}^{+} = \exp\left(-\beta_i r_{ij}^{2}\right)
+$$
+i.e. the usual exponential input weights, and
+
+$$
+v_{ij}^{-} = r_{ij}^{2}
+$$
+As given here, the input weights are not symmetric to make the derivation as 
+generic as possible. The original EE paper uses a global $\beta$ for the input 
+weights so all the terms are symmetric.
+
+If we define output weights as in SSNE as:
+
+$$
+w_{ij} = \exp\left(-d_{ij}^2\right)
+$$
+
+then we can rewrite the cost function in terms of the weights as:
+
+$$
+C = 
+-\sum_{ij} v_{ij}^{+} \ln w_{ij} + 
+\lambda \sum_{ij} v_{ij}^{-} w_{ij}
+$$
+
+and the gradient of the cost function with respect to the weight is:
+$$
+\frac{\partial C}{\partial w_{ij}} = 
+- \frac{v_{ij}^{+}}{w_{ij}}
++\lambda v_{ij}^{-}
+$$
+
+Given our use of exponential weights, the derivative with respect to the 
+squared distance is:
+
+$$
+\frac{\partial w_{ij}}{\partial f_{ij}} = -w_{ij}
+$$
+
+Thus, the force constant is:
+
+$$
+k_{ij} = \frac{\partial C}{\partial w_{ij}}
+\frac{\partial w_{ij}}{\partial f_{ij}}
+= v_{ij}^{+}
+-\lambda v_{ij}^{-}{w_{ij}}
+$$
+
+and gradient being:
+
+$$
+\frac{\partial C}{\partial \mathbf{y_i}} = 
+  2\sum_j^N \left[
+    v_{ij}^{+} + v_{ji}^{+}
+    -
+    \lambda \left( v_{ij}^{-}{w_{ij}} + v_{ji}^{-}{w_{ji}} \right)
+   \right]
+   \left(\mathbf{y_i - y_j}\right)
+$$
+and if symmetric input and output weights are used:
+
+$$
+\frac{\partial C}{\partial \mathbf{y_i}} = 
+  4\sum_j^N \left(
+    v_{ij}^{+}
+    -
+    \lambda v_{ij}^{-}{w_{ij}}
+   \right) 
+   \left(\mathbf{y_i - y_j}\right)
+$$
 
 ## Normalized Distances
 
@@ -161,7 +246,7 @@ there's no further simplification.
 We now have can be plugged in with metric MDS and Sammon-like cost function 
 derivatives, but with the distances replaced by normalized distances.
 
-## Transformed distances
+## Transformed Distances
 
 We could also consider keeping with raw distances and their square loss, but
 transforming them. In this case, the chain of variable dependencies is 
