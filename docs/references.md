@@ -96,6 +96,40 @@ dimensionality reduction based on similarity preservation.
 *Neurocomputing*, *112*, 92-108.
 https://dx.doi.org/10.1016/j.neucom.2012.12.036
 
+### Elastic Embedding (EE)
+
+Carreira-Perpinán, M. A. (2010, June). 
+The Elastic Embedding Algorithm for Dimensionality Reduction. 
+In *Proceedings of the 27th International Conference on International Conference on Machine Learning (ICML-10)* 
+(pp. 167-174).
+http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf (PDF)
+
+Not implemented in `sneer`, but is related to SSNE. Also interesting for having
+a separable cost function, i.e. no normalization of weights occurs. The 
+"Optimization equivalence of divergences improves neighbor embedding" paper, 
+(see above, under the ws-SNE heading), goes into more detail on the connection
+between SSNE and EE. Also, see the 
+[experimental gradients](http://jlmelville.github.io/sneer/experimental-gradients.html#elastic_embedding) 
+page for details on the gradient.
+
+### LargeVis
+
+Tang, J., Liu, J., Zhang, M., & Mei, Q. (2016, April). 
+Visualizing large-scale and high-dimensional data. 
+In *Proceedings of the 25th International Conference on World Wide Web*
+(pp. 287-297). International World Wide Web Conferences Steering Committee.
+https://arxiv.org/abs/1602.00370
+
+Not implemented in `sneer`, but another method that doesn't use normalization
+of the output weights. Despite this, it performs very well. The cost function
+shows some resemblance to Elastic Embedding. It also goes to a lot of effort
+to be scalable to large datasets, and the lack of normalization is critical
+in this effort. Also, see the 
+[experimental gradients](http://jlmelville.github.io/sneer/experimental-gradients.html#LargeVis) 
+page for details on the gradient. The 
+[source code](https://github.com/lferry007/LargeVis) is on GitHub,
+and there is also a [CRAN package](https://cran.r-project.org/package=largeVis).
+
 ### xSNE
 
 Strickert, M. (2012, August). 
