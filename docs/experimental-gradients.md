@@ -90,7 +90,7 @@ $$\frac{\partial C}{\partial w_{ij}} = 1 - \frac{v_{ij}}{w_{ij}}$$
 I'm not aware of any embedding algorithms that define their cost function with 
 the un-normalized KL divergence, although the 
 [ws-SNE paper](http://jmlr.org/proceedings/papers/v32/yange14.html) shows that 
-[elastic embedding](http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf)
+[elastic embedding (PDF)](http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf)
 can be considered a variant of this.
 
 ### Elastic Embedding
@@ -114,7 +114,9 @@ v_{ij}^{-} = r_{ij}^{2}
 $$
 As given here, the input weights are not symmetric to make the derivation as 
 generic as possible. The original EE paper uses a global $\beta$ for the input 
-weights so all the terms are symmetric.
+weights so all the terms are symmetric. We will explicitly double count 
+identical pairs in the symmetric case and not make any corrections as we did
+when discussing distance-based embedding methods.
 
 If we define output weights as in SSNE as:
 
@@ -175,6 +177,80 @@ $$
    \right) 
    \left(\mathbf{y_i - y_j}\right)
 $$
+
+Note that because of symmetry, we are effectively 
+
+### LargeVis
+
+[LargeVis](https://arxiv.org/abs/1602.00370) concerns itself deeply with being
+scalable. It does so by partitioning the data into a set of nearest neighbors of
+each point, which are subject to attractive forces between each other. All other
+pairs of points are repelled. Optimization occurs by stochastic gradient descent
+using a batch size of one, i.e. one pair is picked at random and their distance
+adjusted according to their gradient. For efficiency, neighboring and 
+non-neighboring pairs are sampled at different rates. I recommend close 
+scrutiny of both the paper and the 
+[source code](https://github.com/lferry007/LargeVis) to get a handle on it and
+the exact gory details.
+
+But if we didn't care about efficiency or partitioning the data into neighbors
+and non-neighbors (we can call this method SmallVis), the cost function would 
+look like:
+
+$$
+C = 
+-\sum_{ij} p_{ij} \ln w_{ij} 
+-\gamma \sum_{ij} \ln \left( 1 - w_{ij} \right)
+$$
+
+LargeVis maximizes a log-likelihood function, but here we're going to write it
+as a negative log-likelihood, so it can be treated as a minimization problem
+like with every other cost function we've looked at.
+
+As you can see, the structure of this cost function is very similar to Elastic 
+Embedding, except LargeVis uses the t-distribution for the output weights.
+Input probabilities use the same pair-wise normalization as SSNE, t-SNE and 
+friends. The $\gamma$ value plays a similar role to $\lambda$ in elastic
+embedding, balancing the attractive and repulsive forces, and is recommended to 
+be set to 7 in the LargeVis SGD implementation.
+
+The gradient of the cost function with respect to the weight is:
+$$
+\frac{\partial C}{\partial w_{ij}} = 
+- \frac{p_{ij}}{w_{ij}}
++ \frac{\gamma}{1 - w_{ij}}
+$$
+
+The weight gradient for the t-distribution is:
+
+$$
+\frac{\partial w_{ij}}{\partial f_{ij}} = -w_{ij}^2
+$$
+
+leading to a force constant of
+
+$$
+k_{ij} = \frac{\partial C}{\partial w_{ij}}
+\frac{\partial w_{ij}}{\partial f_{ij}}
+= p_{ij} w_{ij}
+-\frac{\gamma w_{ij}^{2}}{1 - w_{ij}}
+= p_{ij} w_{ij}
+-\frac{\gamma w_{ij}}{d_{ij}^2}
+$$
+
+The gradient is therefore:
+
+$$
+\frac{\partial C}{\partial \mathbf{y_i}} = 
+  4\sum_j^N \left(
+    p_{ij} 
+    -\frac{\gamma w_{ij}}{d_{ij}^2}
+   \right)
+   \left(\mathbf{y_i - y_j}\right)
+$$
+All the matrices in the LargeVis implementation are symmetric, so I have jumped 
+straight to the symmetric gradient here. The extension to the use of 
+non-symmetric matrices is obvious.
 
 ## Normalized Distances
 
