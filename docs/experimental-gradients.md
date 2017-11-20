@@ -10,8 +10,9 @@ output:
 
 Back: [Gradients](gradients.html) Up: [Index](index.html)
 
-Weirdo gradients that don't correspond to any current literature method, but
-may provide inspiration for future directions for `sneer`.
+Gradients for literature methods that aren't currently implemented in `sneer`
+or weirdo ideas that don't correspond to any current literature method, but
+may provide inspiration for future directions.
 
 ## Generic Gradient
 
@@ -177,8 +178,6 @@ $$
    \right) 
    \left(\mathbf{y_i - y_j}\right)
 $$
-
-Note that because of symmetry, we are effectively 
 
 ### LargeVis
 
