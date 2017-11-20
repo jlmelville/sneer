@@ -243,7 +243,7 @@ The gradient is therefore:
 $$
 \frac{\partial C}{\partial \mathbf{y_i}} = 
   4\sum_j^N \left(
-    p_{ij} 
+    p_{ij} w_{ij}
     -\frac{\gamma w_{ij}}{d_{ij}^2}
    \right)
    \left(\mathbf{y_i - y_j}\right)

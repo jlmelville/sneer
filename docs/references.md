@@ -125,7 +125,7 @@ of the output weights. Despite this, it performs very well. The cost function
 shows some resemblance to Elastic Embedding. It also goes to a lot of effort
 to be scalable to large datasets, and the lack of normalization is critical
 in this effort. Also, see the 
-[experimental gradients](http://jlmelville.github.io/sneer/experimental-gradients.html#LargeVis) 
+[experimental gradients](http://jlmelville.github.io/sneer/experimental-gradients.html#largevis) 
 page for details on the gradient. The 
 [source code](https://github.com/lferry007/LargeVis) is on GitHub,
 and there is also a [CRAN package](https://cran.r-project.org/package=largeVis).
