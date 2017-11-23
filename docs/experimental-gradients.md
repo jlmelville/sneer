@@ -251,6 +251,45 @@ All the matrices in the LargeVis implementation are symmetric, so I have jumped
 straight to the symmetric gradient here. The extension to the use of 
 non-symmetric matrices is obvious.
 
+### The Connection Between SNE, EE, and largeVis
+
+Despite the fact that largeVis and EE don't use normalized weights, their cost
+functions are very similar to that of SSNE and t-SNE. Let's expand the SSNE cost
+function:
+
+$$
+C = 
+\sum_{ij} p_{ij} \ln \frac{p_{ij}}{q_{ij}}
+=
+\sum_{ij} \left( p_{ij} \ln p_{ij} - p_{ij} \ln q_{ij} \right)
+$$
+
+The first term has no dependence on the output coordinates, so is a constant 
+we'll just mark as $C_{P}$. Now let's write out $q_{ij}$ as $w_{ij} / Z$ where
+$Z$ is the sum of the weights:
+
+$$
+C = C_{P} - \sum_{ij} p_{ij} \ln \left( \frac{w_{ij}}{Z} \right) = 
+Cp - \sum_{ij} p_{ij} \ln w_{ij} + \sum_{ij} p_{ij} \ln Z
+$$
+Finally, we'll do some rearranging and re-write $Z$ back to a sum of weights:
+
+$$
+C = 
+Cp - \sum_{ij} p_{ij} \ln w_{ij} + \ln Z \sum_{ij} p_{ij} =
+Cp - \sum_{ij} p_{ij} \ln w_{ij} + \ln \sum_{ij} w_{ij}
+$$
+
+Ignoring the constant term, it can be seen that the SNE cost function is a lot
+like EE and largeVis. The first (attractive) term is the same for all the 
+methods, give or take whether the input weights are normalized or not. So the
+entire difference in performance between EE, largeVis and SNE is in the 
+repulsive term. SNE-like repulsion involves a log of a sum, which is what
+makes the cost non-seperable, while largeVis and EE are probably easier to
+optimize (certainly more amenable to stochastic gradient approaches), at the
+cost of a free parameter that's needed to weight the attractive and repulsive
+terms of the cost function.
+
 ## Normalized Distances
 
 Taking the opposite tack, if normalization is so important for 
