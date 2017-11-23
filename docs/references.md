@@ -139,8 +139,22 @@ http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.680.6041&rep=rep1&type=
 
 Matlab code at: http://mloss.org/software/view/418/
 
-Not implemented in sneer. Suggests using rank-based data to avoid perplexity
+Not implemented in `sneer`. Suggests using rank-based data to avoid perplexity
 calculations.
+
+### Doubly Stochastic Neighbor Embedding on Spheres (DOSNES)
+
+Lu, Y., Yang, Z., & Corander, J. (2016). 
+Doubly Stochastic Neighbor Embedding on Spheres. 
+*arXiv preprint* *arXiv*:1609.01977.
+https://arxiv.org/abs/1609.01977
+
+Not implemented in `sneer`. Notes that even t-SNE can show a crowding problem if
+embedding graph data with a large disparity in the connectivities of the nodes:
+highly connected nodes are placed in the center of the plot, lower connectivity
+nodes are pushed to the edges. The proposed solution is to project the 
+probability matrices to a doubly stochastic version and then view the embedding
+on a spherical projection.
 
 ## Perplexity
 
@@ -154,6 +168,20 @@ Not implemented in `sneer`, but describes fast ways to calculate the input
 probabilities for large data sets. Also, coins the term "entropic affinities" 
 to describe the process of calibrating probabilities via setting a perplexity 
 value.
+
+Schubert, E., & Gertz, M. (2017, October). 
+Intrinsic t-Stochastic Neighbor Embedding for Visualization and Outlier 
+Detection. 
+In *International Conference on Similarity Search and Applications* 
+(pp. 188-203). 
+Springer, Cham.
+https://doi.org/10.1007/978-3-319-68474-1_13
+
+Not exactly about perplexity, but connected: discusses intrinsic dimensionality, 
+and correcting input distances in high dimensional spaces. Also suggests an 
+alternative input probability normalization: the geometric mean rather than 
+arithmetric mean, which effectively converts the input probability from a 
+symmetric knn graph to a mutual knn graph.
 
 ## Multiscale Embedding
 
@@ -294,6 +322,16 @@ A graph-based N-body approximation with application to stochastic neighbor
 embedding. 
 *Neural Networks*, *75*, 1-11.
 http://dx.doi.org/10.1016/j.neunet.2015.11.007
+
+Kim, M., Choi, M., Lee, S., Tang, J., Park, H., & Choo, J. (2016). 
+PixelSNE: Visualizing Fast with Just Enough Precision via Pixel-Aligned 
+Stochastic Neighbor Embedding. 
+*arXiv preprint* *arXiv*:1611.02568.
+https://arxiv.org/abs/1611.02568
+https://github.com/awesome-davian/PixelSNE
+
+Achieves a speed up by using the fact that screen resolution means that the
+usual precision in the calculations is completely unnecessary.
 
 ### Divergences
 
