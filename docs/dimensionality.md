@@ -218,10 +218,21 @@ $$
  \right]
 $$
 
-which is an entirely generic expression for the intrinsic dimensionality with
-respect to some parameter $\beta_i$ of a kernel function. But continuing with
-the assumption that we're dealing with an exponential function, the gradient of 
-the weight with respect to the precision parameter, $\beta_i$, is:
+which gives this entirely generic expression for the intrinsic dimensionality
+with respect to some parameter $\beta_i$ of a kernel function:
+
+$$
+D_{i} = \frac{2 \beta_i}{S_i}
+ \sum_{j}
+ \frac{\partial w_{ij}}{\partial \beta_{i}}
+  \left[
+  \log \left( p_{j|i} \right) + H
+ \right]
+$$
+
+Continuing with the assumption that we're dealing with an exponential function,
+the gradient of the weight with respect to the precision parameter, $\beta_i$,
+is:
 
 $$
 \frac{\partial w_{ij}}{\partial \beta_{i}}
@@ -252,17 +263,63 @@ $$
 $$
 
 The only thing to left to do is to multiply this expression by $-2 \beta_{i}$
-to get the final expression for the intrinsic dimensionality:
+to get this expression for the intrinsic dimensionality:
 
 $$
 D_i = -2 \beta_i \sum_j d^2_{ij} p_{j|i} \left[\log\left(p_{j|i}\right) + H\right]
 $$
 
-This could be useful for estimating the intrinsic dimensionality associated
-with a perplexity even when not using multiscaling. However, as noted by Lee 
-and co-workers, the use of the gaussian bandwidth compared to the "hard" cutoff 
-of a ball with a fixed radius means that the estimation is subject to edge
-effects. Therefore, in multiscaling, only the dimensionality averaged over all
-points in the dataset is used.
+which is useful if you've carried out the perplexity-based calibration
+on the input weights, as you have already calculated $p_{j|i}$, $H$ and 
+$\beta_i$. 
+
+
+If you'd rather think in terms of the un-normalized weights and the distances 
+only, the Shannon Entropy associated with Gaussian weights can be written as:
+
+$$
+H = \log S_i + \frac{\beta_i}{S_i} \sum_j d_{ij}^2 w_{ij}
+$$
+
+and with judicious use of the following substitutions:
+
+$$
+\log \left( p_{j|i} \right) = \log \left( w_{ij} \right) + \log \left(S_i \right) 
+$$
+
+and
+
+$$
+\log \left( w_{ij} \right) = -\beta_i d_{ij}^2
+$$
+
+you can eventually get to two equivalent expressions for $D_i$:
+
+$$
+D_{i} = \frac{2}{S_i}
+\left\{
+\sum_j w_{ij} \left[ \log \left( w_{ij} \right) \right] ^ 2
+-\frac{1}{S_i} \left[ \sum_j w_{ij} \log \left( w_{ij} \right) \right]^2
+\right\}
+$$
+$$
+D_{i} = \frac{2 \beta_i^2}{S_i}
+\left[
+\sum_j d_{ij}^4 w_{ij}
+-\frac{1}{S_i} \left( \sum_j d_{ij}^2 w_{ij} \right)^2
+\right]
+$$
+The first one only requires the $W$ matrix, although as you've been carrying out
+lots of exponential operations to generate the weights, it seems a pity to have
+to then carry out lots of expensive log calculations, in which case the second
+expression might be better, but which requires the squared distance matrix and
+$\beta_i$ also.
+
+Any of these could be useful for estimating the intrinsic dimensionality
+associated with a perplexity even when not using multiscaling. However, as noted
+by Lee and co-workers, the use of the gaussian bandwidth compared to the "hard"
+cutoff of a ball with a fixed radius means that the estimation is subject to
+edge effects. Therefore, in multiscaling, only the dimensionality averaged over
+all points in the dataset is used.
 
 Up: [Index](index.html)
