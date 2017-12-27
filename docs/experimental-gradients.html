@@ -37,7 +37,7 @@ if (window.hljs) {
   hljs.configure({languages: []});
   hljs.initHighlightingOnLoad();
   if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlightingOnLoad(); }, 0);
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
   }
 }
 </script>
@@ -343,14 +343,15 @@ k_{ij} = \frac{\partial C}{\partial w_{ij}}
 <p><span class="math display">\[
 C = 
 -\sum_{ij} p_{ij} \ln w_{ij} 
--\gamma \sum_{ij} \ln \left( 1 - w_{ij} \right)
+-(1 - p_{ij}) \sum_{ij} \ln \left( 1 - w_{ij} \right)
 \]</span></p>
 <p>LargeVis maximizes a log-likelihood function, but here we’re going to write it as a negative log-likelihood, so it can be treated as a minimization problem like with every other cost function we’ve looked at.</p>
-<p>As you can see, the structure of this cost function is very similar to Elastic Embedding, except LargeVis uses the t-distribution for the output weights. Input probabilities use the same pair-wise normalization as SSNE, t-SNE and friends. The <span class="math inline">\(\gamma\)</span> value plays a similar role to <span class="math inline">\(\lambda\)</span> in elastic embedding, balancing the attractive and repulsive forces, and is recommended to be set to 7 in the LargeVis SGD implementation.</p>
+<p>As you can see, the structure of this cost function is very similar to Elastic Embedding, except LargeVis uses the t-distribution for the output weights. Input probabilities use the same pair-wise normalization as SSNE, t-SNE and friends.</p>
+<p>Be aware that in the LargeVis paper, the <span class="math inline">\((1 - p_{ij})\)</span> term is replaced by a <span class="math inline">\(\gamma\)</span> value to take into account both the fact we don’t have access to the non-neighbor probabilities and to account for the missing contribution from unsampled pairs of points in the stochastic gradient. It can also be seen to play a similar role to <span class="math inline">\(\lambda\)</span> in elastic embedding, balancing the attractive and repulsive forces, and is recommended to be set to 7 in the LargeVis SGD implementation.</p>
 <p>The gradient of the cost function with respect to the weight is: <span class="math display">\[
 \frac{\partial C}{\partial w_{ij}} = 
 - \frac{p_{ij}}{w_{ij}}
-+ \frac{\gamma}{1 - w_{ij}}
++ \frac{1 - p_{ij}}{1 - w_{ij}}
 \]</span></p>
 <p>The weight gradient for the t-distribution is:</p>
 <p><span class="math display">\[
@@ -361,16 +362,16 @@ C =
 k_{ij} = \frac{\partial C}{\partial w_{ij}}
 \frac{\partial w_{ij}}{\partial f_{ij}}
 = p_{ij} w_{ij}
--\frac{\gamma w_{ij}^{2}}{1 - w_{ij}}
+-\frac{\left(1 - p_{ij}\right) w_{ij}^{2}}{1 - w_{ij}}
 = p_{ij} w_{ij}
--\frac{\gamma w_{ij}}{d_{ij}^2}
+-\frac{\left(1 - p_{ij}\right) w_{ij}}{d_{ij}^2}
 \]</span></p>
 <p>The gradient is therefore:</p>
 <p><span class="math display">\[
 \frac{\partial C}{\partial \mathbf{y_i}} = 
   4\sum_j^N \left(
     p_{ij} w_{ij}
-    -\frac{\gamma w_{ij}}{d_{ij}^2}
+    -\frac{\left(1 - p_{ij}\right) w_{ij}}{d_{ij}^2}
    \right)
    \left(\mathbf{y_i - y_j}\right)
 \]</span> All the matrices in the LargeVis implementation are symmetric, so I have jumped straight to the symmetric gradient here. The extension to the use of non-symmetric matrices is obvious.</p>

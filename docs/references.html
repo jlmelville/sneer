@@ -37,7 +37,7 @@ if (window.hljs) {
   hljs.configure({languages: []});
   hljs.initHighlightingOnLoad();
   if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlightingOnLoad(); }, 0);
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
   }
 }
 </script>
@@ -273,7 +273,7 @@ div.tocify {
 </div>
 <div id="elastic-embedding-ee" class="section level3">
 <h3>Elastic Embedding (EE)</h3>
-<p>Carreira-Perpinán, M. A. (2010, June). The Elastic Embedding Algorithm for Dimensionality Reduction. In <em>Proceedings of the 27th International Conference on International Conference on Machine Learning (ICML-10)</em> (pp. 167-174). <a href="http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf" class="uri">http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf</a> (PDF)</p>
+<p>Carreira-Perpinán, M. A. (2010, June). The Elastic Embedding Algorithm for Dimensionality Reduction. In <em>Proceedings of the 27th International Conference on Machine Learning (ICML-10)</em> (pp. 167-174). <a href="http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf" class="uri">http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf</a> (PDF)</p>
 <p>Not implemented in <code>sneer</code>, but is related to SSNE. Also interesting for having a separable cost function, i.e. no normalization of weights occurs. The “Optimization equivalence of divergences improves neighbor embedding” paper, (see above, under the ws-SNE heading), goes into more detail on the connection between SSNE and EE. Also, see the <a href="http://jlmelville.github.io/sneer/experimental-gradients.html#elastic_embedding">experimental gradients</a> page for details on the gradient.</p>
 </div>
 <div id="largevis" class="section level3">

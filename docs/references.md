@@ -100,7 +100,7 @@ https://dx.doi.org/10.1016/j.neucom.2012.12.036
 
 Carreira-Perpinán, M. A. (2010, June). 
 The Elastic Embedding Algorithm for Dimensionality Reduction. 
-In *Proceedings of the 27th International Conference on International Conference on Machine Learning (ICML-10)* 
+In *Proceedings of the 27th International Conference on Machine Learning (ICML-10)* 
 (pp. 167-174).
 http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf (PDF)
 
