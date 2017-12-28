@@ -239,13 +239,16 @@ hsjse <- function(kappa = 0.5, alpha = 0, beta = 1, eps = .Machine$double.eps,
 # @return Stiffness matrix.
 jse_stiffness_fn <- function(qm, zm, kl_qz, kappa = 0.5, beta = 1,
                           eps = .Machine$double.eps) {
-  reverse_asne_stiffness_fn(zm, qm, kl_qz, beta = beta, eps = eps) / kappa
+  # JSE stiffness is like reverse ASNE stiffness with P replaced by Z
+  reverse_asne_stiffness_fn(pm = zm, qm = qm, rev_kl = kl_qz, beta = beta,
+                            eps = eps) / kappa
 }
 
 jse_stiffness <- function() {
   list(
     fn = function(method, inp, out) {
-      jse_stiffness_fn(out$qm, out$zm, out$kl_qz, kappa = method$cost$kappa,
+      jse_stiffness_fn(qm = out$qm, zm = out$zm, kl_qz = out$kl_qz,
+                       kappa = method$cost$kappa,
                        beta = method$kernel$beta, eps = method$eps)
     },
     out_updated_fn = klqz_update,
