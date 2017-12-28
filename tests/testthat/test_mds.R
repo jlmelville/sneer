@@ -83,7 +83,7 @@ expect_equal(smds_iris$report$kruskal_stress, 0.0364, tolerance = 1e-4,
   test_that("embedder SMMDS", {
     smds_embedder_iris <- sneer(iris, method = embedder(
       cost = "square", kernel = "none", transform = "square", norm = "none"),
-      opt = mize_bold_nag_adapt, max_iter = 30)
+      opt = mize_bold_nag_adapt, max_iter = 30, plot_type = NULL)
 
     expect_equal(smds_embedder_iris$cost, smds_iris$cost)
   })
