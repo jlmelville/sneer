@@ -585,7 +585,7 @@ derivative you like, and off you go.
 
 Used by the ASNE, SSNE, t-SNE and variants:
 
-$$C = D_{KL}(P||Q) = \sum_{ij} p_{ij}\ln\left(\frac{p_{ij}}{q_{ij}}\right)$$
+$$C = D_{KL}(P||Q) = \sum_{ij} p_{ij}\log\left(\frac{p_{ij}}{q_{ij}}\right)$$
 $$\frac{\partial C}{\partial q_{ij}} = - \frac{p_{ij}}{q_{ij}}$$
 
 ### "Reverse" Kullback-Leibler Divergence
@@ -594,8 +594,8 @@ $$\frac{\partial C}{\partial q_{ij}} = - \frac{p_{ij}}{q_{ij}}$$
 divergence by also considering the cost when $q_{ij}$ is the "reference" 
 probability distribution:
 
-$$C = D_{KL}(Q||P) = \sum_{ij} q_{ij}\ln\left(\frac{q_{ij}}{p_{ij}}\right)$$
-$$\frac{\partial C}{\partial q_{ij}} = \ln\left(\frac{q_{ij}}{p_{ij}}\right) + 1$$
+$$C = D_{KL}(Q||P) = \sum_{ij} q_{ij}\log\left(\frac{q_{ij}}{p_{ij}}\right)$$
+$$\frac{\partial C}{\partial q_{ij}} = \log\left(\frac{q_{ij}}{p_{ij}}\right) + 1$$
 
 ### Jensen-Shannon Divergence
 
@@ -616,17 +616,19 @@ out the derivatives for the two parts of the JS divergence with respect to $Q$
 $$\frac{\partial D_{KL}(P||Z)}{\partial q_{ij}} = 
 - \left(1 - \kappa \right) \frac{p_{ij}}{z_{ij}}
 $$
-$$\frac{\partial D_{KL}(Q||Z)}{\partial q_{ij}} = 
+$$
+\frac{\partial D_{KL}(Q||Z)}{\partial q_{ij}} = 
 \kappa \left(\frac{p_{ij}}{z_{ij}}\right) 
-- \ln\left(\frac{q_{ij}}{z_{ij}}\right)
+- \log\left(\frac{q_{ij}}{z_{ij}}\right)
 $$
 
 Once you add these derivatives together, multiplying by the $\kappa$ values in
 the cost function, terms cancel to leave a surprisingly simple derivative:
 
-$$\frac{\partial C}{\partial q_{ij}} = 
+$$
+\frac{\partial C}{\partial q_{ij}} = 
 \frac{\partial D_{JS}(p_{ij}||q_{ij})}{\partial q_{ij}} =
--\frac{1}{\kappa}\ln\left(\frac{q_{ij}}{z_{ij}}\right)
+-\frac{1}{\kappa}\log\left(\frac{q_{ij}}{z_{ij}}\right)
 $$
 
 ## Some Similarity Kernels and their Derivatives
@@ -841,7 +843,7 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   \right)
 $$
 
-### ASNE (More or Less)
+### ASNE Gradient (More or Less)
 
 For SNE, $w_{ij}^{n-1} = 1$ because $n = 1$ and we get:
 
@@ -860,7 +862,7 @@ point-wise normalization, so we would need to use the point-wise version of
 $k_{ij}$. Fortunately, you get to the same expression by nearly the exact same 
 steps, so I leave this as an exercise to you, dear reader.
 
-### SSNE
+### SSNE Gradient
 
 For SSNE, there are further simplifications to be made. Both the $P$ and $Q$ 
 matrices are symmetric, so $p_{ij} = p_{ji}$, and $q_{ij} = q_{ji}$, leading to:
@@ -894,7 +896,7 @@ $$
 
 The familiar SSNE gradient. 
 
-### t-SNE
+### t-SNE Gradient
 
 For t-SNE, we get:
 
@@ -924,7 +926,156 @@ $$\frac{\partial C}{\partial \mathbf{y_i}} =
   \right)
 $$
 
-Also familiar. I think we all deserve a long lie down now.
+Also familiar. I think we all deserve a long lie down now. But before we do,
+for the sake of completeness, let's see if we can get the force constants 
+($k_{ij}$) out for the slightly more complicated NeRV and JSE cost functions.
+The gradients are pretty obvious once you have $k_{ij}$, but aren't as compact
+as the SNE ones, so we'll stop at $k_{ij}$.
+
+### NeRV force constant
+
+NeRV mixes two divergences, the "forward" KL divergence and the "reverse" KL
+divergence, with the degree of mixing controlled by the $\lambda$ parameter:
+
+$$
+C_{NeRV} = \lambda C_{fwd} + \left(1 - \lambda \right) C_{rev} = \\
+\lambda \sum_{ij} p_{ij} \log \left( \frac{p_{ij}}{q_{ij}} \right)
++
+\left(1 - \lambda \right) \sum_{ij} q_{ij} \log \left( \frac{q_{ij}}{p_{ij}} \right)
+$$
+NeRV uses point-wise normalization, so really we should be writing $p_{ij}$
+as $p_{j|i}$ but it just clutters the notation further, so I'm not going to.
+
+
+Let's consider the two parts separately. First, the "forward" part of NeRV:
+
+$$\frac{\partial C_{fwd}}{\partial q_{ij}} = - \lambda \frac{p_{ij}}{q_{ij}}$$
+
+This is the standard KL divergence we've spent a lot of time deriving the SNE
+family of gradients, and seeing as NeRV uses exponential kernel and point-wise
+normalization as in ASNE, we can fast-forward straight to:
+
+$$
+k_{fwd,ij} =
+\lambda
+\left(
+  {p_{ij}} - {q_{ij}}
+\right)
+$$
+Now for the "reverse" part of the cost function:
+
+$$
+\frac{\partial C_{rev}}{\partial q_{ij}} = 
+\left(1 - \lambda \right)
+\left[
+\log \left(\frac{q_{ij}}{p_{ij}}\right) + 1
+\right]
+$$
+For exponential kernels with point-based normalization, the expression for
+$k_{rev, ij}$ is:
+
+$$
+k_{rev, ij} = 
+-q_{ij}
+\left[
+\frac{\partial C}{\partial q_{ij}}
+-
+\sum_{k} \frac{\partial C}{\partial q_{ik}} 
+q_{ik}
+\right]
+$$
+
+so inserting the expression for the cost function gradient:
+
+$$
+k_{rev, ij} = 
+-\left(1 - \lambda\right) q_{ij}
+\left[
+\log
+\left( \frac{q_{ij}}{p_{ij}} \right) + 1
+-
+\sum_{k} \log \left(\frac{q_{ik}}{p_{ik}}\right) q_{ik}
+-
+\sum_{k} q_{ik}
+\right]
+$$
+Because $\sum_{k} q_{ik} = 1$, the second and fourth term in the main 
+part of the expression cancel out, and the third term is just the reverse KL 
+divergence, leaving:
+
+$$
+k_{rev, ij} = 
+-\left(1 - \lambda\right) q_{ij}
+\left[
+\log
+\left( \frac{q_{ij}}{p_{ij}} \right)
+-
+D_{KL}(Q||P)
+\right]
+$$
+
+We can slightly simplify by multiplying in the minus sign into the main
+expression, because $-\log \left( q_{ij} / p_{ij} \right) = \log \left( p_{ij} / q_{ij} \right)$,
+so we end up with:
+
+$$
+k_{rev, ij} = 
+\left(1 - \lambda\right) q_{ij}
+\left[
+\log
+\left( \frac{p_{ij}}{q_{ij}} \right)
++
+D_{KL}(Q||P)
+\right]
+$$
+
+and the final force constant for NeRV is:
+
+$$
+k_{ij} =
+\lambda
+\left(
+  {p_{ij}} - {q_{ij}}
+\right)
++
+\left(1 - \lambda\right) q_{ij}
+\left[
+\log
+\left( \frac{p_{ij}}{q_{ij}} \right)
++
+D_{KL}(Q||P)
+\right]
+$$
+
+### JSE force constant
+
+The JSE cost is also a mixture of forward and reverse divergences, but its
+gradient with respect to the output probabilities is a lot simpler than NeRV's:
+
+$$
+\frac{\partial C}{\partial q_{ij}} =
+-\frac{1}{\kappa} \log \left( \frac{q_{ij}}{z_{ij}} \right)
+$$
+That's in the same form as the reverse part of NeRV. Like NeRV, JSE also uses
+an exponential kernel and point-wise normalization, so we can pretty much
+just swap $z$ in everywhere we see $p$ in the force constant expression for
+NeRV, and remember to use $1 / \kappa$ as the weighting factor:
+
+$$
+k_{ij} = 
+\frac{q_{ij}}{\kappa}
+\left[
+\log
+\left( \frac{z_{ij}}{q_{ij}} \right)
++
+D_{KL}(Q||Z)
+\right]
+$$
+
+If you have access to the 
+[JSE paper](https://dx.doi.org/10.1016/j.neucom.2012.12.036), you can see that 
+this is equivalent (once you've translated the nomenclature) to equation 37 in 
+that publication. Success! *Now* we may take that long lie down.
 
 ## Distance-based embedding
 

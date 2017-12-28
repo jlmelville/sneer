@@ -37,7 +37,7 @@ if (window.hljs) {
   hljs.configure({languages: []});
   hljs.initHighlightingOnLoad();
   if (document.readyState && document.readyState === "complete") {
-    window.setTimeout(function() { hljs.initHighlightingOnLoad(); }, 0);
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
   }
 }
 </script>
@@ -593,12 +593,12 @@ q_{kl}
 <div id="kullback-leibler-divergence" class="section level3">
 <h3>Kullback-Leibler Divergence</h3>
 <p>Used by the ASNE, SSNE, t-SNE and variants:</p>
-<p><span class="math display">\[C = D_{KL}(P||Q) = \sum_{ij} p_{ij}\ln\left(\frac{p_{ij}}{q_{ij}}\right)\]</span> <span class="math display">\[\frac{\partial C}{\partial q_{ij}} = - \frac{p_{ij}}{q_{ij}}\]</span></p>
+<p><span class="math display">\[C = D_{KL}(P||Q) = \sum_{ij} p_{ij}\log\left(\frac{p_{ij}}{q_{ij}}\right)\]</span> <span class="math display">\[\frac{\partial C}{\partial q_{ij}} = - \frac{p_{ij}}{q_{ij}}\]</span></p>
 </div>
 <div id="reverse-kullback-leibler-divergence" class="section level3">
 <h3>“Reverse” Kullback-Leibler Divergence</h3>
 <p><a href="http://www.jmlr.org/papers/v11/venna10a.html">NeRV</a> symmetrizes the KL divergence by also considering the cost when <span class="math inline">\(q_{ij}\)</span> is the “reference” probability distribution:</p>
-<p><span class="math display">\[C = D_{KL}(Q||P) = \sum_{ij} q_{ij}\ln\left(\frac{q_{ij}}{p_{ij}}\right)\]</span> <span class="math display">\[\frac{\partial C}{\partial q_{ij}} = \ln\left(\frac{q_{ij}}{p_{ij}}\right) + 1\]</span></p>
+<p><span class="math display">\[C = D_{KL}(Q||P) = \sum_{ij} q_{ij}\log\left(\frac{q_{ij}}{p_{ij}}\right)\]</span> <span class="math display">\[\frac{\partial C}{\partial q_{ij}} = \log\left(\frac{q_{ij}}{p_{ij}}\right) + 1\]</span></p>
 </div>
 <div id="jensen-shannon-divergence" class="section level3">
 <h3>Jensen-Shannon Divergence</h3>
@@ -610,14 +610,16 @@ q_{kl}
 <p>Rather than invoke the chain rule to couple <span class="math inline">\(Z\)</span> to <span class="math inline">\(Q\)</span>, I’m just going to write out the derivatives for the two parts of the JS divergence with respect to <span class="math inline">\(Q\)</span> (ignoring the <span class="math inline">\(\kappa\)</span> weighting for now):</p>
 <p><span class="math display">\[\frac{\partial D_{KL}(P||Z)}{\partial q_{ij}} = 
 - \left(1 - \kappa \right) \frac{p_{ij}}{z_{ij}}
-\]</span> <span class="math display">\[\frac{\partial D_{KL}(Q||Z)}{\partial q_{ij}} = 
+\]</span> <span class="math display">\[
+\frac{\partial D_{KL}(Q||Z)}{\partial q_{ij}} = 
 \kappa \left(\frac{p_{ij}}{z_{ij}}\right) 
-- \ln\left(\frac{q_{ij}}{z_{ij}}\right)
+- \log\left(\frac{q_{ij}}{z_{ij}}\right)
 \]</span></p>
 <p>Once you add these derivatives together, multiplying by the <span class="math inline">\(\kappa\)</span> values in the cost function, terms cancel to leave a surprisingly simple derivative:</p>
-<p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = 
+<p><span class="math display">\[
+\frac{\partial C}{\partial q_{ij}} = 
 \frac{\partial D_{JS}(p_{ij}||q_{ij})}{\partial q_{ij}} =
--\frac{1}{\kappa}\ln\left(\frac{q_{ij}}{z_{ij}}\right)
+-\frac{1}{\kappa}\log\left(\frac{q_{ij}}{z_{ij}}\right)
 \]</span></p>
 </div>
 </div>
@@ -756,8 +758,8 @@ w_{ij}^{n-1}
   \right)
 \]</span></p>
 </div>
-<div id="asne-more-or-less" class="section level3">
-<h3>ASNE (More or Less)</h3>
+<div id="asne-gradient-more-or-less" class="section level3">
+<h3>ASNE Gradient (More or Less)</h3>
 <p>For SNE, <span class="math inline">\(w_{ij}^{n-1} = 1\)</span> because <span class="math inline">\(n = 1\)</span> and we get:</p>
 <p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
   2
@@ -770,8 +772,8 @@ w_{ij}^{n-1}
   \right)
 \]</span> This looks a lot like the ASNE gradient. Note, however, that ASNE used a point-wise normalization, so we would need to use the point-wise version of <span class="math inline">\(k_{ij}\)</span>. Fortunately, you get to the same expression by nearly the exact same steps, so I leave this as an exercise to you, dear reader.</p>
 </div>
-<div id="ssne" class="section level3">
-<h3>SSNE</h3>
+<div id="ssne-gradient" class="section level3">
+<h3>SSNE Gradient</h3>
 <p>For SSNE, there are further simplifications to be made. Both the <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span> matrices are symmetric, so <span class="math inline">\(p_{ij} = p_{ji}\)</span>, and <span class="math inline">\(q_{ij} = q_{ji}\)</span>, leading to:</p>
 <p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
   2
@@ -801,8 +803,8 @@ w_{ij}^{n-1}
 \]</span></p>
 <p>The familiar SSNE gradient.</p>
 </div>
-<div id="t-sne" class="section level3">
-<h3>t-SNE</h3>
+<div id="t-sne-gradient" class="section level3">
+<h3>t-SNE Gradient</h3>
 <p>For t-SNE, we get:</p>
 <p><span class="math display">\[\frac{\partial C}{\partial \mathbf{y_i}} = 
   2
@@ -826,7 +828,113 @@ w_{ij}^{n-1}
    \mathbf{y_i - y_j}
   \right)
 \]</span></p>
-<p>Also familiar. I think we all deserve a long lie down now.</p>
+<p>Also familiar. I think we all deserve a long lie down now. But before we do, for the sake of completeness, let’s see if we can get the force constants (<span class="math inline">\(k_{ij}\)</span>) out for the slightly more complicated NeRV and JSE cost functions. The gradients are pretty obvious once you have <span class="math inline">\(k_{ij}\)</span>, but aren’t as compact as the SNE ones, so we’ll stop at <span class="math inline">\(k_{ij}\)</span>.</p>
+</div>
+<div id="nerv-force-constant" class="section level3">
+<h3>NeRV force constant</h3>
+<p>NeRV mixes two divergences, the “forward” KL divergence and the “reverse” KL divergence, with the degree of mixing controlled by the <span class="math inline">\(\lambda\)</span> parameter:</p>
+<p><span class="math display">\[
+C_{NeRV} = \lambda C_{fwd} + \left(1 - \lambda \right) C_{rev} = \\
+\lambda \sum_{ij} p_{ij} \log \left( \frac{p_{ij}}{q_{ij}} \right)
++
+\left(1 - \lambda \right) \sum_{ij} q_{ij} \log \left( \frac{q_{ij}}{p_{ij}} \right)
+\]</span> NeRV uses point-wise normalization, so really we should be writing <span class="math inline">\(p_{ij}\)</span> as <span class="math inline">\(p_{j|i}\)</span> but it just clutters the notation further, so I’m not going to.</p>
+<p>Let’s consider the two parts separately. First, the “forward” part of NeRV:</p>
+<p><span class="math display">\[\frac{\partial C_{fwd}}{\partial q_{ij}} = - \lambda \frac{p_{ij}}{q_{ij}}\]</span></p>
+<p>This is the standard KL divergence we’ve spent a lot of time deriving the SNE family of gradients, and seeing as NeRV uses exponential kernel and point-wise normalization as in ASNE, we can fast-forward straight to:</p>
+<p><span class="math display">\[
+k_{fwd,ij} =
+\lambda
+\left(
+  {p_{ij}} - {q_{ij}}
+\right)
+\]</span> Now for the “reverse” part of the cost function:</p>
+<p><span class="math display">\[
+\frac{\partial C_{rev}}{\partial q_{ij}} = 
+\left(1 - \lambda \right)
+\left[
+\log \left(\frac{q_{ij}}{p_{ij}}\right) + 1
+\right]
+\]</span> For exponential kernels with point-based normalization, the expression for <span class="math inline">\(k_{rev, ij}\)</span> is:</p>
+<p><span class="math display">\[
+k_{rev, ij} = 
+-q_{ij}
+\left[
+\frac{\partial C}{\partial q_{ij}}
+-
+\sum_{k} \frac{\partial C}{\partial q_{ik}} 
+q_{ik}
+\right]
+\]</span></p>
+<p>so inserting the expression for the cost function gradient:</p>
+<p><span class="math display">\[
+k_{rev, ij} = 
+-\left(1 - \lambda\right) q_{ij}
+\left[
+\log
+\left( \frac{q_{ij}}{p_{ij}} \right) + 1
+-
+\sum_{k} \log \left(\frac{q_{ik}}{p_{ik}}\right) q_{ik}
+-
+\sum_{k} q_{ik}
+\right]
+\]</span> Because <span class="math inline">\(\sum_{k} q_{ik} = 1\)</span>, the second and fourth term in the main part of the expression cancel out, and the third term is just the reverse KL divergence, leaving:</p>
+<p><span class="math display">\[
+k_{rev, ij} = 
+-\left(1 - \lambda\right) q_{ij}
+\left[
+\log
+\left( \frac{q_{ij}}{p_{ij}} \right)
+-
+D_{KL}(Q||P)
+\right]
+\]</span></p>
+<p>We can slightly simplify by multiplying in the minus sign into the main expression, because <span class="math inline">\(-\log \left( q_{ij} / p_{ij} \right) = \log \left( p_{ij} / q_{ij} \right)\)</span>, so we end up with:</p>
+<p><span class="math display">\[
+k_{rev, ij} = 
+\left(1 - \lambda\right) q_{ij}
+\left[
+\log
+\left( \frac{p_{ij}}{q_{ij}} \right)
++
+D_{KL}(Q||P)
+\right]
+\]</span></p>
+<p>and the final force constant for NeRV is:</p>
+<p><span class="math display">\[
+k_{ij} =
+\lambda
+\left(
+  {p_{ij}} - {q_{ij}}
+\right)
++
+\left(1 - \lambda\right) q_{ij}
+\left[
+\log
+\left( \frac{p_{ij}}{q_{ij}} \right)
++
+D_{KL}(Q||P)
+\right]
+\]</span></p>
+</div>
+<div id="jse-force-constant" class="section level3">
+<h3>JSE force constant</h3>
+<p>The JSE cost is also a mixture of forward and reverse divergences, but its gradient with respect to the output probabilities is a lot simpler than NeRV’s:</p>
+<p><span class="math display">\[
+\frac{\partial C}{\partial q_{ij}} =
+-\frac{1}{\kappa} \log \left( \frac{q_{ij}}{z_{ij}} \right)
+\]</span> That’s in the same form as the reverse part of NeRV. Like NeRV, JSE also uses an exponential kernel and point-wise normalization, so we can pretty much just swap <span class="math inline">\(z\)</span> in everywhere we see <span class="math inline">\(p\)</span> in the force constant expression for NeRV, and remember to use <span class="math inline">\(1 / \kappa\)</span> as the weighting factor:</p>
+<p><span class="math display">\[
+k_{ij} = 
+\frac{q_{ij}}{\kappa}
+\left[
+\log
+\left( \frac{z_{ij}}{q_{ij}} \right)
++
+D_{KL}(Q||Z)
+\right]
+\]</span></p>
+<p>If you have access to the <a href="https://dx.doi.org/10.1016/j.neucom.2012.12.036">JSE paper</a>, you can see that this is equivalent (once you’ve translated the nomenclature) to equation 37 in that publication. Success! <em>Now</em> we may take that long lie down.</p>
 </div>
 </div>
 <div id="distance-based-embedding" class="section level2">
