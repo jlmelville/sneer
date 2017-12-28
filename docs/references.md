@@ -237,6 +237,15 @@ In *Proceedings of the 29th International Conference on Machine Learning (ICML-1
 (pp. 345-352).
 https://arxiv.org/abs/1206.4646
 
+Van Der Maaten, L. (2010). 
+Fast optimization for t-SNE. 
+In *NIPS Workshop on Challenges in Data Visualization.*
+http://cseweb.ucsd.edu/~lvdmaaten/workshops/nips2010/papers/vandermaaten.pdf
+
+This advocates a similar approach to spectral directions, although with a
+slightly different line search and without enforcing positive definiteness
+of the inverse Hessian approximation.
+
 ### Nesterov Accelerated Gradient
 
 On the importance of initialization and momentum in deep learning.
