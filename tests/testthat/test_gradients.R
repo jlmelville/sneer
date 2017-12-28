@@ -31,7 +31,7 @@ distance_pluginize <- function(method) {
   method
 }
 
-gfd <- function(embedder, diff = 1e-4) {
+gfd <- function(embedder, diff = .Machine$double.eps ^ (1 / 3)) {
   gradient_fd(embedder$inp, embedder$out, embedder$method, diff = diff)$gm
 }
 
@@ -49,7 +49,7 @@ gan <- function(embedder) {
 hgan <- function(method, inp_init = inp_from_perp(perplexity = 20,
                                                   verbose = FALSE),
                  inp_df = iris[1:50, 1:4],
-                 diff = 1e-5) {
+                 diff = .Machine$double.eps ^ (1 / 3)) {
 
   embedder <- init_embed(inp_df, method,
                          preprocess = make_preprocess(verbose = FALSE),
@@ -64,7 +64,7 @@ hgfd <- function(method,
                  inp_init = inp_from_perp(perplexity = 20,
                                           verbose = FALSE),
                  inp_df = iris[1:50, 1:4],
-                 diff = 1e-5) {
+                 diff = .Machine$double.eps ^ (1 / 3)) {
   embedder <- init_embed(inp_df, method,
                          preprocess = make_preprocess(verbose = FALSE),
                          init_inp = inp_init,
@@ -78,7 +78,7 @@ expect_grad <- function(method,
                         info = label,
                         inp_init = inp_from_perp(perplexity = 20,
                                                  verbose = FALSE),
-                        diff = 1e-5,
+                        diff = .Machine$double.eps ^ (1 / 3),
                         tolerance = 1e-6,
                         scale = 1,
                         inp_df = iris[1:50, 1:4]) {
@@ -90,6 +90,7 @@ expect_grad <- function(method,
                          opt = mize_grad_descent())
   grad_fd <- gfd(embedder, diff = diff)
   grad_an <- gan(embedder)
+  attr(grad_an, "dimnames") <- NULL
 
   expect_equal(grad_an, grad_fd, tolerance = tolerance, scale = scale,
                label = label, info = info,
@@ -101,7 +102,7 @@ expect_grad_equal <- function(method1, method2,
                            info = label,
                            inp_init = inp_from_perp(perplexity = 20,
                                                     verbose = FALSE),
-                           diff = 1e-5,
+                           diff = .Machine$double.eps ^ (1 / 3),
                            tolerance = 1e-6,
                            scale = 1,
                            inp_df = iris[1:50, 1:4]) {

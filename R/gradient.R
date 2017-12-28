@@ -68,16 +68,19 @@ generic_gradient <- function() {
 #
 # Convert stiffness matrix to gradient matrix.
 #
-# @param ym Embedded coordinates.
-# @param km Stiffness matrix.
-# @return Gradient matrix.
+# @param ym n x d Embedded coordinates.
+# @param km n x n Stiffness matrix.
+# @return n x d Gradient matrix.
 stiff_to_grads <- function(ym, km) {
-  gm <- matrix(0, nrow(ym), ncol(ym))
-  for (i in 1:nrow(ym)) {
-    disp <- sweep(-ym, 2, -ym[i, ]) #  matrix of y_ik - y_jk
-    gm[i, ] <- colSums(disp * km[, i]) # row is sum_j (km_ji * disp)
-  }
-  gm
+  # Slow old way:
+  # gm <- matrix(0, nrow(ym), ncol(ym))
+  # for (i in 1:nrow(ym)) {
+  #   disp <- sweep(-ym, 2, -ym[i, ]) # (n x d) matrix of y_ik - y_jk
+  #   gm[i, ] <- colSums(disp * km[, i]) # row is sum_j (km_ji * disp)
+  # }
+  # gm
+
+  ym * rowSums(km) - (km %*% ym)
 }
 
 # Finite Difference Gradient Calculation
@@ -96,7 +99,8 @@ stiff_to_grads <- function(ym, km) {
 # @param diff Step size to take in finite difference calculation.
 # @return List containing:
 # \item{\code{gm}}{Gradient matrix.}
-gradient_fd <- function(inp, out, method, mat_name = "ym", diff = 1e-4) {
+gradient_fd <- function(inp, out, method, mat_name = "ym",
+                        diff = .Machine$double.eps ^ (1 / 3)) {
   ym <- out[[mat_name]]
   nr <- nrow(ym)
   nc <- ncol(ym)
