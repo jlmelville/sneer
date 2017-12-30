@@ -2,6 +2,9 @@
 
 Stochastic Neighbor Embedding Experiments in R
 
+**Note**: This package is unlikely to see further major updates, but much of it
+lives on in [smallvis](https://github.com/jlmelville/smallvis).
+
 An R package for experimenting with dimensionality reduction techniques, 
 including the popular 
 [t-Distributed Stochastic Neighbor Embedding](https://lvdmaaten.github.io/tsne/)
