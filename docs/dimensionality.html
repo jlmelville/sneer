@@ -295,19 +295,39 @@ D_{i} = \frac{2 \beta_i}{S_i}
 D_i = -2 \beta_i \sum_j d^2_{ij} p_{j|i} \left[\log\left(p_{j|i}\right) + H\right]
 \]</span></p>
 <p>which is useful if you’ve carried out the perplexity-based calibration on the input weights, as you have already calculated <span class="math inline">\(p_{j|i}\)</span>, <span class="math inline">\(H\)</span> and <span class="math inline">\(\beta_i\)</span>.</p>
-<p>If you’d rather think in terms of the un-normalized weights and the distances only, the Shannon Entropy associated with Gaussian weights can be written as:</p>
+</div>
+<div id="un-normalized-weights" class="section level3">
+<h3>Un-normalized weights</h3>
+<p>If you’d rather think in terms of the un-normalized weights and the distances only, the usual expression for Shannon entropy can be rewritten in terms of weights as:</p>
 <p><span class="math display">\[
-H = \log S_i + \frac{\beta_i}{S_i} \sum_j d_{ij}^2 w_{ij}
+H = \log S_{i} -\frac{1}{S_i} \left( \sum_j w_{ij} \log w_{ij} \right) 
 \]</span></p>
-<p>and with judicious use of the following substitutions:</p>
+<p>and that can be combined with:</p>
 <p><span class="math display">\[
 \log \left( p_{j|i} \right) = \log \left( w_{ij} \right) + \log \left(S_i \right) 
 \]</span></p>
-<p>and</p>
+<p>to give this still entirely generic expression for the intrinsic dimensionality:</p>
+<p><span class="math display">\[
+D_{i} = \frac{2 \beta_i}{S_i^2}
+ \sum_{j}
+ \frac{\partial w_{ij}}{\partial \beta_{i}}
+  \left(
+   S_i \log w_{ij} - \sum_k w_{ik} \log w_{ik}
+ \right)
+\]</span></p>
+<p>Assuming the weights are Gaussian, we can write:</p>
 <p><span class="math display">\[
 \log \left( w_{ij} \right) = -\beta_i d_{ij}^2
+\]</span> and:</p>
+<p><span class="math display">\[
+\frac{\partial w_{ij}}{\partial \beta_{i}}
+=
+-d_{ij}^2 w_{ij} = -\frac{w_{ij} \log w_{ij}}{\beta_i}
 \]</span></p>
-<p>you can eventually get to two equivalent expressions for <span class="math inline">\(D_i\)</span>:</p>
+<p>and the Shannon entropy expression as:</p>
+<p><span class="math display">\[
+H = \log S_i + \frac{\beta_i}{S_i} \sum_j d_{ij}^2 w_{ij}
+\]</span> and you can eventually get to two equivalent expressions for <span class="math inline">\(D_i\)</span>:</p>
 <p><span class="math display">\[
 D_{i} = \frac{2}{S_i}
 \left\{
@@ -321,6 +341,31 @@ D_{i} = \frac{2 \beta_i^2}{S_i}
 -\frac{1}{S_i} \left( \sum_j d_{ij}^2 w_{ij} \right)^2
 \right]
 \]</span> The first one only requires the <span class="math inline">\(W\)</span> matrix, although as you’ve been carrying out lots of exponential operations to generate the weights, it seems a pity to have to then carry out lots of expensive log calculations, in which case the second expression might be better, but which requires the squared distance matrix and <span class="math inline">\(\beta_i\)</span> also.</p>
+</div>
+<div id="intrinsic-dimensionality-of-t-distributed-weights" class="section level3">
+<h3>Intrinsic dimensionality of t-distributed weights</h3>
+<p>The t-distribution used for the output kernel in t-SNE is not normally (or ever?) written with a precision parameter, like we do with the input Gaussian kernel, but you can write it as:</p>
+<p><span class="math display">\[
+w_{ij} = \frac{1}{1 + \beta d_{ij}^2}
+\]</span></p>
+<p>and the derivative:</p>
+<p><span class="math display">\[
+\frac{\partial w_{ij}}{\partial \beta_{i}}
+=
+-d_{ij}^2 w_{ij}^2
+=
+\frac{ w_{ij}\left(w_{ij} - 1 \right)}{\beta_i}
+\]</span></p>
+<p>this leads to an expression for the intrinsic dimensionality for the t-distributed output weights as:</p>
+<p><span class="math display">\[
+D_{i} = 
+\frac{2}{S_i^2} \sum_j  w_{ij} \left(w_{ij} - 1\right)
+\left[S_i \log w_{ij} - \sum_k w_{ik} \log w_{ik} \right]
+\]</span></p>
+<p>Doesn’t simplify quite as well as the Gaussian weights, but it still only requires getting hold of the output weight matrix. Perhaps there is value in being able to calculate the intrinsic dimensionality of the output data?</p>
+</div>
+<div id="conclusion" class="section level3">
+<h3>Conclusion</h3>
 <p>Any of these could be useful for estimating the intrinsic dimensionality associated with a perplexity even when not using multiscaling. However, as noted by Lee and co-workers, the use of the gaussian bandwidth compared to the “hard” cutoff of a ball with a fixed radius means that the estimation is subject to edge effects. Therefore, in multiscaling, only the dimensionality averaged over all points in the dataset is used.</p>
 <p>Up: <a href="index.html">Index</a></p>
 </div>

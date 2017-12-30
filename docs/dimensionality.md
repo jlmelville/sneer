@@ -274,26 +274,52 @@ on the input weights, as you have already calculated $p_{j|i}$, $H$ and
 $\beta_i$. 
 
 
+### Un-normalized weights
+
 If you'd rather think in terms of the un-normalized weights and the distances 
-only, the Shannon Entropy associated with Gaussian weights can be written as:
+only, the usual expression for Shannon entropy can be rewritten in terms of
+weights as:
 
 $$
-H = \log S_i + \frac{\beta_i}{S_i} \sum_j d_{ij}^2 w_{ij}
+H = \log S_{i} -\frac{1}{S_i} \left( \sum_j w_{ij} \log w_{ij} \right) 
 $$
 
-and with judicious use of the following substitutions:
+and that can be combined with:
 
 $$
 \log \left( p_{j|i} \right) = \log \left( w_{ij} \right) + \log \left(S_i \right) 
 $$
 
-and
+to give this still entirely generic expression for the intrinsic dimensionality:
+
+$$
+D_{i} = \frac{2 \beta_i}{S_i^2}
+ \sum_{j}
+ \frac{\partial w_{ij}}{\partial \beta_{i}}
+  \left(
+   S_i \log w_{ij} - \sum_k w_{ik} \log w_{ik}
+ \right)
+$$
+
+Assuming the weights are Gaussian, we can write:
 
 $$
 \log \left( w_{ij} \right) = -\beta_i d_{ij}^2
 $$
+and:
 
-you can eventually get to two equivalent expressions for $D_i$:
+$$
+\frac{\partial w_{ij}}{\partial \beta_{i}}
+=
+-d_{ij}^2 w_{ij} = -\frac{w_{ij} \log w_{ij}}{\beta_i}
+$$
+
+and the Shannon entropy expression as:
+
+$$
+H = \log S_i + \frac{\beta_i}{S_i} \sum_j d_{ij}^2 w_{ij}
+$$
+and you can eventually get to two equivalent expressions for $D_i$:
 
 $$
 D_{i} = \frac{2}{S_i}
@@ -314,6 +340,42 @@ lots of exponential operations to generate the weights, it seems a pity to have
 to then carry out lots of expensive log calculations, in which case the second
 expression might be better, but which requires the squared distance matrix and
 $\beta_i$ also.
+
+### Intrinsic dimensionality of t-distributed weights
+
+The t-distribution used for the output kernel in t-SNE is not normally (or
+ever?) written with a precision parameter, like we do with the input Gaussian
+kernel, but you can write it as:
+
+$$
+w_{ij} = \frac{1}{1 + \beta d_{ij}^2}
+$$
+
+and the derivative:
+
+$$
+\frac{\partial w_{ij}}{\partial \beta_{i}}
+=
+-d_{ij}^2 w_{ij}^2
+=
+\frac{ w_{ij}\left(w_{ij} - 1 \right)}{\beta_i}
+$$
+
+
+this leads to an expression for  the intrinsic dimensionality for the 
+t-distributed output weights as:
+
+$$
+D_{i} = 
+\frac{2}{S_i^2} \sum_j  w_{ij} \left(w_{ij} - 1\right)
+\left[S_i \log w_{ij} - \sum_k w_{ik} \log w_{ik} \right]
+$$
+
+Doesn't simplify quite as well as the Gaussian weights, but it still only 
+requires getting hold of the output weight matrix. Perhaps there is value in 
+being able to calculate the intrinsic dimensionality of the output data?
+
+### Conclusion
 
 Any of these could be useful for estimating the intrinsic dimensionality
 associated with a perplexity even when not using multiscaling. However, as noted
