@@ -85,7 +85,7 @@ before now. Let's call them $v_{ij}$. The generalized Kullback Leibler
 divergence (also known as the I-divergence, and apparently used in non-negative
 matrix factorization) and its derivative with respect to the output weights is:
 
-$$C_{ij} = v_{ij}\ln\left(\frac{v_{ij}}{w_{ij}}\right) - v_{ij} + w_{ij}$$
+$$C_{ij} = v_{ij}\log\left(\frac{v_{ij}}{w_{ij}}\right) - v_{ij} + w_{ij}$$
 $$\frac{\partial C}{\partial w_{ij}} = 1 - \frac{v_{ij}}{w_{ij}}$$
 
 I'm not aware of any embedding algorithms that define their cost function with 
@@ -129,7 +129,7 @@ then we can rewrite the cost function in terms of the weights as:
 
 $$
 C = 
--\sum_{ij} v_{ij}^{+} \ln w_{ij} + 
+-\sum_{ij} v_{ij}^{+} \log w_{ij} + 
 \lambda \sum_{ij} v_{ij}^{-} w_{ij}
 $$
 
@@ -198,8 +198,8 @@ look like:
 
 $$
 C = 
--\sum_{ij} p_{ij} \ln w_{ij} 
--\gamma \sum_{ij} \ln \left( 1 - w_{ij} \right)
+-\sum_{ij} p_{ij} \log w_{ij} 
+-\gamma \sum_{ij} \log \left( 1 - w_{ij} \right)
 $$
 
 LargeVis maximizes a log-likelihood function, but here we're going to write it
@@ -259,9 +259,9 @@ function:
 
 $$
 C = 
-\sum_{ij} p_{ij} \ln \frac{p_{ij}}{q_{ij}}
+\sum_{ij} p_{ij} \log \frac{p_{ij}}{q_{ij}}
 =
-\sum_{ij} \left( p_{ij} \ln p_{ij} - p_{ij} \ln q_{ij} \right)
+\sum_{ij} \left( p_{ij} \log p_{ij} - p_{ij} \log q_{ij} \right)
 $$
 
 The first term has no dependence on the output coordinates, so is a constant 
@@ -269,15 +269,15 @@ we'll just mark as $C_{P}$. Now let's write out $q_{ij}$ as $w_{ij} / Z$ where
 $Z$ is the sum of the weights:
 
 $$
-C = C_{P} - \sum_{ij} p_{ij} \ln \left( \frac{w_{ij}}{Z} \right) = 
-Cp - \sum_{ij} p_{ij} \ln w_{ij} + \sum_{ij} p_{ij} \ln Z
+C = C_{P} - \sum_{ij} p_{ij} \log \left( \frac{w_{ij}}{Z} \right) = 
+Cp - \sum_{ij} p_{ij} \log w_{ij} + \sum_{ij} p_{ij} \log Z
 $$
 Finally, we'll do some rearranging and re-write $Z$ back to a sum of weights:
 
 $$
 C = 
-Cp - \sum_{ij} p_{ij} \ln w_{ij} + \ln Z \sum_{ij} p_{ij} =
-Cp - \sum_{ij} p_{ij} \ln w_{ij} + \ln \sum_{ij} w_{ij}
+Cp - \sum_{ij} p_{ij} \log w_{ij} + \log Z \sum_{ij} p_{ij} =
+Cp - \sum_{ij} p_{ij} \log w_{ij} + \log \sum_{ij} w_{ij}
 $$
 
 Ignoring the constant term, it can be seen that the SNE cost function is a lot

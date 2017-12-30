@@ -274,7 +274,7 @@ k_{ij} = \frac{\partial C}{\partial w_{ij}}
 \frac{\partial w_{ij}}{\partial f_{ij}}
 \]</span></p>
 <p>The generalized divergences are defined in terms of the output weights, <span class="math inline">\(w_{ij}\)</span> and the input weights, for which I’ve not had to come up with a symbol before now. Let’s call them <span class="math inline">\(v_{ij}\)</span>. The generalized Kullback Leibler divergence (also known as the I-divergence, and apparently used in non-negative matrix factorization) and its derivative with respect to the output weights is:</p>
-<p><span class="math display">\[C_{ij} = v_{ij}\ln\left(\frac{v_{ij}}{w_{ij}}\right) - v_{ij} + w_{ij}\]</span> <span class="math display">\[\frac{\partial C}{\partial w_{ij}} = 1 - \frac{v_{ij}}{w_{ij}}\]</span></p>
+<p><span class="math display">\[C_{ij} = v_{ij}\log\left(\frac{v_{ij}}{w_{ij}}\right) - v_{ij} + w_{ij}\]</span> <span class="math display">\[\frac{\partial C}{\partial w_{ij}} = 1 - \frac{v_{ij}}{w_{ij}}\]</span></p>
 <p>I’m not aware of any embedding algorithms that define their cost function with the un-normalized KL divergence, although the <a href="http://jmlr.org/proceedings/papers/v32/yange14.html">ws-SNE paper</a> shows that <a href="http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf">elastic embedding (PDF)</a> can be considered a variant of this.</p>
 <div id="elastic-embedding" class="section level3">
 <h3>Elastic Embedding</h3>
@@ -297,7 +297,7 @@ w_{ij} = \exp\left(-d_{ij}^2\right)
 <p>then we can rewrite the cost function in terms of the weights as:</p>
 <p><span class="math display">\[
 C = 
--\sum_{ij} v_{ij}^{+} \ln w_{ij} + 
+-\sum_{ij} v_{ij}^{+} \log w_{ij} + 
 \lambda \sum_{ij} v_{ij}^{-} w_{ij}
 \]</span></p>
 <p>and the gradient of the cost function with respect to the weight is: <span class="math display">\[
@@ -342,16 +342,15 @@ k_{ij} = \frac{\partial C}{\partial w_{ij}}
 <p>But if we didn’t care about efficiency or partitioning the data into neighbors and non-neighbors (we can call this method SmallVis), the cost function would look like:</p>
 <p><span class="math display">\[
 C = 
--\sum_{ij} p_{ij} \ln w_{ij} 
--(1 - p_{ij}) \sum_{ij} \ln \left( 1 - w_{ij} \right)
+-\sum_{ij} p_{ij} \log w_{ij} 
+-\gamma \sum_{ij} \log \left( 1 - w_{ij} \right)
 \]</span></p>
 <p>LargeVis maximizes a log-likelihood function, but here we’re going to write it as a negative log-likelihood, so it can be treated as a minimization problem like with every other cost function we’ve looked at.</p>
-<p>As you can see, the structure of this cost function is very similar to Elastic Embedding, except LargeVis uses the t-distribution for the output weights. Input probabilities use the same pair-wise normalization as SSNE, t-SNE and friends.</p>
-<p>Be aware that in the LargeVis paper, the <span class="math inline">\((1 - p_{ij})\)</span> term is replaced by a <span class="math inline">\(\gamma\)</span> value to take into account both the fact we don’t have access to the non-neighbor probabilities and to account for the missing contribution from unsampled pairs of points in the stochastic gradient. It can also be seen to play a similar role to <span class="math inline">\(\lambda\)</span> in elastic embedding, balancing the attractive and repulsive forces, and is recommended to be set to 7 in the LargeVis SGD implementation.</p>
+<p>As you can see, the structure of this cost function is very similar to Elastic Embedding, except LargeVis uses the t-distribution for the output weights. Input probabilities use the same pair-wise normalization as SSNE, t-SNE and friends. The <span class="math inline">\(\gamma\)</span> value plays a similar role to <span class="math inline">\(\lambda\)</span> in elastic embedding, balancing the attractive and repulsive forces, and is recommended to be set to 7 in the LargeVis SGD implementation.</p>
 <p>The gradient of the cost function with respect to the weight is: <span class="math display">\[
 \frac{\partial C}{\partial w_{ij}} = 
 - \frac{p_{ij}}{w_{ij}}
-+ \frac{1 - p_{ij}}{1 - w_{ij}}
++ \frac{\gamma}{1 - w_{ij}}
 \]</span></p>
 <p>The weight gradient for the t-distribution is:</p>
 <p><span class="math display">\[
@@ -362,16 +361,16 @@ C =
 k_{ij} = \frac{\partial C}{\partial w_{ij}}
 \frac{\partial w_{ij}}{\partial f_{ij}}
 = p_{ij} w_{ij}
--\frac{\left(1 - p_{ij}\right) w_{ij}^{2}}{1 - w_{ij}}
+-\frac{\gamma w_{ij}^{2}}{1 - w_{ij}}
 = p_{ij} w_{ij}
--\frac{\left(1 - p_{ij}\right) w_{ij}}{d_{ij}^2}
+-\frac{\gamma w_{ij}}{d_{ij}^2}
 \]</span></p>
 <p>The gradient is therefore:</p>
 <p><span class="math display">\[
 \frac{\partial C}{\partial \mathbf{y_i}} = 
   4\sum_j^N \left(
     p_{ij} w_{ij}
-    -\frac{\left(1 - p_{ij}\right) w_{ij}}{d_{ij}^2}
+    -\frac{\gamma w_{ij}}{d_{ij}^2}
    \right)
    \left(\mathbf{y_i - y_j}\right)
 \]</span> All the matrices in the LargeVis implementation are symmetric, so I have jumped straight to the symmetric gradient here. The extension to the use of non-symmetric matrices is obvious.</p>
@@ -381,19 +380,19 @@ k_{ij} = \frac{\partial C}{\partial w_{ij}}
 <p>Despite the fact that largeVis and EE don’t use normalized weights, their cost functions are very similar to that of SSNE and t-SNE. Let’s expand the SSNE cost function:</p>
 <p><span class="math display">\[
 C = 
-\sum_{ij} p_{ij} \ln \frac{p_{ij}}{q_{ij}}
+\sum_{ij} p_{ij} \log \frac{p_{ij}}{q_{ij}}
 =
-\sum_{ij} \left( p_{ij} \ln p_{ij} - p_{ij} \ln q_{ij} \right)
+\sum_{ij} \left( p_{ij} \log p_{ij} - p_{ij} \log q_{ij} \right)
 \]</span></p>
 <p>The first term has no dependence on the output coordinates, so is a constant we’ll just mark as <span class="math inline">\(C_{P}\)</span>. Now let’s write out <span class="math inline">\(q_{ij}\)</span> as <span class="math inline">\(w_{ij} / Z\)</span> where <span class="math inline">\(Z\)</span> is the sum of the weights:</p>
 <p><span class="math display">\[
-C = C_{P} - \sum_{ij} p_{ij} \ln \left( \frac{w_{ij}}{Z} \right) = 
-Cp - \sum_{ij} p_{ij} \ln w_{ij} + \sum_{ij} p_{ij} \ln Z
+C = C_{P} - \sum_{ij} p_{ij} \log \left( \frac{w_{ij}}{Z} \right) = 
+Cp - \sum_{ij} p_{ij} \log w_{ij} + \sum_{ij} p_{ij} \log Z
 \]</span> Finally, we’ll do some rearranging and re-write <span class="math inline">\(Z\)</span> back to a sum of weights:</p>
 <p><span class="math display">\[
 C = 
-Cp - \sum_{ij} p_{ij} \ln w_{ij} + \ln Z \sum_{ij} p_{ij} =
-Cp - \sum_{ij} p_{ij} \ln w_{ij} + \ln \sum_{ij} w_{ij}
+Cp - \sum_{ij} p_{ij} \log w_{ij} + \log Z \sum_{ij} p_{ij} =
+Cp - \sum_{ij} p_{ij} \log w_{ij} + \log \sum_{ij} w_{ij}
 \]</span></p>
 <p>Ignoring the constant term, it can be seen that the SNE cost function is a lot like EE and largeVis. The first (attractive) term is the same for all the methods, give or take whether the input weights are normalized or not. So the entire difference in performance between EE, largeVis and SNE is in the repulsive term. SNE-like repulsion involves a log of a sum, which is what makes the cost non-seperable, while largeVis and EE are probably easier to optimize (certainly more amenable to stochastic gradient approaches), at the cost of a free parameter that’s needed to weight the attractive and repulsive terms of the cost function.</p>
 </div>
