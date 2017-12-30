@@ -94,6 +94,20 @@ the un-normalized KL divergence, although the
 [elastic embedding (PDF)](http://faculty.ucmerced.edu/mcarreira-perpinan/papers/icml10.pdf)
 can be considered a variant of this.
 
+The gradient of the I-divergence, if it used exponential output weights, would
+be:
+
+$$
+\frac{\partial C}{\partial \mathbf{y_i}} = 
+4\sum_j^N \left(v_{ij} - w_{ij} \right)
+\left(\mathbf{y_i - y_j}\right)
+$$
+
+which as you can see turns out to be the SSNE gradient, but with un-normalized
+weights replacing the normalized versions. You can also generate a t-distributed
+version by multiplying by $w_{ij}$ in an entirely analogous fashion to how
+you'd get t-SNE from SSNE.
+
 ### Elastic Embedding
 
 The elastic embedding cost function is:
@@ -272,23 +286,109 @@ $$
 C = C_{P} - \sum_{ij} p_{ij} \log \left( \frac{w_{ij}}{Z} \right) = 
 Cp - \sum_{ij} p_{ij} \log w_{ij} + \sum_{ij} p_{ij} \log Z
 $$
-Finally, we'll do some rearranging and re-write $Z$ back to a sum of weights:
+After some rearranging and re-writing $Z$ back to a sum of weights:
 
 $$
 C = 
 Cp - \sum_{ij} p_{ij} \log w_{ij} + \log Z \sum_{ij} p_{ij} =
 Cp - \sum_{ij} p_{ij} \log w_{ij} + \log \sum_{ij} w_{ij}
 $$
+And let's finally express $p_{ij}$ in terms of weights:
 
-Ignoring the constant term, it can be seen that the SNE cost function is a lot
-like EE and largeVis. The first (attractive) term is the same for all the 
-methods, give or take whether the input weights are normalized or not. So the
-entire difference in performance between EE, largeVis and SNE is in the 
-repulsive term. SNE-like repulsion involves a log of a sum, which is what
-makes the cost non-seperable, while largeVis and EE are probably easier to
-optimize (certainly more amenable to stochastic gradient approaches), at the
-cost of a free parameter that's needed to weight the attractive and repulsive
-terms of the cost function.
+
+$$
+C = 
+Cp - \frac{1}{\sum_{ij} v_{ij}} \sum_{ij} v_{ij} \log w_{ij} + \log \sum_{ij} w_{ij}
+$$
+
+Let's review all three cost functions we went into detail on, and also throw in
+the generalized KL divergence as $C_I$, suitably re-arranged in the way we just
+did for SSNE:
+
+$$
+C_{SSNE} = 
+-\frac{1}{\sum_{ij} v_{ij}} \sum_{ij} v_{ij} \log w_{ij} + \log \sum_{ij} w_{ij} + C_p
+\\
+C_{LV} = -\sum_{ij} v_{ij} \log w_{ij} -\gamma \sum_{ij} \log \left( 1 - w_{ij} \right)
+\\
+C_{EE} = -\sum_{ij} v_{ij}^{+} \log w_{ij} +  \lambda \sum_{ij} v_{ij}^{-} w_{ij}
+\\
+C_{I} = -\sum_{ij} v_{ij} \log w_{ij} + \sum_{ij}w_{ij} + C_v
+$$
+
+Ignoring the constant terms, which aren't important for a gradient-based
+optimization, all those cost functions are pretty similar: a weighted sum of an
+attractive term and a repulsive term, with the attractive terms being identical.
+Thus the difference in performance between EE, largeVis and SNE is in the
+repulsive term. SNE-like repulsion involves a log of a sum, which is what makes
+the cost non-seperable, while largeVis and EE are probably easier to optimize
+(certainly more amenable to stochastic gradient approaches), at the cost of a
+free parameter that's needed to weight the attractive and repulsive terms of the
+cost function.
+
+### The SSNE gradient with un-normalized weights
+
+While the cost functions are clearly similar, it's the form of the gradients
+that will determine the difference between the results we see in these methods,
+so let's look at those.
+
+Here's the force constant used in the gradient of SSNE, rewritten in terms
+of the un-normalized weights:
+
+$$
+k_{ij} = p_{ij} - q_{ij} = \left[ \frac{v_{ij}}{S} - \frac{w_{ij}}{Z} \right]
+$$
+
+where $S$ is the sum of the input weights, $S = \sum_{ij} v_{ij}$, in analogy
+with $Z$. For t-SNE, we just have to multiply both contributions by $w_{ij}$,
+so we'll stick with SSNE to avoid clutter. Take a factor of $1 / S$ out of that
+expression and the SSNE gradient is:
+
+$$
+\frac{\partial C_{SSNE}}{\partial \mathbf{y_i}} = 
+\frac{4}{S}
+\sum_j^N \left( v_{ij} -\frac{S}{Z} w_{ij} \right) 
+\left(\mathbf{y_i - y_j}\right)
+$$
+
+And now let's compare that with the same cost functions we just looked at:
+
+$$
+\frac{\partial C_I}{\partial \mathbf{y_i}} = 
+4\sum_j^N \left(v_{ij} - w_{ij} \right)
+\left(\mathbf{y_i - y_j}\right)
+\\
+\frac{\partial C_{EE}}{\partial \mathbf{y_i}} = 
+4\sum_j^N \left( v_{ij}^{+} - \lambda v_{ij}^{-}{w_{ij}} \right) 
+\left(\mathbf{y_i - y_j}\right) 
+\\
+\frac{\partial C_{LV}}{\partial \mathbf{y_i}} = 
+4\sum_j^N \left(v_{ij} -\frac{\gamma w_{ij}}{1 - w_{ij}}\right) w_{ij}
+\left(\mathbf{y_i - y_j}\right)
+$$
+
+For LargeVis, I've kept with the t-distributed weights (the other gradients
+use exponential kernels), which explains the extra factor of $w_{ij}$ it has. 
+I've also expressed $1 / d_{ij}^2$ back in terms of weights to make the
+connection with the other gradients clearer.
+
+The $1 / S$ constant term that got pulled out of the SSNE gradient is 
+uninteresting from an optimization stand point. The important difference is that
+$S/Z$ term. That's the key to what normalization does: the repulsive part of
+the gradient is re-weighted at each iteration, based on the ratio of the sum
+of the weights in the input and output space. To compare with elastic embedding,
+that's like dynamically choosing the $\lambda$ term each iteration.
+
+Yang, Peltonen and Kaski go into much more detail about the connections between
+normalized and un-normalized divergences (or seperable and non-seperable) and
+specifically the connection between Elastic Embedding and SNE in their paper
+[Optimization equivalence of divergences improves neighbor embedding](http://jmlr.org/proceedings/papers/v32/yange14.html).
+And in 
+[Majorization-Minimization for Manifold Embedding](http://www.jmlr.org/proceedings/papers/v38/yang15a.html),
+they optimize t-SNE (in a majorization-minimization context) by alternating 
+optimizations with the ratio held constant, followed by updating the ratio by 
+treating it as a parameter to be optimized.
+
 
 ## Normalized Distances
 
