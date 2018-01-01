@@ -363,7 +363,7 @@ $$
 \left(\mathbf{y_i - y_j}\right) 
 \\
 \frac{\partial C_{LV}}{\partial \mathbf{y_i}} = 
-4\sum_j^N \left(v_{ij} -\frac{\gamma w_{ij}}{1 - w_{ij}}\right) w_{ij}
+4\sum_j^N \left(v_{ij} -\frac{\gamma}{1 - w_{ij}} w_{ij} \right) w_{ij}
 \left(\mathbf{y_i - y_j}\right)
 $$
 

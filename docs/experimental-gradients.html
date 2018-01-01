@@ -443,7 +443,7 @@ k_{ij} = p_{ij} - q_{ij} = \left[ \frac{v_{ij}}{S} - \frac{w_{ij}}{Z} \right]
 \left(\mathbf{y_i - y_j}\right) 
 \\
 \frac{\partial C_{LV}}{\partial \mathbf{y_i}} = 
-4\sum_j^N \left(v_{ij} -\frac{\gamma w_{ij}}{1 - w_{ij}}\right) w_{ij}
+4\sum_j^N \left(v_{ij} -\frac{\gamma}{1 - w_{ij}} w_{ij} \right) w_{ij}
 \left(\mathbf{y_i - y_j}\right)
 \]</span></p>
 <p>For LargeVis, I’ve kept with the t-distributed weights (the other gradients use exponential kernels), which explains the extra factor of <span class="math inline">\(w_{ij}\)</span> it has. I’ve also expressed <span class="math inline">\(1 / d_{ij}^2\)</span> back in terms of weights to make the connection with the other gradients clearer.</p>
