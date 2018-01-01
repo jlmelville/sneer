@@ -341,40 +341,6 @@ to then carry out lots of expensive log calculations, in which case the second
 expression might be better, but which requires the squared distance matrix and
 $\beta_i$ also.
 
-### Intrinsic dimensionality of t-distributed weights
-
-The t-distribution used for the output kernel in t-SNE is not normally (or
-ever?) written with a precision parameter, like we do with the input Gaussian
-kernel, but you can write it as:
-
-$$
-w_{ij} = \frac{1}{1 + \beta d_{ij}^2}
-$$
-
-and the derivative:
-
-$$
-\frac{\partial w_{ij}}{\partial \beta_{i}}
-=
--d_{ij}^2 w_{ij}^2
-=
-\frac{ w_{ij}\left(w_{ij} - 1 \right)}{\beta_i}
-$$
-
-
-this leads to an expression for  the intrinsic dimensionality for the 
-t-distributed output weights as:
-
-$$
-D_{i} = 
-\frac{2}{S_i^2} \sum_j  w_{ij} \left(w_{ij} - 1\right)
-\left[S_i \log w_{ij} - \sum_k w_{ik} \log w_{ik} \right]
-$$
-
-Doesn't simplify quite as well as the Gaussian weights, but it still only 
-requires getting hold of the output weight matrix. Perhaps there is value in 
-being able to calculate the intrinsic dimensionality of the output data?
-
 ### Conclusion
 
 Any of these could be useful for estimating the intrinsic dimensionality
