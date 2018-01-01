@@ -653,6 +653,33 @@ q_{kl}
 <p>The degree of heavy-tailedness is controlled by <span class="math inline">\(\alpha\)</span>: when <span class="math inline">\(\alpha = 1\)</span>, the kernel behaves like the t-distributed kernel. As it approaches 0, it approaches the exponential kernel. <span class="math inline">\(\alpha &gt; 1\)</span> allows output distances to stretch even more than t-SNE. I am unaware of any research that looks at seeing if there is a way to find an optimal value of <span class="math inline">\(\alpha\)</span> for a given dataset, although the inhomogeneous t-SNE method mentioned below solves the problem by optimizing a similar set of values along with the embedded coordinates.</p>
 <p>I have also included the precision parameter <span class="math inline">\(\beta\)</span> in the equation. This isn’t present in the original HSSNE paper, but it’s fairly easy to do the integration to work out how to include it. This shouldn’t be taken as a suggestion to use it as an input kernel - heavy-tailedness can make it very easy for it to be impossible to get lower values of perplexity. However, it does allow for an output kernel that behaves like t-SNE, but has the free precision parameter that would allow t-SNE to be used with the method described in <a href="https://dx.doi.org/10.1016/j.neucom.2014.12.095">multiscale JSE</a>. See the sections on <a href="input-initialization.html">Input Initialization</a> and <a href="embedding-methods.html">Embedding Methods</a> for how to do that in <code>sneer</code>.</p>
 </div>
+<div id="importance-weighted-kernel" class="section level3">
+<h3>Importance Weighted Kernel</h3>
+<p>Yang, Peltonen and Kaski described <a href="http://jmlr.org/proceedings/papers/v32/yange14.html">weighted t-SNE</a> (wt-SNE), in which the output weights, <span class="math inline">\(w_{ij}\)</span> are are modified to <span class="math inline">\(m_{ij} w_{ij}\)</span>, where <span class="math inline">\(m_{ij}\)</span> indicates the “importance” of points <span class="math inline">\(i\)</span> and <span class="math inline">\(j\)</span>. The importance was defined as the product:</p>
+<p><span class="math display">\[
+m_{ij} = \deg_i \deg_j
+\]</span></p>
+<p>where <span class="math inline">\(\deg_i\)</span> is the degree centrality associated with a node <span class="math inline">\(i\)</span>, after interpreting the input weights as edges in a graph. There are a variety of ways to define the degree of a node from an affinity matrix, but Yang and co-workers use <span class="math inline">\(p_{ij}\)</span> as the degree weight, and the degree centrality of node <span class="math inline">\(i\)</span> is the sum of column <span class="math inline">\(i\)</span> (although as <span class="math inline">\(P\)</span> is symmetric, you could use the row sums too).</p>
+<p>The weighted SSNE kernel is:</p>
+<p><span class="math display">\[
+w_{ij} = m_{ij} \exp\left(-\beta_{i} f_{ij}\right)
+\]</span> and the gradient is: <span class="math display">\[
+\frac{\partial w_{ij}}{\partial f_{ij}} 
+= -\beta_{i} m_{ij} \exp\left(-\beta_{i} f_{ij}\right)
+= -\beta_{i} w_{ij}
+\]</span></p>
+<p>which means the gradient expression for weighted SSNE doesn’t change. But doing the same for the Cauchy kernel for weighted t-SNE:</p>
+<p><span class="math display">\[
+w_{ij} = \frac{m_{ij}}{1 + d_{ij}^2}
+\]</span></p>
+<p>gives the following gradient:</p>
+<p><span class="math display">\[
+\frac{\partial w_{ij}}{\partial f_{ij}} 
+= \frac{-m_{ij}} {\left(1 + f_{ij}\right)^2}
+= \frac{-w_{ij}^2}{m_{ij}}
+\]</span></p>
+<p>compared to the t-SNE gradient (which we will derive below), the wt-SNE gradient has a factor of <span class="math inline">\(w_{ij} / m_{ij}\)</span> rather than <span class="math inline">\(w_{ij}\)</span>.</p>
+</div>
 <div id="inhomogeneous-t-sne" class="section level3">
 <h3>Inhomogeneous t-SNE</h3>
 <p><a href="http://dx.doi.org/10.1007/978-3-319-46675-0_14">Inhomogeneous t-SNE</a> defines a kernel closely related to the gamma function with <span class="math inline">\(\nu\)</span> degrees of freedom:</p>

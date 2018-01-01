@@ -696,6 +696,55 @@ that would allow t-SNE to be used with the method described in
 sections on [Input Initialization](input-initialization.html) and
 [Embedding Methods](embedding-methods.html) for how to do that in `sneer`.
 
+### Importance Weighted Kernel
+
+Yang, Peltonen and Kaski described 
+[weighted t-SNE](http://jmlr.org/proceedings/papers/v32/yange14.html) (wt-SNE), 
+in which the output weights, $w_{ij}$ are are modified to $m_{ij} w_{ij}$, where 
+$m_{ij}$ indicates the "importance" of points $i$ and $j$. The importance was
+defined as the product:
+
+$$
+m_{ij} = \deg_i \deg_j
+$$
+
+where $\deg_i$ is the degree centrality associated with a node $i$, after
+interpreting the input weights as edges in a graph. There are a variety of ways
+to define the degree of a node from an affinity matrix, but Yang and co-workers
+use $p_{ij}$ as the degree weight, and the degree centrality of node $i$ is the 
+sum of column $i$ (although as $P$ is symmetric, you could use the row sums 
+too).
+
+The weighted SSNE kernel is:
+
+$$
+w_{ij} = m_{ij} \exp\left(-\beta_{i} f_{ij}\right)
+$$
+and the gradient is:
+$$
+\frac{\partial w_{ij}}{\partial f_{ij}} 
+= -\beta_{i} m_{ij} \exp\left(-\beta_{i} f_{ij}\right)
+= -\beta_{i} w_{ij}
+$$
+
+which means the gradient expression for weighted SSNE doesn't change. But
+doing the same for the Cauchy kernel for weighted t-SNE:
+
+$$
+w_{ij} = \frac{m_{ij}}{1 + d_{ij}^2}
+$$
+
+gives the following gradient:
+
+$$
+\frac{\partial w_{ij}}{\partial f_{ij}} 
+= \frac{-m_{ij}} {\left(1 + f_{ij}\right)^2}
+= \frac{-w_{ij}^2}{m_{ij}}
+$$
+
+compared to the t-SNE gradient (which we will derive below), the wt-SNE gradient
+has a factor of $w_{ij} / m_{ij}$ rather than $w_{ij}$.
+
 ### Inhomogeneous t-SNE
 
 [Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) defines
