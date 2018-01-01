@@ -26,8 +26,10 @@ expression based on one-sided finite differences, which is convenient for
 multi-scaled neighbor embedding because you calculate the input probabilities 
 for multiple perplexities. 
 
-Here I'm going to derive an analytical expression for the dimensionality that
-only requires one perplexity calculation.
+Here I'm going to derive an analytical expression for the dimensionality with
+the use of the exponential kernel (exponential with regard to the squared
+distances, or gaussian in the raw distances, if you prefer) that only requires
+one perplexity calculation.
 
 First, some definitions. This discussion of dimensionality involves the input
 probabilities, so we will assume the use of gaussian similarities, not anything
@@ -218,8 +220,7 @@ $$
  \right]
 $$
 
-which gives this entirely generic expression for the intrinsic dimensionality
-with respect to some parameter $\beta_i$ of a kernel function:
+which leads to:
 
 $$
 D_{i} = \frac{2 \beta_i}{S_i}
@@ -230,8 +231,7 @@ D_{i} = \frac{2 \beta_i}{S_i}
  \right]
 $$
 
-Continuing with the assumption that we're dealing with an exponential function,
-the gradient of the weight with respect to the precision parameter, $\beta_i$,
+The gradient of the exponential weight with respect to the precision parameter, $\beta_i$,
 is:
 
 $$
@@ -290,7 +290,7 @@ $$
 \log \left( p_{j|i} \right) = \log \left( w_{ij} \right) + \log \left(S_i \right) 
 $$
 
-to give this still entirely generic expression for the intrinsic dimensionality:
+to give:
 
 $$
 D_{i} = \frac{2 \beta_i}{S_i^2}
@@ -301,12 +301,12 @@ D_{i} = \frac{2 \beta_i}{S_i^2}
  \right)
 $$
 
-Assuming the weights are Gaussian, we can write:
+We can also express the relation between the weight and the squared distance as:
 
 $$
 \log \left( w_{ij} \right) = -\beta_i d_{ij}^2
 $$
-and:
+and the gradient with respect to the precision as:
 
 $$
 \frac{\partial w_{ij}}{\partial \beta_{i}}
@@ -319,7 +319,8 @@ and the Shannon entropy expression as:
 $$
 H = \log S_i + \frac{\beta_i}{S_i} \sum_j d_{ij}^2 w_{ij}
 $$
-and you can eventually get to two equivalent expressions for $D_i$:
+
+With all that, you can eventually get to two equivalent expressions for $D_i$:
 
 $$
 D_{i} = \frac{2}{S_i}

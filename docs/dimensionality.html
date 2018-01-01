@@ -129,7 +129,7 @@ $(document).ready(function () {
 <p>Choosing the correct perplexity value for an embedding is an open research problem. The usual approach is to plump for a value around 30. The <a href="http://distill.pub/2016/misread-tsne/">How to Use t-SNE Effectively</a> web site demonstrates that multiple perplexity values can give quite different results even for simple synthetic datasets.</p>
 <p>Lee and co-workers’ work on <a href="https://dx.doi.org/10.1016/j.neucom.2014.12.095">multi-scale neighbor embedding</a> attempts to get around this problem by considering multiple perplexities during optimization. Part of their discussion involves making use of the concept of intrinsic dimensionality of the input data and relating that to perplexity.</p>
 <p>For estimating the intrinsic dimensionality of the input data, they provide an expression based on one-sided finite differences, which is convenient for multi-scaled neighbor embedding because you calculate the input probabilities for multiple perplexities.</p>
-<p>Here I’m going to derive an analytical expression for the dimensionality that only requires one perplexity calculation.</p>
+<p>Here I’m going to derive an analytical expression for the dimensionality with the use of the exponential kernel (exponential with regard to the squared distances, or gaussian in the raw distances, if you prefer) that only requires one perplexity calculation.</p>
 <p>First, some definitions. This discussion of dimensionality involves the input probabilities, so we will assume the use of gaussian similarities, not anything exotic like the t-distribution or other heavy-tailed functions:</p>
 <p><span class="math display">\[
 w_{ij} = \exp(-\beta_i d_{ij}^{2})
@@ -258,7 +258,7 @@ S_{i} = \sum_{j} w_{ij}
   \log \left( p_{j|i} \right) + H
  \right]
 \]</span></p>
-<p>which gives this entirely generic expression for the intrinsic dimensionality with respect to some parameter <span class="math inline">\(\beta_i\)</span> of a kernel function:</p>
+<p>which leads to:</p>
 <p><span class="math display">\[
 D_{i} = \frac{2 \beta_i}{S_i}
  \sum_{j}
@@ -267,7 +267,7 @@ D_{i} = \frac{2 \beta_i}{S_i}
   \log \left( p_{j|i} \right) + H
  \right]
 \]</span></p>
-<p>Continuing with the assumption that we’re dealing with an exponential function, the gradient of the weight with respect to the precision parameter, <span class="math inline">\(\beta_i\)</span>, is:</p>
+<p>The gradient of the exponential weight with respect to the precision parameter, <span class="math inline">\(\beta_i\)</span>, is:</p>
 <p><span class="math display">\[
 \frac{\partial w_{ij}}{\partial \beta_{i}}
 =
@@ -306,7 +306,7 @@ H = \log S_{i} -\frac{1}{S_i} \left( \sum_j w_{ij} \log w_{ij} \right)
 <p><span class="math display">\[
 \log \left( p_{j|i} \right) = \log \left( w_{ij} \right) + \log \left(S_i \right) 
 \]</span></p>
-<p>to give this still entirely generic expression for the intrinsic dimensionality:</p>
+<p>to give:</p>
 <p><span class="math display">\[
 D_{i} = \frac{2 \beta_i}{S_i^2}
  \sum_{j}
@@ -315,10 +315,10 @@ D_{i} = \frac{2 \beta_i}{S_i^2}
    S_i \log w_{ij} - \sum_k w_{ik} \log w_{ik}
  \right)
 \]</span></p>
-<p>Assuming the weights are Gaussian, we can write:</p>
+<p>We can also express the relation between the weight and the squared distance as:</p>
 <p><span class="math display">\[
 \log \left( w_{ij} \right) = -\beta_i d_{ij}^2
-\]</span> and:</p>
+\]</span> and the gradient with respect to the precision as:</p>
 <p><span class="math display">\[
 \frac{\partial w_{ij}}{\partial \beta_{i}}
 =
@@ -327,7 +327,8 @@ D_{i} = \frac{2 \beta_i}{S_i^2}
 <p>and the Shannon entropy expression as:</p>
 <p><span class="math display">\[
 H = \log S_i + \frac{\beta_i}{S_i} \sum_j d_{ij}^2 w_{ij}
-\]</span> and you can eventually get to two equivalent expressions for <span class="math inline">\(D_i\)</span>:</p>
+\]</span></p>
+<p>With all that, you can eventually get to two equivalent expressions for <span class="math inline">\(D_i\)</span>:</p>
 <p><span class="math display">\[
 D_{i} = \frac{2}{S_i}
 \left\{
