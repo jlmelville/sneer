@@ -17,6 +17,31 @@ bibliographic information.
 
 ## Embedding Methods
 
+### Review
+
+van der Maaten, L., Postma, E., & van der Herik, J. (2009). 
+*Dimensionality Reduction: A Comparative Review* 
+(TiCC TR 2009-005). Tilburg: Tilburg University.
+https://www.tilburguniversity.edu/upload/59afb3b8-21a5-4c78-8eb3-6510597382db_TR2009005.pdf
+
+Covers the state of the art prior to t-SNE.
+
+Peel, D., & McLachlan, G. J. (2000). 
+Robust mixture modelling using the t distribution. 
+*Statistics and Computing*, *10*(4), 339-348.
+https://doi.org/10.1023/A:1008981510081
+
+de Ridder, D., & Franc, V. (2003). 
+Robust subspace mixture models using t-distributions. 
+In *Proceedings of the British Machine Vision Conference* (pp. 319–328).
+https://doi.org/10.5244/C.17.35
+
+Two examples of the use of t-distributions as replacement for Gaussians in 
+mixture modeling for use in clustering (the Peel & McLachlan paper) and
+manifold learning (the de Ridder & Franc) paper. The t-SNE paper doesn't cite
+either of these, but the van der Maaten review paper cites the de Ridder & 
+Franc paper, which in turn cites Peel & McLachlan.
+
 ### Metric Multi Dimensional Scaling (MDS)
 
 Borg, I., & Groenen, P. J. (2005). 
