@@ -89,6 +89,15 @@ Heavy-tailed symmetric stochastic neighbor embedding.
 In *Advances in neural information processing systems* (pp. 2169-2177).
 https://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding
 
+van der Maaten, L. (2009).
+Learning a Parametric Embedding by Preserving Local Structure
+In *Proceedings of the 12th International Conference on Artificial Intelligence and Statistics (AISTATS)* (pp 384-391).
+http://proceedings.mlr.press/v5/maaten09a
+
+Independently proposes a very similar technique to HSSNE, and provides three
+strategies for determining the heavy tailedness, including minimizing it along
+with the coordinates.
+
 ### Inhomogeneous t-SNE
 
 Kitazono, J., Grozavu, N., Rogovschi, N., Omori, T., & Ozawa, S. (2016, October).
