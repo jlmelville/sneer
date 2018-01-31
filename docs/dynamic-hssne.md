@@ -1,6 +1,5 @@
 ---
 title: "Dynamic HSSNE"
-author: "James Melville"
 date: "January 9, 2017"
 output:
   html_document:

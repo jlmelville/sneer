@@ -1,6 +1,5 @@
 ---
 title: "Perplexity and Intrinsic Dimensionality"
-author: "James Melville"
 date: "February 7, 2017"
 output:
   html_document:
