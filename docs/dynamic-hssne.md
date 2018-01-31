@@ -28,15 +28,29 @@ with a value of 0 gives a Gaussian and hence behaves like SSNE, and a value of
 $$w_{ij} = \frac{1}{\left(\alpha f_{ij} + 1\right)^{\frac{1}{\alpha}}}$$
 
 The HSSNE paper gives examples where deviating from $\alpha=1$ gives better 
-results, but doesn't provide any guidance on how to choose a value.
+results, but doesn't provide any guidance on how to choose a value. 
 
-[Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) suggests
-a very similar scheme, but allows for differences in the density of the data
-by assigning what's effectively a different heavy-tailedness parameter for
-each data point. They also suggest choosing values for each of these parameters
-by including them in the optimization process along with the coordinates.
+As part of [parametric t-SNE](http://proceedings.mlr.press/v5/maaten09a), van
+der Maaten presents a similar scheme, and suggests either scaling the value
+based on the output dimension (normally two or three) or to directly optimize
+it along with the output coordinates.
 
-Could we do the same with the global $\alpha$ parameter used in HSSNE? We could.
+[Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) extends
+the idea in parametric t-SNE further, allowing for differences in the density of
+the data by assigning what's effectively a different heavy-tailedness parameter
+for each data point. They also suggest choosing values for each of these
+parameters by including them in the optimization process along with the
+coordinates.
+
+Neither the parametric nor inhomogeneous t-SNE derive the gradient, merely 
+stating the result. Below, I'll derive the gradient for the global $\alpha$ 
+parameter used in HSSNE. I'll also show how you could include and optimize 
+precisions in the output kernel.
+
+The connection between the HSSNE gradient and the form used in parametric and
+inhomogeneous t-SNE is straightforward, so although you could just look it up in
+the respective papers, I will also state that gradient at the end for
+completeness, without going through the derivation a second time.
 
 ## Pair-wise Normalization
 
@@ -83,7 +97,7 @@ The gradient of the kernel with respect to $\alpha$ is:
 
 $$\frac{\partial w_{ij}}{\partial \alpha} =
 \left[
-\frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+\frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
 -
 \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
 \right]
@@ -92,7 +106,7 @@ w_{ij}
 \left[
 \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
 -
-\frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+\frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
 \right]
 w_{ij}
 $$
@@ -109,7 +123,7 @@ $$
     \left(
       \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
       -
-      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
     \right)
     \left(\frac{-w_{ij}}{S}\right)
       \left(
@@ -130,7 +144,7 @@ $$
     \left(
       \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
       -
-      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
     \right)
      \left(-q_{ij}\right)
       \left(
@@ -143,7 +157,7 @@ $$
     \left(
       \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
       -
-      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -163,7 +177,7 @@ $$
     \left(
       \frac{f_{ij}}{\alpha f_{ij} +1}
       -
-      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha}
+      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -196,7 +210,7 @@ $$
 \frac{2\xi}{\alpha}\left[
 \frac{f_{ij}}{\alpha f_{ij} +1}
 -
-\frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha}
+\frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha}
 \right]
 w_{ij}
 $$
@@ -209,7 +223,7 @@ $$
     \left(
       \frac{f_{ij}}{\alpha f_{ij} +1}
       -
-      \frac{\ln\left(\alpha f_{ij} + 1\right)}{\alpha}
+      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -247,7 +261,7 @@ $$
 \left[
 \frac{\beta_i f_{ij}}{\alpha \left(\alpha \beta_i f_{ij} +1\right)}
 -
-\frac{\ln\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha ^ 2}
+\frac{\log\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha ^ 2}
 \right]
 w_{ij}
 $$
@@ -260,7 +274,7 @@ $$
     \left(
       \frac{\beta_i f_{ij}}{\alpha \beta_i f_{ij} +1}
       -
-      \frac{\ln\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha}
+      \frac{\log\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -292,7 +306,7 @@ $$
     \left(
       \frac{\beta_i f_{ij}}{\alpha_i \beta_i f_{ij} +1}
       -
-      \frac{\ln\left(\alpha_i \beta_i f_{ij} + 1\right)}{\alpha_i}
+      \frac{\log\left(\alpha_i \beta_i f_{ij} + 1\right)}{\alpha_i}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -337,9 +351,11 @@ multiplying the above gradient by $2\xi_i$.
 
 ## The it-SNE gradient
 
-To demonstrate the connection between HSSNE and it-SNE, here's the gradient
-with respect to $\nu_i$, which is analogous to $\alpha_i$ in inhomogeneous
-HSSNE.
+To demonstrate the connection between HSSNE and it-SNE, here's the gradient with
+respect to the t-distribution degree of freedom parameter $\nu_i$, which is
+analogous to $\alpha_i$ in inhomogeneous HSSNE. Note that despite being named
+after t-SNE, it-SNE uses a point-wise normalization, so the probabilities below
+are written as e.g. $p_{j|i)$ rather than $p_{ij}$.
 
 The kernel function is:
 
@@ -353,7 +369,7 @@ $$
 \frac{1}{2}
 \left[
 \frac{f_{ij}\left(\nu_{i} + 1\right)}{\left(\frac{f_{ij}}{\nu_{i}} + 1\right)\nu_i^2}
--\ln\left(\frac{f_{ij}}{\nu_i} + 1\right)
+-\log\left(\frac{f_{ij}}{\nu_i} + 1\right)
 \right ]
 w_{ij}
 $$
@@ -366,7 +382,7 @@ $$
   \frac{1}{2}
   \sum_{j}
     \left[
-      \ln\left(\frac{f_{ij}}{\nu_i} + 1\right)
+      \log\left(\frac{f_{ij}}{\nu_i} + 1\right)
       -
       \frac{f_{ij}\left(\nu_i + 1\right)}
       {\left(\frac{f_{ij}}{\nu_i} + 1\right) \nu_i^2}
@@ -378,5 +394,30 @@ $$
 This has a very similar structure to the HSSNE version. The extension to the 
 gradient with respect to $\xi$ is obvious (i.e. multiply the RHS in the above 
 equation by $2\xi$).
+
+## Parametric t-SNE
+
+Parametric t-SNE differs from it-SNE by using a global degree of freedom
+parameter, but also using a pair-wise normalization scheme like regular t-SNE,
+so it's less misleadingly-named than it-SNE. Note that in the parametric t-SNE
+paper, the degree of freedom parameter for the t-distribution uses the symbol
+$\alpha$, but we'l stick with $\nu$ here, to avoid confusion with the $\alpha$
+used in HSSNE.
+
+$$
+\frac{\partial C}{\partial \nu} = 
+  \frac{1}{2}
+  \sum_{ij}
+    \left[
+      \log\left(\frac{f_{ij}}{\nu} + 1\right)
+      -
+      \frac{f_{ij}\left(\nu + 1\right)}
+      {\left(\frac{f_{ij}}{\nu} + 1\right) \nu^2}
+    \right]
+      \left(
+        p_{ij} - q_{ij}
+      \right)
+$$
+
 
 Up: [Index](index.html)
