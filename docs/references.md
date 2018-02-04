@@ -203,6 +203,14 @@ probabilities for large data sets. Also, coins the term "entropic affinities"
 to describe the process of calibrating probabilities via setting a perplexity 
 value.
 
+Cao, Y., & Wang, L. (2017). 
+Automatic Selection of t-SNE Perplexity. 
+*arXiv preprint* *arXiv*:1708.03229.
+https://arxiv.org/abs/1708.03229
+
+Suggests that you can choose between embeddings with different perplexities
+by a regularized version of the final error.
+
 Schubert, E., & Gertz, M. (2017, October). 
 Intrinsic t-Stochastic Neighbor Embedding for Visualization and Outlier 
 Detection. 
@@ -375,6 +383,15 @@ https://github.com/awesome-davian/PixelSNE
 
 Achieves a speed up by using the fact that screen resolution means that the
 usual precision in the calculations is completely unnecessary.
+
+Linderman, G. C., Rachh, M., Hoskins, J. G., Steinerberger, S., & Kluger, Y. (2017). 
+Efficient Algorithms for t-distributed Stochastic Neighborhood Embedding. 
+*arXiv preprint* *arXiv*:1712.09005.
+https://arxiv.org/abs/1712.09005
+https://github.com/KlugerLab/FIt-SNE
+
+Modified Barnes-Hut t-SNE by using interpolation onto a grid and using a Fast
+Fourier Transform.
 
 ### Divergences
 

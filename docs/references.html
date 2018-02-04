@@ -307,6 +307,8 @@ div.tocify {
 <h2>Perplexity</h2>
 <p>Vladymyrov, M., &amp; Carreira-Perpinán, M. A. (2013, June). Entropic Affinities: Properties and Efficient Numerical Computation. <em>Proceedings of the 30th international conference on machine learning (ICML-13)</em>, pp. 477-485. <a href="http://jmlr.org/proceedings/papers/v28/vladymyrov13.html" class="uri">http://jmlr.org/proceedings/papers/v28/vladymyrov13.html</a></p>
 <p>Not implemented in <code>sneer</code>, but describes fast ways to calculate the input probabilities for large data sets. Also, coins the term “entropic affinities” to describe the process of calibrating probabilities via setting a perplexity value.</p>
+<p>Cao, Y., &amp; Wang, L. (2017). Automatic Selection of t-SNE Perplexity. <em>arXiv preprint</em> <em>arXiv</em>:1708.03229. <a href="https://arxiv.org/abs/1708.03229" class="uri">https://arxiv.org/abs/1708.03229</a></p>
+<p>Suggests that you can choose between embeddings with different perplexities by a regularized version of the final error.</p>
 <p>Schubert, E., &amp; Gertz, M. (2017, October). Intrinsic t-Stochastic Neighbor Embedding for Visualization and Outlier Detection. In <em>International Conference on Similarity Search and Applications</em> (pp. 188-203). Springer, Cham. <a href="https://doi.org/10.1007/978-3-319-68474-1_13" class="uri">https://doi.org/10.1007/978-3-319-68474-1_13</a></p>
 <p>Not exactly about perplexity, but connected: discusses intrinsic dimensionality, and correcting input distances in high dimensional spaces. Also suggests an alternative input probability normalization: the geometric mean rather than arithmetric mean, which effectively converts the input probability from a symmetric knn graph to a mutual knn graph.</p>
 </div>
@@ -370,6 +372,8 @@ div.tocify {
 <p>Parviainen, E. (2016). A graph-based N-body approximation with application to stochastic neighbor embedding. <em>Neural Networks</em>, <em>75</em>, 1-11. <a href="http://dx.doi.org/10.1016/j.neunet.2015.11.007" class="uri">http://dx.doi.org/10.1016/j.neunet.2015.11.007</a></p>
 <p>Kim, M., Choi, M., Lee, S., Tang, J., Park, H., &amp; Choo, J. (2016). PixelSNE: Visualizing Fast with Just Enough Precision via Pixel-Aligned Stochastic Neighbor Embedding. <em>arXiv preprint</em> <em>arXiv</em>:1611.02568. <a href="https://arxiv.org/abs/1611.02568" class="uri">https://arxiv.org/abs/1611.02568</a> <a href="https://github.com/awesome-davian/PixelSNE" class="uri">https://github.com/awesome-davian/PixelSNE</a></p>
 <p>Achieves a speed up by using the fact that screen resolution means that the usual precision in the calculations is completely unnecessary.</p>
+<p>Linderman, G. C., Rachh, M., Hoskins, J. G., Steinerberger, S., &amp; Kluger, Y. (2017). Efficient Algorithms for t-distributed Stochastic Neighborhood Embedding. <em>arXiv preprint</em> <em>arXiv</em>:1712.09005. <a href="https://arxiv.org/abs/1712.09005" class="uri">https://arxiv.org/abs/1712.09005</a> <a href="https://github.com/KlugerLab/FIt-SNE" class="uri">https://github.com/KlugerLab/FIt-SNE</a></p>
+<p>Modified Barnes-Hut t-SNE by using interpolation onto a grid and using a Fast Fourier Transform.</p>
 </div>
 <div id="divergences" class="section level3">
 <h3>Divergences</h3>
