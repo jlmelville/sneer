@@ -164,6 +164,17 @@ page for details on the gradient. The
 [source code](https://github.com/lferry007/LargeVis) is on GitHub,
 and there is also a [CRAN package](https://cran.r-project.org/package=largeVis).
 
+### UMAP
+
+McInnes, L., & Healey, J. (2018).
+UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction
+*arXiv preprint*, *arXiv*:1802.03426.
+https://arxiv.org/abs/1802.03426
+
+Also not in `sneer`. Uses a similar optimization scheme to LargeVis but the 
+theory behind it is based on fuzzy sets. Also uses non-normalized weights. 
+Python code is at https://github.com/lmcinnes/umap.
+
 ### xSNE
 
 Strickert, M. (2012, August). 

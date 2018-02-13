@@ -291,6 +291,11 @@ div.tocify {
 <p>Tang, J., Liu, J., Zhang, M., &amp; Mei, Q. (2016, April). Visualizing large-scale and high-dimensional data. In <em>Proceedings of the 25th International Conference on World Wide Web</em> (pp. 287-297). International World Wide Web Conferences Steering Committee. <a href="https://arxiv.org/abs/1602.00370" class="uri">https://arxiv.org/abs/1602.00370</a></p>
 <p>Not implemented in <code>sneer</code>, but another method that doesn’t use normalization of the output weights. Despite this, it performs very well. The cost function shows some resemblance to Elastic Embedding. It also goes to a lot of effort to be scalable to large datasets, and the lack of normalization is critical in this effort. Also, see the <a href="http://jlmelville.github.io/sneer/experimental-gradients.html#largevis">experimental gradients</a> page for details on the gradient. The <a href="https://github.com/lferry007/LargeVis">source code</a> is on GitHub, and there is also a <a href="https://cran.r-project.org/package=largeVis">CRAN package</a>.</p>
 </div>
+<div id="umap" class="section level3">
+<h3>UMAP</h3>
+<p>McInnes, L., &amp; Healey, J. (2018). UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction <em>arXiv preprint</em>, <em>arXiv</em>:1802.03426. <a href="https://arxiv.org/abs/1802.03426" class="uri">https://arxiv.org/abs/1802.03426</a></p>
+<p>Also not in <code>sneer</code>. Uses a similar optimization scheme to LargeVis but the theory behind it is based on fuzzy sets. Also uses non-normalized weights. Python code is at <a href="https://github.com/lmcinnes/umap" class="uri">https://github.com/lmcinnes/umap</a>.</p>
+</div>
 <div id="xsne" class="section level3">
 <h3>xSNE</h3>
 <p>Strickert, M. (2012, August). No Perplexity in Stochastic Neighbor Embedding. In <em>Workshop New Challenges in Neural Computation 2012</em> (p. 68). <a href="http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.680.6041&amp;rep=rep1&amp;type=pdf#page=68" class="uri">http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.680.6041&amp;rep=rep1&amp;type=pdf#page=68</a></p>
