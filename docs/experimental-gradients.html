@@ -93,6 +93,9 @@ img {
 .tabbed-pane {
   padding-top: 12px;
 }
+.html-widget {
+  margin-bottom: 20px;
+}
 button.code-folding-btn:focus {
   outline: none;
 }
@@ -384,7 +387,7 @@ k_{ij} = \frac{\partial C}{\partial w_{ij}}
 </div>
 <div id="the-connection-between-sne-ee-and-largevis" class="section level3">
 <h3>The Connection Between SNE, EE, and largeVis</h3>
-<p>Despite the fact that largeVis and EE don’t use normalized weights, their cost functions are very similar to that of SSNE and t-SNE. Let’s expand the SSNE cost function:</p>
+<p>Despite the fact that largeVis and EE don’t use output probabilities, their cost functions are very similar to that of SSNE and t-SNE. Let’s expand the SSNE cost function:</p>
 <p><span class="math display">\[
 C = 
 \sum_{ij} p_{ij} \log \frac{p_{ij}}{q_{ij}}
@@ -443,7 +446,7 @@ k_{ij} = p_{ij} - q_{ij} = \left[ \frac{v_{ij}}{S} - \frac{w_{ij}}{Z} \right]
 \left(\mathbf{y_i - y_j}\right) 
 \\
 \frac{\partial C_{LV}}{\partial \mathbf{y_i}} = 
-4\sum_j^N \left(v_{ij} -\frac{\gamma}{1 - w_{ij}} w_{ij} \right) w_{ij}
+4\sum_j^N \left(p_{ij} -\frac{\gamma}{1 - w_{ij}} w_{ij} \right) w_{ij}
 \left(\mathbf{y_i - y_j}\right)
 \]</span></p>
 <p>For LargeVis, I’ve kept with the t-distributed weights (the other gradients use exponential kernels), which explains the extra factor of <span class="math inline">\(w_{ij}\)</span> it has. I’ve also expressed <span class="math inline">\(1 / d_{ij}^2\)</span> back in terms of weights to make the connection with the other gradients clearer.</p>

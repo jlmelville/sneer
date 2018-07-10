@@ -267,7 +267,7 @@ non-symmetric matrices is obvious.
 
 ### The Connection Between SNE, EE, and largeVis
 
-Despite the fact that largeVis and EE don't use normalized weights, their cost
+Despite the fact that largeVis and EE don't use output probabilities, their cost
 functions are very similar to that of SSNE and t-SNE. Let's expand the SSNE cost
 function:
 
@@ -363,7 +363,7 @@ $$
 \left(\mathbf{y_i - y_j}\right) 
 \\
 \frac{\partial C_{LV}}{\partial \mathbf{y_i}} = 
-4\sum_j^N \left(v_{ij} -\frac{\gamma}{1 - w_{ij}} w_{ij} \right) w_{ij}
+4\sum_j^N \left(p_{ij} -\frac{\gamma}{1 - w_{ij}} w_{ij} \right) w_{ij}
 \left(\mathbf{y_i - y_j}\right)
 $$
 
