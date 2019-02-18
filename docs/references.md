@@ -98,6 +98,16 @@ Independently proposes a very similar technique to HSSNE, and provides three
 strategies for determining the heavy tailedness, including minimizing it along
 with the coordinates.
 
+Kobak, D., Linderman, G., Steinerberger, S., Kluger, Y., & Berens, P. (2019)
+Heavy-tailed kernels reveal a finer cluster structure in t-SNE visualisations
+*arXiv preprint* *arXiv*:1902.05804.
+https://arxiv.org/abs/1902.05804
+https://github.com/dkobak/finer-tsne
+
+Describes implementing HSSNE (or something exceptionally close to it in) in
+the [FIt-SNE](https://github.com/KlugerLab/FIt-SNE) software (see below), and 
+some interesting discussion on effective values for the heavy tailedness.
+
 ### Inhomogeneous t-SNE
 
 Kitazono, J., Grozavu, N., Rogovschi, N., Omori, T., & Ozawa, S. (2016, October).
