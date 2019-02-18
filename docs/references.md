@@ -486,6 +486,17 @@ Majorization-Minimization for Manifold Embedding. In
 (pp. 1088-1097).
 http://www.jmlr.org/proceedings/papers/v38/yang15a.html
 
+### Initialization
+
+Kobak, D., & Berens, P. (2018). 
+The art of using t-SNE for single-cell transcriptomics. 
+*bioRxiv*, 453449.
+https://doi.org/10.1101/453449
+
+Lots to mull over in this paper, but particularly interesting in advocating
+the use of the first two principal components (suitably scaled) as a 
+deterministic initialization for t-SNE that retains global structure well.
+
 ### Web Pages
 
 Visualizing MNIST: An Exploration of Dimensionality Reduction
