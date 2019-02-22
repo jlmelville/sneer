@@ -98,6 +98,19 @@ Independently proposes a very similar technique to HSSNE, and provides three
 strategies for determining the heavy tailedness, including minimizing it along
 with the coordinates.
 
+De Bodt, C., Mulders, D., Verleysen, M., & Lee, J. A. (2018). 
+Perplexity-free t-SNE and twice Student tt-SNE. 
+In *European Symposium on Artificial Neural Networks, Computational Intelligence and Machine Learning (ESANN 2018)*
+(pp. 123-128).
+http://hdl.handle.net/2078.1/200844
+
+The tt-SNE method proposes using a heavy-tailed kernel in not only the 
+low-dimensional output space, but in the input dimension too. The 
+heavy-tailedness is related to the estimate of intrinsic dimensionality, which
+is described in the multi-scale JSE paper (Lee and co-workers, 2015, 
+see below in the multi-scale section). In the output space, if embedding into
+2D, you end up with something very close to the usual t-SNE kernel.
+
 Kobak, D., Linderman, G., Steinerberger, S., Kluger, Y., & Berens, P. (2019)
 Heavy-tailed kernels reveal a finer cluster structure in t-SNE visualisations
 *arXiv preprint* *arXiv*:1902.05804.
@@ -250,7 +263,8 @@ symmetric knn graph to a mutual knn graph.
 
 Lee, J. A., Peluffo-Ordónez, D. H., & Verleysen, M. (2014).
 Multiscale stochastic neighbor embedding: Towards parameter-free
-dimensionality reduction. In *Proceedings of 2014 European Symposium on Artificial Neural Networks, Computational Intelligence and Machine Learning (ESANN 2014)* (pp. 177-182), 
+dimensionality reduction. 
+In *Proceedings of 2014 European Symposium on Artificial Neural Networks, Computational Intelligence and Machine Learning (ESANN 2014)* (pp. 177-182). 
 https://www.elen.ucl.ac.be/Proceedings/esann/esannpdf/es2014-64.pdf
 
 Lee, J. A., Peluffo-Ordónez, D. H., & Verleysen, M. (2015).
@@ -261,6 +275,19 @@ https://dx.doi.org/10.1016/j.neucom.2014.12.095
 
 Fun fact: just noticed that this is the only paper on the list where 
 "neighbour" is spelt in the British English style.
+
+De Bodt, C., Mulders, D., Verleysen, M., & Lee, J. A. (2018). 
+Perplexity-free t-SNE and twice Student tt-SNE. 
+In *European Symposium on Artificial Neural Networks, Computational Intelligence and Machine Learning (ESANN 2018)*
+(pp. 123-128).
+http://hdl.handle.net/2078.1/200844
+
+This describes multiscale t-SNE, which is radically simpler than the multiscale
+SNE and JSE methods in the previous two papers: the probabilities are averaged
+without any mention of slowing adding them over the course of the embedding,
+and no modification is made to the output kernel.
+
+tt-SNE is discussed in the section on HSSNE above.
 
 ## Optimization
 
@@ -291,6 +318,21 @@ suggest that using standard  gradient descent (no momentum and a fixed learning
 rate of 1), and a much larger exaggeration factor of *n* / 10, where *n* is the
 number of points in the dataset, may be more effective than the usual early
 exaggeration settings.
+
+Belkina, A. C., Ciccolella, C. O., Anno, R., Spidlen, J., Halpert, R., & Snyder-Cappione, J. (2018). 
+Automated optimal parameters for T-distributed stochastic neighbor embedding improve visualization and allow analysis of large datasets. *bioRxiv*, 451690.
+https://www.biorxiv.org/content/10.1101/451690v2.abstract
+
+Recommends monitoring the KL divergence to determine when to turn off the
+exaggeration factor, rather than using a fixed number of iteration. Also for the 
+large datasets studied (transcriptomics and cytometry), they don't notice a big 
+difference when using an exaggeration factor between 4-20.
+
+Additionally, the recommend setting the learning rate to $n / \alpha$, where
+$n$ is the size of the dataset, and $\alpha$ is the exaggeration factor. For
+typical exaggeration factors of 4-12, this would mean that with larger datasets
+(more than n ~ 2000), you can get away with a larger learning rate than is 
+typical (it's 200 in BH t-SNE).
 
 ### Spectral Directions
 
@@ -414,6 +456,16 @@ https://github.com/KlugerLab/FIt-SNE
 Modified Barnes-Hut t-SNE by using interpolation onto a grid and using a Fast
 Fourier Transform.
 
+De Bodt, C., Mulders, D., Verleysen, M., & Lee, J. A. (2018). 
+Extensive assessment of Barnes-Hut t-SNE
+In *European Symposium on Artificial Neural Networks, Computational Intelligence and Machine Learning (ESANN 2018)*
+(pp. 135-140).
+http://hdl.handle.net/2078.1/200843
+
+Compares BH t-SNE with standard t-SNE in terms of neighbor retrieval over
+several datasets. They confirm that it works very well, and recommend the 
+current default setting for the hyperparameter $\theta = 0.5$. 
+
 ### Divergences
 
 Cichocki, A., Cruces, S., & Amari, S. I. (2011). 
@@ -432,6 +484,16 @@ using arbitrary divergences.
 http://dx.doi.org/10.1016/j.neucom.2012.02.034
 
 If you like divergences, this paper has you covered.
+
+Im, D. J., Verma, N., & Branson, K. (2018). 
+Stochastic Neighbor Embedding under f-divergences. 
+*arXiv preprint* *arXiv*:1811.01247.
+https://arxiv.org/abs/1811.01247
+
+Looks at a subset of divergences, the f-divergences, which includes the 
+Kullback-Leibler and Jensen-Shannon divergences, suggesting that while clustered
+data is best served by the KL divergence, other types of data (manifolds, 
+hierarchical data) would benefit from other divergences.
 
 ### Why Do Probability-Based Embeddings Work?
 
