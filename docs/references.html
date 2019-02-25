@@ -1564,7 +1564,8 @@ div.tocify {
 
 
 <p>Previous: <a href="visualization.html">Visualization</a>. Up: <a href="index.html">Index</a>.</p>
-<p>Here’s a list of things (mainly papers) that provided the various options available in <code>sneer</code>. I’ve tried to link to the offical publication websites rather than to PDFs directly, so it’s a bit easier to find or confirm bibliographic information.</p>
+<p>Here’s a list of things (mainly papers) that provided the various options available in <code>sneer</code> or I just think are interesting. I haven’t tried to be exhaustive. Some areas I haven’t had time or inclination to investigate, including out-of-sample mapping and parametric t-SNE (e.g.  <a href="https://arxiv.org/abs/1708.04983">Lion t-SNE</a>), or graph layout (e.g. <a href="https://doi.org/10.1111/cgf.13187">tsNET</a>.</p>
+<p>I’ve tried to link to the offical publication websites rather than to PDFs directly, so it’s a bit easier to find or confirm bibliographic information.</p>
 <div id="embedding-methods" class="section level2">
 <h2>Embedding Methods</h2>
 <div id="review" class="section level3">
@@ -1574,6 +1575,8 @@ div.tocify {
 <p>Peel, D., &amp; McLachlan, G. J. (2000). Robust mixture modelling using the t distribution. <em>Statistics and Computing</em>, <em>10</em>(4), 339-348. <a href="https://doi.org/10.1023/A:1008981510081" class="uri">https://doi.org/10.1023/A:1008981510081</a></p>
 <p>de Ridder, D., &amp; Franc, V. (2003). Robust subspace mixture models using t-distributions. In <em>Proceedings of the British Machine Vision Conference</em> (pp. 319–328). <a href="https://doi.org/10.5244/C.17.35" class="uri">https://doi.org/10.5244/C.17.35</a></p>
 <p>Two examples of the use of t-distributions as replacement for Gaussians in mixture modeling for use in clustering (the Peel &amp; McLachlan paper) and manifold learning (the de Ridder &amp; Franc) paper. The t-SNE paper doesn’t cite either of these, but the van der Maaten review paper cites the de Ridder &amp; Franc paper, which in turn cites Peel &amp; McLachlan.</p>
+<p>Priam, R. (2018, January). Symmetric Generative Methods and tSNE: A Short Survey. In <em>VISIGRAPP (3: IVAPP)</em> (pp. 356-363).</p>
+<p>Covers a lot of the more recent literature, and draws some connections with generative and probabilistic models.</p>
 </div>
 <div id="metric-multi-dimensional-scaling-mds" class="section level3">
 <h3>Metric Multi Dimensional Scaling (MDS)</h3>
@@ -1647,6 +1650,11 @@ div.tocify {
 <h3>Doubly Stochastic Neighbor Embedding on Spheres (DOSNES)</h3>
 <p>Lu, Y., Yang, Z., &amp; Corander, J. (2016). Doubly Stochastic Neighbor Embedding on Spheres. <em>arXiv preprint</em> <em>arXiv</em>:1609.01977. <a href="https://arxiv.org/abs/1609.01977" class="uri">https://arxiv.org/abs/1609.01977</a></p>
 <p>Not implemented in <code>sneer</code>. Notes that even t-SNE can show a crowding problem if embedding graph data with a large disparity in the connectivities of the nodes: highly connected nodes are placed in the center of the plot, lower connectivity nodes are pushed to the edges. The proposed solution is to project the probability matrices to a doubly stochastic version and then view the embedding on a spherical projection.</p>
+</div>
+<div id="global-t-sne-g-sne" class="section level3">
+<h3>Global t-SNE (g-SNE)</h3>
+<p>Zhou, Y., &amp; Sharpee, T. (2018). Using global t-SNE to preserve inter-cluster data structure. <em>bioRxiv</em>, 331611. <a href="https://doi.org/10.1101/331611" class="uri">https://doi.org/10.1101/331611</a> <a href="https://github.com/gyrheart/gsne" class="uri">https://github.com/gyrheart/gsne</a></p>
+<p>Not implemented in <code>sneer</code>. Like NeRV and JSE, suggests adding a second divergence to encourage long range structure. In this case, it’s also the KL divergence but with both the input and output kernels being the reciprocal of the typical t-SNE weight function, i.e. <span class="math inline">\(\hat{w}_{ij} = (1 + d_{ij}^2)\)</span>. This means the <span class="math inline">\((p_{ij} - q_{ij})\)</span> term in the t-SNE gradient becomes <span class="math inline">\((p_{ij} - \lambda\hat{p_{ij}}) - (q_{ij} - \lambda\hat{q_{ij}})\)</span> where <span class="math inline">\(\lambda\)</span> is the NeRV-like weighting term, which isn’t so bad.</p>
 </div>
 </div>
 <div id="perplexity" class="section level2">
@@ -1722,12 +1730,26 @@ div.tocify {
 <p>Van Der Maaten, L. (2014). Accelerating t-SNE using tree-based algorithms. <em>Journal of machine learning research</em>, <em>15</em>(1), 3221-3245. <a href="http://www.jmlr.org/papers/v15/vandermaaten14a.html" class="uri">http://www.jmlr.org/papers/v15/vandermaaten14a.html</a></p>
 <p>Vladymyrov, M., &amp; Carreira-Perpinán, M. A. (2014). Linear-time training of nonlinear low-dimensional embeddings. In <em>17th International Conference on Artificial Intelligence and Statistics (AISTATS 2014)</em> (pp. 968-977). <a href="http://jmlr.org/proceedings/papers/v33/vladymyrov14.html" class="uri">http://jmlr.org/proceedings/papers/v33/vladymyrov14.html</a></p>
 <p>Parviainen, E. (2016). A graph-based N-body approximation with application to stochastic neighbor embedding. <em>Neural Networks</em>, <em>75</em>, 1-11. <a href="http://dx.doi.org/10.1016/j.neunet.2015.11.007" class="uri">http://dx.doi.org/10.1016/j.neunet.2015.11.007</a></p>
-<p>Kim, M., Choi, M., Lee, S., Tang, J., Park, H., &amp; Choo, J. (2016). PixelSNE: Visualizing Fast with Just Enough Precision via Pixel-Aligned Stochastic Neighbor Embedding. <em>arXiv preprint</em> <em>arXiv</em>:1611.02568. <a href="https://arxiv.org/abs/1611.02568" class="uri">https://arxiv.org/abs/1611.02568</a> <a href="https://github.com/awesome-davian/PixelSNE" class="uri">https://github.com/awesome-davian/PixelSNE</a></p>
-<p>Achieves a speed up by using the fact that screen resolution means that the usual precision in the calculations is completely unnecessary.</p>
 <p>Linderman, G. C., Rachh, M., Hoskins, J. G., Steinerberger, S., &amp; Kluger, Y. (2017). Efficient Algorithms for t-distributed Stochastic Neighborhood Embedding. <em>arXiv preprint</em> <em>arXiv</em>:1712.09005. <a href="https://arxiv.org/abs/1712.09005" class="uri">https://arxiv.org/abs/1712.09005</a> <a href="https://github.com/KlugerLab/FIt-SNE" class="uri">https://github.com/KlugerLab/FIt-SNE</a></p>
 <p>Modified Barnes-Hut t-SNE by using interpolation onto a grid and using a Fast Fourier Transform.</p>
 <p>De Bodt, C., Mulders, D., Verleysen, M., &amp; Lee, J. A. (2018). Extensive assessment of Barnes-Hut t-SNE In <em>European Symposium on Artificial Neural Networks, Computational Intelligence and Machine Learning (ESANN 2018)</em> (pp. 135-140). <a href="http://hdl.handle.net/2078.1/200843" class="uri">http://hdl.handle.net/2078.1/200843</a></p>
 <p>Compares BH t-SNE with standard t-SNE in terms of neighbor retrieval over several datasets. They confirm that it works very well, and recommend the current default setting for the hyperparameter <span class="math inline">\(\theta = 0.5\)</span>.</p>
+<p>Chan, D. M., Rao, R., Huang, F., &amp; Canny, J. F. (2018). t-SNE-CUDA: GPU-Accelerated t-SNE and its Applications to Modern Data. <em>arXiv preprint</em> <em>arXiv</em>:1807.11824. <a href="https://github.com/CannyLab/tsne-cuda" class="uri">https://github.com/CannyLab/tsne-cuda</a></p>
+<p>BH t-SNE implemented on a GPU.</p>
+</div>
+<div id="other-fast-t-sne-methods" class="section level3">
+<h3>Other Fast t-SNE Methods</h3>
+<p>Many of these methods are intended for interactive data analysis.</p>
+<p>Kim, M., Choi, M., Lee, S., Tang, J., Park, H., &amp; Choo, J. (2016). PixelSNE: Visualizing Fast with Just Enough Precision via Pixel-Aligned Stochastic Neighbor Embedding. <em>arXiv preprint</em> <em>arXiv</em>:1611.02568. <a href="https://arxiv.org/abs/1611.02568" class="uri">https://arxiv.org/abs/1611.02568</a> <a href="https://github.com/awesome-davian/PixelSNE" class="uri">https://github.com/awesome-davian/PixelSNE</a></p>
+<p>Achieves a speed up by using the fact that screen resolution means that the usual precision in the calculations is completely unnecessary.</p>
+<p>Pezzotti, N., Höllt, T., Lelieveldt, B., Eisemann, E., &amp; Vilanova, A. (2016, June). Hierarchical stochastic neighbor embedding. In <em>Computer Graphics Forum</em> (Vol. 35, No. 3, pp. 21-30). <a href="https://doi.org/10.1111/cgf.12878" class="uri">https://doi.org/10.1111/cgf.12878</a></p>
+<p>Approximated and User Steerable tSNE for Progressive Visual Analytics Pezzotti, N., Lelieveldt, B. P., van der Maaten, L., Höllt, T., Eisemann, E., &amp; Vilanova, A. (2017). <em>IEEE transactions on visualization and computer graphics</em>, <em>23</em>(7), 1739-1752.</p>
+<p>Describes Approximated t-SNE (At-SNE). Suggests using a forest of randomized KD-Trees as the approximate nearest neighbors calculation for speeding up the perplexity calibration.</p>
+<p>Pezzotti, N., Mordvintsev, A., Hollt, T., Lelieveldt, B. P., Eisemann, E., &amp; Vilanova, A. (2018). Linear tSNE optimization for the Web. <em>arXiv preprint</em> <em>arXiv</em>:1805.10817. <a href="https://github.com/tensorflow/tfjs-tsne" class="uri">https://github.com/tensorflow/tfjs-tsne</a></p>
+<p>Uses WebGL textures to calculate approximate repulsive interactions and then uses tensorflowjs to optimize.</p>
+<p>bigMap: Big Data Mapping with Parallelized t-SNE Garriga, J., &amp; Bartumeus, F. (2018). <em>arXiv preprint</em> <em>arXiv</em>:1812.09869. <a href="https://cran.r-project.org/package=bigMap" class="uri">https://cran.r-project.org/package=bigMap</a></p>
+<p>An R package implementing a parallelized t-SNE algorithm intended to be distributed across multiple machines in a cluster. This requires a smoother optimization scheme than the effect of early exaggeration causes, so it must do without that (and also the momentum switching that occurs with the usual DBD optimizer).</p>
+<p>There is also an interesting discussion of what they call “the big crowd problem”, which arises due to the normalization of affinities into probabilities: as the dataset grows, there is still a fixed amount of probability mass that can be partitioned to each pair of points, leading to lowered average similarities as datasets grow in size. This results in the cost function having a dependence on the size of the dataset. Additionally, this means that the <span class="math inline">\(p_{ij} - q_{ij}\)</span> term in the gradient to zero as the dataset sizes increase, and because of the Student-t distribution, the other bit of the t-SNE gradient term <span class="math inline">\(w_{ij} (\mathbf{y}_i - \mathbf{y}_j)\)</span> <em>also</em> tends to zero as the embedding area grows, i.e. over the course of the optimization. An adaptive learning rate is suggested to counteract these tendencies: <span class="math inline">\(\eta = \log(N - 1) (\mathbf{y}_{max} - \mathbf{y}_{min}) / 2\)</span></p>
 </div>
 <div id="divergences" class="section level3">
 <h3>Divergences</h3>

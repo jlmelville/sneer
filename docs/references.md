@@ -11,7 +11,13 @@ output:
 Previous: [Visualization](visualization.html). Up: [Index](index.html).
 
 Here's a list of things (mainly papers) that provided the various options 
-available in `sneer`. I've tried to link to the offical publication websites
+available in `sneer` or I just think are interesting. I haven't tried to be 
+exhaustive. Some areas I haven't had time or inclination to investigate, 
+including out-of-sample mapping and parametric t-SNE (e.g. 
+[Lion t-SNE](https://arxiv.org/abs/1708.04983)), or
+graph layout (e.g. [tsNET](https://doi.org/10.1111/cgf.13187).
+
+I've tried to link to the offical publication websites
 rather than to PDFs directly, so it's a bit easier to find or confirm
 bibliographic information.
 
@@ -41,6 +47,13 @@ mixture modeling for use in clustering (the Peel & McLachlan paper) and
 manifold learning (the de Ridder & Franc) paper. The t-SNE paper doesn't cite
 either of these, but the van der Maaten review paper cites the de Ridder & 
 Franc paper, which in turn cites Peel & McLachlan.
+
+Priam, R. (2018, January). 
+Symmetric Generative Methods and tSNE: A Short Survey. 
+In *VISIGRAPP (3: IVAPP)* (pp. 356-363).
+
+Covers a lot of the more recent literature, and draws some connections with
+generative and probabilistic models.
 
 ### Metric Multi Dimensional Scaling (MDS)
 
@@ -223,6 +236,22 @@ highly connected nodes are placed in the center of the plot, lower connectivity
 nodes are pushed to the edges. The proposed solution is to project the 
 probability matrices to a doubly stochastic version and then view the embedding
 on a spherical projection.
+
+### Global t-SNE (g-SNE)
+
+Zhou, Y., & Sharpee, T. (2018). 
+Using global t-SNE to preserve inter-cluster data structure. 
+*bioRxiv*, 331611.
+https://doi.org/10.1101/331611
+https://github.com/gyrheart/gsne
+
+Not implemented in `sneer`. Like NeRV and JSE, suggests adding a second 
+divergence to encourage long range structure. In this case, it's also the KL divergence
+but with both the input and output kernels being the reciprocal of the typical
+t-SNE weight function, i.e. $\hat{w}_{ij} = (1 + d_{ij}^2)$. This means the
+$(p_{ij} - q_{ij})$ term in the t-SNE gradient becomes
+$(p_{ij} - \lambda\hat{p_{ij}}) - (q_{ij} - \lambda\hat{q_{ij}})$ where 
+$\lambda$ is the NeRV-like weighting term, which isn't so bad.
 
 ## Perplexity
 
@@ -437,16 +466,6 @@ embedding.
 *Neural Networks*, *75*, 1-11.
 http://dx.doi.org/10.1016/j.neunet.2015.11.007
 
-Kim, M., Choi, M., Lee, S., Tang, J., Park, H., & Choo, J. (2016). 
-PixelSNE: Visualizing Fast with Just Enough Precision via Pixel-Aligned 
-Stochastic Neighbor Embedding. 
-*arXiv preprint* *arXiv*:1611.02568.
-https://arxiv.org/abs/1611.02568
-https://github.com/awesome-davian/PixelSNE
-
-Achieves a speed up by using the fact that screen resolution means that the
-usual precision in the calculations is completely unnecessary.
-
 Linderman, G. C., Rachh, M., Hoskins, J. G., Steinerberger, S., & Kluger, Y. (2017). 
 Efficient Algorithms for t-distributed Stochastic Neighborhood Embedding. 
 *arXiv preprint* *arXiv*:1712.09005.
@@ -465,6 +484,70 @@ http://hdl.handle.net/2078.1/200843
 Compares BH t-SNE with standard t-SNE in terms of neighbor retrieval over
 several datasets. They confirm that it works very well, and recommend the 
 current default setting for the hyperparameter $\theta = 0.5$. 
+
+Chan, D. M., Rao, R., Huang, F., & Canny, J. F. (2018). 
+t-SNE-CUDA: GPU-Accelerated t-SNE and its Applications to Modern Data. 
+*arXiv preprint* *arXiv*:1807.11824.
+https://github.com/CannyLab/tsne-cuda
+
+BH t-SNE implemented on a GPU.
+
+### Other Fast t-SNE Methods
+
+Many of these methods are intended for interactive data analysis.
+
+Kim, M., Choi, M., Lee, S., Tang, J., Park, H., & Choo, J. (2016). 
+PixelSNE: Visualizing Fast with Just Enough Precision via Pixel-Aligned 
+Stochastic Neighbor Embedding. 
+*arXiv preprint* *arXiv*:1611.02568.
+https://arxiv.org/abs/1611.02568
+https://github.com/awesome-davian/PixelSNE
+
+Achieves a speed up by using the fact that screen resolution means that the
+usual precision in the calculations is completely unnecessary.
+
+Pezzotti, N., Höllt, T., Lelieveldt, B., Eisemann, E., & Vilanova, A. (2016, June). 
+Hierarchical stochastic neighbor embedding. 
+In *Computer Graphics Forum* (Vol. 35, No. 3, pp. 21-30).
+https://doi.org/10.1111/cgf.12878
+
+Approximated and User Steerable tSNE for Progressive Visual Analytics
+Pezzotti, N., Lelieveldt, B. P., van der Maaten, L., Höllt, T., Eisemann, E., & Vilanova, A. (2017). 
+*IEEE transactions on visualization and computer graphics*, *23*(7), 1739-1752.
+
+Describes Approximated t-SNE (At-SNE). Suggests using a forest of randomized
+KD-Trees as the approximate nearest neighbors calculation for speeding up the
+perplexity calibration.
+
+Pezzotti, N., Mordvintsev, A., Hollt, T., Lelieveldt, B. P., Eisemann, E., & Vilanova, A. (2018). 
+Linear tSNE optimization for the Web. 
+*arXiv preprint* *arXiv*:1805.10817.
+https://github.com/tensorflow/tfjs-tsne
+
+Uses WebGL textures to calculate approximate repulsive interactions and then
+uses tensorflowjs to optimize.
+
+bigMap: Big Data Mapping with Parallelized t-SNE
+Garriga, J., & Bartumeus, F. (2018). 
+*arXiv preprint* *arXiv*:1812.09869.
+https://cran.r-project.org/package=bigMap
+
+An R package implementing a parallelized t-SNE algorithm intended to be distributed
+across multiple machines in a cluster. This requires a smoother optimization
+scheme than the effect of early exaggeration causes, so it must do without that
+(and also the momentum switching that occurs with the usual DBD optimizer).
+
+There is also an interesting discussion of what they call "the big crowd 
+problem", which arises due to the normalization of affinities into probabilities:
+as the dataset grows, there is still a fixed amount of probability mass that can be
+partitioned to each pair of points, leading to lowered average similarities as
+datasets grow in size. This results in the cost function having a dependence on
+the size of the dataset. Additionally, this means that the $p_{ij} - q_{ij}$
+term in the gradient to zero as the dataset sizes increase, and because of the 
+Student-t distribution, the other bit of the t-SNE gradient term 
+$w_{ij} (\mathbf{y}_i - \mathbf{y}_j)$ *also* tends to zero as the embedding area
+grows, i.e. over the course of the optimization. An adaptive learning rate is
+suggested to counteract these tendencies: $\eta = \log(N - 1) (\mathbf{y}_{max} - \mathbf{y}_{min}) / 2$
 
 ### Divergences
 
