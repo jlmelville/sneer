@@ -537,17 +537,24 @@ across multiple machines in a cluster. This requires a smoother optimization
 scheme than the effect of early exaggeration causes, so it must do without that
 (and also the momentum switching that occurs with the usual DBD optimizer).
 
-There is also an interesting discussion of what they call "the big crowd 
-problem", which arises due to the normalization of affinities into probabilities:
-as the dataset grows, there is still a fixed amount of probability mass that can be
-partitioned to each pair of points, leading to lowered average similarities as
-datasets grow in size. This results in the cost function having a dependence on
-the size of the dataset. Additionally, this means that the $p_{ij} - q_{ij}$
+There is also an interesting discussion of what they call "the big crowd
+problem", which arises due to the normalization of affinities into
+probabilities: there is only a fixed amount of probability mass that can be
+partitioned to each pair of points, so as the dataset grows this will naturally
+lead to lowered average similarities. This results in the cost function having a
+dependence on the size of the dataset (as in `sneer` there is an attempt to
+normalize for this). Additionally, this means that the $p_{ij} - q_{ij}$
 term in the gradient to zero as the dataset sizes increase, and because of the 
 Student-t distribution, the other bit of the t-SNE gradient term 
-$w_{ij} (\mathbf{y}_i - \mathbf{y}_j)$ *also* tends to zero as the embedding area
-grows, i.e. over the course of the optimization. An adaptive learning rate is
-suggested to counteract these tendencies: $\eta = \log(N - 1) (\mathbf{y}_{max} - \mathbf{y}_{min}) / 2$
+$w_{ij} (\mathbf{y}_i - \mathbf{y}_j)$ *also* tends to zero as the embedding
+area grows, i.e. over the course of the optimization. An adaptive learning rate
+is suggested to counteract these tendencies:
+$\eta = \log(N - 1) (\mathbf{y}_{max} - \mathbf{y}_{min}) / 2$. That learning
+rate does however suggest that with the standard t-SNE initialization, where
+$(\mathbf{y}_{max} - \mathbf{y}_{min})$ is very close to 0, would result in
+a very small learning rate initially, and indeed the default random
+initialization is a random distribution over a circle of radius 1, which 
+suggests the typical t-SNE initalization would be a problem.
 
 ### Divergences
 
