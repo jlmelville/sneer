@@ -558,6 +558,10 @@ suggests the typical t-SNE initalization would be a problem.
 
 ### Divergences
 
+The "Optimization equivalence of divergences improves neighbor embedding"
+paper of Yang and co-workers (2014), listed under the "ws-SNE" section also
+contains an extensive discussion of divergences.
+
 Cichocki, A., Cruces, S., & Amari, S. I. (2011). 
 Generalized alpha-beta divergences and their application to robust nonnegative 
 matrix factorization. 
@@ -573,7 +577,17 @@ using arbitrary divergences.
 *Neurocomputing*, *90*, 23-45.
 http://dx.doi.org/10.1016/j.neucom.2012.02.034
 
-If you like divergences, this paper has you covered.
+If you like divergences, this paper has you covered. Applies Bregman, f-, and
+$\gamma$- divergences to COIL-20 and the Olivetti faces.
+
+Narayan, K. S., Punjani, A., & Abbeel, P. (2015, June). 
+Alpha-Beta Divergences Discover Micro and Macro Structures in Data. 
+In *Proceedings of the 32nd International Conference on Machine Learning (ICML-14)*
+(pp 796-804).
+http://proceedings.mlr.press/v37/narayan15.html
+
+Considers using the generalized $\alpha, \beta$-divergence (as discussed in
+the Cichocki paper above) as a generalization of t-SNE.
 
 Im, D. J., Verma, N., & Branson, K. (2018). 
 Stochastic Neighbor Embedding under f-divergences. 
