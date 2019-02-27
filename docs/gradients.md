@@ -671,9 +671,9 @@ A generalization of the exponential and t-distributed kernel, and described in
 the 
 [HSSNE paper](https://papers.nips.cc/paper/3770-heavy-tailed-symmetric-stochastic-neighbor-embedding).
 
-$$w_{ij} = \frac{1}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{1}{\alpha}}}$$
+$$w_{ij} = \frac{1}{\left(1 + \alpha \beta_{i} f_{ij} \right)^{1 / \alpha}}$$
 $$\frac{\partial w_{ij}}{\partial f_{ij}} 
-= - \frac{\beta_{i}}{\left(\alpha \beta_{i} f_{ij} + 1\right)^{\frac{\alpha+1}{\alpha}}}
+= - \frac{\beta_{i}}{\left(1 + \alpha \beta_{i} f_{ij}\right)^{\left(\alpha + 1\right) / \alpha}}
 = -\beta_{i} w_{ij} ^ \left(\alpha + 1\right)
 $$
 
@@ -695,6 +695,51 @@ that would allow t-SNE to be used with the method described in
 [multiscale JSE](https://dx.doi.org/10.1016/j.neucom.2014.12.095). See the
 sections on [Input Initialization](input-initialization.html) and
 [Embedding Methods](embedding-methods.html) for how to do that in `sneer`.
+
+Other groups have looked at heavy-tailed kernels with slightly different 
+definitions of the heavy-tailedness parameter, which I will continue to represent
+as $\alpha$. In [parametric t-SNE](http://proceedings.mlr.press/v5/maaten09a), 
+van der Maaten used a general t-distribution:
+
+$$w_{ij} = \frac{1}{\left(1 + f_{ij} / \alpha \right)^{\left(\alpha + 1\right)/2}}$$
+
+["twice" t-SNE (tt-SNE)](http://hdl.handle.net/2078.1/200844) uses:
+
+$$w_{ij} = \frac{1}{\left(1 + f_{ij} / \alpha \right)^{\alpha / 2}}$$
+
+[Kobak, Linderman and co-workers](https://arxiv.org/abs/1902.05804)
+defined the kernel as:
+
+$$w_{ij} = \frac{1}{\left(1 + f_{ij} / \alpha \right)^\alpha}$$
+
+### Inhomogeneous t-SNE
+
+[Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) defines 
+yet another heavy-tailed kernel, using nearly the same definition as in
+parametric t-SNE. I'll swap to the notation that this paper uses for the degrees
+of freedom, $\nu$:
+
+$$w_{ij} = \left(1 + \frac{f_{ij}}{\nu_{i}}\right)^{-\left(\nu_{i} + 1\right)/2}$$
+
+where $\nu_{i} = \infty$ gives SNE-like behavior and $\nu_{i} = 1$ gives t-SNE
+behavior. The twist here is that as the $i$ subscript indicates, the degrees of
+freedom is allowed to vary per-point, rather than the global value HSSNE uses.
+
+The derivative is:
+
+$$\frac{\partial w_{ij}}{\partial f_{ij}} 
+= - \frac{\nu_{i} + 1}{2\left(f_{ij} + \nu_{i}\right)}w_{ij}
+$$
+Adding inhomogeneity to the kernel opens up a lot of potential, but there is a
+potential complexity to think about when using this an 
+[asymmetric kernel](asymmetric-kernel-gradient.html) with the pair-wise 
+normalization method. We'll not worry about it, because first of all, you can
+keep on using the same plug-in gradient we already derived (but not the
+simplified versions we'll derive in the next section), and second, I am unaware
+of any literature method that combines these two ideas: inhomogeneous t-SNE,
+despite its name, actually uses a point-wise normalization, making it more like
+a t-Distributed version of ASNE, rather than SSNE. For point-wise normalization
+schemes the complications don't arise.
 
 ### Importance Weighted Kernel
 
@@ -744,34 +789,6 @@ $$
 
 compared to the t-SNE gradient (which we will derive below), the wt-SNE gradient
 has a factor of $w_{ij} / m_{ij}$ rather than $w_{ij}$.
-
-### Inhomogeneous t-SNE
-
-[Inhomogeneous t-SNE](http://dx.doi.org/10.1007/978-3-319-46675-0_14) defines
-a kernel closely related to the gamma function with $\nu$ degrees of freedom:
-
-$$w_{ij} = \left(1 + \frac{f_{ij}}{\nu_{i}}\right)^{-\left(\nu_{i} + 1\right)/2}$$
-
-where $\nu_{i} = \infty$ gives SNE-like behavior and $\nu_{i} = 1$ gives 
-t-SNE behavior. This is very similar in concept to the tail-heaviness function 
-used in HSSNE, although as the $i$ subscript indicates, the degrees of freedom
-is allowed to vary per-point, rather than the global value HSSNE uses.
-
-The derivative is:
-
-$$\frac{\partial w_{ij}}{\partial f_{ij}} 
-= - \frac{\nu_{i} + 1}{2\left(f_{ij} + \nu_{i}\right)}w_{ij}
-$$
-Adding inhomogeneity to the kernel opens up a lot of potential, but there is a
-potential complexity to think about when using this an 
-[asymmetric kernel](asymmetric-kernel-gradient.html) with the pair-wise 
-normalization method. We'll not worry about it, because first of all, you can
-keep on using the same plug-in gradient we already derived (but not the
-simplified versions we'll derive in the next section), and second, I am unaware
-of any literature method that combines these two ideas: inhomogeneous t-SNE,
-despite its name, actually uses a point-wise normalization, making it more like
-a t-Distributed version of ASNE, rather than SSNE. For point-wise normalization
-schemes the complications don't arise.
 
 ## Deriving the ASNE, SSNE and t-SNE Gradient
 
