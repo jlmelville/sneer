@@ -845,7 +845,7 @@ $$\hat{w}_{ij} = 1 + f_{ij} = \frac{1}{w_{ij}}$$
 
 This has a nice and easy derivative:
 
-$$\frac{\partial w_{ij}}{\partial f_{ij}} = 1$$
+$$\frac{\partial \hat{w}_{ij}}{\partial f_{ij}} = 1$$
 
 ## Deriving the ASNE, SSNE and t-SNE Gradient
 
@@ -1292,7 +1292,7 @@ $$\hat{w}_{ij} = 1 + f_{ij} = \frac{1}{w_{ij}}$$
 
 with the derivative being:
 
-$$\frac{\partial w_{ij}}{\partial f_{ij}} = 1$$
+$$\frac{\partial \hat{w}_{ij}}{\partial f_{ij}} = 1$$
 
 Ignoring $\lambda$ for the moment, the corresponding expression for
 $\hat{k}_{ij}$ is therefore:

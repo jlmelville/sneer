@@ -2060,7 +2060,7 @@ w_{ij} = \frac{m_{ij}}{1 + d_{ij}^2}
 <p>The first KL divergence is the t-SNE cost. The second set of probabilities with hats over the quantities are associated with probabilities that are sensitive to long range distances, rather than local similarities. The similarity kernel used is just the reciprocal of the t-SNE kernel:</p>
 <p><span class="math display">\[\hat{w}_{ij} = 1 + f_{ij} = \frac{1}{w_{ij}}\]</span></p>
 <p>This has a nice and easy derivative:</p>
-<p><span class="math display">\[\frac{\partial w_{ij}}{\partial f_{ij}} = 1\]</span></p>
+<p><span class="math display">\[\frac{\partial \hat{w}_{ij}}{\partial f_{ij}} = 1\]</span></p>
 </div>
 </div>
 <div id="deriving-the-asne-ssne-and-t-sne-gradient" class="section level2">
@@ -2381,7 +2381,7 @@ D_{KL}(Q||Z)
 <p>with <span class="math inline">\(\lambda\)</span> being a weighting factor as in NeRV, the un-hatted part of the cost function being the same as t-SNE, and the hatted quantities referring to using the reciprocal of the usual t-SNE kernel:</p>
 <p><span class="math display">\[\hat{w}_{ij} = 1 + f_{ij} = \frac{1}{w_{ij}}\]</span></p>
 <p>with the derivative being:</p>
-<p><span class="math display">\[\frac{\partial w_{ij}}{\partial f_{ij}} = 1\]</span></p>
+<p><span class="math display">\[\frac{\partial \hat{w}_{ij}}{\partial f_{ij}} = 1\]</span></p>
 <p>Ignoring <span class="math inline">\(\lambda\)</span> for the moment, the corresponding expression for <span class="math inline">\(\hat{k}_{ij}\)</span> is therefore:</p>
 <p><span class="math display">\[\hat{k}_{ij} = \left( -\frac{\hat{p}_{ij}}{\hat{q}_{ij}} + 1\right)\frac{1}{\hat{S}} = -\left( \hat{p}_{ij} - \hat{q}_{ij} \right)\frac{1}{\hat{q}_{ij}\hat{S}}\]</span></p>
 <p>Because <span class="math inline">\(\hat{q}_{ij} = \hat{w}_{ij} / \hat{S}\)</span> the term outside the parentheses cancels to give:</p>
