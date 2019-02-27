@@ -1959,6 +1959,26 @@ q_{kl}
 -\frac{1}{\kappa}\log\left(\frac{q_{ij}}{z_{ij}}\right)
 \]</span></p>
 </div>
+<div id="chi2-chi-square" class="section level3">
+<h3><span class="math inline">\(\chi^2\)</span> (Chi-square):</h3>
+<p><a href="https://arxiv.org/abs/1811.01247">Im, Verma and Branson</a> describe replacing the KL divergence with other members of the f-divergence family. These include the reverse KL divergence (which we looked at as part of NeRV) and the Jensen-Shannon divergence we just looked at in JSE. But there are other members of the f-divergence family. One is the <span class="math inline">\(\chi^2\)</span> (chi-square) divergence:</p>
+<p><span class="math display">\[C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}^2}\]</span></p>
+<p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = -\frac{p_{ij}^2 - q_{ij}^2}{q_{ij}^2} = -\frac{p_{ij}^2}{q_{ij}^2} + 1\]</span></p>
+</div>
+<div id="hellinger-distance" class="section level3">
+<h3>Hellinger Distance</h3>
+<p>The other member of the f-divergences that Im and co-workers look at is the Hellinger distance:</p>
+<p><span class="math display">\[C = \sum_{ij} \left(\sqrt{p_{ij}} - \sqrt{q_{ij}}\right)^2\]</span></p>
+<p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = -\frac{\sqrt{p_{ij}} - \sqrt{q_{ij}}}{\sqrt{q_{ij}}} = -\frac{\sqrt{p_{ij}}}{\sqrt{q_{ij}}} + 1\]</span></p>
+<p>The gradient for the chi-square and Hellinger distance versions of t-SNE aren’t stated, so we will revisit these divergences when deriving some force constants for more complex divergences below.</p>
+</div>
+<div id="alpha-beta-divergence" class="section level3">
+<h3><span class="math inline">\(\alpha\)</span>-<span class="math inline">\(\beta\)</span> Divergence</h3>
+<p><a href="http://proceedings.mlr.press/v37/narayan15.html">Narayan, Punjani and Abbeel</a> describe AB-SNE, which uses the alpha-beta divergence., where <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are free parameters.</p>
+<p><span class="math display">\[C =\frac{1}{\alpha \beta} \sum_{ij} -p_{ij}^{\alpha} q_{ij}^{\beta} + \frac{\alpha}{\alpha + \beta}p_{ij}^{\alpha + \beta} + \frac{\beta}{\alpha + \beta}q_{ij}^{\alpha + \beta}\]</span></p>
+<p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = -\frac{1}{\alpha} q_{ij}^{\beta - 1} \left( p_{ij}^{\alpha} - q_{ij}^{\alpha} \right)\]</span></p>
+<p>It’s not very clear from the cost function, but when we derive the gradient below, you can see that you get t-SNE back with <span class="math inline">\(\alpha = 1\)</span> and <span class="math inline">\(\beta = 0\)</span></p>
+</div>
 </div>
 <div id="some-similarity-kernels-and-their-derivatives" class="section level2">
 <h2>Some Similarity Kernels and their Derivatives</h2>
@@ -2032,6 +2052,15 @@ w_{ij} = \frac{m_{ij}}{1 + d_{ij}^2}
 = \frac{-w_{ij}^2}{m_{ij}}
 \]</span></p>
 <p>compared to the t-SNE gradient (which we will derive below), the wt-SNE gradient has a factor of <span class="math inline">\(w_{ij} / m_{ij}\)</span> rather than <span class="math inline">\(w_{ij}\)</span>.</p>
+</div>
+<div id="g-sne" class="section level3">
+<h3>g-SNE</h3>
+<p><a href="https://doi.org/10.1101/331611">Zhou and Sharpee</a> describe “global t-SNE” (g-SNE) which, reminiscent of NeRV, uses a weighted mixture of two KL divergences:</p>
+<p><span class="math display">\[C = \sum_{ij} p_{ij} \log \frac{p_{ij}}{q_{ij}} + \lambda \sum_{ij} \hat{p}_{ij} \log \frac{\hat{p_{ij}}}{\hat{q}_{ij}}\]</span></p>
+<p>The first KL divergence is the t-SNE cost. The second set of probabilities with hats over the quantities are associated with probabilities that are sensitive to long range distances, rather than local similarities. The similarity kernel used is just the reciprocal of the t-SNE kernel:</p>
+<p><span class="math display">\[\hat{w}_{ij} = 1 + f_{ij} = \frac{1}{w_{ij}}\]</span></p>
+<p>This has a nice and easy derivative:</p>
+<p><span class="math display">\[\frac{\partial w_{ij}}{\partial f_{ij}} = 1\]</span></p>
 </div>
 </div>
 <div id="deriving-the-asne-ssne-and-t-sne-gradient" class="section level2">
@@ -2198,10 +2227,14 @@ w_{ij}^{n-1}
    \mathbf{y_i - y_j}
   \right)
 \]</span></p>
-<p>Also familiar. I think we all deserve a long lie down now. But before we do, for the sake of completeness, let’s see if we can get the force constants (<span class="math inline">\(k_{ij}\)</span>) out for the slightly more complicated NeRV and JSE cost functions. The gradients are pretty obvious once you have <span class="math inline">\(k_{ij}\)</span>, but aren’t as compact as the SNE ones, so we’ll stop at <span class="math inline">\(k_{ij}\)</span>.</p>
+<p>Also familiar.</p>
 </div>
+</div>
+<div id="derivation-of-some-force-constants" class="section level2">
+<h2>Derivation of Some Force Constants</h2>
+<p>I think we all deserve a long lie down now. But before we do, for the sake of completeness, let’s see if we can get the force constants (<span class="math inline">\(k_{ij}\)</span>) out for the slightly more complicated NeRV and JSE cost functions, as well as some methods where the authors didn’t write out the gradients. The gradients are pretty obvious once you have <span class="math inline">\(k_{ij}\)</span>, but aren’t as compact as the SNE ones, so we’ll stop at <span class="math inline">\(k_{ij}\)</span>.</p>
 <div id="nerv-force-constant" class="section level3">
-<h3>NeRV force constant</h3>
+<h3>NeRV Force Constant</h3>
 <p>NeRV mixes two divergences, the “forward” KL divergence and the “reverse” KL divergence, with the degree of mixing controlled by the <span class="math inline">\(\lambda\)</span> parameter:</p>
 <p><span class="math display">\[
 C_{NeRV} = \lambda C_{fwd} + \left(1 - \lambda \right) C_{rev} = \\
@@ -2288,7 +2321,7 @@ D_{KL}(Q||P)
 \]</span></p>
 </div>
 <div id="jse-force-constant" class="section level3">
-<h3>JSE force constant</h3>
+<h3>JSE Force Constant</h3>
 <p>The JSE cost is also a mixture of forward and reverse divergences, but its gradient with respect to the output probabilities is a lot simpler than NeRV’s:</p>
 <p><span class="math display">\[
 \frac{\partial C}{\partial q_{ij}} =
@@ -2304,7 +2337,59 @@ k_{ij} =
 D_{KL}(Q||Z)
 \right]
 \]</span></p>
-<p>If you have access to the <a href="https://dx.doi.org/10.1016/j.neucom.2012.12.036">JSE paper</a>, you can see that this is equivalent (once you’ve translated the nomenclature) to equation 37 in that publication. Success! <em>Now</em> we may take that long lie down.</p>
+<p>If you have access to the <a href="https://dx.doi.org/10.1016/j.neucom.2012.12.036">JSE paper</a>, you can see that this is equivalent (once you’ve translated the nomenclature) to equation 37 in that publication. Success!</p>
+</div>
+<div id="chi-square-force-constant" class="section level3">
+<h3>Chi-square Force Constant</h3>
+<p>Im and co-workers don’t state the gradient when using the chi-square divergence, so let’s derive the force constant.</p>
+<p>For this and the next few examples we will be using the t-SNE kernel. A generic expression for <span class="math inline">\(k_{ij}\)</span> under those circumstances that we will start from each time is:</p>
+<p><span class="math display">\[k_{ij} = -\left[ \frac{\partial C}{\partial q_{ij}} - \sum_{kl} \frac{\partial C}{\partial q_{kl}} q_{kl} \right] q_{ij}w_{ij}\]</span></p>
+<p>Moving on to the chi-square divergence:</p>
+<p><span class="math display">\[C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}^2}\]</span></p>
+<p>and the derivative is:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = -\frac{p_{ij}^2 - q_{ij}^2}{q_{ij}^2} = -\frac{p_{ij}^2}{q_{ij}^2} + 1\]</span></p>
+<p>Substituting into the expression for the force constant above, we can’t actually simplify all that much:</p>
+<p><span class="math display">\[k_{ij} = -\left[ -\frac{p_{ij}^2}{q_{ij}^2} + 1 - \sum_{kl} \left( -\frac{p_{kl}^2}{q_{kl}} + q_{kl} \right) \right] q_{ij}w_{ij} = -\left[ -\frac{p_{ij}^2}{q_{ij}^2} + \sum_{kl} \frac{p_{kl}^2}{q_{kl}} \right] q_{ij}w_{ij}\]</span></p>
+<p>at least we have it written down now.</p>
+</div>
+<div id="hellinger-force-constant" class="section level3">
+<h3>Hellinger Force Constant</h3>
+<p>We can also do the Hellinger Distance:</p>
+<p><span class="math display">\[C = \sum_{ij} \left(\sqrt{p_{ij}} - \sqrt{q_{ij}}\right)^2\]</span></p>
+<p>with derivative:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = -\frac{\sqrt{p_{ij}} - \sqrt{q_{ij}}}{\sqrt{q_{ij}}} = -\frac{\sqrt{p_{ij}}}{\sqrt{q_{ij}}} + 1\]</span></p>
+<p>Again, we won’t be getting much simplification, but here is the force constant.</p>
+<p><span class="math display">\[k_{ij} = -\left[ -\frac{\sqrt{p_{ij}}}{\sqrt{q_{ij}}} + 1 - \sum_{kl} \left( -\sqrt{p_{ij}}\sqrt{q_{ij}} + q_{kl} \right) \right] q_{ij}w_{ij} = -\left[ -\frac{\sqrt{p_{ij}}}{\sqrt{q_{ij}}} + \sum_{kl} \sqrt{p_{kl}q_{kl}} \right] q_{ij}w_{ij}\]</span></p>
+</div>
+<div id="ab-sne-force-constant" class="section level3">
+<h3>AB-SNE Force Constant</h3>
+<p>The AB-divergence gradient <em>is</em> given in the AB-SNE paper, but I thought it would be good practice to see if we can derive it. Here goes, starting with the divergence:</p>
+<p><span class="math display">\[C =\frac{1}{\alpha \beta} \sum_{ij} -p_{ij}^{\alpha} q_{ij}^{\beta} + \frac{\alpha}{\alpha + \beta}p_{ij}^{\alpha + \beta} + \frac{\beta}{\alpha + \beta}q_{ij}^{\alpha + \beta}\]</span></p>
+<p>and the derivative:</p>
+<p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = -\frac{1}{\alpha} q_{ij}^{\beta - 1} \left( p_{ij}^{\alpha} - q_{ij}^{\alpha} \right)\]</span></p>
+<p>Not much hope of any neat cancellation here either, but here goes the substitution into the <span class="math inline">\(k_{ij}\)</span> expression:</p>
+<p><span class="math display">\[k_{ij} = -\left[ -q_{ij}^{\beta - 1} \left( p_{ij}^{\alpha} - q_{ij}^{\alpha} \right) + \sum_{kl} q_{kl}^{\beta} \left( p_{kl}^{\alpha} - q_{kl}^{\alpha} \right) \right] \frac{q_{ij}w_{ij}}{\alpha}\]</span></p>
+<p>Finally, we can expand and rearrange a little to get the form given in the paper:</p>
+<p><span class="math display">\[k_{ij} = \left[ p_{ij}^{\alpha} q_{ij}^{\beta - 1} - q_{ij}^{\alpha + \beta - 1} - \sum_{kl} p_{kl}^{\alpha} q_{kl}^{\beta} + \sum_{kl} q_{kl}^{\alpha + \beta} \right] \frac{q_{ij}w_{ij}}{\alpha}\]</span></p>
+<p>Except I have this extra <span class="math inline">\(1 / \alpha\)</span> term in the force constant, which doesn’t show up in their gradient expression (and I think should). I have compared analytical and finite difference gradients for a variety of settings of <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> and the expression I have above seems correct. Doesn’t really matter, as this sort of constant is easily accounted for in the learning rate of the optimizer. Anyway, unlike the cost function, it’s easier to see that this force constant reduces to t-SNE when <span class="math inline">\(\alpha = 1, \beta = 0\)</span>.</p>
+</div>
+<div id="g-sne-force-constant" class="section level3">
+<h3>g-SNE Force Constant</h3>
+<p>A final derivation which is quite straightforward. Despite using a mixture of two divergences and two separate kernels, the g-SNE gradient is very simple compared to JSE and NeRV.</p>
+<p>You may recall the g-SNE cost function is:</p>
+<p><span class="math display">\[C = \sum_{ij} p_{ij} \log \frac{p_{ij}}{q_{ij}} + \lambda \sum_{ij} \hat{p}_{ij} \log \frac{\hat{p_{ij}}}{\hat{q}_{ij}}\]</span></p>
+<p>with <span class="math inline">\(\lambda\)</span> being a weighting factor as in NeRV, the un-hatted part of the cost function being the same as t-SNE, and the hatted quantities referring to using the reciprocal of the usual t-SNE kernel:</p>
+<p><span class="math display">\[\hat{w}_{ij} = 1 + f_{ij} = \frac{1}{w_{ij}}\]</span></p>
+<p>with the derivative being:</p>
+<p><span class="math display">\[\frac{\partial w_{ij}}{\partial f_{ij}} = 1\]</span></p>
+<p>Ignoring <span class="math inline">\(\lambda\)</span> for the moment, the corresponding expression for <span class="math inline">\(\hat{k}_{ij}\)</span> is therefore:</p>
+<p><span class="math display">\[\hat{k}_{ij} = \left( -\frac{\hat{p}_{ij}}{\hat{q}_{ij}} + 1\right)\frac{1}{\hat{S}} = -\left( \hat{p}_{ij} - \hat{q}_{ij} \right)\frac{1}{\hat{q}_{ij}\hat{S}}\]</span></p>
+<p>Because <span class="math inline">\(\hat{q}_{ij} = \hat{w}_{ij} / \hat{S}\)</span> the term outside the parentheses cancels to give:</p>
+<p><span class="math display">\[\hat{k}_{ij} = -\left( \hat{p}_{ij} - \hat{q}_{ij} \right)\frac{1}{\hat{w}_{ij}} = -\left( \hat{p}_{ij} - \hat{q}_{ij} \right)w_{ij}\]</span></p>
+<p>We can combine this with the typical t-SNE expression to give an overall expression for g-SNE:</p>
+<p><span class="math display">\[k_{ij} = \left[\left(p_{ij} - q_{ij}\right) -\lambda \left( \hat{p}_{ij} - \hat{q}_{ij} \right)\right]w_{ij}\]</span></p>
+<p>A very simple modification of the t-SNE gradient.</p>
+<p><em>Now</em> we may take that long lie down.</p>
 </div>
 </div>
 <div id="distance-based-embedding" class="section level2">
