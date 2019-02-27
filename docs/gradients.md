@@ -1227,7 +1227,7 @@ $$\frac{\partial C}{\partial q_{ij}} = -\frac{p_{ij}^2 - q_{ij}^2}{q_{ij}^2} = -
 Substituting into the expression for the force constant above, we can't actually
 simplify all that much:
 
-$$k_{ij} = -\left[ -\frac{p_{ij}^2}{q_{ij}^2} + 1 - \sum_{kl} \left( -\frac{p_{kl}^2}{q_{kl}} + q_{kl} \right) \right] q_{ij}w_{ij} = -\left[ -\frac{p_{ij}^2}{q_{ij}^2} + \sum_{kl} \frac{p_{kl}^2}{q_{kl}} \right] q_{ij}w_{ij}$$
+$$k_{ij} = -\left[ -\frac{p_{ij}^2}{q_{ij}^2} + 1 - \sum_{kl} \left( -\frac{p_{kl}^2}{q_{kl}} + q_{kl} \right) \right] q_{ij}w_{ij} = \left[ \frac{p_{ij}^2}{q_{ij}^2} - \sum_{kl} \frac{p_{kl}^2}{q_{kl}} \right] q_{ij}w_{ij}$$
 
 at least we have it written down now.
 
@@ -1243,7 +1243,7 @@ $$\frac{\partial C}{\partial q_{ij}} = -\frac{\sqrt{p_{ij}} - \sqrt{q_{ij}}}{\sq
 
 Again, we won't be getting much simplification, but here is the force constant.
 
-$$k_{ij} = -\left[ -\frac{\sqrt{p_{ij}}}{\sqrt{q_{ij}}} + 1 - \sum_{kl} \left( -\sqrt{p_{ij}}\sqrt{q_{ij}} + q_{kl} \right) \right] q_{ij}w_{ij} = -\left[ -\frac{\sqrt{p_{ij}}}{\sqrt{q_{ij}}} + \sum_{kl} \sqrt{p_{kl}q_{kl}} \right] q_{ij}w_{ij}$$
+$$k_{ij} = -\left[ -\frac{\sqrt{p_{ij}}}{\sqrt{q_{ij}}} + 1 - \sum_{kl} \left( -\sqrt{p_{ij}}\sqrt{q_{ij}} + q_{kl} \right) \right] q_{ij}w_{ij} = \left[ \frac{\sqrt{p_{ij}}}{\sqrt{q_{ij}}} - \sum_{kl} \sqrt{p_{kl}q_{kl}} \right] q_{ij}w_{ij}$$
 
 ### AB-SNE Force Constant
 
