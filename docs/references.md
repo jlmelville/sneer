@@ -248,10 +248,9 @@ https://github.com/gyrheart/gsne
 Not implemented in `sneer`. Like NeRV and JSE, suggests adding a second 
 divergence to encourage long range structure. In this case, it's also the KL divergence
 but with both the input and output kernels being the reciprocal of the typical
-t-SNE weight function, i.e. $\hat{w}_{ij} = (1 + d_{ij}^2)$. This means the
-$(p_{ij} - q_{ij})$ term in the t-SNE gradient becomes
-$(p_{ij} - \lambda\hat{p_{ij}}) - (q_{ij} - \lambda\hat{q_{ij}})$ where 
-$\lambda$ is the NeRV-like weighting term, which isn't so bad.
+t-SNE weight function. You can see a derivation of the gradient (at least up
+to the force constant) at the [gradients](http://jlmelville.github.io/sneer/gradients.html) 
+page.
 
 ## Perplexity
 
@@ -593,11 +592,18 @@ Im, D. J., Verma, N., & Branson, K. (2018).
 Stochastic Neighbor Embedding under f-divergences. 
 *arXiv preprint* *arXiv*:1811.01247.
 https://arxiv.org/abs/1811.01247
+https://github.com/jiwoongim/ft-SNE
 
 Looks at a subset of divergences, the f-divergences, which includes the 
 Kullback-Leibler and Jensen-Shannon divergences, suggesting that while clustered
 data is best served by the KL divergence, other types of data (manifolds, 
 hierarchical data) would benefit from other divergences.
+
+The code at the github page is an implementation in Theano, and does not use
+early exaggeration or the DBD optimization method. Instead it uses a learning
+rate and momentum decay, although by default the momentum switches back to a
+large value after the first 10% of the optimization, which is a little like the
+DBD method.
 
 ### Why Do Probability-Based Embeddings Work?
 

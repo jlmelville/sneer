@@ -1654,7 +1654,7 @@ div.tocify {
 <div id="global-t-sne-g-sne" class="section level3">
 <h3>Global t-SNE (g-SNE)</h3>
 <p>Zhou, Y., &amp; Sharpee, T. (2018). Using global t-SNE to preserve inter-cluster data structure. <em>bioRxiv</em>, 331611. <a href="https://doi.org/10.1101/331611" class="uri">https://doi.org/10.1101/331611</a> <a href="https://github.com/gyrheart/gsne" class="uri">https://github.com/gyrheart/gsne</a></p>
-<p>Not implemented in <code>sneer</code>. Like NeRV and JSE, suggests adding a second divergence to encourage long range structure. In this case, it’s also the KL divergence but with both the input and output kernels being the reciprocal of the typical t-SNE weight function, i.e. <span class="math inline">\(\hat{w}_{ij} = (1 + d_{ij}^2)\)</span>. This means the <span class="math inline">\((p_{ij} - q_{ij})\)</span> term in the t-SNE gradient becomes <span class="math inline">\((p_{ij} - \lambda\hat{p_{ij}}) - (q_{ij} - \lambda\hat{q_{ij}})\)</span> where <span class="math inline">\(\lambda\)</span> is the NeRV-like weighting term, which isn’t so bad.</p>
+<p>Not implemented in <code>sneer</code>. Like NeRV and JSE, suggests adding a second divergence to encourage long range structure. In this case, it’s also the KL divergence but with both the input and output kernels being the reciprocal of the typical t-SNE weight function. You can see a derivation of the gradient (at least up to the force constant) at the <a href="http://jlmelville.github.io/sneer/gradients.html">gradients</a> page.</p>
 </div>
 </div>
 <div id="perplexity" class="section level2">
@@ -1760,8 +1760,9 @@ div.tocify {
 <p>If you like divergences, this paper has you covered. Applies Bregman, f-, and <span class="math inline">\(\gamma\)</span>- divergences to COIL-20 and the Olivetti faces.</p>
 <p>Narayan, K. S., Punjani, A., &amp; Abbeel, P. (2015, June). Alpha-Beta Divergences Discover Micro and Macro Structures in Data. In <em>Proceedings of the 32nd International Conference on Machine Learning (ICML-14)</em> (pp 796-804). <a href="http://proceedings.mlr.press/v37/narayan15.html" class="uri">http://proceedings.mlr.press/v37/narayan15.html</a></p>
 <p>Considers using the generalized <span class="math inline">\(\alpha, \beta\)</span>-divergence (as discussed in the Cichocki paper above) as a generalization of t-SNE.</p>
-<p>Im, D. J., Verma, N., &amp; Branson, K. (2018). Stochastic Neighbor Embedding under f-divergences. <em>arXiv preprint</em> <em>arXiv</em>:1811.01247. <a href="https://arxiv.org/abs/1811.01247" class="uri">https://arxiv.org/abs/1811.01247</a></p>
+<p>Im, D. J., Verma, N., &amp; Branson, K. (2018). Stochastic Neighbor Embedding under f-divergences. <em>arXiv preprint</em> <em>arXiv</em>:1811.01247. <a href="https://arxiv.org/abs/1811.01247" class="uri">https://arxiv.org/abs/1811.01247</a> <a href="https://github.com/jiwoongim/ft-SNE" class="uri">https://github.com/jiwoongim/ft-SNE</a></p>
 <p>Looks at a subset of divergences, the f-divergences, which includes the Kullback-Leibler and Jensen-Shannon divergences, suggesting that while clustered data is best served by the KL divergence, other types of data (manifolds, hierarchical data) would benefit from other divergences.</p>
+<p>The code at the github page is an implementation in Theano, and does not use early exaggeration or the DBD optimization method. Instead it uses a learning rate and momentum decay, although by default the momentum switches back to a large value after the first 10% of the optimization, which is a little like the DBD method.</p>
 </div>
 <div id="why-do-probability-based-embeddings-work" class="section level3">
 <h3>Why Do Probability-Based Embeddings Work?</h3>
