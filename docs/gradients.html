@@ -1949,14 +1949,14 @@ q_{kl}
 - \left(1 - \kappa \right) \frac{p_{ij}}{z_{ij}}
 \]</span> <span class="math display">\[
 \frac{\partial D_{KL}(Q||Z)}{\partial q_{ij}} = 
-\kappa \left(\frac{p_{ij}}{z_{ij}}\right) 
-- \log\left(\frac{q_{ij}}{z_{ij}}\right)
+\log\left(\frac{q_{ij}}{z_{ij}}\right)
++ \kappa \left(\frac{p_{ij}}{z_{ij}}\right) 
 \]</span></p>
 <p>Once you add these derivatives together, multiplying by the <span class="math inline">\(\kappa\)</span> values in the cost function, terms cancel to leave a surprisingly simple derivative:</p>
 <p><span class="math display">\[
 \frac{\partial C}{\partial q_{ij}} = 
 \frac{\partial D_{JS}(p_{ij}||q_{ij})}{\partial q_{ij}} =
--\frac{1}{\kappa}\log\left(\frac{q_{ij}}{z_{ij}}\right)
+\frac{1}{\kappa}\log\left(\frac{q_{ij}}{z_{ij}}\right)
 \]</span></p>
 </div>
 <div id="chi2-chi-square" class="section level3">
@@ -2325,7 +2325,7 @@ D_{KL}(Q||P)
 <p>The JSE cost is also a mixture of forward and reverse divergences, but its gradient with respect to the output probabilities is a lot simpler than NeRV’s:</p>
 <p><span class="math display">\[
 \frac{\partial C}{\partial q_{ij}} =
--\frac{1}{\kappa} \log \left( \frac{q_{ij}}{z_{ij}} \right)
+\frac{1}{\kappa} \log \left( \frac{q_{ij}}{z_{ij}} \right)
 \]</span> That’s in the same form as the reverse part of NeRV. Like NeRV, JSE also uses an exponential kernel and point-wise normalization, so we can pretty much just swap <span class="math inline">\(z\)</span> in everywhere we see <span class="math inline">\(p\)</span> in the force constant expression for NeRV, and remember to use <span class="math inline">\(1 / \kappa\)</span> as the weighting factor:</p>
 <p><span class="math display">\[
 k_{ij} = 

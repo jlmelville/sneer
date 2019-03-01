@@ -618,8 +618,8 @@ $$\frac{\partial D_{KL}(P||Z)}{\partial q_{ij}} =
 $$
 $$
 \frac{\partial D_{KL}(Q||Z)}{\partial q_{ij}} = 
-\kappa \left(\frac{p_{ij}}{z_{ij}}\right) 
-- \log\left(\frac{q_{ij}}{z_{ij}}\right)
+\log\left(\frac{q_{ij}}{z_{ij}}\right)
++ \kappa \left(\frac{p_{ij}}{z_{ij}}\right) 
 $$
 
 Once you add these derivatives together, multiplying by the $\kappa$ values in
@@ -628,7 +628,7 @@ the cost function, terms cancel to leave a surprisingly simple derivative:
 $$
 \frac{\partial C}{\partial q_{ij}} = 
 \frac{\partial D_{JS}(p_{ij}||q_{ij})}{\partial q_{ij}} =
--\frac{1}{\kappa}\log\left(\frac{q_{ij}}{z_{ij}}\right)
+\frac{1}{\kappa}\log\left(\frac{q_{ij}}{z_{ij}}\right)
 $$
 
 ### $\chi^2$ (Chi-square):
@@ -1182,7 +1182,7 @@ gradient with respect to the output probabilities is a lot simpler than NeRV's:
 
 $$
 \frac{\partial C}{\partial q_{ij}} =
--\frac{1}{\kappa} \log \left( \frac{q_{ij}}{z_{ij}} \right)
+\frac{1}{\kappa} \log \left( \frac{q_{ij}}{z_{ij}} \right)
 $$
 That's in the same form as the reverse part of NeRV. Like NeRV, JSE also uses
 an exponential kernel and point-wise normalization, so we can pretty much
