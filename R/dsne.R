@@ -287,9 +287,10 @@ heavy_tail_gr_alpha <- function(d2m, beta = 1, alpha = 1.5e-8,
                                 wm = heavy_tail_weight(d2m, beta = beta,
                                                        alpha = alpha),
                                 eps = .Machine$double.eps) {
-  c1 <- alpha * beta * d2m + 1
-  c1e <- c1 + eps
-  hm <- log(c1e) / (alpha * alpha + eps) - (beta * d2m) / (alpha * c1e)
+  aainv <- 1 / (alpha * alpha + eps)
+  abd <- alpha * beta * d2m
+  c1einv <- 1 / (abd + 1 + eps)
+  hm <- -aainv * (log(c1einv) + abd * c1einv)
   wm * hm
 }
 
@@ -332,10 +333,15 @@ heavy_tail_cost_gr_beta_plugin <- function(inp, out, method, xi) {
 heavy_tail_cost_gr_alpha_kl_symm <- function(inp, out, method, xi) {
   xi_alpha_range <- 1:(length(method$kernel$alpha))
 
-  alpha <- method$kernel$alpha + method$eps
+  alpha <- method$kernel$alpha
   beta <- method$kernel$beta
-  c1 <- alpha * beta * out$d2m + 1 + method$eps
-  gr <- ((beta * out$d2m) / c1 - log(c1) / alpha) / alpha
+  eps <- method$eps
+  
+  aainv <- 1 / (alpha * alpha + eps)
+  c1 <- alpha * beta * out$d2m + 1
+  c1inv <- 1 / (c1 + eps)
+
+  gr <- (log(c1inv) - c1inv + 1) * aainv
   gr <- gr * (inp$pm - out$qm)
   if (method$dyn$alpha == "point") {
     gr <- rowSums(gr)
@@ -373,11 +379,16 @@ heavy_tail_cost_gr_beta_kl_symm <- function(inp, out, method, xi) {
 heavy_tail_cost_gr_alpha_kl_asymm <- function(inp, out, method, xi) {
   xi_alpha_range <- 1:(length(method$kernel$alpha))
 
-  alpha <- method$kernel$alpha + method$eps
+  alpha <- method$kernel$alpha
   beta <- method$kernel$beta
-  c1 <- alpha * beta * out$d2m + 1 + method$eps
-  gr <- ((beta * out$d2m) / c1 - log(c1) / alpha) / alpha
-  gr <- gr * out$qcm * ((inp$pm / (out$qm + method$eps)) - 1)
+  eps <- method$eps
+  aainv <- 1 / (alpha * alpha + eps)
+
+  c1 <- alpha * beta * out$d2m + 1
+  c1inv <- 1 / (c1 + eps)
+  gr <- (log(c1inv) + 1 - c1inv) * aainv
+  
+  gr <- gr * out$qcm * ((inp$pm / (out$qm + eps)) - 1)
   if (method$dyn$alpha == "point") {
     gr <- rowSums(gr)
   }

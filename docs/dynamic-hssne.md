@@ -113,6 +113,36 @@ $$
 where, using the power of precognition, I'm pulling out a factor of -1, which 
 comes in handy below.
 
+We can simplify the expression a bit by pulling a factor of $1/\alpha^2$ out
+of the expression in parentheses:
+
+$$
+\frac{\partial w_{ij}}{\partial \alpha} =
+-
+\left[
+\frac{\alpha f_{ij}}{\left(\alpha f_{ij} +1\right)}
+-
+\log\left(\alpha f_{ij} + 1\right)
+\right]
+\frac{w_{ij}}{\alpha^2}
+$$
+
+It might also be cheaper computationally to use the fact that 
+$x / (x + 1) = 1 - 1 / x$ and $\log x = - \log(1 / x)$ to get to:
+
+$$
+\frac{\partial w_{ij}}{\partial \alpha} =
+-
+\left[
+1 - 
+\frac{1}{\left(\alpha f_{ij} +1\right)}
++
+\log\left(\frac{1}{\alpha f_{ij} + 1}\right)
+\right]
+\frac{w_{ij}}{\alpha^2}
+$$
+
+
 Inserting the expression for the gradient, we get:
 
 $$
@@ -120,11 +150,12 @@ $$
   \sum_{ij}
   \left[
     \left(
-      \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
-      -
-      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+      1 - 
+      \frac{1}{\left(\alpha f_{ij} +1\right)}
+      +
+      \log\left\{\frac{1}{\alpha f_{ij} + 1}\right\}
     \right)
-    \left(\frac{-w_{ij}}{S}\right)
+    \left(\frac{-w_{ij}}{\alpha^2S}\right)
       \left(
         -\frac{p_{ij}}{q_{ij}} + 1
       \right)
@@ -141,22 +172,25 @@ $$
   \sum_{ij}
   \left[
     \left(
-      \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
-      -
-      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+1 - 
+\frac{1}{\left(\alpha f_{ij} +1\right)}
++
+\log\left\{\frac{1}{\alpha f_{ij} + 1}\right\}
     \right)
-     \left(-q_{ij}\right)
+     \left(\frac{-q_{ij}}{\alpha^2}\right)
       \left(
         -\frac{p_{ij}}{q_{ij}} + 1
       \right)
-\right]
+\right] \\
 =
+  \frac{1}{\alpha^2}
   \sum_{ij}
   \left[
     \left(
-      \frac{f_{ij}}{\alpha \left(\alpha f_{ij} +1\right)}
-      -
-      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha ^ 2}
+      1 - 
+      \frac{1}{\left(\alpha f_{ij} +1\right)}
+      +
+      \log\left\{\frac{1}{\alpha f_{ij} + 1}\right\}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -165,24 +199,7 @@ $$
 $$
 
 This looks just like the SSNE or t-SNE gradient, except with an admittedly
-uglier multiplier of $p_{ij} - q_{ij}$. You may want to pull a $1/\alpha$ term
-out to give:
-
-$$
-\frac{\partial C}{\partial \alpha} = 
-  \frac{1}{\alpha}
-  \sum_{ij}
-  \left[
-    \left(
-      \frac{f_{ij}}{\alpha f_{ij} +1}
-      -
-      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha}
-    \right)
-      \left(
-        p_{ij} - q_{ij}
-      \right)
-\right]
-$$
+uglier multiplier of $p_{ij} - q_{ij}$.
 
 In principle, this is all you need to optimize $\alpha$ as one extra parameter.
 However, there's the slight problem that $\alpha$ is constrained to be larger
@@ -216,13 +233,14 @@ $$
 
 $$
 \frac{\partial C}{\partial \xi} = 
-  \frac{2\xi}{\alpha}
+  \frac{2\xi}{\alpha^2}
   \sum_{ij}
   \left[
     \left(
-      \frac{f_{ij}}{\alpha f_{ij} +1}
-      -
-      \frac{\log\left(\alpha f_{ij} + 1\right)}{\alpha}
+      1 - 
+      \frac{1}{\left(\alpha f_{ij} +1\right)}
+      +
+      \log\left\{\frac{1}{\alpha f_{ij} + 1}\right\}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -258,22 +276,23 @@ $$
 \frac{\partial w_{ij}}{\partial \alpha} 
 =-
 \left[
-\frac{\beta_i f_{ij}}{\alpha \left(\alpha \beta_i f_{ij} +1\right)}
+  \frac{\beta_i f_{ij}}{\alpha \left(\alpha \beta_i f_{ij} +1\right)}
 -
-\frac{\log\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha ^ 2}
+  \frac{\log\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha ^ 2}
 \right]
 w_{ij}
 $$
 And so, skipping to the actual derivative we care about:
 $$
 \frac{\partial C}{\partial \xi} = 
-  \frac{2\xi}{\alpha}
+  \frac{2\xi}{\alpha ^ 2}
   \sum_{ij}
   \left[
     \left(
-      \frac{\beta_i f_{ij}}{\alpha \beta_i f_{ij} +1}
-      -
-      \frac{\log\left(\alpha \beta_i f_{ij} + 1\right)}{\alpha}
+      1 - 
+      \frac{1}{\left(\alpha \beta_{i}f_{ij} +1\right)}
+      +
+      \log\left\{\frac{1}{\alpha \beta_{i} f_{ij} + 1}\right\}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -299,13 +318,14 @@ the same, except we only need to sum over $j$:
 
 $$
 \frac{\partial C}{\partial \xi_i} = 
-  \frac{2\xi_i}{\alpha_i}
+  \frac{2\xi_i}{\alpha_i^2}
   \sum_{j}
   \left[
     \left(
-      \frac{\beta_i f_{ij}}{\alpha_i \beta_i f_{ij} +1}
-      -
-      \frac{\log\left(\alpha_i \beta_i f_{ij} + 1\right)}{\alpha_i}
+      1 - 
+      \frac{1}{\left(\alpha_i \beta_{i}f_{ij} +1\right)}
+      +
+      \log\left\{\frac{1}{\alpha_i \beta_{i} f_{ij} + 1}\right\}
     \right)
       \left(
         p_{ij} - q_{ij}
@@ -354,7 +374,7 @@ To demonstrate the connection between HSSNE and it-SNE, here's the gradient with
 respect to the t-distribution degree of freedom parameter $\nu_i$, which is
 analogous to $\alpha_i$ in inhomogeneous HSSNE. Note that despite being named
 after t-SNE, it-SNE uses a point-wise normalization, so the probabilities below
-are written as e.g. $p_{j|i)$ rather than $p_{ij}$.
+are written as e.g. $p_{j|i}$ rather than $p_{ij}$.
 
 The kernel function is:
 
@@ -390,9 +410,9 @@ $$
         p_{j|i} - q_{j|i}
       \right)
 $$
-This has a very similar structure to the HSSNE version. The extension to the 
-gradient with respect to $\xi$ is obvious (i.e. multiply the RHS in the above 
-equation by $2\xi$).
+This has a very similar structure to the HSSNE version, although with less scope
+for simplifying. The extension to the gradient with respect to $\xi$ is obvious
+(i.e. multiply the RHS in the above equation by $2\xi$).
 
 ## Parametric t-SNE
 
