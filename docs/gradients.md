@@ -639,7 +639,7 @@ the reverse KL divergence (which we looked at as part of NeRV) and the Jensen-Sh
 divergence we just looked at in JSE. But there are other members of the f-divergence
 family. One is the $\chi^2$ (chi-square) divergence:
 
-$$C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}^2}$$
+$$C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}}$$
 
 $$\frac{\partial C}{\partial q_{ij}} = -\frac{p_{ij}^2 - q_{ij}^2}{q_{ij}^2} = -\frac{p_{ij}^2}{q_{ij}^2} + 1$$
 
@@ -1218,7 +1218,7 @@ $$k_{ij} = -\left[ \frac{\partial C}{\partial q_{ij}} - \sum_{kl} \frac{\partial
 
 Moving on to the chi-square divergence:
 
-$$C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}^2}$$
+$$C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}}$$
 
 and the derivative is:
 

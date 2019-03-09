@@ -1962,7 +1962,7 @@ q_{kl}
 <div id="chi2-chi-square" class="section level3">
 <h3><span class="math inline">\(\chi^2\)</span> (Chi-square):</h3>
 <p><a href="https://arxiv.org/abs/1811.01247">Im, Verma and Branson</a> describe replacing the KL divergence with other members of the f-divergence family. These include the reverse KL divergence (which we looked at as part of NeRV) and the Jensen-Shannon divergence we just looked at in JSE. But there are other members of the f-divergence family. One is the <span class="math inline">\(\chi^2\)</span> (chi-square) divergence:</p>
-<p><span class="math display">\[C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}^2}\]</span></p>
+<p><span class="math display">\[C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}}\]</span></p>
 <p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = -\frac{p_{ij}^2 - q_{ij}^2}{q_{ij}^2} = -\frac{p_{ij}^2}{q_{ij}^2} + 1\]</span></p>
 </div>
 <div id="hellinger-distance" class="section level3">
@@ -2345,7 +2345,7 @@ D_{KL}(Q||Z)
 <p>For this and the next few examples we will be using the t-SNE kernel. A generic expression for <span class="math inline">\(k_{ij}\)</span> under those circumstances that we will start from each time is:</p>
 <p><span class="math display">\[k_{ij} = -\left[ \frac{\partial C}{\partial q_{ij}} - \sum_{kl} \frac{\partial C}{\partial q_{kl}} q_{kl} \right] q_{ij}w_{ij}\]</span></p>
 <p>Moving on to the chi-square divergence:</p>
-<p><span class="math display">\[C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}^2}\]</span></p>
+<p><span class="math display">\[C = \sum_{ij} \frac{\left(p_{ij} - q_{ij}\right)^2}{q_{ij}}\]</span></p>
 <p>and the derivative is:</p>
 <p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = -\frac{p_{ij}^2 - q_{ij}^2}{q_{ij}^2} = -\frac{p_{ij}^2}{q_{ij}^2} + 1\]</span></p>
 <p>Substituting into the expression for the force constant above, we can’t actually simplify all that much:</p>
