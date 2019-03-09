@@ -658,16 +658,28 @@ for more complex divergences below.
 
 ### $\alpha$-$\beta$ Divergence
 
-[Narayan, Punjani and Abbeel](http://proceedings.mlr.press/v37/narayan15.html) 
-describe AB-SNE, which uses the alpha-beta divergence., where $\alpha$ and
-$\beta$ are free parameters.
+Cichocki and co-workers came up with the 
+[AB-divergence](https://doi.org/10.3390/e13010134) (also see their 
+[earlier paper](https://doi.org/10.3390/e12061532)), which generalizes a whole
+load of divergences, including the Kullback-Leibler and all the f-divergences
+described above. Narayan, Punjani and Abbeel used it to develop
+[AB-SNE](http://proceedings.mlr.press/v37/narayan15.html). As the name suggests,
+the AB-divergence has two free parameters, $\alpha$ and $\beta$:
 
 $$C =\frac{1}{\alpha \beta} \sum_{ij} -p_{ij}^{\alpha} q_{ij}^{\beta} + \frac{\alpha}{\alpha + \beta}p_{ij}^{\alpha + \beta} + \frac{\beta}{\alpha + \beta}q_{ij}^{\alpha + \beta}$$
+
+There are several special cases to deal with where this expression explodes, 
+namely $\alpha = 0$, $\beta = 0$, when both $\alpha = 0$ *and* $\beta = 0$ at
+the same time, and $\alpha + \beta = 0$, but the paper describes several 
+alternative expressions for those cases.
 
 $$\frac{\partial C}{\partial q_{ij}} = -\frac{1}{\alpha} q_{ij}^{\beta - 1} \left( p_{ij}^{\alpha} - q_{ij}^{\alpha} \right)$$
 
 It's not very clear from the cost function, but when we derive the gradient
-below, you can see that you get t-SNE back with $\alpha = 1$ and $\beta = 0$
+below, you can see that you get t-SNE back with $\alpha = 1$ and $\beta = 0$.
+The AB-SNE paper is of particular interest because it provides a meaningful
+guide on how to interpret changing $\alpha$ and $\beta$ rather than leaving you
+to fiddle with them randomly.
 
 ## Some Similarity Kernels and their Derivatives
 

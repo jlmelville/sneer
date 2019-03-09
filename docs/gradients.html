@@ -1974,10 +1974,11 @@ q_{kl}
 </div>
 <div id="alpha-beta-divergence" class="section level3">
 <h3><span class="math inline">\(\alpha\)</span>-<span class="math inline">\(\beta\)</span> Divergence</h3>
-<p><a href="http://proceedings.mlr.press/v37/narayan15.html">Narayan, Punjani and Abbeel</a> describe AB-SNE, which uses the alpha-beta divergence., where <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> are free parameters.</p>
+<p>Cichocki and co-workers came up with the <a href="https://doi.org/10.3390/e13010134">AB-divergence</a> (also see their <a href="https://doi.org/10.3390/e12061532">earlier paper</a>), which generalizes a whole load of divergences, including the Kullback-Leibler and all the f-divergences described above. Narayan, Punjani and Abbeel used it to develop <a href="http://proceedings.mlr.press/v37/narayan15.html">AB-SNE</a>. As the name suggests, the AB-divergence has two free parameters, <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span>:</p>
 <p><span class="math display">\[C =\frac{1}{\alpha \beta} \sum_{ij} -p_{ij}^{\alpha} q_{ij}^{\beta} + \frac{\alpha}{\alpha + \beta}p_{ij}^{\alpha + \beta} + \frac{\beta}{\alpha + \beta}q_{ij}^{\alpha + \beta}\]</span></p>
+<p>There are several special cases to deal with where this expression explodes, namely <span class="math inline">\(\alpha = 0\)</span>, <span class="math inline">\(\beta = 0\)</span>, when both <span class="math inline">\(\alpha = 0\)</span> <em>and</em> <span class="math inline">\(\beta = 0\)</span> at the same time, and <span class="math inline">\(\alpha + \beta = 0\)</span>, but the paper describes several alternative expressions for those cases.</p>
 <p><span class="math display">\[\frac{\partial C}{\partial q_{ij}} = -\frac{1}{\alpha} q_{ij}^{\beta - 1} \left( p_{ij}^{\alpha} - q_{ij}^{\alpha} \right)\]</span></p>
-<p>It’s not very clear from the cost function, but when we derive the gradient below, you can see that you get t-SNE back with <span class="math inline">\(\alpha = 1\)</span> and <span class="math inline">\(\beta = 0\)</span></p>
+<p>It’s not very clear from the cost function, but when we derive the gradient below, you can see that you get t-SNE back with <span class="math inline">\(\alpha = 1\)</span> and <span class="math inline">\(\beta = 0\)</span>. The AB-SNE paper is of particular interest because it provides a meaningful guide on how to interpret changing <span class="math inline">\(\alpha\)</span> and <span class="math inline">\(\beta\)</span> rather than leaving you to fiddle with them randomly.</p>
 </div>
 </div>
 <div id="some-similarity-kernels-and-their-derivatives" class="section level2">
