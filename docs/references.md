@@ -15,7 +15,7 @@ available in `sneer` or I just think are interesting. I haven't tried to be
 exhaustive. Some areas I haven't had time or inclination to investigate, 
 including out-of-sample mapping and parametric t-SNE (e.g. 
 [Lion t-SNE](https://arxiv.org/abs/1708.04983)), or
-graph layout (e.g. [tsNET](https://doi.org/10.1111/cgf.13187).
+graph layout (e.g. [tsNET](https://doi.org/10.1111/cgf.13187)).
 
 I've tried to link to the offical publication websites
 rather than to PDFs directly, so it's a bit easier to find or confirm
@@ -491,6 +491,17 @@ https://github.com/CannyLab/tsne-cuda
 
 BH t-SNE implemented on a GPU.
 
+Policar, P. G., Strazar, M., & Zupan, B. (2019).
+openTSNE: a modular Python library for t-SNE dimensionality reduction and embedding.
+*bioRxiv*, 731877.
+<https://doi.org/10.1101/731877>
+<https://github.com/pavlin-policar/openTSNE>
+
+Describes a Python package that implements a lot of state-of-the-art practices:
+Barnes-Hut of FFT, PCA initialization, perplexity annealing, and allows for
+embedding new points.
+
+
 ### Other Fast t-SNE Methods
 
 Many of these methods are intended for interactive data analysis.
@@ -543,8 +554,8 @@ partitioned to each pair of points, so as the dataset grows this will naturally
 lead to lowered average similarities. This results in the cost function having a
 dependence on the size of the dataset (as in `sneer` there is an attempt to
 normalize for this). Additionally, this means that the $p_{ij} - q_{ij}$
-term in the gradient to zero as the dataset sizes increase, and because of the 
-Student-t distribution, the other bit of the t-SNE gradient term 
+term in the gradient tends to zero as the dataset sizes increase, and because of
+the Student-t distribution, the other bit of the t-SNE gradient term
 $w_{ij} (\mathbf{y}_i - \mathbf{y}_j)$ *also* tends to zero as the embedding
 area grows, i.e. over the course of the optimization. An adaptive learning rate
 is suggested to counteract these tendencies:

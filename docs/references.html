@@ -7,6 +7,7 @@
 <meta charset="utf-8" />
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
 
@@ -85,8 +86,6 @@ overflow: auto;
 margin-left: 2%;
 position: fixed;
 border: 1px solid #ccc;
-webkit-border-radius: 6px;
-moz-border-radius: 6px;
 border-radius: 6px;
 }
 
@@ -114,9 +113,14 @@ font-size: 12px;
 .tocify-subheader .tocify-subheader {
 text-indent: 30px;
 }
-
 .tocify-subheader .tocify-subheader .tocify-subheader {
 text-indent: 40px;
+}
+.tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader {
+text-indent: 50px;
+}
+.tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader .tocify-subheader {
+text-indent: 60px;
 }
 
 .tocify .tocify-item > a, .tocify .nav-list .nav-header {
@@ -520,13 +524,13 @@ float: none;
 
           item.append($("<a/>", {
 
-            "text": self.text()
+            "html": self.html()
 
           }));
 
         } else {
 
-          item.text(self.text());
+          item.html(self.html());
 
         }
 
@@ -1343,9 +1347,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type="text/css">
 .main-container {
@@ -1376,8 +1378,6 @@ summary {
 </style>
 
 
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -1435,48 +1435,9 @@ summary {
 }
 </style>
 
-<script>
-$(document).ready(function () {
-  window.buildTabsets("TOC");
-});
-
-$(document).ready(function () {
-  $('.tabset-dropdown > .nav-tabs > li').click(function () {
-    $(this).parent().toggleClass('nav-tabs-open')
-  });
-});
-</script>
-
 <!-- code folding -->
 
 
-
-<script>
-$(document).ready(function ()  {
-
-    // move toc-ignore selectors from section div to header
-    $('div.section.toc-ignore')
-        .removeClass('toc-ignore')
-        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
-
-    // establish options
-    var options = {
-      selectors: "h1,h2,h3",
-      theme: "bootstrap3",
-      context: '.toc-content',
-      hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
-      },
-      ignoreSelector: ".toc-ignore",
-      scrollTo: 0
-    };
-    options.showAndHide = false;
-    options.smoothScroll = true;
-
-    // tocify
-    var toc = $("#TOC").tocify(options).data("toc-tocify");
-});
-</script>
 
 <style type="text/css">
 
@@ -1525,8 +1486,6 @@ div.tocify {
 
 .tocify-subheader .tocify-item {
   font-size: 0.90em;
-  padding-left: 25px;
-  text-indent: 0;
 }
 
 .tocify .list-group-item {
@@ -1541,6 +1500,16 @@ div.tocify {
 }
 
 </style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
 
 <!-- setup 3col/9col grid for toc_float and main content  -->
 <div class="row-fluid">
@@ -1564,7 +1533,7 @@ div.tocify {
 
 
 <p>Previous: <a href="visualization.html">Visualization</a>. Up: <a href="index.html">Index</a>.</p>
-<p>Here’s a list of things (mainly papers) that provided the various options available in <code>sneer</code> or I just think are interesting. I haven’t tried to be exhaustive. Some areas I haven’t had time or inclination to investigate, including out-of-sample mapping and parametric t-SNE (e.g.  <a href="https://arxiv.org/abs/1708.04983">Lion t-SNE</a>), or graph layout (e.g. <a href="https://doi.org/10.1111/cgf.13187">tsNET</a>.</p>
+<p>Here’s a list of things (mainly papers) that provided the various options available in <code>sneer</code> or I just think are interesting. I haven’t tried to be exhaustive. Some areas I haven’t had time or inclination to investigate, including out-of-sample mapping and parametric t-SNE (e.g.  <a href="https://arxiv.org/abs/1708.04983">Lion t-SNE</a>), or graph layout (e.g. <a href="https://doi.org/10.1111/cgf.13187">tsNET</a>).</p>
 <p>I’ve tried to link to the offical publication websites rather than to PDFs directly, so it’s a bit easier to find or confirm bibliographic information.</p>
 <div id="embedding-methods" class="section level2">
 <h2>Embedding Methods</h2>
@@ -1736,6 +1705,8 @@ div.tocify {
 <p>Compares BH t-SNE with standard t-SNE in terms of neighbor retrieval over several datasets. They confirm that it works very well, and recommend the current default setting for the hyperparameter <span class="math inline">\(\theta = 0.5\)</span>.</p>
 <p>Chan, D. M., Rao, R., Huang, F., &amp; Canny, J. F. (2018). t-SNE-CUDA: GPU-Accelerated t-SNE and its Applications to Modern Data. <em>arXiv preprint</em> <em>arXiv</em>:1807.11824. <a href="https://github.com/CannyLab/tsne-cuda" class="uri">https://github.com/CannyLab/tsne-cuda</a></p>
 <p>BH t-SNE implemented on a GPU.</p>
+<p>Policar, P. G., Strazar, M., &amp; Zupan, B. (2019). openTSNE: a modular Python library for t-SNE dimensionality reduction and embedding. <em>bioRxiv</em>, 731877. <a href="https://doi.org/10.1101/731877" class="uri">https://doi.org/10.1101/731877</a> <a href="https://github.com/pavlin-policar/openTSNE" class="uri">https://github.com/pavlin-policar/openTSNE</a></p>
+<p>Describes a Python package that implements a lot of state-of-the-art practices: Barnes-Hut of FFT, PCA initialization, perplexity annealing, and allows for embedding new points.</p>
 </div>
 <div id="other-fast-t-sne-methods" class="section level3">
 <h3>Other Fast t-SNE Methods</h3>
@@ -1749,7 +1720,7 @@ div.tocify {
 <p>Uses WebGL textures to calculate approximate repulsive interactions and then uses tensorflowjs to optimize.</p>
 <p>bigMap: Big Data Mapping with Parallelized t-SNE Garriga, J., &amp; Bartumeus, F. (2018). <em>arXiv preprint</em> <em>arXiv</em>:1812.09869. <a href="https://cran.r-project.org/package=bigMap" class="uri">https://cran.r-project.org/package=bigMap</a></p>
 <p>An R package implementing a parallelized t-SNE algorithm intended to be distributed across multiple machines in a cluster. This requires a smoother optimization scheme than the effect of early exaggeration causes, so it must do without that (and also the momentum switching that occurs with the usual DBD optimizer).</p>
-<p>There is also an interesting discussion of what they call “the big crowd problem”, which arises due to the normalization of affinities into probabilities: there is only a fixed amount of probability mass that can be partitioned to each pair of points, so as the dataset grows this will naturally lead to lowered average similarities. This results in the cost function having a dependence on the size of the dataset (as in <code>sneer</code> there is an attempt to normalize for this). Additionally, this means that the <span class="math inline">\(p_{ij} - q_{ij}\)</span> term in the gradient to zero as the dataset sizes increase, and because of the Student-t distribution, the other bit of the t-SNE gradient term <span class="math inline">\(w_{ij} (\mathbf{y}_i - \mathbf{y}_j)\)</span> <em>also</em> tends to zero as the embedding area grows, i.e. over the course of the optimization. An adaptive learning rate is suggested to counteract these tendencies: <span class="math inline">\(\eta = \log(N - 1) (\mathbf{y}_{max} - \mathbf{y}_{min}) / 2\)</span>. That learning rate does however suggest that with the standard t-SNE initialization, where <span class="math inline">\((\mathbf{y}_{max} - \mathbf{y}_{min})\)</span> is very close to 0, would result in a very small learning rate initially, and indeed the default random initialization is a random distribution over a circle of radius 1, which suggests the typical t-SNE initalization would be a problem.</p>
+<p>There is also an interesting discussion of what they call “the big crowd problem”, which arises due to the normalization of affinities into probabilities: there is only a fixed amount of probability mass that can be partitioned to each pair of points, so as the dataset grows this will naturally lead to lowered average similarities. This results in the cost function having a dependence on the size of the dataset (as in <code>sneer</code> there is an attempt to normalize for this). Additionally, this means that the <span class="math inline">\(p_{ij} - q_{ij}\)</span> term in the gradient tends to zero as the dataset sizes increase, and because of the Student-t distribution, the other bit of the t-SNE gradient term <span class="math inline">\(w_{ij} (\mathbf{y}_i - \mathbf{y}_j)\)</span> <em>also</em> tends to zero as the embedding area grows, i.e. over the course of the optimization. An adaptive learning rate is suggested to counteract these tendencies: <span class="math inline">\(\eta = \log(N - 1) (\mathbf{y}_{max} - \mathbf{y}_{min}) / 2\)</span>. That learning rate does however suggest that with the standard t-SNE initialization, where <span class="math inline">\((\mathbf{y}_{max} - \mathbf{y}_{min})\)</span> is very close to 0, would result in a very small learning rate initially, and indeed the default random initialization is a random distribution over a circle of radius 1, which suggests the typical t-SNE initalization would be a problem.</p>
 </div>
 <div id="divergences" class="section level3">
 <h3>Divergences</h3>
@@ -1809,6 +1780,49 @@ $(document).ready(function () {
 });
 
 
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = false;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
 </script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
