@@ -471,6 +471,7 @@ Linderman, G. C., Rachh, M., Hoskins, J. G., Steinerberger, S., & Kluger, Y. (20
 Efficient Algorithms for t-distributed Stochastic Neighborhood Embedding.
 *arXiv preprint* *arXiv*:1712.09005.
 <https://arxiv.org/abs/1712.09005>
+<https://doi.org/10.1038/s41592-018-0308-4>
 <https://github.com/KlugerLab/FIt-SNE>
 
 Modified Barnes-Hut t-SNE by using interpolation onto a grid and using a Fast
