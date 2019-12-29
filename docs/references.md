@@ -143,9 +143,7 @@ This paper applies the heavy-tailed t-SNE to the
 [small NORB](https://cs.nyu.edu/~ylclab/data/norb-v1.0-small/) and
 [CIFAR 10 and 100](https://www.cs.toronto.edu/~kriz/cifar.html) datasets and
 suggest a slightly heavier tail than mentioned in the Kobak paper, although they
-don't touch on optimization time. Also, they say that the Kobak paper only tries
-the heavy-tail t-SNE on "toy" datasets, which doesn't seem true for any revision
-of that paper on arXiv.
+don't touch on optimization time.
 
 ### Inhomogeneous t-SNE
 
