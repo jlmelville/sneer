@@ -129,9 +129,23 @@ Heavy-tailed kernels reveal a finer cluster structure in t-SNE visualisations
 <https://arxiv.org/abs/1902.05804>
 <https://github.com/dkobak/finer-tsne>
 
-Describes implementing HSSNE (or something exceptionally close to it in) in
-the [FIt-SNE](https://github.com/KlugerLab/FIt-SNE) software (see below), and
-some interesting discussion on effective values for the heavy tailedness.
+Describes implementing HSSNE in the 
+[FIt-SNE](https://github.com/KlugerLab/FIt-SNE) software (see below), and
+some interesting discussion on effective values for the heavy tailedness. They
+also note that optimization time increases with heavier tails.
+
+Kahloot, K., & Ekler, P. (2019).
+Improving t-SNE clustering and visualization.
+<http://real.mtak.hu/100794/1/AACS19_paper_12.pdf>
+<https://github.com/kkahloots/Improving-t-SNE-Visualization-and-Clustering>
+
+This paper applies the heavy-tailed t-SNE to the
+[small NORB](https://cs.nyu.edu/~ylclab/data/norb-v1.0-small/) and
+[CIFAR 10 and 100](https://www.cs.toronto.edu/~kriz/cifar.html) datasets and
+suggest a slightly heavier tail than mentioned in the Kobak paper, although they
+don't touch on optimization time. Also, they say that the Kobak paper only tries
+the heavy-tail t-SNE on "toy" datasets, which doesn't seem true for any revision
+of that paper on arXiv.
 
 ### Inhomogeneous t-SNE
 
@@ -345,9 +359,12 @@ rate of 1), and a much larger exaggeration factor of *n* / 10, where *n* is the
 number of points in the dataset, may be more effective than the usual early
 exaggeration settings.
 
-Belkina, A. C., Ciccolella, C. O., Anno, R., Spidlen, J., Halpert, R., & Snyder-Cappione, J. (2018).
-Automated optimal parameters for T-distributed stochastic neighbor embedding improve visualization and allow analysis of large datasets. *bioRxiv*, 451690.
-<https://www.biorxiv.org/content/10.1101/451690v2.abstract>
+Belkina, A. C., Ciccolella, C. O., Anno, R., Halpert, R., Spidlen, J., & Snyder-Cappione, J. E. (2019). 
+Automated optimized parameters for T-distributed stochastic neighbor embedding improve visualization and analysis of large datasets. 
+*Nature communications*, *10*(1), 1-12.
+<https://doi.org/10.1038/s41467-019-13055-y>
+*bioRxiv*, 451690.
+<https://doi.org/10.1101/451690>
 
 Recommends monitoring the KL divergence to determine when to turn off the
 exaggeration factor, rather than using a fixed number of iteration. Also for the
@@ -674,8 +691,10 @@ Majorization-Minimization for Manifold Embedding. In
 
 ### Initialization
 
-Kobak, D., & Berens, P. (2018).
+Kobak, D., & Berens, P. (2019).
 The art of using t-SNE for single-cell transcriptomics.
+*Nature communications*, *10*(1), 1-14.
+<https://doi.org/10.1038/s41467-019-13056-x>
 *bioRxiv*, 453449.
 <https://doi.org/10.1101/453449>
 
