@@ -700,6 +700,19 @@ Lots to mull over in this paper, but particularly interesting in advocating the
 use of the first two principal components (suitably scaled) as a deterministic
 initialization for t-SNE that retains global structure well.
 
+### Adding New Points
+
+Poličar, P. G., Stražar, M., & Zupan, B. (2019).
+Embedding to Reference t-SNE Space Addresses Batch Effects in Single-Cell Classification. 
+*bioRxiv*, 671404.
+<https://doi.org/10.1101/671404>
+
+Dealing with adding new points to an existing t-SNE embedding is also discussed
+in "The art of using t-SNE for single-cell transcriptomics". This paper 
+considers it as a way to remove batch effects when visualizing data from
+multiple sources.
+
+
 ### Web Pages
 
 Visualizing MNIST: An Exploration of Dimensionality Reduction
