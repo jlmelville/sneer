@@ -1760,6 +1760,10 @@ div.tocify {
 <h3>Initialization</h3>
 <p>Kobak, D., &amp; Berens, P. (2019). The art of using t-SNE for single-cell transcriptomics. <em>Nature communications</em>, <em>10</em>(1), 1-14. <a href="https://doi.org/10.1038/s41467-019-13056-x" class="uri">https://doi.org/10.1038/s41467-019-13056-x</a> <em>bioRxiv</em>, 453449. <a href="https://doi.org/10.1101/453449" class="uri">https://doi.org/10.1101/453449</a></p>
 <p>Lots to mull over in this paper, but particularly interesting in advocating the use of the first two principal components (suitably scaled) as a deterministic initialization for t-SNE that retains global structure well.</p>
+<p>Becht, E., McInnes, L., Healy, J., Dutertre, C. A., Kwok, I. W., Ng, L. G., … &amp; Newell, E. W. (2019). Dimensionality reduction for visualizing single-cell data using UMAP. <em>Nature biotechnology</em>, <em>37</em>(1), 38. <a href="https://doi.org/10.1038/nbt.4314" class="uri">https://doi.org/10.1038/nbt.4314</a></p>
+<p>This argues that UMAP is superior to t-SNE for some biological datasets, because among other things, it is better at preserving global structure.</p>
+<p>Kobak, D., &amp; Linderman, G. C. (2019). UMAP does not preserve global structure any better than t-SNE when using the same initialization. <em>bioRxiv</em>. <a href="https://doi.org/10.1101/2019.12.19.877522" class="uri">https://doi.org/10.1101/2019.12.19.877522</a></p>
+<p>Kobak and Linderman take issue with the Becht and co-workers paper above, finding that t-SNE initialized with PCA does as good a job as UMAP in preserving global structure.</p>
 </div>
 <div id="adding-new-points" class="section level3">
 <h3>Adding New Points</h3>

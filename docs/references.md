@@ -700,6 +700,23 @@ Lots to mull over in this paper, but particularly interesting in advocating the
 use of the first two principal components (suitably scaled) as a deterministic
 initialization for t-SNE that retains global structure well.
 
+Becht, E., McInnes, L., Healy, J., Dutertre, C. A., Kwok, I. W., Ng, L. G., ... & Newell, E. W. (2019). 
+Dimensionality reduction for visualizing single-cell data using UMAP.
+*Nature biotechnology*, *37*(1), 38.
+<https://doi.org/10.1038/nbt.4314>
+
+This argues that UMAP is superior to t-SNE for some biological datasets, because
+among other things, it is better at preserving global structure.
+
+Kobak, D., & Linderman, G. C. (2019). 
+UMAP does not preserve global structure any better than t-SNE when using the same initialization. 
+*bioRxiv*.
+<https://doi.org/10.1101/2019.12.19.877522>
+
+Kobak and Linderman take issue with the Becht and co-workers paper above, 
+finding that t-SNE initialized with PCA does as good a job as UMAP in preserving
+global structure.
+
 ### Adding New Points
 
 Poličar, P. G., Stražar, M., & Zupan, B. (2019).
