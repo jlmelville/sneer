@@ -222,6 +222,19 @@ UMAP: Uniform Manifold Approximation and Projection for Dimension Reduction
 Also not in `sneer`. Uses a similar optimization scheme to LargeVis but the
 theory behind it is based on fuzzy sets. Also uses non-normalized weights.
 
+### NCVis
+
+Artemenkov, A., & Panov, M. (2020, April). 
+NCVis: Noise Contrastive Approach for Scalable Visualization. 
+In *Proceedings of The Web Conference 2020* (pp. 2941-2947).
+<https://doi.org/10.1145/3366423.3380061>
+<https://github.com/stat-ml/ncvis>
+
+A method that turns out to be very similar to LargeVis and UMAP in
+implementation, but which uses Noise Contrastive Estimation (a method to
+estimate the parameters of probabilistic models commonly used in language
+modeling) to motivate its cost function and the sampling strategy.
+
 ### xSNE
 
 Strickert, M. (2012, August).
