@@ -277,6 +277,11 @@ least up to the force constant) at the
 
 ## Perplexity
 
+The qSNE paper of Häkkinen and co-workers state that "interesting" perplexities
+are those where a comparatively small change in perplexity leads to a large
+change in bandwidth and in practice datasets show a "staircase-like" structure
+when plotting bandwidth against perplexity.
+
 Vladymyrov, M., & Carreira-Perpinán, M. A. (2013, June).
 Entropic Affinities: Properties and Efficient Numerical Computation.
 *Proceedings of the 30th international conference on machine learning (ICML-13)*,
@@ -342,12 +347,12 @@ tt-SNE is discussed in the section on HSSNE above.
 
 ## Optimization
 
-### Delta-Bar-Delta
-
 Jacobs, R. A. (1988).
 Increased rates of convergence through learning rate adaptation.
 *Neural networks*, *1*(4), 295-307.
 <https://dx.doi.org/10.1016/0893-6080(88)90003-2>
+
+Describes the delta-bar-delta method used in t-SNE.
 
 Janet, J. A., Scoggins, S. M., Schultz, S. M., Snyder, W. E., White, M. W.,
 & Sutton, J. C. (1998, May).
@@ -355,6 +360,87 @@ Shocking: An approach to stabilize backprop training with greedy adaptive learni
 In *1998 IEEE International Joint Conference on Neural Networks Proceedings.*
 (Vol. 3, pp. 2218-2223). IEEE.
 <https://dx.doi.org/10.1109/IJCNN.1998.687205>
+
+Describes a variation on the DBD method.
+
+Nam, K., Je, H., & Choi, S. (2004, July).
+Fast stochastic neighbor embedding: a trust-region algorithm.
+In *2004 IEEE International Joint Conference on Neural Networks (IEEE Cat. No. 04CH37541)* 
+(Vol. 1, pp. 123-128). IEEE.
+
+Before t-SNE, most discussions of SNE included the fact that it seemed very hard
+to optimize. An early attempt used a trust-region method.
+
+### Majorization-Minimization
+
+Yang, Z., Peltonen, J., & Kaski, S. (2015).
+Majorization-Minimization for Manifold Embedding. In
+*Proceedings of the 18th International Conference on Artificial Intelligence and Statistics (AISTATS 2015)*
+(pp. 1088-1097).
+<http://www.jmlr.org/proceedings/papers/v38/yang15a.html>
+
+This paper compares majorization minimization to L-BFGS, spectral directions 
+and momentum-based methods for t-SNE. For some datasets they observe sub-optimal 
+embeddings (L-BFGS) or outright divergence in a couple of cases for spectral 
+directions, but in general spectral directions found a lower cost in less time
+than L-BFGS. However their momentum approach tended to do better than L-BFGS
+(although not as well as spectral directions). Unfortunately, it's not clear
+how closely their momentum approach follows the standard t-SNE optimization:
+they describe it as being a variant of gradient descent "with line search", 
+which doesn't seem like it resembles delta-bar-delta. Further, some of these
+results may be confounded by the fact that only default values were used for
+all the optimizers: for example, the momentum method suffered "overflow 
+problems" for some datasets, probably due to learning rate issues, but one of
+the problem datasets is COIL-20, which was successfully optimized in the
+original t-SNE paper.
+
+### Quasi-Newton
+
+Häkkinen, A., Koiranen, J., Casado, J., Kaipio, K., Lehtonen, O., Petrucci, E.,
+Hynninen, J., Hietanen, S., Carpén, O., Pasquini, L., & Biffoni, M. (2020). 
+qSNE: Quadratic rate t-SNE optimizer with automatic parameter tuning for large data sets. 
+*Bioinformatics*, btaa637.
+<https://doi.org/10.1093/bioinformatics/btaa637>
+<https://bitbucket.org/anthakki/qsne/>
+
+This paper describes successfully using L-BFGS with full t-SNE (i.e. no 
+Barnes-Hut approximation) on large (> 100 000 observations), which they ascribe
+to the excellent convergence properties of L-BFGS, resulting in an order of 
+magnitude fewer iterations required compared to the standard DBD optimization.
+
+Note that other publications have advocated or at least investigated L-BFGS
+with much more mixed results: Vladymyrov and Carreira-Perpiñán found it worked
+well with the Fast Multipole Method with Elastic Embedding (in "Linear-time 
+training of nonlinear low-dimensional embeddings") but was slower than the
+more specialized "spectral direction" method for t-SNE ("Partial-Hessian 
+Strategies for Fast Learning of Nonlinear Embeddings"), the latter being 
+more-or-less in line with the observations of Yang and co-workers in their
+Majorization-Minimization paper (although note the caveats in that discussion
+to do with default settings).
+
+Lee and Verleysen also used L-BFGS successfully with multi-scale SNE and
+multi-scale JSE, although with smaller datasets and no comparison with other
+optimization methods.
+
+### Nesterov Accelerated Gradient
+
+On the importance of initialization and momentum in deep learning.
+In *Proceedings of the 30th international conference on machine learning (ICML-13)*
+(pp. 1139-1147).
+<http://www.jmlr.org/proceedings/papers/v28/sutskever13.html>
+
+### Adaptive Restart
+
+O'Donoghue, B., & Candes, E. (2013).
+Adaptive restart for accelerated gradient schemes.
+*Foundations of computational mathematics*, *15*(3), 715-732.
+<https://dx.doi.org/10.1007/s10208-013-9150-3>
+<https://arxiv.org/abs/1204.3982>
+
+Su, W., Boyd, S., & Candes, E. J. (2016).
+A differential equation for modeling nesterov’s accelerated gradient method: theory and insights.
+*Journal of Machine Learning Research*, *17*(153), 1-43.
+<http://jmlr.org/papers/v17/15-084.html>
 
 ### Early Exaggeration
 
@@ -423,26 +509,6 @@ This advocates a similar approach to spectral directions, although with a
 slightly different line search and without enforcing positive definiteness of
 the inverse Hessian approximation.
 
-### Nesterov Accelerated Gradient
-
-On the importance of initialization and momentum in deep learning.
-In *Proceedings of the 30th international conference on machine learning (ICML-13)*
-(pp. 1139-1147).
-<http://www.jmlr.org/proceedings/papers/v28/sutskever13.html>
-
-### Adaptive Restart
-
-O'Donoghue, B., & Candes, E. (2013).
-Adaptive restart for accelerated gradient schemes.
-*Foundations of computational mathematics*, *15*(3), 715-732.
-<https://dx.doi.org/10.1007/s10208-013-9150-3>
-<https://arxiv.org/abs/1204.3982>
-
-Su, W., Boyd, S., & Candes, E. J. (2016).
-A differential equation for modeling nesterov’s accelerated gradient method: theory and insights.
-*Journal of Machine Learning Research*, *17*(153), 1-43.
-<http://jmlr.org/papers/v17/15-084.html>
-
 ## Evaluation
 
 ### Precision-Recall AUC and Receiver Operating Characteristic Area Under the Curve
@@ -464,6 +530,15 @@ Lee, J. A., & Verleysen, M. (2009).
 Quality assessment of dimensionality reduction: Rank-based criteria.
 *Neurocomputing*, *72*(7), 1431-1443.
 <https://dx.doi.org/10.1016/j.neucom.2008.12.017>
+
+The qSNE paper of Häkkinen and co-workers (see the optimization section)
+suggests evaluating results by a normalized "information loss" metric, which can
+be calculated using only the point-wise entropy of the input probability and the
+point-wise contribution to the KL divergence, and which varies between 0
+(perfect embedding) and 1 (KL divergence is infinite). This has the advantage of
+being calculated as part of the usual t-SNE optimization and roughly follows the
+average number of neighbors in common between the high and low dimensions (the
+relationship seems better for local rather than global structure).
 
 ## Miscellany
 
@@ -503,6 +578,9 @@ Linear-time training of nonlinear low-dimensional embeddings.
 In *17th International Conference on Artificial Intelligence and Statistics (AISTATS 2014)*
 (pp. 968-977).
 <http://jmlr.org/proceedings/papers/v33/vladymyrov14.html>
+
+This paper uses the Fast Multipole Method (FMM) and finds it superior to
+Barnes-Hut when used in combination with L-BFGS for optimizing elastic embedding.
 
 Parviainen, E. (2016).
 A graph-based N-body approximation with application to stochastic neighbor
@@ -707,14 +785,6 @@ plasticity mentioned above). There is an R
 [spe package](https://cran.r-project.org/package=spe) to play with if you're
 interested.
 
-### Majorization-Minimization
-
-Yang, Z., Peltonen, J., & Kaski, S. (2015).
-Majorization-Minimization for Manifold Embedding. In
-*Proceedings of the 18th International Conference on Artificial Intelligence and Statistics (AISTATS 2015)*
-(pp. 1088-1097).
-<http://www.jmlr.org/proceedings/papers/v38/yang15a.html>
-
 ### Initialization
 
 Kobak, D., & Berens, P. (2019).
@@ -756,7 +826,6 @@ Dealing with adding new points to an existing t-SNE embedding is also discussed
 in "The art of using t-SNE for single-cell transcriptomics". This paper 
 considers it as a way to remove batch effects when visualizing data from
 multiple sources.
-
 
 ### Web Pages
 
