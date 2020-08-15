@@ -371,7 +371,8 @@ number of points in the dataset, may be more effective than the usual early
 exaggeration settings.
 
 Belkina, A. C., Ciccolella, C. O., Anno, R., Halpert, R., Spidlen, J., & Snyder-Cappione, J. E. (2019). 
-Automated optimized parameters for T-distributed stochastic neighbor embedding improve visualization and analysis of large datasets. 
+Automated optimized parameters for T-distributed stochastic neighbor embedding
+improve visualization and analysis of large datasets. 
 *Nature communications*, *10*(1), 1-12.
 <https://doi.org/10.1038/s41467-019-13055-y>
 *bioRxiv*, 451690.
@@ -390,6 +391,20 @@ typical (it's 200 in BH t-SNE).
 
 For another paper that discusses learning rate, see bigMap by Garriga and 
 Bartumeus, below.
+
+Böhm, J. N., Berens, P., & Kobak, D. (2020). 
+A Unifying Perspective on Neighbor Embeddings along the Attraction-Repulsion 
+Spectrum.
+*arXiv preprint* *arXiv*:2007.08902.
+<https://arxiv.org/abs/2007.08902>
+
+This paper extends the observation of Linderman and Steinerberger that t-SNE
+with increasing early exaggeration reduces to Laplacian Eigenmaps, to place
+t-SNE in a family of algorithms which differ only in the relative weighting
+of attraction vs repulsions. This family contains not just LE, but also UMAP,
+i.e. despite the apparent differences in theoretical underpinnings, UMAP is 
+effectively t-SNE with a moderate exaggeration factor applied throughout the
+optimization.
 
 ### Spectral Directions
 

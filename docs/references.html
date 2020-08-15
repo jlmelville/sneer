@@ -1670,6 +1670,8 @@ div.tocify {
 <p>Recommends monitoring the KL divergence to determine when to turn off the exaggeration factor, rather than using a fixed number of iteration. Also for the large datasets studied (transcriptomics and cytometry), they don’t notice a big difference when using an exaggeration factor between 4-20.</p>
 <p>Additionally, the recommend setting the learning rate to <span class="math inline">\(n / \alpha\)</span>, where <span class="math inline">\(n\)</span> is the size of the dataset, and <span class="math inline">\(\alpha\)</span> is the exaggeration factor. For typical exaggeration factors of 4-12, this would mean that with larger datasets (more than n ~ 2000), you can get away with a larger learning rate than is typical (it’s 200 in BH t-SNE).</p>
 <p>For another paper that discusses learning rate, see bigMap by Garriga and Bartumeus, below.</p>
+<p>Böhm, J. N., Berens, P., &amp; Kobak, D. (2020). A Unifying Perspective on Neighbor Embeddings along the Attraction-Repulsion Spectrum. <em>arXiv preprint</em> <em>arXiv</em>:2007.08902. <a href="https://arxiv.org/abs/2007.08902" class="uri">https://arxiv.org/abs/2007.08902</a></p>
+<p>This paper extends the observation of Linderman and Steinerberger that t-SNE with increasing early exaggeration reduces to Laplacian Eigenmaps, to place t-SNE in a family of algorithms which differ only in the relative weighting of attraction vs repulsions. This family contains not just LE, but also UMAP, i.e. despite the apparent differences in theoretical underpinnings, UMAP is effectively t-SNE with a moderate exaggeration factor applied throughout the optimization.</p>
 </div>
 <div id="spectral-directions" class="section level3">
 <h3>Spectral Directions</h3>
@@ -1833,7 +1835,7 @@ $(document).ready(function ()  {
       theme: "bootstrap3",
       context: '.toc-content',
       hashGenerator: function (text) {
-        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_').toLowerCase();
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
       },
       ignoreSelector: ".toc-ignore",
       scrollTo: 0
