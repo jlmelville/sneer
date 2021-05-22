@@ -492,6 +492,16 @@ i.e. despite the apparent differences in theoretical underpinnings, UMAP is
 effectively t-SNE with a moderate exaggeration factor applied throughout the
 optimization.
 
+Damrich, S., & Hamprecht, F. A. (2021).
+On UMAP's true loss function. 
+*arXiv preprint* *arXiv*:2103.14608.
+<https://arxiv.org/abs/2103.14608>
+
+This paper is specifically about UMAP and like the Böhm, Berens and Kobak paper
+above, shows that the stochastic optimization method used in UMAP effectively
+up-weights the attractive forces compared to the exact fuzzy cross-entropy
+loss function.
+
 ### Spectral Directions
 
 Vladymyrov, M., & Carreira-Perpiñán, M. A. (2012).
