@@ -837,6 +837,38 @@ in "The art of using t-SNE for single-cell transcriptomics". This paper
 considers it as a way to remove batch effects when visualizing data from
 multiple sources.
 
+### Defining Neighbors
+
+Dalmia, A., & Sia, S. (2021). 
+Clustering with UMAP: Why and How Connectivity Matters.
+*arXiv preprint* *arXiv*:2108.05525.
+<https://arxiv.org/abs/2108.05525>
+
+This paper is concerned with UMAP and clustering, and suggests that for methods
+that set affinities outside a set of nearest neighbors to zero, rather than
+fixing the nearest neighbors to a uniform value, it's better to post-process
+the results by only including mutual nearest neighbors and then augmenting the
+resulting sparse graph with edges from the minimum spanning tree to ensure
+connectivity. While not mentioned in the paper, ensuring connectivity in this
+way might be a good technique for improving the robustness of spectral-based 
+initialization.
+
+### Don't Use t-SNE (or UMAP) at all
+
+Chari, T., Banerjee, J., & Pachter, L. (2021).
+The Specious Art of Single-Cell Genomics. *bioRxiv*:2021.08.25.457696.
+<https://doi.org/10.1101/2021.08.25.457696>
+
+This [twitter thread](https://mobile.twitter.com/lpachter/status/1431325969411821572)
+describes the paper.
+
+This paper argues against using t-SNE or UMAP as it is currently practiced in
+single-cell genomics to infer biological function: PCA followed by a 2D UMAP
+plot. The authors show substantial distortions arise in correlations between
+distances between groups of cells that were equidistant in the input space. As a
+replacement, the authors advocate a semi-supervised approach using an
+auto-encoder into a much higher output dimension (15 or 50).
+
 ### Web Pages
 
 Visualizing MNIST: An Exploration of Dimensionality Reduction
