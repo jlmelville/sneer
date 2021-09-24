@@ -859,15 +859,18 @@ Chari, T., Banerjee, J., & Pachter, L. (2021).
 The Specious Art of Single-Cell Genomics. *bioRxiv*:2021.08.25.457696.
 <https://doi.org/10.1101/2021.08.25.457696>
 
-This [twitter thread](https://mobile.twitter.com/lpachter/status/1431325969411821572)
-describes the paper.
-
 This paper argues against using t-SNE or UMAP as it is currently practiced in
 single-cell genomics to infer biological function: PCA followed by a 2D UMAP
 plot. The authors show substantial distortions arise in correlations between
 distances between groups of cells that were equidistant in the input space. As a
 replacement, the authors advocate a semi-supervised approach using an
 auto-encoder into a much higher output dimension (15 or 50).
+
+This paper stimulated some spirited discussion on Twitter. This [twitter thread](https://mobile.twitter.com/lpachter/status/1431325969411821572)
+describes the paper. Also see some dissenting opinions from [Pavlin Poličar](https://twitter.com/pavlinpolicar/status/1441061149118644226) 
+(create of [openTSNE](https://github.com/pavlin-policar/openTSNE)) and
+[Dmitry Kobak](https://twitter.com/hippopedoid/status/1437421945956470785) (with
+[further follow-up](https://twitter.com/hippopedoid/status/1441029520237158407)).
 
 ### Web Pages
 
