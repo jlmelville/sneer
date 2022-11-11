@@ -205,7 +205,7 @@ find_beta <- function(d2mi, i, perplexity, beta_init = 1,
 
   ok <- result$iter != max_iters
 
-  d_intr <- initrinsic_dimensionality(result, d2mi, h_base = h_base)
+  d_intr <- intrinsic_dimensionality(result, d2mi, h_base = h_base)
 
   res <- list(pr = result$best$pr, perplexity = h_base ^ result$best$h,
        beta = result$x, d_intr = d_intr, ok = ok)
@@ -379,7 +379,7 @@ perplexity_rows <- function(pm, eps = .Machine$double.eps) {
 
 # Intrinsic Dimensionality using an analytical calculation. Only requires
 # one value of beta and Shannon Entropy
-initrinsic_dimensionality <- function(bisection_result, d2mi, h_base) {
+intrinsic_dimensionality <- function(bisection_result, d2mi, h_base) {
 
   eps <- .Machine$double.eps
   # Ensure Shannon Entropy units is nats
