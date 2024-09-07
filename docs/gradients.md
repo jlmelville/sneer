@@ -379,18 +379,80 @@ q_{kl}
 \frac{\partial w_{ij}}{\partial f_{ij}}
 $$
 
+### Brief aside on other normalization schemes
+
+*September 7 2024*: for the longest time there was really only two things to
+think about with the kind of dimensionality reduction methods we're considering
+here: are the weights un-normalized (makes life easy) or normalized to
+probabilities, leading to the slight complication we've just been discussing.
+But Yang and co-workers introduced
+[Stochastic Cluster Embedding](https://arxiv.org/abs/2108.08003) in 2021 which
+introduces a slightly new normalization scheme. The SCE normalization looks
+like:
+
+$$
+q_{ij} = \frac{w_{ij}}{\sum_{kl} m_{kl} w_{kl}}
+$$
+
+So there is a per-pair weighting which reduces to the standard t-SNE 
+normalization when $m_{kl} = 1$. They also point out that you can express the
+idea of early exaggeration in t-SNE as $m_{kl} = 4$ (or 12 for larger datasets).
+Specifically for SCE the definition of $m_{ij}$ is related to $p_{ij}$, but
+those details aren't important. Also because the normalization does not lead to
+$Q$ being a probability distribution (the $q_{ij}$ are non-negative but don't 
+sum to one), you can't use the same kind of KL divergence cost function as in
+t-SNE, but that's *also* not important right now. The point is we still have
+to deal with the normalization, and the derivatives are slightly different:
+
+$$\frac{\partial q_{ij}}{\partial w_{ij}} = \frac{1}{S^{*}} - \frac{m_{ij}q_{ij}}{S^{*}}
+$$
+and:
+$$\frac{\partial q_{kl}}{\partial w_{ij}} = 
+  -\frac{m_{ij}q_{kl}}{S^{*}}
+$$
+
+Where I have defined $S^{*} = \sum_{kl} m_{kl} w_{kl}$ to indicate that this
+is no longer the sum of all the output weights: it's the er, weighted, sum of 
+the weights.
+
+This leads to a slightly modified version of $k_{ij}$:
+
+$$
+k_{ij} = 
+\frac{1}{S^{*}}
+\left[
+\frac{\partial C}{\partial q_{ij}}
+-
+m_{ij} \sum_{kl} \frac{\partial C}{\partial q_{kl}} 
+q_{kl}
+\right]
+\frac{\partial w_{ij}}{\partial f_{ij}}
+$$
+
+End of digression.
+
 This is far as we can get with $k_{ij}$ without choosing a cost and weighting
 function, but we can simplify the distance part of the expression if we're
 prepared to assume that we're only going to want to use Euclidean distances
 in the output.
 
-While there may be some exotic situations where the output distances should be
-non-Euclidean (a literary analysis of HP Lovecraft perhaps, or more seriously,
-the use of 
-[hyperbolic distances to model hierarchical data](https://arxiv.org/abs/1705.08039)), 
-the t-SNE literature always has $d_{ij}$ represent Euclidean distances. In a
-$K$-dimensional output space, the distance between point $\mathbf{y_i}$ and
-point $\mathbf{y_j}$ is:
+### Euclidean output distances
+
+*September 7 2024*: I used to say here that "there may be some exotic 
+situations where the output distances should be non-Euclidean", but there is now
+a small literature on using hyperbolic distances. The one example I gave was
+[hyperbolic distances to model hierarchical data](https://arxiv.org/abs/1705.08039)),
+but in the intervening years the literature on hyperbolic distances in t-SNE has 
+expanded somewhat e.g <https://doi.org/10.1016/j.isci.2021.102225> and
+<https://arxiv.org/abs/2401.13708>. UMAP also does
+[hyperbolic embeddings](https://umap-learn.readthedocs.io/en/latest/embedding_space.html#bonus-embedding-in-hyperbolic-space).
+So at this point we can probably say that usually the output distances will be
+Euclidean, but hyperbolic distances are also a thing. If there are also other
+non-Euclidean distances in the literature, they have yet to catch on.
+
+So *most of the time*, the t-SNE literature has $d_{ij}$ represent Euclidean 
+distances. In a $K$-dimensional output space, the distance between point 
+$\mathbf{y_i}$ and point $\mathbf{y_j}$ is:
 
 $$d_{ij} = \left[\sum_l^K\left (y_{il} - y_{jl} \right )^2\right ]^{1/2}$$
 
@@ -427,8 +489,8 @@ q_{kl}
 $$
 
 If you want to get a tiny bit more specific, I am also unaware of any 
-t-SNE-related methods that don't transform the distances by simply squaring
-them:
+t-SNE-related methods that don't transform the Euclidean distances by simply
+squaring them:
 
 $$f_{ij} = d_{ij}^{2}$$
 
@@ -680,6 +742,29 @@ below, you can see that you get t-SNE back with $\alpha = 1$ and $\beta = 0$.
 The AB-SNE paper is of particular interest because it provides a meaningful
 guide on how to interpret changing $\alpha$ and $\beta$ rather than leaving you
 to fiddle with them randomly.
+
+### I-Divergence
+
+A generalization of the KL Divergence, often used in non-negative matrix
+factorization, that doesn't require $P$ or $Q$ to be probability distributions,
+just non-negative:
+
+$$C = D_{I}(P||Q) = 
+\sum_{ij} p_{ij}\log\left(\frac{p_{ij}}{q_{ij}}\right) - p_{ij} + q_{ij}$$
+
+Pretty easy to see that if $P$ and $Q$ *are* probability distributions, this
+reduces to the KL divergence. The derivative with respect to $Q$ is:
+
+$$\frac{\partial C}{\partial q_{ij}} = 1 - \frac{p_{ij}}{q_{ij}}$$
+
+You could use something like this with the non-normalized $v_{ij}$ and $w_{ij}$
+values directly (or more likely just use $p_{ij}$ instead of $v_{ij}$) and
+methods like UMAP, LargeVis and Elastic Embedding have cost functions that are
+related, but see [later](https://jlmelville.github.io/sneer/experimental-gradients.html)
+for that. For the probability-based approaches we are talking about here, this
+cost function is relevant if you are normalizing but the resulting normalized
+weights are not a probability distribution. I am only aware of Stochastic
+Cluster Embedding where this applies.
 
 ## Some Similarity Kernels and their Derivatives
 
@@ -1288,7 +1373,7 @@ this force constant reduces to t-SNE when $\alpha = 1, \beta = 0$.
 
 ### g-SNE Force Constant
 
-A final derivation which is quite straightforward. Despite using a mixture of
+A derivation which is quite straightforward. Despite using a mixture of
 two divergences and two separate kernels, the g-SNE gradient is very simple
 compared to JSE and NeRV.
 
@@ -1322,6 +1407,118 @@ expression for g-SNE:
 $$k_{ij} = \left[\left(p_{ij} - q_{ij}\right) -\lambda \left( \hat{p}_{ij} - \hat{q}_{ij} \right)\right]w_{ij}$$
 
 A very simple modification of the t-SNE gradient.
+
+### SCE Force Constant
+
+[Stochastic Cluster Embedding](https://arxiv.org/abs/2108.08003) uses the
+t-distribution kernel with the I-Divergence. Crucially, it uses a different
+normalization scheme to everything else we have considered. Let's list the
+derivatives we need:
+
+You can refer to the aside on the normalization scheme above for more details,
+but combining the t-distribution kernel with the normalization scheme we get: 
+
+$$
+k_{ij} = 
+-w_{ij}q_{ij}
+\left[
+\frac{\partial C}{\partial q_{ij}}
+-
+m_{ij} \sum_{kl} \frac{\partial C}{\partial q_{kl}} 
+q_{kl}
+\right]
+$$
+
+We have an extra $m_{ij}$ in there and we don't need to worry about the
+non-standard normalization, because $q_{ij} = w_{ij} / S^{*}$. Nothing too 
+scary so far. At all points in the derivation, we should be able to see that if
+we set $m_{ij} = 1$, we get the t-SNE force constant out. 
+
+We must now mix in the derivative for the I-divergence, which is:
+
+$$\frac{\partial C}{\partial q_{ij}} = 1 - \frac{p_{ij}}{q_{ij}}$$
+
+This is going to give us:
+
+$$
+k_{ij} = 
+-w_{ij}q_{ij}
+\left[
+1 - \frac{p_{ij}}{q_{ij}}
+-
+m_{ij} \sum_{kl} \left(1 - \frac{p_{kl}}{q_{kl}}\right) q_{kl}
+\right]
+\\
+-w_{ij}q_{ij}
+\left[
+1 - \frac{p_{ij}}{q_{ij}}
+-
+m_{ij} \sum_{kl} \left(q_{kl} - p_{kl}\right) 
+\right]
+\\
+-w_{ij}q_{ij}
+\left[
+1 - \frac{p_{ij}}{q_{ij}}
+-
+m_{ij} \sum_{kl} q_{kl} 
++ 
+m_{ij} \sum_{kl} p_{kl}
+\right]
+$$
+
+We have to be a bit careful not to get carried away at this point. SCE uses the
+same definition for $P$ as with t-SNE, so $\sum_{kl} p_{kl} = 1$ as usual. But
+due to the non-standard normalization we can't do the same for
+$\sum_{kl} q_{kl}$. At any rate, we can simplify the last term and multiply in
+the $-q_{ij}$ outside the brackets to get to:
+
+$$
+k_{ij} = 
+w_{ij} \left(
+-q_{ij}
++ p_{ij}
++ m_{ij} q_{ij} \sum_{kl} q_{kl}
+- m_{ij} q_{ij}
+\right)
+$$
+
+The first part of that expression is beginning to look like t-SNE. As for the
+rest of the expression, if $m_{ij} = 1$ then it would be true that
+$\sum_{kl} q_{kl} = 1$ so those terms would cancel. So I think we are still on
+track with our derivation. Time to do a bit of rearranging and re-group that
+$m_{ij}$ term again:
+
+$$
+k_{ij} = w_{ij} \left[
+p_{ij} - q_{ij} - m_{ij} q_{ij} \left(1 - \sum_{kl} q_{kl} \right)
+\right]
+$$
+
+We have the t-SNE force constant with an extra term where as 
+$m_{ij} \rightarrow 1$, the term inside the parentheses goes to zero. We can
+see the attractive term (acting on $p_{ij}$) is the same as t-SNE so this 
+change in normalization affects only the repulsive term. Bear in mind though
+that although the definition of $p_{ij}$ and $w_{ij}$ is the same as in t-SNE,
+the $q_{ij}$s are now different so we can't just say that SCE is like t-SNE
+but with an extra repulsion. Also, the effect of $m_{ij}$ isn't totally 
+straightforward (at least to me) because while increasing $m_{ij}$ will
+increase the contribution of the extra repulsion, it also brings the sum of 
+$q_{kl}$ closer to 1. To get specific, the way $m_{ij}$ is chosen in the SCE
+paper is:
+
+$$
+m_{ij} = \alpha N(N − 1)p_{ij} + (1 − \alpha)
+$$
+
+where $\alpha$ is a hyper-parameter that lets you smoothly go from a per-pair
+normalization weight at $\alpha=0$ to t-SNE normalization at $\alpha=1$. The
+term on the left-hand-side is basically using $p_{ij}$ as a measure of how
+important the pair is and the $N(N-1)$ term is a normalization factor to bring
+that weighting up to the same scale as the $1-\alpha$ term: the $P$ matrix
+sums to 1 and if we consider the $N(N-1)$ non-diagonal terms, if the
+probabilities are uniform each $p_{ij}$ is $1/(N(N-1))$. So scaling that up
+by the same amount means that more similar pairs get more weight relative to
+plain t-SNE and *vice versa*.
 
 *Now* we may take that long lie down.
 
