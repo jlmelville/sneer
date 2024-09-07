@@ -1923,8 +1923,9 @@ hierarchical data</a>), but in the intervening years the literature on
 hyperbolic distances in t-SNE has expanded somewhat e.g <a href="https://doi.org/10.1016/j.isci.2021.102225" class="uri">https://doi.org/10.1016/j.isci.2021.102225</a> and <a href="https://arxiv.org/abs/2401.13708" class="uri">https://arxiv.org/abs/2401.13708</a>. UMAP also does <a href="https://umap-learn.readthedocs.io/en/latest/embedding_space.html#bonus-embedding-in-hyperbolic-space">hyperbolic
 embeddings</a>. So at this point we can probably say that usually the
 output distances will be Euclidean, but hyperbolic distances are also a
-thing. If there are also other non-Euclidean distances in the
-literature, they have yet to catch on.</p>
+thing. The UMAP documentation above also talks about embedding onto a
+sphere and a torus, but I don’t know if that has seen a lot of
+real-world use.</p>
 <p>So <em>most of the time</em>, the t-SNE literature has <span class="math inline">\(d_{ij}\)</span> represent Euclidean distances. In
 a <span class="math inline">\(K\)</span>-dimensional output space, the
 distance between point <span class="math inline">\(\mathbf{y_i}\)</span>

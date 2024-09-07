@@ -447,8 +447,9 @@ expanded somewhat e.g <https://doi.org/10.1016/j.isci.2021.102225> and
 <https://arxiv.org/abs/2401.13708>. UMAP also does
 [hyperbolic embeddings](https://umap-learn.readthedocs.io/en/latest/embedding_space.html#bonus-embedding-in-hyperbolic-space).
 So at this point we can probably say that usually the output distances will be
-Euclidean, but hyperbolic distances are also a thing. If there are also other
-non-Euclidean distances in the literature, they have yet to catch on.
+Euclidean, but hyperbolic distances are also a thing. The UMAP documentation
+above also talks about embedding onto a sphere and a torus, but I don't know
+if that has seen a lot of real-world use.
 
 So *most of the time*, the t-SNE literature has $d_{ij}$ represent Euclidean 
 distances. In a $K$-dimensional output space, the distance between point 
