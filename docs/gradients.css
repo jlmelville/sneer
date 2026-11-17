@@ -1,0 +1,13 @@
+.math {
+  position: relative;
+}
+
+.math.display {
+  display: block;
+  overflow-x: auto;
+}
+
+.math.display > .katex-display {
+  min-width: 100%;
+  width: max-content;
+}
