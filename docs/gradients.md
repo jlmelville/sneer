@@ -1198,7 +1198,6 @@ $$
 \begin{aligned}
 C_{\mathrm{NeRV}} &= \lambda C_{\mathrm{fwd}} + (1 - \lambda) C_{\mathrm{rev}} \\
 &= \lambda \sum_{ij} p_{ij} \log \frac{p_{ij}}{q_{ij}} \\
-+
 &\quad + (1 - \lambda) \sum_{ij} q_{ij} \log \frac{q_{ij}}{p_{ij}}
 \end{aligned}
 $$
